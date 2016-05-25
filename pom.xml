@@ -1,0 +1,110 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>edu.usc.irds.sparkler</groupId>
+  <artifactId>sparkler</artifactId>
+  <version>0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>sparkler</name>
+  <url>http://irds.usc.edu</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <spark.version>1.6.1</spark.version>
+    <scala.version>2.11</scala.version>
+    <scala.library.version>${scala.version}.8</scala.library.version>
+    <nutch.version>1.11</nutch.version>
+    <kafka.version>0.10.0.0</kafka.version>
+    <hbase.version>1.2.1</hbase.version>
+
+    <!-- Tests -->
+    <junit.version>4.12</junit.version>
+  </properties>
+
+  <dependencies>
+
+    <!-- http://mvnrepository.com/artifact/org.apache.spark/spark-core_2.11 -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+
+    <!-- http://mvnrepository.com/artifact/org.apache.nutch/nutch -->
+    <dependency>
+      <groupId>org.apache.nutch</groupId>
+      <artifactId>nutch</artifactId>
+      <version>${nutch.version}</version>
+    </dependency>
+
+    <!-- http://mvnrepository.com/artifact/org.apache.kafka/kafka_2.10 -->
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+      <version>${kafka.version}</version>
+    </dependency>
+
+    <!-- http://mvnrepository.com/artifact/org.apache.hbase/hbase-client -->
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-client</artifactId>
+      <version>${hbase.version}</version>
+    </dependency>
+
+    <!-- http://mvnrepository.com/artifact/org.scala-lang/scala-library -->
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.library.version}</version>
+    </dependency>
+
+    <!-- TESTING -->
+    <!-- http://mvnrepository.com/artifact/junit/junit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>net.alchim31.maven</groupId>
+          <artifactId>scala-maven-plugin</artifactId>
+          <version>3.2.1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>scala-compile-first</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>add-source</goal>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>scala-test-compile</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
