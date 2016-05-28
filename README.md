@@ -2,11 +2,13 @@
 
 Spark-Crawler : Evolving Apache Nutch to run on Spark. 
 
+======
 
 #### Contributing to Sparkler
 
 The project is currently in the design phase. We will open up the stage for contributors soon.
 
+======
 
 #### Contact Us
 
