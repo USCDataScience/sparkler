@@ -38,7 +38,7 @@ class Crawler extends CliTool {
   var sparkMaster:String = _
 
   @Option(name = "-j", aliases = Array("--job"), required = true,
-    usage = "Job id. Set to resume job, skip to auto generate")
+    usage = "Job id. Set to resume job, skip to auto generate. When not sure, get the job id from injector command")
   var jobId:String = _
 
   @Option(name = "-o", aliases = Array("--out"),
@@ -53,6 +53,12 @@ class Crawler extends CliTool {
     usage = "Max Groups to be selected for fetch..")
   var maxGroups:Int = 1 << 7
 
+  @Option(name = "-i", aliases = Array("--iterations"),
+    usage = "Number of iterations to run")
+  var iterations:Int = 1
+
+
+
   //TODO: URL normalizers
   //TODO: URL filters
   //TODO: Data Sink
@@ -66,10 +72,6 @@ class Crawler extends CliTool {
     if (this.outputPath == null) {
       this.outputPath = jobId
     }
-    val taskId = JobUtil.newSegmentId(true)
-    val job = new SparklerJob(jobId, taskId)
-    LOG.info(s"Starting the job:$jobId, task:$taskId")
-
     val conf = new SparkConf().setAppName(jobId)
     if (sparkMaster != null) {
       conf.setMaster(sparkMaster)
@@ -77,56 +79,64 @@ class Crawler extends CliTool {
     val sc = new SparkContext(conf)
     val fetchDelay = 1000l
 
-    val rdd = new CrawlDbRDD(sc, job, maxGroups = 10, topN=topN)
+    val job = new SparklerJob(jobId, null)
     val solrc = job.newCrawlDbSolrClient()
 
-    //Local reference hack to serialize these without serializing the whole outer object
-    val fetch = FETCH_FUNC
-    val outlinksParse = OUTLINKS_PARSE_FUNC
-    val statusUpdate = STATUS_UPDATE_FUNC
+    for( _ <- 1 to iterations ) {
+      val taskId = JobUtil.newSegmentId(true)
+      job.currentTask = taskId
+      LOG.info(s"Starting the job:$jobId, task:$taskId")
 
-    //rdd.foreach(r => println(r.id))
-    val fetchedRdd = rdd.map(r => (r.group, r))
-      .groupByKey()
-      .flatMap({ case(grp, rs) => new FairFetcher(rs.iterator, fetchDelay, fetch, outlinksParse)})
-      .persist()
+      val rdd = new CrawlDbRDD(sc, job, maxGroups = maxGroups, topN = topN)
 
-    //Step : Update status of fetched resources
-    val statusUpdateRdd:RDD[SolrInputDocument] = fetchedRdd.map(d => statusUpdate(d.res, d.content))
-    val sinkFunc = new SolrSink(job)
-    val res = sc.runJob(statusUpdateRdd, sinkFunc)
+      //Local reference hack to serialize these without serializing the whole outer object
+      val fetch = FETCH_FUNC
+      val outlinksParse = OUTLINKS_PARSE_FUNC
+      val statusUpdate = STATUS_UPDATE_FUNC
+
+      //rdd.foreach(r => println(r.id))
+      val fetchedRdd = rdd.map(r => (r.group, r))
+        .groupByKey()
+        .flatMap({ case (grp, rs) => new FairFetcher(rs.iterator, fetchDelay, fetch, outlinksParse) })
+        .persist()
+
+      //Step : Update status of fetched resources
+      val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => statusUpdate(d.res, d.content))
+      val sinkFunc = new SolrSink(job)
+      sc.runJob(statusUpdateRdd, sinkFunc)
 
 
-    //Step : UPSERT outlinks
-    val outlinksRdd = fetchedRdd.flatMap({data => for(u <- data.outLinks) yield (u, data.res)})             //expand the set
-      .reduceByKey({case(r1, r2) => if (r1.depth <= r2.depth) r1 else r2})  // pick a parent
-      //TODO: url filter
-      //TODO: url normalize
-      .map({case (link, parent) => new Resource(link, parent.depth + 1, job, NEW)})  //create a new resource
+      //Step : UPSERT outlinks
+      val outlinksRdd = fetchedRdd.flatMap({ data => for (u <- data.outLinks) yield (u, data.res) }) //expand the set
+        .reduceByKey({ case (r1, r2) => if (r1.depth <= r2.depth) r1 else r2 }) // pick a parent
+        //TODO: url filter
+        //TODO: url normalize
+        .map({ case (link, parent) => new Resource(link, parent.depth + 1, job, NEW) }) //create a new resource
 
-    val outLinksUpsertFunc:((TaskContext, Iterator[Resource]) => Any)= (ctx, docs) => {
+      val outLinksUpsertFunc: ((TaskContext, Iterator[Resource]) => Any) = (ctx, docs) => {
         val solrc = job.newCrawlDbSolrClient().crawlDb
         //TODO: handle this in server side - tell solr to skip docs if they already exist
-        val newResources:Iterator[Resource] = for (doc <- docs if solrc.getById(doc.id) == null) yield doc
+        val newResources: Iterator[Resource] = for (doc <- docs if solrc.getById(doc.id) == null) yield doc
         LOG.info("Inserting new resources to Solr ")
         new UnSerializableSolrBeanSink[Resource](solrc)(ctx, newResources)
         LOG.debug("New resources inserted, Closing..")
         solrc.close()
+      }
+      sc.runJob(outlinksRdd, outLinksUpsertFunc)
+
+      //STEP :Store these to nutch segments
+      val outputPath = this.outputPath + "/" + taskId
+      LOG.info(s"Storing output at $outputPath")
+      fetchedRdd.filter(_.content.status == FETCHED)
+        .map(d => (new Text(d.res.url), d.content.toNutchContent(new Configuration())))
+        .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
+
+      LOG.info("Committing crawldb..")
+      solrc.commitCrawlDb()
     }
-    sc.runJob(outlinksRdd, outLinksUpsertFunc)
-
-    val outputPath = this.outputPath + "/" + taskId
-    LOG.info(s"Storing output at $outputPath")
-    fetchedRdd.filter(_.content.status == FETCHED )
-      .map(d => (new Text(d.res.url), d.content.toNutchContent(new Configuration())))
-      .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
-
+    solrc.close()
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
-
-    LOG.info("Committing crawldb..")
-    solrc.commitCrawlDb()
-    solrc.close()
   }
 }
 
@@ -151,8 +161,8 @@ class FairFetcher(val resources:Iterator[Resource], val delay:Long,
     val nextFetch = hitCounter.get() + delay
     val waitTime = nextFetch - System.currentTimeMillis()
     if (waitTime > 0){
-        LOG.debug("    Waiting for {} ms, {}", waitTime, data.res.url)
-        Thread.sleep(waitTime)
+      LOG.debug("    Waiting for {} ms, {}", waitTime, data.res.url)
+      Thread.sleep(waitTime)
     }
 
     //STEP: Fetch
@@ -237,9 +247,8 @@ object Crawler{
 
   def main(args: Array[String]) {
 
+    //FIXME: remove this
     val argss = "-j sparkler-job-1464744090100 -m local[*]".split(" ")
-    for (_ <- 1 to 1){
-      new Crawler().run(argss)
-    }
+    new Crawler().run(argss)
   }
 }
