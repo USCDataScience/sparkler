@@ -1,5 +1,7 @@
 package edu.usc.irds.sparkler.model
 
+import org.apache.nutch.protocol.Content
+
 /**
   *
   * @since 5/29/16

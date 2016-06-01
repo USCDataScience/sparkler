@@ -5,16 +5,23 @@ import java.net.URL
 import java.util.Date
 import java.util.concurrent.atomic.AtomicLong
 
+import edu.usc.irds.sparkler.base.CliTool
 import edu.usc.irds.sparkler.model.ResourceStatus._
-import edu.usc.irds.sparkler.model.{Content, CrawlData, Resource}
-import edu.usc.irds.sparkler.{CrawlDbRDD, SolrBeanSink, SolrSink}
-import org.apache.solr.client.solrj.impl.HttpSolrClient
+import edu.usc.irds.sparkler.model.{Content, CrawlData, Resource, SparklerJob}
+import edu.usc.irds.sparkler.util.JobUtil
+import edu.usc.irds.sparkler.{CrawlDbRDD, UnSerializableSolrBeanSink, SolrSink}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.io.Text
+import org.apache.hadoop.mapred.SequenceFileOutputFormat
+import org.apache.nutch.metadata.Metadata
+import org.apache.nutch.protocol
 import org.apache.solr.common.SolrInputDocument
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext, TaskContext}
-import org.apache.tika.metadata.Metadata
+import org.apache.tika.metadata
 import org.apache.tika.parser.AutoDetectParser
 import org.apache.tika.sax.LinkContentHandler
+import org.kohsuke.args4j.Option
 
 import scala.collection.JavaConverters._
 
@@ -22,21 +29,60 @@ import scala.collection.JavaConverters._
   *
   * @since 5/28/16
   */
-class Crawler {
+class Crawler extends CliTool {
 
   import Crawler._
 
-  def run(): Unit ={
-    val conf = new SparkConf().setAppName(Crawler.getClass.getName).setMaster("local[*]")
-    val sc = new SparkContext(conf)
-    val solr= "http://localhost:8983/solr/crawldb"
-    val fetchDelay = 5 * 1000l
+  @Option(name = "-m", aliases = Array("--master"),
+    usage = "Spark Master URI. Ignore this if job is started by spark-submit")
+  var sparkMaster:String = _
 
-    val rdd = new CrawlDbRDD(sc, solr)
+  @Option(name = "-j", aliases = Array("--job"), required = true,
+    usage = "Job id. Set to resume job, skip to auto generate")
+  var jobId:String = _
+
+  @Option(name = "-o", aliases = Array("--out"),
+    usage = "Output path, default is job id")
+  var outputPath:String = _
+
+  @Option(name = "-t", aliases = Array("--topN"),
+    usage = "Top urls per domain to be selected for a round")
+  var topN:Int = 1 << 10
+
+  @Option(name = "-g", aliases = Array("--max-groups"),
+    usage = "Max Groups to be selected for fetch..")
+  var maxGroups:Int = 1 << 7
+
+  //TODO: URL normalizers
+  //TODO: URL filters
+  //TODO: Data Sink
+  //TODO: Robots.txt
+  //TODO: Fetcher + User Agent
+  //TODO: JS render
+  //TODO: Job Id
+
+  override def run(): Unit ={
+
+    if (this.outputPath == null) {
+      this.outputPath = jobId
+    }
+    val taskId = JobUtil.newSegmentId(true)
+    val job = new SparklerJob(jobId, taskId)
+    LOG.info(s"Starting the job:$jobId, task:$taskId")
+
+    val conf = new SparkConf().setAppName(jobId)
+    if (sparkMaster != null) {
+      conf.setMaster(sparkMaster)
+    }
+    val sc = new SparkContext(conf)
+    val fetchDelay = 1000l
+
+    val rdd = new CrawlDbRDD(sc, job, maxGroups = 10, topN=topN)
+    val solrc = job.newCrawlDbSolrClient()
 
     //Local reference hack to serialize these without serializing the whole outer object
     val fetch = FETCH_FUNC
-    val outlinksParse = OUTLINKS__PARSE_FUNC
+    val outlinksParse = OUTLINKS_PARSE_FUNC
     val statusUpdate = STATUS_UPDATE_FUNC
 
     //rdd.foreach(r => println(r.id))
@@ -47,7 +93,7 @@ class Crawler {
 
     //Step : Update status of fetched resources
     val statusUpdateRdd:RDD[SolrInputDocument] = fetchedRdd.map(d => statusUpdate(d.res, d.content))
-    val sinkFunc = new SolrSink(solr)
+    val sinkFunc = new SolrSink(job)
     val res = sc.runJob(statusUpdateRdd, sinkFunc)
 
 
@@ -56,24 +102,30 @@ class Crawler {
       .reduceByKey({case(r1, r2) => if (r1.depth <= r2.depth) r1 else r2})  // pick a parent
       //TODO: url filter
       //TODO: url normalize
-      .map({case (link, parent) => new Resource(link, parent.depth + 1, NEW)})  //create a new resource
+      .map({case (link, parent) => new Resource(link, parent.depth + 1, job, NEW)})  //create a new resource
 
     val outLinksUpsertFunc:((TaskContext, Iterator[Resource]) => Any)= (ctx, docs) => {
-        val solrc = new HttpSolrClient(solr)
+        val solrc = job.newCrawlDbSolrClient().crawlDb
         //TODO: handle this in server side - tell solr to skip docs if they already exist
         val newResources:Iterator[Resource] = for (doc <- docs if solrc.getById(doc.id) == null) yield doc
         LOG.info("Inserting new resources to Solr ")
-        new SolrBeanSink(solrc)(ctx, newResources)
+        new UnSerializableSolrBeanSink[Resource](solrc)(ctx, newResources)
         LOG.debug("New resources inserted, Closing..")
         solrc.close()
     }
     sc.runJob(outlinksRdd, outLinksUpsertFunc)
 
+    val outputPath = this.outputPath + "/" + taskId
+    LOG.info(s"Storing output at $outputPath")
+    fetchedRdd.filter(_.content.status == FETCHED )
+      .map(d => (new Text(d.res.url), d.content.toNutchContent(new Configuration())))
+      .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
+
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
 
-    val solrc = new HttpSolrClient(solr)
-    solrc.commit()
+    LOG.info("Committing crawldb..")
+    solrc.commitCrawlDb()
     solrc.close()
   }
 }
@@ -99,14 +151,13 @@ class FairFetcher(val resources:Iterator[Resource], val delay:Long,
     val nextFetch = hitCounter.get() + delay
     val waitTime = nextFetch - System.currentTimeMillis()
     if (waitTime > 0){
-        LOG.debug("Waiting for {}ms, res={}", waitTime, data.res.id)
-        LOG.debug("Group's Last Hit = {}", lastHit)
+        LOG.debug("    Waiting for {} ms, {}", waitTime, data.res.url)
         Thread.sleep(waitTime)
     }
 
     //STEP: Fetch
     data.content = fetchFunc(data.res)
-    lastHit = data.res.id
+    lastHit = data.res.url
     hitCounter.set(System.currentTimeMillis())
 
     //STEP: Parse
@@ -119,37 +170,48 @@ class FairFetcher(val resources:Iterator[Resource], val delay:Long,
 
 object Crawler{
   val LOG = org.slf4j.LoggerFactory.getLogger(Crawler.getClass)
+  val FETCH_TIMEOUT = 3000
 
   val FETCH_FUNC = new SerializableFunction[Resource, Content] {
     override def apply(resource: Resource): Content = {
-      LOG.info("Fetching resource:{}", resource.id)
+
+      LOG.info("FETCHING {}", resource.url)
       //FIXME: this is a prototype, make it real
       //TODO: handle errors
-      val urlConn = new URL(resource.id).openConnection()
-
-      val inStream =urlConn.getInputStream
-      val outStream = new ByteArrayOutputStream()
-      Iterator.continually(inStream.read)
-        .takeWhile(-1 != )
-        .foreach(outStream.write)
-      inStream.close()
-
-      val rawData = outStream.toByteArray
-      outStream.close()
       val fetchedAt = new Date()
-      val status:ResourceStatus = FETCHED
-      val contentType = urlConn.getContentType
-      new Content(resource.id, rawData, contentType, rawData.length, Array(),
-        fetchedAt, status, null)
+      val metadata = new Metadata()
+      try {
+        val urlConn = new URL(resource.url).openConnection()
+        urlConn.setConnectTimeout(FETCH_TIMEOUT)
+
+        val inStream = urlConn.getInputStream
+        val outStream = new ByteArrayOutputStream()
+        Iterator.continually(inStream.read)
+          .takeWhile(-1 != )
+          .foreach(outStream.write)
+        inStream.close()
+
+        val rawData = outStream.toByteArray
+        outStream.close()
+        val status:ResourceStatus = FETCHED
+        val contentType = urlConn.getContentType
+        new Content(resource.url, rawData, contentType, rawData.length, Array(),
+          fetchedAt, status, metadata)
+      } catch {
+        case e:Exception => {
+          LOG.error(e.getMessage, e)
+          new Content(resource.url, null, null, -1, Array(), fetchedAt, ERROR,  metadata)
+        }
+      }
     }
   }
 
-  val OUTLINKS__PARSE_FUNC = new SerializableFunction2[Resource, Content, Set[String]] {
+  val OUTLINKS_PARSE_FUNC = new SerializableFunction2[Resource, Content, Set[String]] {
     override def apply(resource: Resource, content: Content): Set[String] = {
       val stream = new ByteArrayInputStream(content.content)
       val linkHandler = new LinkContentHandler()
       val parser = new AutoDetectParser()
-      val meta = new Metadata()
+      val meta = new metadata.Metadata()
       meta.set("resourceName", content.url)
       parser.parse(stream, linkHandler, meta)
       stream.close()
@@ -174,20 +236,10 @@ object Crawler{
   }
 
   def main(args: Array[String]) {
-    for(i <- 0 to 0){
-      println(s"===Round $i")
-      val t = System.currentTimeMillis()
-      new Crawler().run()
-      println(s"${System.currentTimeMillis() - t}")
-      Thread.sleep(5000)
-    }
-    /*
-    val r = new Resource("https://twitter.com/", 0, NEW)
-    val c = FETCH_FUNC(r)
-    val ls = OUTLINKS__PARSE_FUNC(r, c)
-    for (elem <- ls) {
-      println(elem)
-    }*/
 
+    val argss = "-j sparkler-job-1464744090100 -m local[*]".split(" ")
+    for (_ <- 1 to 1){
+      new Crawler().run(argss)
+    }
   }
 }

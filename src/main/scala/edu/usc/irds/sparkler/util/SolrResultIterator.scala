@@ -1,6 +1,10 @@
 package edu.usc.irds.sparkler.util
 
+import edu.usc.irds.sparkler.CrawlDbRDD
+import edu.usc.irds.sparkler.model.Resource
+import org.apache.solr.client.solrj.impl.HttpSolrClient
 import org.apache.solr.client.solrj.{SolrClient, SolrQuery}
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
 
@@ -61,6 +65,7 @@ class SolrResultIterator[T] extends Iterator[T]{
           throw new RuntimeException(e);
       }
     }
+
     if (count < limit && currentPage.hasNext) {
       Some(currentPage.next())
     } else {
@@ -76,4 +81,30 @@ class SolrResultIterator[T] extends Iterator[T]{
 
 object SolrResultIterator{
   val LOG = org.slf4j.LoggerFactory.getLogger(SolrResultIterator.getClass)
+
+  def main(args: Array[String]) {
+    val solrq = new SolrQuery("*:*")
+    solrq.setRows(100)
+    val crawlDbUrl = "http://localhost:8983/solr/crawldb"
+    val topN = 5
+/*
+    val sc: SparkContext = new SparkContext(new SparkConf().setMaster("local").setAppName("test"))
+    val rdd = new CrawlDbRDD(sc,
+    "http://localhost:8983/solr/crawldb", maxGroups = 1, topN = 1)
+
+    println(rdd.count())
+    sc.stop()*/
+
+    val batchSize = 100
+    val query = new SolrQuery("status:NEW")
+    query.setFilterQueries(s"${Resource.GROUP}:twitter.com")
+    //query.set("sort", "order")
+    query.setRows(batchSize)
+
+    val itt = new SolrResultIterator[Resource](new HttpSolrClient(crawlDbUrl), query, batchSize,
+       classOf[Resource], limit=topN, closeClient = true)
+    println(itt.toList.size)
+
+
+  }
 }

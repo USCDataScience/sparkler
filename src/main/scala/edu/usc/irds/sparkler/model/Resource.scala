@@ -3,9 +3,9 @@ package edu.usc.irds.sparkler.model
 import java.net.URL
 import java.util.Date
 
+import edu.usc.irds.sparkler.model.Resource._
+import edu.usc.irds.sparkler.model.ResourceStatus.ResourceStatus
 import org.apache.solr.client.solrj.beans.Field
-import ResourceStatus.ResourceStatus
-
 /**
   *
   * @since 5/28/16
@@ -14,6 +14,8 @@ class Resource extends Serializable {
 
   //NOTE: keep the variable names in sync with solr schema and the constants below
   @Field var id: String = _
+  @Field var jobId:String = _
+  @Field var url:String = _
   @Field var group: String = _
   @Field var lastFetchedAt: Date = _
   @Field var numTries: Int = 0
@@ -23,26 +25,28 @@ class Resource extends Serializable {
   @Field var status:String = ResourceStatus.NEW.toString
   @Field var lastUpdatedAt:Date = _
 
-  def this(id: String, group: String) {
+  def this(url: String, group: String, job:SparklerJob) {
     this
-    this.id = id
+    this.id = resourceId(url, job)
+    this.url = url
     this.group = group
+    this.jobId = job.id
   }
 
-  def this(id: String, group: String, lastFetchedAt: Date) {
-    this(id, group)
+  def this(url: String, group: String, sparklerJob: SparklerJob, lastFetchedAt: Date) {
+    this(url, group, sparklerJob)
     this.lastFetchedAt = lastFetchedAt
   }
 
-  def this(id: String, depth:Int, status:ResourceStatus) {
-    this(id, new URL(id).getHost)
+  def this(url: String, depth:Int, sparklerJob: SparklerJob, status:ResourceStatus) {
+    this(url, new URL(url).getHost, sparklerJob)
     this.depth = depth
     this.status = status.toString
   }
 
-  def this(id: String, group: String, lastFetchedAt: Date, numTries: Int,
+  def this(url: String, group: String, sparklerJob: SparklerJob, lastFetchedAt: Date, numTries: Int,
            numFetches: Int, status: ResourceStatus) {
-    this(id, group, lastFetchedAt)
+    this(url, group, sparklerJob, lastFetchedAt)
     this.numTries = numTries
     this.numFetches = numFetches
     this.status = status.toString
@@ -56,6 +60,8 @@ object Resource{
 
   //fields
   val ID = "id"
+  val JOBID = "jobId"
+  val URL = "url"
   val GROUP = "group"
   val LAST_FETCHED_AT= "lastFetchedAt"
   val NUM_TRIES = "numTries"
@@ -64,6 +70,8 @@ object Resource{
   val SCORE = "score"
   val STATUS = "status"
   val LAST_UPDATED_AT = "lastUpdatedAt"
+
+  def resourceId(url:String, job:SparklerJob): String = s"${job.id}-$url"
 }
 
 object ResourceStatus extends Enumeration with Serializable {

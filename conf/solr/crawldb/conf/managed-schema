@@ -111,7 +111,8 @@
      tokens
    -->   
    <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" /> 
-
+   <field name="url" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" />
+   <field name="jobId" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" />
    <field name="group" type="string" indexed="true" stored="true" required="true"  multiValued="false" docValues="true" /> 
    <field name="lastFetchedAt" type="date" indexed="true" stored="true" multiValued="false" docValues="true" />
    <field name="numTries" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />

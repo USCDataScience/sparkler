@@ -38,11 +38,11 @@
       <version>${spark.version}</version>
     </dependency>
 
-    <!--<dependency>
+    <dependency>
       <groupId>org.apache.nutch</groupId>
       <artifactId>nutch</artifactId>
       <version>${nutch.version}</version>
-    </dependency>-->
+    </dependency>
 
    <!-- <dependency>
       <groupId>org.apache.kafka</groupId>
