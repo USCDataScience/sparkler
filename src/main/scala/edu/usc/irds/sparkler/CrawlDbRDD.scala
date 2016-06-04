@@ -32,12 +32,12 @@ import scala.collection.JavaConversions._
   *
   * @since 5/28/16
   */
-class CrawlDbRDD(sc:SparkContext,
-                 job:SparklerJob,
-                 sortBy:String="depth asc,score asc",
-                 generateQry:String="status:NEW",
-                 maxGroups:Int=1000,
-                 topN:Int=1000)
+class CrawlDbRDD(sc: SparkContext,
+                 job: SparklerJob,
+                 sortBy: String = "depth asc,score asc",
+                 generateQry: String = "status:NEW",
+                 maxGroups: Int = 1000,
+                 topN: Int = 1000)
   extends RDD[Resource](sc, Seq.empty) {
 
   //TODO: accept serializable solr factory
@@ -45,7 +45,7 @@ class CrawlDbRDD(sc:SparkContext,
   assert(maxGroups > 0)
 
   override def compute(split: Partition, context: TaskContext): Iterator[Resource] = {
-    val partition:SolrGroupPartition = split.asInstanceOf[SolrGroupPartition]
+    val partition: SolrGroupPartition = split.asInstanceOf[SolrGroupPartition]
     val batchSize = 100
     val query = new SolrQuery(generateQry)
     query.addFilterQuery(s"${Resource.GROUP}:${partition.group}")
@@ -54,7 +54,7 @@ class CrawlDbRDD(sc:SparkContext,
     query.setRows(batchSize)
 
     new SolrResultIterator[Resource](job.newCrawlDbSolrClient().crawlDb, query,
-      batchSize, classOf[Resource],  closeClient = true, limit = topN)
+      batchSize, classOf[Resource], closeClient = true, limit = topN)
   }
 
   override protected def getPartitions: Array[Partition] = {
@@ -72,7 +72,7 @@ class CrawlDbRDD(sc:SparkContext,
     val grps = groupRes.getValues
     LOG.info(s"selecting ${grps.size()} out of ${groupRes.getNGroups}")
     val res = new Array[Partition](grps.size())
-    for (i <- 0 until grps.size()){
+    for (i <- 0 until grps.size()) {
       //TODO: improve partitioning : (1) club smaller domains, (2) support for multiple partitions for larger domains
       res(i) = new SolrGroupPartition(i, grps(i).getGroupValue)
     }
@@ -81,8 +81,8 @@ class CrawlDbRDD(sc:SparkContext,
   }
 }
 
-class SolrGroupPartition(val indx:Int, val group:String, val start:Int=0,
-                         val end:Int=Int.MaxValue) extends Partition {
+class SolrGroupPartition(val indx: Int, val group: String, val start: Int = 0,
+                         val end: Int = Int.MaxValue) extends Partition {
   override def index: Int = indx
 }
 

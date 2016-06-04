@@ -18,7 +18,7 @@
 package edu.usc.irds.sparkler.util
 
 import java.text.SimpleDateFormat
-import java.util.{Date, UUID}
+import java.util.Date
 
 /**
   *
@@ -30,13 +30,13 @@ object JobUtil {
 
   /**
     * Makes new Id for job
+    *
     * @return new Id for a job
     */
-  def newJobId () = "sparkler-job-" + System.currentTimeMillis()
+  def newJobId() = "sparkler-job-" + System.currentTimeMillis()
 
-  def newSegmentId(nutchCompatible:Boolean = true) =
-    (if (nutchCompatible) "" else "sparkler-seg-")+ DATE_FMT.format(new Date())
-
+  def newSegmentId(nutchCompatible: Boolean = true) =
+    (if (nutchCompatible) "" else "sparkler-seg-") + DATE_FMT.format(new Date())
 
 
 }

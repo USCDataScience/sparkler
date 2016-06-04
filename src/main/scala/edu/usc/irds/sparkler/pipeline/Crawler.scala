@@ -26,7 +26,7 @@ import edu.usc.irds.sparkler.base.CliTool
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{Content, CrawlData, Resource, SparklerJob}
 import edu.usc.irds.sparkler.util.JobUtil
-import edu.usc.irds.sparkler.{CrawlDbRDD, UnSerializableSolrBeanSink, SolrSink}
+import edu.usc.irds.sparkler.{CrawlDbRDD, SolrSink, UnSerializableSolrBeanSink}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.SequenceFileOutputFormat
@@ -52,28 +52,27 @@ class Crawler extends CliTool {
 
   @Option(name = "-m", aliases = Array("--master"),
     usage = "Spark Master URI. Ignore this if job is started by spark-submit")
-  var sparkMaster:String = _
+  var sparkMaster: String = _
 
   @Option(name = "-j", aliases = Array("--job"), required = true,
     usage = "Job id. Set to resume job, skip to auto generate. When not sure, get the job id from injector command")
-  var jobId:String = _
+  var jobId: String = _
 
   @Option(name = "-o", aliases = Array("--out"),
     usage = "Output path, default is job id")
-  var outputPath:String = _
+  var outputPath: String = _
 
   @Option(name = "-t", aliases = Array("--topN"),
     usage = "Top urls per domain to be selected for a round")
-  var topN:Int = 1 << 10
+  var topN: Int = 1 << 10
 
   @Option(name = "-g", aliases = Array("--max-groups"),
     usage = "Max Groups to be selected for fetch..")
-  var maxGroups:Int = 1 << 7
+  var maxGroups: Int = 1 << 7
 
   @Option(name = "-i", aliases = Array("--iterations"),
     usage = "Number of iterations to run")
-  var iterations:Int = 1
-
+  var iterations: Int = 1
 
 
   //TODO: URL normalizers
@@ -84,7 +83,7 @@ class Crawler extends CliTool {
   //TODO: JS render
   //TODO: Job Id
 
-  override def run(): Unit ={
+  override def run(): Unit = {
 
     if (this.outputPath == null) {
       this.outputPath = jobId
@@ -99,7 +98,7 @@ class Crawler extends CliTool {
     val job = new SparklerJob(jobId, null)
     val solrc = job.newCrawlDbSolrClient()
 
-    for( _ <- 1 to iterations ) {
+    for (_ <- 1 to iterations) {
       val taskId = JobUtil.newSegmentId(true)
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
@@ -157,18 +156,21 @@ class Crawler extends CliTool {
   }
 }
 
-trait SerializableFunction[A, B] extends ((A) => B) with Serializable{}
-trait SerializableFunction2[A1, A2, R] extends ((A1, A2) => R) with Serializable{}
-trait SerializableFunction3[A1, A2, A3, R] extends ((A1, A2, A3) => R) with Serializable{}
+trait SerializableFunction[A, B] extends ((A) => B) with Serializable {}
 
-class FairFetcher(val resources:Iterator[Resource], val delay:Long,
-                  val fetchFunc:(Resource => Content),
-                  val linkParseFunc:((Resource, Content) => Set[String]))
-  extends Iterator[CrawlData]{
+trait SerializableFunction2[A1, A2, R] extends ((A1, A2) => R) with Serializable {}
+
+trait SerializableFunction3[A1, A2, A3, R] extends ((A1, A2, A3) => R) with Serializable {}
+
+class FairFetcher(val resources: Iterator[Resource], val delay: Long,
+                  val fetchFunc: (Resource => Content),
+                  val linkParseFunc: ((Resource, Content) => Set[String]))
+  extends Iterator[CrawlData] {
 
   import Crawler.LOG
+
   val hitCounter = new AtomicLong()
-  var lastHit:String = null
+  var lastHit: String = null
 
   override def hasNext: Boolean = resources.hasNext
 
@@ -177,7 +179,7 @@ class FairFetcher(val resources:Iterator[Resource], val delay:Long,
     val data = new CrawlData(resources.next())
     val nextFetch = hitCounter.get() + delay
     val waitTime = nextFetch - System.currentTimeMillis()
-    if (waitTime > 0){
+    if (waitTime > 0) {
       LOG.debug("    Waiting for {} ms, {}", waitTime, data.res.url)
       Thread.sleep(waitTime)
     }
@@ -195,7 +197,7 @@ class FairFetcher(val resources:Iterator[Resource], val delay:Long,
 }
 
 
-object Crawler{
+object Crawler {
   val LOG = org.slf4j.LoggerFactory.getLogger(Crawler.getClass)
   val FETCH_TIMEOUT = 3000
 
@@ -214,20 +216,20 @@ object Crawler{
         val inStream = urlConn.getInputStream
         val outStream = new ByteArrayOutputStream()
         Iterator.continually(inStream.read)
-          .takeWhile(-1 != )
+          .takeWhile(-1 !=)
           .foreach(outStream.write)
         inStream.close()
 
         val rawData = outStream.toByteArray
         outStream.close()
-        val status:ResourceStatus = FETCHED
+        val status: ResourceStatus = FETCHED
         val contentType = urlConn.getContentType
         new Content(resource.url, rawData, contentType, rawData.length, Array(),
           fetchedAt, status, metadata)
       } catch {
-        case e:Exception => {
+        case e: Exception => {
           LOG.error(e.getMessage, e)
-          new Content(resource.url, null, null, -1, Array(), fetchedAt, ERROR,  metadata)
+          new Content(resource.url, null, null, -1, Array(), fetchedAt, ERROR, metadata)
         }
       }
     }

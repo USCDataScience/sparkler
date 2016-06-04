@@ -21,7 +21,6 @@ import java.util.Properties
 
 import edu.usc.irds.sparkler.service.SolrProxy
 import edu.usc.irds.sparkler.util.JobUtil
-import org.apache.solr.client.solrj.SolrClient
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 
 /**
@@ -31,12 +30,13 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient
 class SparklerJob extends Serializable {
 
   import SparklerJob._
-  var id:String = _
-  var currentTask:String = _
-  var settings:Properties = _
-  var crawlDbUri:String = _
 
-  def this(id:String, currentTask:String){
+  var id: String = _
+  var currentTask: String = _
+  var settings: Properties = _
+  var crawlDbUri: String = _
+
+  def this(id: String, currentTask: String) {
     this()
     this.id = id
     this.currentTask = currentTask
@@ -44,12 +44,12 @@ class SparklerJob extends Serializable {
     this.crawlDbUri = settings.getProperty(CRAWLDB_KEY, CRAWLDB_DEFAULT_URI)
   }
 
-  def this(id:String){
+  def this(id: String) {
     this(id, JobUtil.newSegmentId())
   }
 
-  def newCrawlDbSolrClient():SolrProxy ={
-    if (crawlDbUri.startsWith("http://")){
+  def newCrawlDbSolrClient(): SolrProxy = {
+    if (crawlDbUri.startsWith("http://")) {
       return new SolrProxy(new HttpSolrClient(crawlDbUri))
     }
 
@@ -71,7 +71,7 @@ object SparklerJob {
   stream.close()
 
   stream = getClass.getClassLoader.getResourceAsStream(OVERRIDDEN_CONF)
-  if (stream != null){
+  if (stream != null) {
     SETTINGS.load(stream)
     stream.close()
   }

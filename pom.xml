@@ -60,11 +60,11 @@
       <version>${nutch.version}</version>
     </dependency>
 
-   <!-- <dependency>
-      <groupId>org.apache.kafka</groupId>
-      <artifactId>kafka-clients</artifactId>
-      <version>${kafka.version}</version>
-    </dependency>-->
+    <!-- <dependency>
+       <groupId>org.apache.kafka</groupId>
+       <artifactId>kafka-clients</artifactId>
+       <version>${kafka.version}</version>
+     </dependency>-->
 
     <!--<dependency>
       <groupId>org.apache.hbase</groupId>
@@ -127,7 +127,19 @@
       </plugins>
     </pluginManagement>
     <plugins>
-
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>fully.qualified.MainClass</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
@@ -145,6 +157,30 @@
             <phase>process-test-resources</phase>
             <goals>
               <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.scalastyle</groupId>
+        <artifactId>scalastyle-maven-plugin</artifactId>
+        <version>0.8.0</version>
+        <configuration>
+          <verbose>false</verbose>
+          <failOnViolation>true</failOnViolation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <failOnWarning>false</failOnWarning>
+          <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
+          <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
+          <configLocation>${basedir}/scalastyle-config.xml</configLocation>
+          <outputFile>${project.basedir}/target/scalastyle-output.xml
+          </outputFile>
+          <outputEncoding>UTF-8</outputEncoding>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
             </goals>
           </execution>
         </executions>

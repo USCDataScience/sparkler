@@ -26,6 +26,7 @@ import org.apache.nutch.protocol.Content
 trait SparklerSink {
 
   def configure()
-  def consume(jobId:String, iterationId:String, taskId:String, iterator: Iterator[Content])
+
+  def consume(jobId: String, iterationId: String, taskId: String, iterator: Iterator[Content])
 
 }

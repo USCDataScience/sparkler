@@ -17,11 +17,9 @@
 
 package edu.usc.irds.sparkler.util
 
-import edu.usc.irds.sparkler.CrawlDbRDD
 import edu.usc.irds.sparkler.model.Resource
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 import org.apache.solr.client.solrj.{SolrClient, SolrQuery}
-import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConversions._
 
@@ -29,24 +27,25 @@ import scala.collection.JavaConversions._
   *
   * @since 5/29/16
   */
-class SolrResultIterator[T] extends Iterator[T]{
+class SolrResultIterator[T] extends Iterator[T] {
+
   import SolrResultIterator.LOG
 
-  var solr:SolrClient = _
-  var query:SolrQuery = _
-  var beanType:Class[T] = _
+  var solr: SolrClient = _
+  var query: SolrQuery = _
+  var beanType: Class[T] = _
 
-  var closeClient:Boolean = _
-  var nextStart:Int = _
-  var buffer:Int = _
-  var limit:Long = _
-  var currentPage:Iterator[T]= _
-  var nextBean:Option[T] = _
-  var numFound:Long = _
-  var count:Long = 1
+  var closeClient: Boolean = _
+  var nextStart: Int = _
+  var buffer: Int = _
+  var limit: Long = _
+  var currentPage: Iterator[T] = _
+  var nextBean: Option[T] = _
+  var numFound: Long = _
+  var count: Long = 1
 
-  def this (solr:SolrClient, query:SolrQuery, buffer:Int, beanType:Class[T],
-            limit:Long = Long.MaxValue, closeClient:Boolean = false){
+  def this(solr: SolrClient, query: SolrQuery, buffer: Int, beanType: Class[T],
+           limit: Long = Long.MaxValue, closeClient: Boolean = false) {
     this()
     this.solr = solr
     this.query = query
@@ -58,16 +57,7 @@ class SolrResultIterator[T] extends Iterator[T]{
     this.nextBean = getNextBean(true)
   }
 
-  override def hasNext: Boolean = nextBean.isDefined
-
-  override def next(): T = {
-    val tmp = nextBean
-    nextBean = getNextBean()
-    count += 1
-    tmp.get
-  }
-
-  private def getNextBean(forceFetch:Boolean = false): Option[T] ={
+  private def getNextBean(forceFetch: Boolean = false): Option[T] = {
     if (forceFetch || (!currentPage.hasNext && nextStart < numFound)) {
       //there are more
       query.setStart(nextStart)
@@ -78,7 +68,7 @@ class SolrResultIterator[T] extends Iterator[T]{
         currentPage = response.getBeans(beanType).iterator()
         nextStart += response.getResults.size()
       } catch {
-        case e:Exception =>
+        case e: Exception =>
           throw new RuntimeException(e);
       }
     }
@@ -87,16 +77,25 @@ class SolrResultIterator[T] extends Iterator[T]{
       Some(currentPage.next())
     } else {
       SolrResultIterator.LOG.debug("Reached the end of result set")
-      if (closeClient){
+      if (closeClient) {
         SolrResultIterator.LOG.debug("closing solr client.")
         solr.close()
       }
       None
     }
   }
+
+  override def hasNext: Boolean = nextBean.isDefined
+
+  override def next(): T = {
+    val tmp = nextBean
+    nextBean = getNextBean()
+    count += 1
+    tmp.get
+  }
 }
 
-object SolrResultIterator{
+object SolrResultIterator {
   val LOG = org.slf4j.LoggerFactory.getLogger(SolrResultIterator.getClass)
 
   def main(args: Array[String]) {
@@ -104,13 +103,13 @@ object SolrResultIterator{
     solrq.setRows(100)
     val crawlDbUrl = "http://localhost:8983/solr/crawldb"
     val topN = 5
-/*
-    val sc: SparkContext = new SparkContext(new SparkConf().setMaster("local").setAppName("test"))
-    val rdd = new CrawlDbRDD(sc,
-    "http://localhost:8983/solr/crawldb", maxGroups = 1, topN = 1)
+    /*
+        val sc: SparkContext = new SparkContext(new SparkConf().setMaster("local").setAppName("test"))
+        val rdd = new CrawlDbRDD(sc,
+        "http://localhost:8983/solr/crawldb", maxGroups = 1, topN = 1)
 
-    println(rdd.count())
-    sc.stop()*/
+        println(rdd.count())
+        sc.stop()*/
 
     val batchSize = 100
     val query = new SolrQuery("status:NEW")
@@ -119,7 +118,7 @@ object SolrResultIterator{
     query.setRows(batchSize)
 
     val itt = new SolrResultIterator[Resource](new HttpSolrClient(crawlDbUrl), query, batchSize,
-       classOf[Resource], limit=topN, closeClient = true)
+      classOf[Resource], limit = topN, closeClient = true)
     println(itt.toList.size)
 
 
