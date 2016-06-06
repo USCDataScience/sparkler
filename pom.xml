@@ -44,6 +44,10 @@
     <args4j.version>2.0.29</args4j.version>
     <slf4j.version>1.7.12</slf4j.version>
     <tika.version>1.13</tika.version>
+
+
+    <!-- Main Class -->
+    <exec.mainClass>edu.usc.irds.sparkler.pipeline.Crawler</exec.mainClass>
   </properties>
 
   <dependencies>
@@ -128,17 +132,47 @@
     </pluginManagement>
     <plugins>
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>fully.qualified.MainClass</mainClass>
-            </manifest>
-          </archive>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.3</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <minimizeJar>false</minimizeJar>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <artifactSet>
+                <includes>
+                  <!-- dependencies to be packed in the fat jar -->
+                  <include>*</include>
+                </includes>
+              </artifactSet>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>reference.conf</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <manifestEntries>
+                    <Main-Class>${exec.mainClass}</Main-Class>
+                  </manifestEntries>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>net.alchim31.maven</groupId>
@@ -172,7 +206,7 @@
           <failOnWarning>false</failOnWarning>
           <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
           <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
-          <configLocation>${basedir}/scalastyle-config.xml</configLocation>
+          <configLocation>${basedir}/scalastyle_config.xml</configLocation>
           <outputFile>${project.basedir}/target/scalastyle-output.xml
           </outputFile>
           <outputEncoding>UTF-8</outputEncoding>
