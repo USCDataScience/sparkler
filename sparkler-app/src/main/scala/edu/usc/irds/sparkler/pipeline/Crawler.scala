@@ -46,7 +46,7 @@ class Crawler extends CliTool {
     usage = "Spark Master URI. Ignore this if job is started by spark-submit")
   var sparkMaster: String = ""
 
-  @Option(name = "-j", aliases = Array("--job"), required = true,
+  @Option(name = "-id", aliases = Array("--id"), required = true,
     usage = "Job id. When not sure, get the job id from injector command")
   var jobId: String = ""
 
@@ -159,9 +159,6 @@ object Crawler extends Loggable with Serializable{
   }
 
   def main(args: Array[String]): Unit = {
-
-    //FIXME: remove this
-    val argss = "-j sparkler-job-1464744090100 -m local[*]".split(" ")
-    new Crawler().run(argss)
+    new Crawler().run(args)
   }
 }
