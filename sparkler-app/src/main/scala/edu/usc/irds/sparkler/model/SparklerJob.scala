@@ -49,11 +49,10 @@ class SparklerJob extends Serializable {
   }
 
   def newCrawlDbSolrClient(): SolrProxy = {
-    if (crawlDbUri.startsWith("http://")) {
-      return new SolrProxy(new HttpSolrClient(crawlDbUri))
+    if (!crawlDbUri.startsWith("http://")) {
+      throw new RuntimeException(s"$crawlDbUri not supported")
     }
-
-    throw new RuntimeException(s"$crawlDbUri not supported")
+    new SolrProxy(new HttpSolrClient(crawlDbUri))
   }
 
 }
