@@ -56,11 +56,11 @@ class Crawler extends CliTool {
 
   @Option(name = "-tn", aliases = Array("--top-n"),
     usage = "Top urls per domain to be selected for a round")
-  var topN: Int = 1 << 10
+   var topN: Int = DEFAULT_TOP_N
 
   @Option(name = "-tg", aliases = Array("--top-groups"),
     usage = "Max Groups to be selected for fetch..")
-  var maxGroups: Int = 1 << 7
+  var topG: Int = DEFAULT_TOP_GROUPS
 
   @Option(name = "-i", aliases = Array("--iterations"),
     usage = "Number of iterations to run")
@@ -101,7 +101,7 @@ class Crawler extends CliTool {
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
-      val rdd = new CrawlDbRDD(sc, job, maxGroups = maxGroups, topN = topN)
+      val rdd = new CrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
       val fetchedRdd = rdd.map(r => (r.group, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(rs.iterator, fetchDelay, FetchFunction, ParseFunction) })
@@ -150,6 +150,9 @@ object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]
 }
 
 object Crawler extends Loggable with Serializable{
+
+  val DEFAULT_TOP_N = 1024
+  val DEFAULT_TOP_GROUPS = 256
 
   def storeContent(outputPath:String, rdd:RDD[CrawlData]): Unit = {
     LOG.info(s"Storing output at $outputPath")
