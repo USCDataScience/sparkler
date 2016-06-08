@@ -32,3 +32,5 @@ project/plugins/project/
 .worksheet
 **~
 /sparkler-job-**
+.idea/
+*.iml

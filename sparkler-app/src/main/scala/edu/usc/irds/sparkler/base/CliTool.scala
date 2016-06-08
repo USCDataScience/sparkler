@@ -15,28 +15,33 @@
  *  limitations under the License.
  */
 
-package edu.usc.irds.sparkler.util
+package edu.usc.irds.sparkler.base
 
-import java.text.SimpleDateFormat
-import java.util.Date
+import org.kohsuke.args4j.{CmdLineException, CmdLineParser}
+
+import scala.collection.JavaConversions._
 
 /**
   *
   * @since 5/31/16
   */
-object JobUtil {
+trait CliTool extends Runnable {
 
-  val DATE_FMT = new SimpleDateFormat("yyyyMMddHHmmss")
+  val cliParser = new CmdLineParser(this)
 
-  /**
-    * Makes new Id for job
-    *
-    * @return new Id for a job
-    */
-  def newJobId() = "sparkler-job-" + System.currentTimeMillis()
+  def run(args: Array[String]): Unit = {
+    parseArgs(args)
+    run()
+  }
 
-  def newSegmentId(nutchCompatible: Boolean = true) =
-    (if (nutchCompatible) "" else "sparkler-seg-") + DATE_FMT.format(new Date())
-
-
+  def parseArgs(ags: Array[String]): Unit = {
+    try {
+      cliParser.parseArgument(ags.toList)
+    } catch {
+      case e: CmdLineException =>
+        Console.err.println(e.getMessage)
+        cliParser.printUsage(System.err)
+        System.exit(1)
+    }
+  }
 }

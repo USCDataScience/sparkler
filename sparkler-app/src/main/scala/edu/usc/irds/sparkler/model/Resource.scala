@@ -70,7 +70,7 @@ class Resource extends Serializable {
     this.status = status.toString
   }
 
-  override def toString = s"Resource($id, $group, $lastFetchedAt, $numTries, $numFetches, $depth, $score, $status)"
+  override def toString:String = s"Resource($id, $group, $lastFetchedAt, $numTries, $numFetches, $depth, $score, $status)"
 }
 
 

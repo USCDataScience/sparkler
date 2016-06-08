@@ -15,27 +15,37 @@
  *  limitations under the License.
  */
 
-package edu.usc.irds.sparkler.model
+package edu.usc.irds.sparkler.service
 
-import java.util.Date
+import java.io.Closeable
 
-import edu.usc.irds.sparkler.model.ResourceStatus._
-import org.apache.hadoop.conf.Configuration
-import org.apache.nutch.metadata.Metadata
+import org.apache.solr.client.solrj.SolrClient
+import org.apache.solr.common.SolrInputDocument
 
 /**
   *
-  * @since 5/29/16
+  * @since 5/28/16
   */
-class Content(val url: String,
-              val content: Array[Byte],
-              val contentType: String,
-              val contentLength: Long,
-              val headers: Array[String],
-              val fetchedAt: Date,
-              val status: ResourceStatus,
-              val metadata: Metadata) extends Serializable {
+class SolrProxy(var crawlDb: SolrClient) extends Closeable {
 
-  def toNutchContent(conf: Configuration): org.apache.nutch.protocol.Content =
-    new org.apache.nutch.protocol.Content(url, url, content, contentType, metadata, conf)
+
+  def addResourceDocs(docs: java.util.Iterator[SolrInputDocument]): Unit = {
+    crawlDb.add(docs)
+  }
+
+  def addResources(beans: java.util.Collection[_]): Unit = {
+    crawlDb.addBeans(beans)
+  }
+
+  def addResources(beans: java.util.Iterator[_]): Unit = {
+    crawlDb.addBeans(beans)
+  }
+
+  def commitCrawlDb(): Unit = {
+    crawlDb.commit()
+  }
+
+  override def close(): Unit = {
+    crawlDb.close()
+  }
 }

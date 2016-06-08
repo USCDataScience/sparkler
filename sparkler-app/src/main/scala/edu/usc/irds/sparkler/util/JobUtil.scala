@@ -15,41 +15,32 @@
  *  limitations under the License.
  */
 
-package edu.usc.irds.sparkler;
+package edu.usc.irds.sparkler.util
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import java.text.SimpleDateFormat
+import java.util.Date
 
 /**
- * Unit test for simple App.
- */
-public class AppTest 
-    extends TestCase
-{
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public AppTest( String testName )
-    {
-        super( testName );
-    }
+  * This block contains a set of utilities related to Job
+  * @since Sparkler 0.1
+  */
+object JobUtil {
 
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( AppTest.class );
-    }
+  // date format used by nutch segment ids
+  private val DATE_FMT = new SimpleDateFormat("yyyyMMddHHmmss")
 
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-        assertTrue( true );
-    }
+  /**
+    * Makes new Id for job
+    * @return new Id for a job
+    */
+  def newJobId(): String = "sparkler-job-" + System.currentTimeMillis()
+
+  /**
+    * Creates ID for bew segment
+    * @param nutchCompatible whether the id should be in same format as nutch
+    * @return nutch segment Id
+    */
+  def newSegmentId(nutchCompatible: Boolean = true): String =
+    (if (nutchCompatible) "" else "sparkler-seg-") + DATE_FMT.format(new Date())
+
 }

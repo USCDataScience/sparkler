@@ -17,12 +17,11 @@
 
 package edu.usc.irds.sparkler
 
-import edu.usc.irds.sparkler.CrawlDbRDD._
+import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
-import edu.usc.irds.sparkler.pipeline.SerializableFunction2
+import edu.usc.irds.sparkler.solr.SolrGroupPartition
 import edu.usc.irds.sparkler.util.SolrResultIterator
-import org.apache.solr.client.solrj.{SolrClient, SolrQuery}
-import org.apache.solr.common.SolrInputDocument
+import org.apache.solr.client.solrj.SolrQuery
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}
 
@@ -34,14 +33,14 @@ import scala.collection.JavaConversions._
   */
 class CrawlDbRDD(sc: SparkContext,
                  job: SparklerJob,
-                 sortBy: String = "depth asc,score asc",
-                 generateQry: String = "status:NEW",
-                 maxGroups: Int = 1000,
-                 topN: Int = 1000)
+                 sortBy: String = CrawlDbRDD.DEFAULT_ORDER,
+                 generateQry: String = CrawlDbRDD.DEFAULT_FILTER_QRY,
+                 maxGroups: Int = CrawlDbRDD.DEFAULT_GROUPS,
+                 topN: Int = CrawlDbRDD.DEFAULT_TOPN)
   extends RDD[Resource](sc, Seq.empty) {
 
-  //TODO: accept serializable solr factory
 
+  assert(topN > 0)
   assert(maxGroups > 0)
 
   override def compute(split: Partition, context: TaskContext): Iterator[Resource] = {
@@ -63,14 +62,14 @@ class CrawlDbRDD(sc: SparkContext,
     qry.set("sort", sortBy)
     qry.set("group", true)
     qry.set("group.ngroups", true)
-    qry.set("group.field", "group")
+    qry.set("group.field", Resource.GROUP)
     qry.set("group.limit", 0)
     qry.setRows(maxGroups)
     val proxy = job.newCrawlDbSolrClient()
     val solr = proxy.crawlDb
     val groupRes = solr.query(qry).getGroupResponse.getValues.get(0)
     val grps = groupRes.getValues
-    LOG.info(s"selecting ${grps.size()} out of ${groupRes.getNGroups}")
+    CrawlDbRDD.LOG.info(s"selecting ${grps.size()} out of ${groupRes.getNGroups}")
     val res = new Array[Partition](grps.size())
     for (i <- 0 until grps.size()) {
       //TODO: improve partitioning : (1) club smaller domains, (2) support for multiple partitions for larger domains
@@ -81,34 +80,11 @@ class CrawlDbRDD(sc: SparkContext,
   }
 }
 
-class SolrGroupPartition(val indx: Int, val group: String, val start: Int = 0,
-                         val end: Int = Int.MaxValue) extends Partition {
-  override def index: Int = indx
-}
 
-class SolrSink(job: SparklerJob) extends
-  SerializableFunction2[TaskContext, Iterator[SolrInputDocument], Any] {
+object CrawlDbRDD extends Loggable {
 
-  override def apply(context: TaskContext, docs: Iterator[SolrInputDocument]): Any = {
-    println(Thread.currentThread().getName + " :: Indexing to solr")
-    val solrClient = job.newCrawlDbSolrClient()
-    solrClient.addResourceDocs(docs)
-    solrClient.close()
-  }
-}
-
-
-class UnSerializableSolrBeanSink[T](solrClient: SolrClient) extends //solrclient is not serialiable!
-  SerializableFunction2[TaskContext, Iterator[T], Any] {
-
-  override def apply(ctx: TaskContext, docs: Iterator[T]): Any = {
-    println(Thread.currentThread().getName + " :: Indexing to solr")
-    solrClient.addBeans(docs)
-  }
-}
-
-
-object CrawlDbRDD {
-
-  val LOG = org.slf4j.LoggerFactory.getLogger(classOf[CrawlDbRDD])
+  val DEFAULT_ORDER = "depth asc,score asc"
+  val DEFAULT_FILTER_QRY = "status:NEW"
+  val DEFAULT_GROUPS = 1000
+  val DEFAULT_TOPN = 1000
 }
