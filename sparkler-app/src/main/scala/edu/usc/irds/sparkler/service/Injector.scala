@@ -67,6 +67,8 @@ class Injector extends CliTool {
         seedUrls.toList
       }
 
+    // TODO: Add URL normalizer and filters before injecting the seeds
+    
     LOG.info("Injecting {} seeds", urls.size())
     val seeds: util.Collection[Resource] =
       urls.map(_.trim)

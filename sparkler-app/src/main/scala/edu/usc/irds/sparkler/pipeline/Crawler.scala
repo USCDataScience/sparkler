@@ -65,6 +65,10 @@ class Crawler extends CliTool {
   @Option(name = "-i", aliases = Array("--iterations"),
     usage = "Number of iterations to run")
   var iterations: Int = 1
+  
+  @Option(name = "-fd", aliases = Array("--fetch-delay"),
+      usage = "Delay between two fetch requests")
+  var fetchDelay: Long = DEFAULT_FETCH_DELAY
 
   var job: SparklerJob = _
   var sc: SparkContext = _
@@ -94,7 +98,7 @@ class Crawler extends CliTool {
     init()
 
     val solrc = this.job.newCrawlDbSolrClient()
-    val fetchDelay = 1000L
+    val fetchDelay = DEFAULT_FETCH_DELAY
     val job = this.job // local variable to bypass serialization
     for (_ <- 1 to iterations) {
       val taskId = JobUtil.newSegmentId(true)
@@ -153,6 +157,7 @@ object Crawler extends Loggable with Serializable{
 
   val DEFAULT_TOP_N = 1024
   val DEFAULT_TOP_GROUPS = 256
+  val DEFAULT_FETCH_DELAY = 1000L
 
   def storeContent(outputPath:String, rdd:RDD[CrawlData]): Unit = {
     LOG.info(s"Storing output at $outputPath")
