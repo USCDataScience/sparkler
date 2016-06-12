@@ -21,7 +21,7 @@ import edu.usc.irds.sparkler.CrawlDbRDD
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, SparklerJob}
-import edu.usc.irds.sparkler.solr.SolrSink
+import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
 import edu.usc.irds.sparkler.util.JobUtil
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
@@ -111,24 +111,17 @@ class Crawler extends CliTool {
         .flatMap({ case (grp, rs) => new FairFetcher(rs.iterator, fetchDelay, FetchFunction, ParseFunction) })
         .persist()
 
-      //Step : Update status of fetched resources
+      //Step: Update status of fetched resources
       val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => StatusUpdateSolrTransformer(d))
-      val sinkFunc = new SolrSink(job)
-      sc.runJob(statusUpdateRdd, sinkFunc)
+      val statusUpdateFunc = new SolrStatusUpdate(job)
+      sc.runJob(statusUpdateRdd, statusUpdateFunc)
 
-      val outLinksUpsertFunc: ((TaskContext, Iterator[Resource]) => Any) = (ctx, docs) => {
-        val solrc = job.newCrawlDbSolrClient().crawlDb
-        //TODO: handle this in server side - tell solr to skip docs if they already exist
-        val newResources: Iterator[Resource] = for (doc <- docs if solrc.getById(doc.id) == null) yield doc
-        LOG.info("Inserting new resources to Solr ")
-        solrc.addBeans(newResources.asJava)
-        LOG.debug("New resources inserted, Closing..")
-        solrc.close()
-      }
+      //Step: Filter Outlinks and Upsert new URLs into CrawlDb
       val outlinksRdd = OutLinkFilterFunc(job, fetchedRdd)
-      sc.runJob(outlinksRdd, outLinksUpsertFunc)
+      val upsertFunc = new SolrUpsert(job)
+      sc.runJob(outlinksRdd, upsertFunc)
 
-      //STEP :Store these to nutch segments
+      //Step: Store these to nutch segments
       val outputPath = this.outputPath + "/" + taskId
       storeContent(outputPath, fetchedRdd)
 
