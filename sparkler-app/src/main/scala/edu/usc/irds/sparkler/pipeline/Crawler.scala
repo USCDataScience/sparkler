@@ -33,6 +33,8 @@ import org.apache.spark.{SparkConf, SparkContext, TaskContext}
 import org.kohsuke.args4j.Option
 
 import scala.collection.JavaConverters._
+import edu.usc.irds.sparkler.util.SparklerConfiguration
+import edu.usc.irds.sparkler.util.Constants
 
 /**
   *
@@ -41,10 +43,13 @@ import scala.collection.JavaConverters._
 class Crawler extends CliTool {
 
   import Crawler._
+  
+  // Load Sparkler Configuration
+  val sparklerConf: Configuration = SparklerConfiguration.create()
 
   @Option(name = "-m", aliases = Array("--master"),
     usage = "Spark Master URI. Ignore this if job is started by spark-submit")
-  var sparkMaster: String = ""
+  var sparkMaster: String = sparklerConf.get(Constants.SPARK_MASTER)
 
   @Option(name = "-id", aliases = Array("--id"), required = true,
     usage = "Job id. When not sure, get the job id from injector command")
@@ -56,11 +61,11 @@ class Crawler extends CliTool {
 
   @Option(name = "-tn", aliases = Array("--top-n"),
     usage = "Top urls per domain to be selected for a round")
-   var topN: Int = DEFAULT_TOP_N
+   var topN: Int = sparklerConf.getInt(Constants.GENERATE_TOPN, DEFAULT_TOP_N)
 
   @Option(name = "-tg", aliases = Array("--top-groups"),
     usage = "Max Groups to be selected for fetch..")
-  var topG: Int = DEFAULT_TOP_GROUPS
+  var topG: Int = sparklerConf.getInt(Constants.GENERATE_TOP_GROUPS, DEFAULT_TOP_GROUPS)
 
   @Option(name = "-i", aliases = Array("--iterations"),
     usage = "Number of iterations to run")
@@ -68,12 +73,12 @@ class Crawler extends CliTool {
   
   @Option(name = "-fd", aliases = Array("--fetch-delay"),
       usage = "Delay between two fetch requests")
-  var fetchDelay: Long = DEFAULT_FETCH_DELAY
+  var fetchDelay: Long = sparklerConf.getLong(Constants.FETCHER_SERVER_DELAY, DEFAULT_FETCH_DELAY)
 
   var job: SparklerJob = _
   var sc: SparkContext = _
 
-  def init(): Unit ={
+  def init(): Unit = {
     if (this.outputPath.isEmpty) {
       this.outputPath = jobId
     }
@@ -82,7 +87,7 @@ class Crawler extends CliTool {
       conf.setMaster(sparkMaster)
     }
     sc = new SparkContext(conf)
-    job = new SparklerJob(jobId, "")
+    job = new SparklerJob(jobId, sparklerConf, "")
   }
   //TODO: URL normalizers
   //TODO: URL filters

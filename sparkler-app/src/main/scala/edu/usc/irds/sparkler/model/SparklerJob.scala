@@ -22,6 +22,8 @@ import java.util.Properties
 import edu.usc.irds.sparkler.service.SolrProxy
 import edu.usc.irds.sparkler.util.JobUtil
 import org.apache.solr.client.solrj.impl.HttpSolrClient
+import org.apache.hadoop.conf.Configuration
+import edu.usc.irds.sparkler.util.Constants
 
 /**
   *
@@ -33,19 +35,20 @@ class SparklerJob extends Serializable {
 
   var id: String = _
   var currentTask: String = _
-  var settings: Properties = _
+  //var settings: Properties = _
   var crawlDbUri: String = _
 
-  def this(id: String, currentTask: String) {
+  def this(id: String, conf: Configuration, currentTask: String) {
     this()
     this.id = id
     this.currentTask = currentTask
-    this.settings = SETTINGS
-    this.crawlDbUri = settings.getProperty(CRAWLDB_KEY, CRAWLDB_DEFAULT_URI)
+    //this.settings = SETTINGS
+    //this.crawlDbUri = settings.getProperty(CRAWLDB_KEY, CRAWLDB_DEFAULT_URI)
+    this.crawlDbUri = conf.get(Constants.CRAWLDB)
   }
 
-  def this(id: String) {
-    this(id, JobUtil.newSegmentId())
+  def this(id: String, conf: Configuration) {
+    this(id, conf, JobUtil.newSegmentId())
   }
 
   def newCrawlDbSolrClient(): SolrProxy = {
@@ -59,6 +62,7 @@ class SparklerJob extends Serializable {
 
 object SparklerJob {
 
+  /* TODO: Remove this.
   val CRAWLDB_KEY = "sparkler.crawldb"
   val CRAWLDB_DEFAULT_URI = "http://localhost:8983/solr/crawldb"
   val DEFAULT_CONF = "sparkler-default.properties"
@@ -74,4 +78,5 @@ object SparklerJob {
     SETTINGS.load(stream)
     stream.close()
   }
+  */
 }

@@ -29,6 +29,8 @@ import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
 import scala.collection.JavaConversions._
 import scala.io.Source
+import edu.usc.irds.sparkler.util.SparklerConfiguration
+import org.apache.hadoop.conf.Configuration
 
 /**
   *
@@ -37,6 +39,9 @@ import scala.io.Source
 class Injector extends CliTool {
   import Injector.LOG
 
+  // Load Sparkler Configuration
+  val conf: Configuration = SparklerConfiguration.create()
+  
   @Option(name = "-sf", aliases = Array("--seed-file"), forbids = Array("-su"),
     usage = "path to seed file")
   var seedFile: File = _
@@ -54,7 +59,7 @@ class Injector extends CliTool {
     if (jobId.isEmpty) {
       jobId = JobUtil.newJobId()
     }
-    val job = new SparklerJob(jobId)
+    val job = new SparklerJob(jobId, conf)
 
     val urls: util.Collection[String] =
       if (seedFile != null) {
