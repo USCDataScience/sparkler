@@ -23,18 +23,18 @@ import org.slf4j.LoggerFactory
 
 /**
  * Created by karanjeets on 6/12/16
- * 
+ *
  * Utility to create Hadoop configuration that loads Sparkler resources
  */
 object SparklerConfiguration {
-  
+
   // Singleton. UUID Key and configuration file names
   val UUID_KEY = "sparkler.conf.uuid"
   val SPARKLER_DEFAULT = "sparkler-default.xml"
   val SPARKLER_SITE = "sparkler-site.xml"
-  
+
   val LOG = LoggerFactory.getLogger(SparklerConfiguration.getClass())
-    
+
   /**
    * To track the configuration instances created
    */
@@ -42,14 +42,14 @@ object SparklerConfiguration {
     val uuid = UUID.randomUUID()
     conf.set(UUID_KEY, uuid.toString())
   }
-  
+
   /**
    * Retrieves the UUID of this configuration object
    */
   def getUUID(conf: Configuration): String = {
     conf.get(UUID_KEY)
   }
-  
+
   /**
    * Add Sparkler configuration
    */
@@ -57,7 +57,7 @@ object SparklerConfiguration {
     conf.addResource(SPARKLER_DEFAULT)
     conf.addResource(SPARKLER_SITE)
   }
-  
+
   /**
    * Create configuration instance for Sparkler
    */

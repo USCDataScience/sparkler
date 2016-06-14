@@ -41,7 +41,7 @@ class Injector extends CliTool {
 
   // Load Sparkler Configuration
   val conf: Configuration = SparklerConfiguration.create()
-  
+
   @Option(name = "-sf", aliases = Array("--seed-file"), forbids = Array("-su"),
     usage = "path to seed file")
   var seedFile: File = _
@@ -73,7 +73,7 @@ class Injector extends CliTool {
       }
 
     // TODO: Add URL normalizer and filters before injecting the seeds
-    
+
     LOG.info("Injecting {} seeds", urls.size())
     val seeds: util.Collection[Resource] =
       urls.map(_.trim)

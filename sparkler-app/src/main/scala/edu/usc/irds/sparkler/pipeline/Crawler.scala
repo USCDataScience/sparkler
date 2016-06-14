@@ -43,7 +43,7 @@ import edu.usc.irds.sparkler.util.Constants
 class Crawler extends CliTool {
 
   import Crawler._
-  
+
   // Load Sparkler Configuration
   val sparklerConf: Configuration = SparklerConfiguration.create()
 
@@ -70,7 +70,7 @@ class Crawler extends CliTool {
   @Option(name = "-i", aliases = Array("--iterations"),
     usage = "Number of iterations to run")
   var iterations: Int = 1
-  
+
   @Option(name = "-fd", aliases = Array("--fetch-delay"),
       usage = "Delay between two fetch requests")
   var fetchDelay: Long = sparklerConf.getLong(Constants.FETCHER_SERVER_DELAY, DEFAULT_FETCH_DELAY)

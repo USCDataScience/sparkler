@@ -19,31 +19,31 @@ package edu.usc.irds.sparkler.util
 
 /**
  * Created by karanjeets on 6/12/16
- * 
+ *
  * Utility consisting of application-wide property keys
  */
 object Constants {
-  
+
   // General Properties
   val CRAWLDB = "crawldb"
-  
+
   // Apache Spark Properties
   val SPARK_MASTER = "spark.master"
-  
+
   // HTTP Properties
-  
+
   // Database Properties
-  
+
   // Generator Properties
   val GENERATE_TOPN = "generate.topn"
-  
+
   val GENERATE_TOP_GROUPS = "generate.top.groups"
-  
+
   // Fetcher Properties
   val FETCHER_SERVER_DELAY = "fetcher.server.delay"
-  
+
   // Parser Properties
-  
+
   // Plugin Properties
-  
+
 }

@@ -30,7 +30,7 @@ import scala.collection.JavaConversions._
  * Created by karanjeets on 6/11/16
  */
 class SolrStatusUpdate(job: SparklerJob) extends ((TaskContext, Iterator[SolrInputDocument]) => Any) with Serializable {
-  
+
   override def apply(context: TaskContext, docs: Iterator[SolrInputDocument]): Any = {
     LOG.debug("Updating document status into CrawlDb")
     val solrClient = job.newCrawlDbSolrClient()
