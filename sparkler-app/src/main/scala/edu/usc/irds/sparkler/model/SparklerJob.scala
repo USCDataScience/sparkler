@@ -17,35 +17,20 @@
 
 package edu.usc.irds.sparkler.model
 
-import java.util.Properties
-
+import edu.usc.irds.sparkler.JobContext
 import edu.usc.irds.sparkler.service.SolrProxy
-import edu.usc.irds.sparkler.util.JobUtil
-import org.apache.solr.client.solrj.impl.HttpSolrClient
+import edu.usc.irds.sparkler.util.{Constants, JobUtil}
 import org.apache.hadoop.conf.Configuration
-import edu.usc.irds.sparkler.util.Constants
+import org.apache.solr.client.solrj.impl.HttpSolrClient
 
 /**
   *
   * @since 5/31/16
   */
-class SparklerJob extends Serializable {
+class SparklerJob(val id: String, var config: Configuration, var currentTask: String)
+      extends Serializable with JobContext {
 
-  import SparklerJob._
-
-  var id: String = _
-  var currentTask: String = _
-  //var settings: Properties = _
-  var crawlDbUri: String = _
-
-  def this(id: String, conf: Configuration, currentTask: String) {
-    this()
-    this.id = id
-    this.currentTask = currentTask
-    //this.settings = SETTINGS
-    //this.crawlDbUri = settings.getProperty(CRAWLDB_KEY, CRAWLDB_DEFAULT_URI)
-    this.crawlDbUri = conf.get(Constants.CRAWLDB)
-  }
+  var crawlDbUri: String = config.get(Constants.CRAWLDB)
 
   def this(id: String, conf: Configuration) {
     this(id, conf, JobUtil.newSegmentId())
@@ -58,25 +43,6 @@ class SparklerJob extends Serializable {
     new SolrProxy(new HttpSolrClient(crawlDbUri))
   }
 
+  override def getConfiguration: Configuration = config
 }
 
-object SparklerJob {
-
-  /* TODO: Remove this.
-  val CRAWLDB_KEY = "sparkler.crawldb"
-  val CRAWLDB_DEFAULT_URI = "http://localhost:8983/solr/crawldb"
-  val DEFAULT_CONF = "sparkler-default.properties"
-  val OVERRIDDEN_CONF = "sparkler-site.properties"
-  val SETTINGS = new Properties()
-
-  private var stream = getClass.getClassLoader.getResourceAsStream(DEFAULT_CONF)
-  SETTINGS.load(stream)
-  stream.close()
-
-  stream = getClass.getClassLoader.getResourceAsStream(OVERRIDDEN_CONF)
-  if (stream != null) {
-    SETTINGS.load(stream)
-    stream.close()
-  }
-  */
-}
