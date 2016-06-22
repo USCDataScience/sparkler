@@ -55,6 +55,16 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>edu.usc.irds.sparkler</groupId>
+      <artifactId>sparkler-api</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>edu.usc.irds.sparkler.plugin</groupId>
+      <artifactId>sparkler-plugins</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.spark</groupId>

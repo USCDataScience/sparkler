@@ -27,6 +27,7 @@
     <modules>
       <module>sparkler-api</module>
       <module>sparkler-app</module>
+      <module>sparkler-plugins</module>
     </modules>
     <properties>
       
