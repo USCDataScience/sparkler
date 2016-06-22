@@ -16,31 +16,24 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <parent>
-        <artifactId>sparkler-parent</artifactId>
-        <groupId>edu.usc.irds.sparkler</groupId>
+        <artifactId>sparkler-plugins</artifactId>
+        <groupId>edu.usc.irds.sparkler.plugin</groupId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../sparkler-plugins/pom.xml</relativePath>
     </parent>
-    <groupId>edu.usc.irds.sparkler.plugin</groupId>
-    <artifactId>sparkler-plugins</artifactId>
     <modelVersion>4.0.0</modelVersion>
-    <packaging>pom</packaging>
-    <modules>
-        <!-- List of all the plugins -->
-        <module>urlfilter-regex</module>
-    </modules>
+    <artifactId>sparkler-plugins-active</artifactId>
+    <packaging>jar</packaging>
+    <name>sparkler-plugins-active</name>
+    <url>http://irds.usc.edu</url>
 
-    <properties>
-    </properties>
     <dependencies>
         <dependency>
-            <groupId>edu.usc.irds.sparkler</groupId>
-            <artifactId>sparkler-api</artifactId>
+            <groupId>edu.usc.irds.sparkler.plugin</groupId>
+            <artifactId>urlfilter-regex</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
