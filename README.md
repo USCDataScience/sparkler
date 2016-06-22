@@ -20,6 +20,25 @@ Setup instructions https://github.com/uscdataScience/sparkler/wiki/sparkler-0.1#
     + inserts new outlinks
     + stores out put in nutch segment format
 
+### Navigating/Diving into source code
+This is a multi module maven project
+
+
+| Module Name| Path | Description | Remarks |
+|---------    |-------|----|----|
+|sparkler-api |  |  | |
+|sparkler-app |  |  | |
+|sparkler-plugins |  |  | |
+|sparkler-active-plugins |  |  | |
+
+
+### List of Plugins
+
+| Plugin Name| Path | Description | Remarks |
+|---------    |-------|----|----|
+|urlfilter-regex |  |  | |
+
+
 ### Contributing to Sparkler
 1. **Code style:**
 
