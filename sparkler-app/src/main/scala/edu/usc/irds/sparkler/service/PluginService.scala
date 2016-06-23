@@ -19,51 +19,93 @@ package edu.usc.irds.sparkler.service
 
 import edu.usc.irds.sparkler.model.SparklerJob
 import edu.usc.irds.sparkler.plugin.RegexURLFilter
-import edu.usc.irds.sparkler.{ExtensionPoint, SparklerException, URLFilter}
+import edu.usc.irds.sparkler.{ExtensionChain, ExtensionPoint, SparklerException, URLFilter}
 import org.slf4j.LoggerFactory
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
-import scala.util.control.Breaks
 
 /**
-  * Created by thammegr on 6/22/16.
+  * A service for loading plugins/extensions
+  * @since Sparkler 0.1
   */
 object PluginService {
 
   val LOG = LoggerFactory.getLogger(PluginService.getClass)
 
-  val knownExtensions: Set[Class[_ <: ExtensionPoint]] = Set(classOf[URLFilter])
+  // This map has two functions
+  // 1) Keys are set of known extensions
+  // 2) Values are the chaining implementation class
+  val knownExtensions: Map[Class[_ <: ExtensionPoint], Class[_ <: ExtensionChain[_]]] = Map(
+    classOf[URLFilter] -> classOf[URLFilters] //Add more extensions and chains here
+  )
+
+  //TODO: get these form config
+
 
   //TODO: make use of OSGi
   var serviceLoader = PluginService.getClass.getClassLoader
 
-  val registry = new mutable.HashMap[Class[_ <: ExtensionPoint], mutable.ListBuffer[ExtensionPoint]]
+  // This map keeps cache of all active instances
+  val registry = new mutable.HashMap[Class[_ <: ExtensionPoint], ExtensionPoint]
 
   def load(job:SparklerJob): Unit ={
 
     //TODO: get this from config
-    val activePlugins = Set(classOf[RegexURLFilter].getClass.getName)
+    val activePlugins = Set(classOf[RegexURLFilter].getName)
     LOG.info("Found {} active plugins", activePlugins.size)
+
+    // This map keeps cache of all active instances
+    val buffer = new mutable.HashMap[Class[_ <: ExtensionPoint], mutable.ListBuffer[ExtensionPoint]]
+
     for (pluginClassName <- activePlugins) {
       LOG.debug("Loading {}", pluginClassName)
-      val extPointInstance = serviceLoader.loadClass(pluginClassName).asInstanceOf[ExtensionPoint]
+      val extPointInstance = serviceLoader.loadClass(pluginClassName).newInstance().asInstanceOf[ExtensionPoint]
       extPointInstance.init(job)
+
       val extPoint = detectExtensionPoint(extPointInstance)
       if (extPoint.isDefined) {
-        if (!registry.contains(extPoint.get)){
-          registry(extPoint.get) = new mutable.ListBuffer[ExtensionPoint]
+        if (!buffer.contains(extPoint.get)){
+          buffer(extPoint.get) = new mutable.ListBuffer[ExtensionPoint]
         }
-        registry(extPoint.get) += extPointInstance
+        buffer(extPoint.get) += extPointInstance
         LOG.debug(s"Extension $pluginClassName (instance: ${extPointInstance.hashCode()}) " +
           s"will be bound to point ${extPoint.get.getName}")
       } else {
         throw new SparklerException(s"Could not determine ExtensionPoint for $pluginClassName." +
           s" Either the class is invalid or the extension point may not be known/active." +
-          s" The active extension points are ${knownExtensions}")
+          s" The active extension points are ${knownExtensions.keySet.map(_.getName)}")
       }
     }
+
+    for ((xPtClass, xChainClass) <- knownExtensions ) {
+
+      val chain = xChainClass.newInstance().asInstanceOf[ExtensionChain[ExtensionPoint]]
+      // validation
+      // Minimum extensions
+      val activatedPoints = buffer.getOrElse(xPtClass, List.empty)
+      if (activatedPoints.size < chain.getMinimumRequired) {
+        throw new SparklerException(s"Atleast ${chain.getMinimumRequired} extension(s) are required for $xPtClass" +
+          s" but ${activatedPoints.size} are activated")
+      }
+
+      if (activatedPoints.size > chain.getMaximumAllowed) {
+        throw new SparklerException(s"At most ${chain.getMaximumAllowed} extension(s) are allowed for $xPtClass" +
+          s" but ${activatedPoints.size} are activated")
+      }
+      LOG.debug(s"Registering extension Chain ${xChainClass.getName}")
+      chain.setExtensions(activatedPoints.asJava)
+      registry.put(xPtClass, chain)
+    }
   }
+
+  /**
+    * Checks if class is a sparkler extension
+    *
+    * @param clazz the class
+    * @return true if the given class is an extension
+    */
+  def isExtensionPoint(clazz:Class[_]): Boolean = clazz != null && classOf[ExtensionPoint].isAssignableFrom(clazz)
 
   /**
     * Detects the point where an extension can be plugged into sparkler
@@ -71,21 +113,22 @@ object PluginService {
     * @param extension an instance of the extension
     * @return A point where the extension can be plugged
     */
-  def detectExtensionPoint(extension: ExtensionPoint): Option[Class[ExtensionPoint]] ={
+  def detectExtensionPoint(extension: ExtensionPoint): Option[Class[_ <: ExtensionPoint]] ={
     val buffer = mutable.Queue[Class[_]](extension.getClass)
-    var result:Option[Class[ExtensionPoint]] = None
-    val breakable = new Breaks
-    breakable.breakable {
-      for (elem <- buffer if classOf[ExtensionPoint].isAssignableFrom(elem)) {
-        val extensionClass = elem.asInstanceOf[Class[ExtensionPoint]]
+    var result:Option[Class[_ <: ExtensionPoint]] = None
+    var detected = false
+      while (!detected && buffer.nonEmpty){
+        val clazz = buffer.dequeue()
+        val extensionClass = clazz.asInstanceOf[Class[_ <: ExtensionPoint]]
         if (knownExtensions.contains(extensionClass)) {
           result = Some(extensionClass)
-          breakable.break()
+          detected = true
         }
-        buffer += elem.getClass.getSuperclass
-        buffer ++= elem.getClass.getInterfaces
+        if (isExtensionPoint(clazz.getSuperclass)){
+          buffer += clazz.getSuperclass
+        }
+        buffer ++= clazz.getInterfaces.filter(isExtensionPoint)
       }
-    }
     result
   }
 
@@ -93,8 +136,9 @@ object PluginService {
     * gets list of active extensions for a given point
     *
     * @param point extension point
-    * @return list of Extensions for a given point
+    * @return extension
     */
-  def getExtensions(point:Class[_ <: ExtensionPoint]):ListBuffer[ExtensionPoint] = registry(point)
-
+  def getExtension[X <: ExtensionPoint](point:Class[X]):Option[X] = {
+    if (registry.contains(point)) Some(registry(point).asInstanceOf[X]) else None
+  }
 }

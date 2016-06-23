@@ -21,6 +21,7 @@ import org.apache.hadoop.conf.Configuration;
 
 /**
  * The contract for job Context
+ * @since Sparkler 0.1
  */
 public interface JobContext {
 

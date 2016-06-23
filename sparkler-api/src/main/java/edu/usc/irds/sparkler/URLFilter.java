@@ -33,5 +33,4 @@ public interface URLFilter extends ExtensionPoint {
      * {@code false} if the url shall be dropped
      */
     boolean filter(String url, String parent);
-
 }

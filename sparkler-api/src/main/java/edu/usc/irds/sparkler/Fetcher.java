@@ -22,4 +22,5 @@ package edu.usc.irds.sparkler;
  */
 public interface Fetcher extends ExtensionPoint {
 
+    //TODO: this is incomplete
 }
