@@ -43,6 +43,14 @@ class SparklerJob(val id: String, @transient var config: Configuration, var curr
     new SolrProxy(new HttpSolrClient(crawlDbUri))
   }
 
-  override def getConfiguration: Configuration = config
+  override def getConfiguration: Configuration ={
+    //FIXME: config has to be serializable
+    //FIXME: remove transient annotation from config and remove this reinitialization
+    if (config == null) {
+      config = C.defaults.newDefaultConfig()
+    }
+    this.config
+  }
+
 }
 
