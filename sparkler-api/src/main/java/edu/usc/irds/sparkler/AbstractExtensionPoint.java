@@ -17,8 +17,14 @@
 
 package edu.usc.irds.sparkler;
 
+import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Abstract implementation of extension point
@@ -33,5 +39,30 @@ public abstract class AbstractExtensionPoint implements ExtensionPoint {
     public void init(JobContext context) throws SparklerException {
         this.jobContext = context;
         LOG.debug("Initialize the context");
+    }
+
+    /**
+     * Gets a resource
+     *
+     * @param resourceName resource name
+     * @return stream of resource or null
+     * @throws IOException when an io error occurs
+     */
+    public InputStream getResourceAsStream(String resourceName) throws IOException {
+        return getResourceAsStream(this, resourceName);
+    }
+
+    /**
+     * Gets a resource
+     *
+     * @param extension    extension Instance
+     * @param resourceName name of resource (file name)
+     * @return stream of resource or null
+     * @throws IOException
+     */
+    public static InputStream getResourceAsStream(ExtensionPoint extension, String resourceName) throws IOException {
+        //TODO: allow user to specify configs outside the jar
+        //this one just gets configs from the classloader
+        return extension.getClass().getClassLoader().getResourceAsStream(resourceName);
     }
 }
