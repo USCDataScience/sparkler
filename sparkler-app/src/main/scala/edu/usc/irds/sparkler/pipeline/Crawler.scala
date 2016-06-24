@@ -17,24 +17,22 @@
 
 package edu.usc.irds.sparkler.pipeline
 
-import edu.usc.irds.sparkler.CrawlDbRDD
+import edu.usc.irds.sparkler.C.key
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, SparklerJob}
+import edu.usc.irds.sparkler.service.PluginService
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
 import edu.usc.irds.sparkler.util.JobUtil
+import edu.usc.irds.sparkler.{C, CrawlDbRDD, URLFilter}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.SequenceFileOutputFormat
 import org.apache.nutch.protocol
 import org.apache.solr.common.SolrInputDocument
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext, TaskContext}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.kohsuke.args4j.Option
-
-import scala.collection.JavaConverters._
-import edu.usc.irds.sparkler.util.SparklerConfiguration
-import edu.usc.irds.sparkler.util.Constants
 
 /**
   *
@@ -45,11 +43,11 @@ class Crawler extends CliTool {
   import Crawler._
 
   // Load Sparkler Configuration
-  val sparklerConf: Configuration = SparklerConfiguration.create()
+  val sparklerConf: Configuration = C.defaults.newDefaultConfig()
 
   @Option(name = "-m", aliases = Array("--master"),
     usage = "Spark Master URI. Ignore this if job is started by spark-submit")
-  var sparkMaster: String = sparklerConf.get(Constants.SPARK_MASTER)
+  var sparkMaster: String = sparklerConf.get(key.SPARK_MASTER)
 
   @Option(name = "-id", aliases = Array("--id"), required = true,
     usage = "Job id. When not sure, get the job id from injector command")
@@ -61,19 +59,19 @@ class Crawler extends CliTool {
 
   @Option(name = "-tn", aliases = Array("--top-n"),
     usage = "Top urls per domain to be selected for a round")
-   var topN: Int = sparklerConf.getInt(Constants.GENERATE_TOPN, DEFAULT_TOP_N)
+  var topN: Int = sparklerConf.getInt(key.GENERATE_TOPN, DEFAULT_TOP_N)
 
   @Option(name = "-tg", aliases = Array("--top-groups"),
     usage = "Max Groups to be selected for fetch..")
-  var topG: Int = sparklerConf.getInt(Constants.GENERATE_TOP_GROUPS, DEFAULT_TOP_GROUPS)
+  var topG: Int = sparklerConf.getInt(key.GENERATE_TOP_GROUPS, DEFAULT_TOP_GROUPS)
 
   @Option(name = "-i", aliases = Array("--iterations"),
     usage = "Number of iterations to run")
   var iterations: Int = 1
 
   @Option(name = "-fd", aliases = Array("--fetch-delay"),
-      usage = "Delay between two fetch requests")
-  var fetchDelay: Long = sparklerConf.getLong(Constants.FETCHER_SERVER_DELAY, DEFAULT_FETCH_DELAY)
+    usage = "Delay between two fetch requests")
+  var fetchDelay: Long = sparklerConf.getLong(key.FETCHER_SERVER_DELAY, DEFAULT_FETCH_DELAY)
 
   var job: SparklerJob = _
   var sc: SparkContext = _
@@ -143,11 +141,12 @@ object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]
   override def apply(job: SparklerJob, rdd: RDD[CrawlData]): RDD[Resource] = {
     //Step : UPSERT outlinks
     rdd.flatMap({ data => for (u <- data.outLinks) yield (u, data.res) }) //expand the set
+
       .reduceByKey({ case (r1, r2) => if (r1.depth <= r2.depth) r1 else r2 }) // pick a parent
-      //TODO: url filter
+
+      .filter({case (url, parent) => PluginService.getExtension(classOf[URLFilter], job).get.filter(url, parent.url)})
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.depth + 1, job, NEW) }) //create a new resource
-
   }
 }
 
