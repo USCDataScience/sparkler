@@ -24,7 +24,7 @@
 
 <!-- General properties -->
 <property>
-  <name>crawldb</name>
+  <name>crawldb.uri</name>
   <value>http://localhost:8983/solr/crawldb</value>
   <description>Crawl Database URL. Stores crawl metadata
   and status updates. Type: String. 
@@ -61,14 +61,14 @@
 </property>
 
 
-<!-- Fetcher properties -->
-<property>
-  <name>fetcher.server.delay</name>
-  <value>1000</value>
-  <description>Delay (in milliseconds) between two fetch 
-  requests for the same host. Type: Long. Default: 1000.
-  </description>
-</property>
-
+    <!-- Plugins -->
+    <!-- URL filter -->
+    <property>
+        <name>urlfilter.regex.file</name>
+        <value>regex-urlfilter.txt</value>
+        <description>Delay (in milliseconds) between two fetch
+            requests for the same host. Type: Long. Default: 1000.
+        </description>
+    </property>
 
 </configuration>

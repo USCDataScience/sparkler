@@ -30,7 +30,16 @@
 
     <name>sparkler-api</name>
     <url>http://maven.apache.org</url>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <sparkler.conf.dir>${project.basedir}${file.separator}..${file.separator}conf</sparkler.conf.dir>
+    </properties>
     <build>
+        <resources>
+            <resource>
+                <directory>${sparkler.conf.dir}</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -43,10 +52,6 @@
         </plugins>
     </build>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <slf4j.version>1.7.12</slf4j.version>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -59,5 +64,4 @@
             <version>1.11</version>
         </dependency>
     </dependencies>
-
 </project>
