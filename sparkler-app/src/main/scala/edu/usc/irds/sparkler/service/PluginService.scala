@@ -29,7 +29,7 @@ import scala.collection.mutable
   * A service for loading plugins/extensions
   * @since Sparkler 0.1
   */
-object PluginService {
+class PluginService {
 
   val LOG = LoggerFactory.getLogger(PluginService.getClass)
 
@@ -39,9 +39,6 @@ object PluginService {
   val knownExtensions: Map[Class[_ <: ExtensionPoint], Class[_ <: ExtensionChain[_]]] = Map(
     classOf[URLFilter] -> classOf[URLFilters] //Add more extensions and chains here
   )
-
-  //TODO: get these form config
-
 
   //TODO: make use of OSGi
   var serviceLoader = PluginService.getClass.getClassLoader
@@ -140,5 +137,21 @@ object PluginService {
     */
   def getExtension[X <: ExtensionPoint](point:Class[X]):Option[X] = {
     if (registry.contains(point)) Some(registry(point).asInstanceOf[X]) else None
+  }
+}
+
+object PluginService {
+
+  //TODO: weak hash map + bounded size + with a sensible expiration policy like LRU
+  val cache = new mutable.HashMap[SparklerJob, PluginService]()
+
+  def getExtension[X <: ExtensionPoint](point:Class[X], job: SparklerJob):Option[X] = {
+    if (!cache.contains(job)){
+      //lazy initialization for distributed mode (wherever this code gets executed)
+      val service = new PluginService()
+      service.load(job)
+      cache.put(job, service)
+    }
+    cache(job).getExtension(point)
   }
 }
