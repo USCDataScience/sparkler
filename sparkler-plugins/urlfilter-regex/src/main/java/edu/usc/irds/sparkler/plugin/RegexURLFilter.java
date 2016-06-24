@@ -17,14 +17,15 @@
 
 package edu.usc.irds.sparkler.plugin;
 
-// JDK imports
 
+import edu.usc.irds.sparkler.ConfigKey;
 import edu.usc.irds.sparkler.plugin.regex.RegexRule;
 import edu.usc.irds.sparkler.plugin.regex.RegexURLFilterBase;
+import org.apache.hadoop.conf.Configuration;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
 import java.util.regex.Pattern;
 
 
@@ -34,30 +35,25 @@ import java.util.regex.Pattern;
  */
 public class RegexURLFilter extends RegexURLFilterBase {
 
+    @ConfigKey
     public static final String URLFILTER_REGEX_FILE = "urlfilter.regex.file";
-    public static final String URLFILTER_REGEX_RULES = "urlfilter.regex.rules";
 
     public RegexURLFilter() {
         super();
     }
 
-
     public RegexURLFilter(Reader reader) throws IOException, IllegalArgumentException {
         super(reader);
     }
-
-  /*
-   * ----------------------------------- * <implementation:RegexURLFilterBase> *
-   * -----------------------------------
-   */
 
     /**
      * Rules specified as a config property will override rules specified as a
      * config file.
      */
     protected Reader getRulesReader() throws IOException {
-        //TODO: FIXME
-        return new StringReader("+http.*");
+        Configuration config = jobContext.getConfiguration();
+        String regexFile = config.get(URLFILTER_REGEX_FILE);
+        return new InputStreamReader(getResourceAsStream(regexFile));
     }
 
     // Inherited Javadoc
@@ -68,7 +64,6 @@ public class RegexURLFilter extends RegexURLFilterBase {
     protected Rule createRule(boolean sign, String regex, String hostOrDomain) {
         return new Rule(sign, regex, hostOrDomain);
     }
-
 
     private class Rule extends RegexRule {
 
@@ -86,13 +81,6 @@ public class RegexURLFilter extends RegexURLFilterBase {
         protected boolean match(String url) {
             return pattern.matcher(url).find();
         }
-    }
-
-    public static void main(String args[]) throws IOException {
-        System.out.println("Starting...");
-        RegexURLFilter filter = new RegexURLFilter();
-        main(filter, args);
-        System.out.println("Done...");
     }
 
 }

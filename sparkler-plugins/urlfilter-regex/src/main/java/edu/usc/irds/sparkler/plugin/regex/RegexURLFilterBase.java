@@ -17,6 +17,8 @@
 package edu.usc.irds.sparkler.plugin.regex;
 
 import edu.usc.irds.sparkler.AbstractExtensionPoint;
+import edu.usc.irds.sparkler.JobContext;
+import edu.usc.irds.sparkler.SparklerException;
 import edu.usc.irds.sparkler.URLFilter;
 import org.apache.nutch.util.URLUtil;
 import org.slf4j.Logger;
@@ -64,11 +66,6 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
      * Constructs a new empty RegexURLFilterBase
      */
     public RegexURLFilterBase() {
-        try {
-            this.rules = readRules(getRulesReader());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -91,6 +88,17 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
     public RegexURLFilterBase(Reader reader) throws IOException,
             IllegalArgumentException {
         rules = readRules(reader);
+    }
+
+    @Override
+    public void init(JobContext context) throws SparklerException {
+        super.init(context);
+        try {
+            Reader reader = getRulesReader();
+            this.rules = readRules(reader);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
