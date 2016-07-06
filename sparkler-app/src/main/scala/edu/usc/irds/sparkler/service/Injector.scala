@@ -20,16 +20,15 @@ package edu.usc.irds.sparkler.service
 import java.io.File
 import java.util
 
+import edu.usc.irds.sparkler.C
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
-
 import edu.usc.irds.sparkler.util.JobUtil
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
 import scala.collection.JavaConversions._
 import scala.io.Source
-import edu.usc.irds.sparkler.util.SparklerConfiguration
 import org.apache.hadoop.conf.Configuration
 
 /**
@@ -40,7 +39,7 @@ class Injector extends CliTool {
   import Injector.LOG
 
   // Load Sparkler Configuration
-  val conf: Configuration = SparklerConfiguration.create()
+  val conf: Configuration = C.defaults.newDefaultConfig()
 
   @Option(name = "-sf", aliases = Array("--seed-file"), forbids = Array("-su"),
     usage = "path to seed file")

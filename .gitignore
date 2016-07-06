@@ -41,3 +41,6 @@ project/plugins/project/
 .cache-main
 .settings/
 
+. auto generated files
+sparkler-job-**
+

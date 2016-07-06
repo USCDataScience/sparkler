@@ -1,11 +1,14 @@
 
 # Sparkler
 
-Spark-Crawler : Evolving Apache Nutch to run on Spark. 
+Spark-Crawler : Evolving Apache Nutch to run on Spark.
+Most of the documentation can be found in the wiki at https://github.com/uscdataScience/sparkler/wiki
 
 ### Requires
-  Solr - config files (schema) in conf/solr folder
-  Maven
+  * Solr - config files (schema) in `conf/solr` folder.
+  * Maven
+
+Setup instructions https://github.com/uscdataScience/sparkler/wiki/sparkler-0.1#requirements
 
 ### Progress so far
 + Injector : Inject urls to crawl db
@@ -17,8 +20,48 @@ Spark-Crawler : Evolving Apache Nutch to run on Spark.
     + inserts new outlinks
     + stores out put in nutch segment format
 
+### Navigating/Diving into source code
+This is a multi module maven project
+
+
+| Module Name| Path | Description | Remarks |
+|---------    |-------|----|----|
+|sparkler-api |  |  | |
+|sparkler-app |  |  | |
+|sparkler-plugins |  |  | |
+|sparkler-active-plugins |  |  | |
+
+
+### List of Plugins
+
+| Plugin Name| Path | Description | Remarks |
+|---------    |-------|----|----|
+|urlfilter-regex |  |  | |
+
+
 ### Contributing to Sparkler
-The project is currently in the design phase. We will open up the stage for contributors soon.
+1. **Code style:**
+
+ **a) Java style:** The project includes a code format file named  `eclipse-codeformat.xml` in the root directory.
+ Depending on the IDE you use, please configure the code style rules from this XML file.
+
+ **b) Scala Style:** The project also includes a code format file named `scalastyle_config.xml` in the root directory.
+ Depending on the IDE you use, please configure the code style rules from this XML file. Visit http://www.scalastyle.org/
+ for more details
+
+2. **Reporting bugs or requesting features:**
+
+   Create an issue in github, https://github.com/uscdataScience/sparkler/issues
+
+3. **Sending pull request:**
+
+  Use github pull request functionality.
+  All pull requests must have an issue created to discuss about it (for the sake of visibility to other members)
+   whether it is bug fix or a feature addition.
+4. **Licence Header:**
+
+  All source files should include Apache Licence 2.0 licence header. Refer existing source files for an example.
+
 
 ### Contact Us
 
