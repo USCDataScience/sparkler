@@ -25,7 +25,7 @@ import java.util.UUID;
  * A static container for all the constants
  * (NOTE: interface is used to make all the fields as public static final )
  */
-public interface C {
+public interface Constants {
 
     interface key { //config key name
 

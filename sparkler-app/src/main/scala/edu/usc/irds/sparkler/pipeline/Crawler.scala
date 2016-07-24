@@ -17,14 +17,15 @@
 
 package edu.usc.irds.sparkler.pipeline
 
-import edu.usc.irds.sparkler.C.key
+import edu.usc.irds.sparkler.{Constants, C, CrawlDbRDD, URLFilter}
+import Constants.key
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, SparklerJob}
 import edu.usc.irds.sparkler.service.PluginService
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
 import edu.usc.irds.sparkler.util.JobUtil
-import edu.usc.irds.sparkler.{C, CrawlDbRDD, URLFilter}
+import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, URLFilter}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.SequenceFileOutputFormat
@@ -43,7 +44,7 @@ class Crawler extends CliTool {
   import Crawler._
 
   // Load Sparkler Configuration
-  val sparklerConf: Configuration = C.defaults.newDefaultConfig()
+  val sparklerConf: Configuration = Constants.defaults.newDefaultConfig()
 
   @Option(name = "-m", aliases = Array("--master"),
     usage = "Spark Master URI. Ignore this if job is started by spark-submit")
