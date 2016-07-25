@@ -97,7 +97,7 @@ public interface Constants {
          * Apache Felix configuration properties file
          * TODO:Should come from Sparler Config
          */
-        String FELIX_CONFIG_PROPERTIES = "felix.config.properties";
+        String FELIX_CONFIG = "felix-config.properties";
 
     }
 

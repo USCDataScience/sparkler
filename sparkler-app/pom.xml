@@ -33,6 +33,7 @@
     <url>http://irds.usc.edu</url>
 
     <properties>
+        <sparkler.conf.dir>${project.basedir}${file.separator}..${file.separator}conf</sparkler.conf.dir>
         <!-- Main Class -->
         <exec.mainClass>edu.usc.irds.sparkler.Main</exec.mainClass>
     </properties>
@@ -134,6 +135,11 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>${sparkler.conf.dir}</directory>
+            </resource>
+        </resources>
         <pluginManagement>
             <plugins>
                 <plugin>

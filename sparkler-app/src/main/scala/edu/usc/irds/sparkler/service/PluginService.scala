@@ -66,7 +66,7 @@ class PluginService {
   def loadFelixConfig(): mutable.Map[String, String] = {
     var map:mutable.Map[String, String] = null
     val prop:Properties = new Properties()
-    prop.load(getClass().getResourceAsStream(Constants.file.FELIX_CONFIG_PROPERTIES))
+    prop.load(getClass().getResourceAsStream(Constants.file.FELIX_CONFIG))
     map = prop.asScala
     map
   }
@@ -109,7 +109,7 @@ class PluginService {
     var felixConfig:mutable.Map[String, String] = loadFelixConfig()
     if (felixConfig == null) {
       throw new SparklerException(s"Could not load Felix Configuration Properties file: "
-        + s"${Constants.file.FELIX_CONFIG_PROPERTIES}");
+        + s"${Constants.file.FELIX_CONFIG}");
     }
 
     LOG.info("Felix Configuration loaded successfully")
