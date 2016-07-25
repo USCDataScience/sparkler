@@ -33,22 +33,6 @@
     <url>http://irds.usc.edu</url>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spark.version>1.6.1</spark.version>
-        <scala.version>2.11</scala.version>
-        <scala.library.version>${scala.version}.8</scala.library.version>
-        <nutch.version>1.11</nutch.version>
-        <kafka.version>0.10.0.0</kafka.version>
-        <hbase.version>1.2.1</hbase.version>
-        <solr.version>6.0.0</solr.version>
-
-        <!-- Tests -->
-        <junit.version>4.12</junit.version>
-        <args4j.version>2.0.29</args4j.version>
-        <slf4j.version>1.7.12</slf4j.version>
-        <tika.version>1.13</tika.version>
-
-
         <!-- Main Class -->
         <exec.mainClass>edu.usc.irds.sparkler.Main</exec.mainClass>
     </properties>
@@ -120,6 +104,21 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <version>${felix.framework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>${felix.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.main</artifactId>
+            <version>${felix.main.version}</version>
         </dependency>
 
 

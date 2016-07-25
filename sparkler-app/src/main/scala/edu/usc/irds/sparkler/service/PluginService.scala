@@ -17,16 +17,23 @@
 
 package edu.usc.irds.sparkler.service
 
+import java.net.URL
+import java.util.Properties
+
+import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.model.SparklerJob
-import edu.usc.irds.sparkler.plugin.RegexURLFilter
-import edu.usc.irds.sparkler.{ExtensionChain, ExtensionPoint, SparklerException, URLFilter}
+import org.apache.felix.main.AutoProcessor
+import org.osgi.framework.ServiceReference
+import org.osgi.framework.launch.{Framework, FrameworkFactory}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.io.Source
 
 /**
   * A service for loading plugins/extensions
+  *
   * @since Sparkler 0.1
   */
 class PluginService {
@@ -40,60 +47,106 @@ class PluginService {
     classOf[URLFilter] -> classOf[URLFilters] //Add more extensions and chains here
   )
 
-  //TODO: make use of OSGi
-  var serviceLoader = PluginService.getClass.getClassLoader
+  var serviceLoader:Framework = null
 
   // This map keeps cache of all active instances
   val registry = new mutable.HashMap[Class[_ <: ExtensionPoint], ExtensionPoint]
 
+
+  /**
+    * <p>
+    * Loads the configuration properties in the configuration property file
+    * associated with the Felix framework installation; these properties
+    * are accessible to the framework and to bundles and are intended
+    * for configuration purposes.
+    * </p>
+    *
+    * @return A <tt>Map</tt> instance or <tt>null</tt> if there was an error.
+    **/
+  def loadFelixConfig(): mutable.Map[String, String] = {
+    var map:mutable.Map[String, String] = null
+    val prop:Properties = new Properties()
+    prop.load(getClass().getResourceAsStream(Constants.file.FELIX_CONFIG_PROPERTIES))
+    map = prop.asScala
+    map
+  }
+
+
+  /**
+    * Simple method to parse META-INF/services file for framework factory.
+    * Currently, it assumes the first non-commented line is the class name
+    * of the framework factory implementation.
+    *
+    * @return The created <tt>FrameworkFactory</tt> instance.
+    * @throws Exception if any errors occur.
+    **/
+  def getFelixFrameworkFactory: FrameworkFactory = {
+    val url:URL = getClass().getResource(Constants.file.FELIX_FRAMEWORK_FACTORY)
+    if (url != null) {
+      val reader = Source.fromURL(url).bufferedReader()
+      try {
+        var line:String = ""
+        while ({line = reader.readLine() ; line != null}) {
+          line = line.trim()
+          if (line.length() > 0 && line.charAt(0) != '#') {
+            getClass.getClassLoader.loadClass(line).newInstance().asInstanceOf[FrameworkFactory]
+          }
+        }
+      }
+      finally {
+        if (reader != null) {
+          reader.close()
+        }
+      }
+    }
+    throw new SparklerException("Error Loading the Felix Framework Factory Instance")
+  }
+
+
   def load(job:SparklerJob): Unit ={
 
-    //TODO: get this from config
-    val activePlugins = Set(classOf[RegexURLFilter].getName)
-    LOG.info("Found {} active plugins", activePlugins.size)
+    // Load Felix Configuration Properties
+    var felixConfig:mutable.Map[String, String] = loadFelixConfig()
+    if (felixConfig == null) {
+      throw new SparklerException(s"Could not load Felix Configuration Properties file: "
+        + s"${Constants.file.FELIX_CONFIG_PROPERTIES}");
+    }
 
-    // This map keeps cache of all active instances
-    val buffer = new mutable.HashMap[Class[_ <: ExtensionPoint], mutable.ListBuffer[ExtensionPoint]]
+    LOG.info("Felix Configuration loaded successfully")
 
-    for (pluginClassName <- activePlugins) {
-      LOG.debug("Loading {}", pluginClassName)
-      val extPointInstance = serviceLoader.loadClass(pluginClassName).newInstance().asInstanceOf[ExtensionPoint]
-      extPointInstance.init(job)
+    // Setting configuration to Auto Deploy Felix Bundles
+    felixConfig(AutoProcessor.AUTO_DEPLOY_DIR_PROPERTY) = Constants.file.FELIX_BUNDLE_DIR
 
-      val extPoint = detectExtensionPoint(extPointInstance)
-      if (extPoint.isDefined) {
-        if (!buffer.contains(extPoint.get)){
-          buffer(extPoint.get) = new mutable.ListBuffer[ExtensionPoint]
+    // Register a Shutdown Hook with JVM to make sure Felix framework is cleanly
+    // shutdown when JVM exits
+    Runtime.getRuntime().addShutdownHook(new Thread(s"Felix Framework for ${job.id}") {
+      override def run: Unit = {
+        try {
+          if (serviceLoader != null) {
+            serviceLoader.stop()
+            serviceLoader.waitForStop(0)
+          }
         }
-        buffer(extPoint.get) += extPointInstance
-        LOG.debug(s"Extension $pluginClassName (instance: ${extPointInstance.hashCode()}) " +
-          s"will be bound to point ${extPoint.get.getName}")
-      } else {
-        throw new SparklerException(s"Could not determine ExtensionPoint for $pluginClassName." +
-          s" Either the class is invalid or the extension point may not be known/active." +
-          s" The active extension points are ${knownExtensions.keySet.map(_.getName)}")
+        catch {
+          case e: Exception => e.printStackTrace(); throw new SparklerException("Error Stopping the Felix Framework")
+        }
       }
-    }
+    })
 
-    for ((xPtClass, xChainClass) <- knownExtensions ) {
+    // Creating an instance of the Apache Felix framework
+    val felixFactory:FrameworkFactory = getFelixFrameworkFactory
+    serviceLoader = felixFactory.newFramework(felixConfig.asJava)
 
-      val chain = xChainClass.newInstance().asInstanceOf[ExtensionChain[ExtensionPoint]]
-      // validation
-      // Minimum extensions
-      val activatedPoints = buffer.getOrElse(xPtClass, List.empty)
-      if (activatedPoints.size < chain.getMinimumRequired) {
-        throw new SparklerException(s"Atleast ${chain.getMinimumRequired} extension(s) are required for $xPtClass" +
-          s" but ${activatedPoints.size} are activated")
-      }
+    // Initialize the framework but don't start it yet
+    serviceLoader.init()
 
-      if (activatedPoints.size > chain.getMaximumAllowed) {
-        throw new SparklerException(s"At most ${chain.getMaximumAllowed} extension(s) are allowed for $xPtClass" +
-          s" but ${activatedPoints.size} are activated")
-      }
-      LOG.debug(s"Registering extension Chain ${xChainClass.getName}")
-      chain.setExtensions(activatedPoints.asJava)
-      registry.put(xPtClass, chain)
-    }
+    // Use the system bundle context to process the auto-deploy
+    // and auto-install/auto-start properties.
+    AutoProcessor.process(felixConfig.asJava, serviceLoader.getBundleContext)
+
+    // Start the Felix Framework
+    serviceLoader.start()
+
   }
 
   /**
@@ -136,7 +189,9 @@ class PluginService {
     * @return extension
     */
   def getExtension[X <: ExtensionPoint](point:Class[X]):Option[X] = {
-    if (registry.contains(point)) Some(registry(point).asInstanceOf[X]) else None
+    //if (registry.contains(point)) Some(registry(point).asInstanceOf[X]) else None
+    val references: Array[ServiceReference] = serviceLoader.getBundleContext.getAllServiceReferences(point.getName, null)
+    if (references != null || references.length > 0) Some(serviceLoader.getBundleContext.getService(references(0)).asInstanceOf[X]) else None
   }
 }
 

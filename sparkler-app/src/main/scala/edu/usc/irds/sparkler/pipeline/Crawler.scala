@@ -17,7 +17,7 @@
 
 package edu.usc.irds.sparkler.pipeline
 
-import edu.usc.irds.sparkler.{Constants, C, CrawlDbRDD, URLFilter}
+import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, URLFilter}
 import Constants.key
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._

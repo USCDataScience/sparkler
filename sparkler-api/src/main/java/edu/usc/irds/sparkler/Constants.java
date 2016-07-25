@@ -82,6 +82,23 @@ public interface Constants {
         String SPARKLER_DEFAULT = "sparkler-default.xml";
         String SPARKLER_SITE = "sparkler-site.xml";
         String CONF_DIR = "conf";
+
+        /**
+         * Apache Felix Framework Factory META file
+         */
+        String FELIX_FRAMEWORK_FACTORY = "META-INF/services/org.osgi.framework.launch.FrameworkFactory";
+        /**
+         * Specifying Apache Felix bundle directory.
+         * TODO:Should come from Sparkler Config
+         **/
+        String FELIX_BUNDLE_DIR = "bundles";
+
+        /**
+         * Apache Felix configuration properties file
+         * TODO:Should come from Sparler Config
+         */
+        String FELIX_CONFIG_PROPERTIES = "felix.config.properties";
+
     }
 
 }
