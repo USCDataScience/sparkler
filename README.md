@@ -1,8 +1,9 @@
 
 # Sparkler
 
-Spark-Crawler : Evolving Apache Nutch to run on Spark.
-Most of the documentation can be found in the wiki at https://github.com/uscdataScience/sparkler/wiki
+Sparkler (aka Spark-Crawler) is an evolution of Apache Nutch to run on Apache Spark.
+
+Click here for quick start guide : https://github.com/uscdataScience/sparkler/wiki/sparkler-0.1
 
 ### Requires
   * Solr - config files (schema) in `conf/solr` folder.
