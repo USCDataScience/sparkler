@@ -17,15 +17,17 @@
 
 package edu.usc.irds.sparkler.pipeline
 
-import edu.usc.irds.sparkler.C.key
+import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, URLFilter}
+import Constants.key
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, SparklerJob}
 import edu.usc.irds.sparkler.service.PluginService
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
 import edu.usc.irds.sparkler.util.JobUtil
-import edu.usc.irds.sparkler.{C, CrawlDbRDD, URLFilter}
+import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, URLFilter}
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{Path, FileSystem}
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.SequenceFileOutputFormat
 import org.apache.nutch.protocol
@@ -43,7 +45,7 @@ class Crawler extends CliTool {
   import Crawler._
 
   // Load Sparkler Configuration
-  val sparklerConf: Configuration = C.defaults.newDefaultConfig()
+  val sparklerConf: Configuration = Constants.defaults.newDefaultConfig()
 
   @Option(name = "-m", aliases = Array("--master"),
     usage = "Spark Master URI. Ignore this if job is started by spark-submit")
@@ -126,6 +128,7 @@ class Crawler extends CliTool {
 
       //Step: Store these to nutch segments
       val outputPath = this.outputPath + "/" + taskId
+
       storeContent(outputPath, fetchedRdd)
 
       LOG.info("Committing crawldb..")
@@ -137,14 +140,22 @@ class Crawler extends CliTool {
   }
 }
 
-object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) with Serializable {
+object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) with Serializable with Loggable {
   override def apply(job: SparklerJob, rdd: RDD[CrawlData]): RDD[Resource] = {
+
+
+
     //Step : UPSERT outlinks
     rdd.flatMap({ data => for (u <- data.outLinks) yield (u, data.res) }) //expand the set
 
       .reduceByKey({ case (r1, r2) => if (r1.depth <= r2.depth) r1 else r2 }) // pick a parent
 
-      .filter({case (url, parent) => PluginService.getExtension(classOf[URLFilter], job).get.filter(url, parent.url)})
+      .filter({case (url, parent) =>
+        val outLinkFilter:scala.Option[URLFilter] = PluginService.getExtension(classOf[URLFilter], job)
+        val result = outLinkFilter.get.filter(url, parent.url)
+        LOG.debug(s"$result :: filter(${parent.url} --> $url)")
+        result
+      })
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.depth + 1, job, NEW) }) //create a new resource
   }

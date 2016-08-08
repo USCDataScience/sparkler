@@ -60,7 +60,8 @@ object FetchFunction extends ((Resource) => Content) with Serializable with Logg
         fetchedAt, status, metadata)
     } catch {
       case e: Exception =>
-        LOG.error(e.getMessage, e)
+        LOG.warn("FETCH-ERROR {}", resource.url)
+        LOG.debug(e.getMessage, e)
         new Content(resource.url, Array(), "", -1, Array(), fetchedAt, ERROR, metadata)
     }
   }

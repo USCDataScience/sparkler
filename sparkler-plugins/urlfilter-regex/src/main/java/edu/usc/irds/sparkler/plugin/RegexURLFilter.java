@@ -53,7 +53,7 @@ public class RegexURLFilter extends RegexURLFilterBase {
     protected Reader getRulesReader() throws IOException {
         Configuration config = jobContext.getConfiguration();
         String regexFile = config.get(URLFILTER_REGEX_FILE);
-        return new InputStreamReader(getResourceAsStream(regexFile));
+        return new InputStreamReader(jobContext.getClass().getClassLoader().getResource(regexFile).openStream());
     }
 
     // Inherited Javadoc

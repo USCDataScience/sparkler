@@ -17,7 +17,7 @@
 
 package edu.usc.irds.sparkler.util;
 
-import edu.usc.irds.sparkler.C;
+import edu.usc.irds.sparkler.Constants;
 import edu.usc.irds.sparkler.ExtensionPoint;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerException;
@@ -32,7 +32,7 @@ public class TestUtils {
     /**
      * Configuration to be used by  tests
      */
-    public static final Configuration CONFIG = C.defaults.newDefaultConfig();
+    public static final Configuration CONFIG = Constants.defaults.newDefaultConfig();
 
     /**
      * Job context to be used by the tests

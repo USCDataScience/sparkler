@@ -25,7 +25,7 @@ import java.util.UUID;
  * A static container for all the constants
  * (NOTE: interface is used to make all the fields as public static final )
  */
-public interface C {
+public interface Constants {
 
     interface key { //config key name
 
@@ -82,6 +82,23 @@ public interface C {
         String SPARKLER_DEFAULT = "sparkler-default.xml";
         String SPARKLER_SITE = "sparkler-site.xml";
         String CONF_DIR = "conf";
+
+        /**
+         * Apache Felix Framework Factory META file
+         */
+        String FELIX_FRAMEWORK_FACTORY = "META-INF/services/org.osgi.framework.launch.FrameworkFactory";
+        /**
+         * Specifying Apache Felix bundle directory.
+         * TODO:Should come from Sparkler Config
+         **/
+        String FELIX_BUNDLE_DIR = "../bundles";
+
+        /**
+         * Apache Felix configuration properties file
+         * TODO:Should come from Sparler Config
+         */
+        String FELIX_CONFIG = "felix-config.properties";
+
     }
 
 }
