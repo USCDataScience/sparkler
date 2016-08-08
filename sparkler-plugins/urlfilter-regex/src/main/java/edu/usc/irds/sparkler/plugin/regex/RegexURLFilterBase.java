@@ -20,7 +20,7 @@ import edu.usc.irds.sparkler.AbstractExtensionPoint;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerException;
 import edu.usc.irds.sparkler.URLFilter;
-import org.apache.nutch.util.URLUtil;
+import edu.usc.irds.sparkler.util.URLUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

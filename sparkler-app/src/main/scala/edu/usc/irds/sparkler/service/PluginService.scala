@@ -17,11 +17,13 @@
 
 package edu.usc.irds.sparkler.service
 
+import java.io.{File, FileInputStream}
 import java.net.URL
 import java.util.Properties
 
 import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.model.SparklerJob
+import org.apache.felix.framework.Felix
 import org.apache.felix.main.AutoProcessor
 import org.osgi.framework.ServiceReference
 import org.osgi.framework.launch.{Framework, FrameworkFactory}
@@ -36,7 +38,7 @@ import scala.io.Source
   *
   * @since Sparkler 0.1
   */
-class PluginService {
+class PluginService(job:SparklerJob) {
 
   val LOG = LoggerFactory.getLogger(PluginService.getClass)
 
@@ -66,7 +68,7 @@ class PluginService {
   def loadFelixConfig(): mutable.Map[String, String] = {
     var map:mutable.Map[String, String] = null
     val prop:Properties = new Properties()
-    prop.load(getClass().getResourceAsStream(Constants.file.FELIX_CONFIG))
+    prop.load(getClass().getClassLoader().getResourceAsStream(Constants.file.FELIX_CONFIG))
     map = prop.asScala
     map
   }
@@ -81,7 +83,8 @@ class PluginService {
     * @throws Exception if any errors occur.
     **/
   def getFelixFrameworkFactory: FrameworkFactory = {
-    val url:URL = getClass().getResource(Constants.file.FELIX_FRAMEWORK_FACTORY)
+    val url:URL = getClass().getClassLoader().getResource(Constants.file.FELIX_FRAMEWORK_FACTORY)
+    var factory:FrameworkFactory = null
     if (url != null) {
       val reader = Source.fromURL(url).bufferedReader()
       try {
@@ -89,7 +92,7 @@ class PluginService {
         while ({line = reader.readLine() ; line != null}) {
           line = line.trim()
           if (line.length() > 0 && line.charAt(0) != '#') {
-            getClass.getClassLoader.loadClass(line).newInstance().asInstanceOf[FrameworkFactory]
+            factory = getClass.getClassLoader.loadClass(line).newInstance().asInstanceOf[FrameworkFactory]
           }
         }
       }
@@ -99,11 +102,14 @@ class PluginService {
         }
       }
     }
-    throw new SparklerException("Error Loading the Felix Framework Factory Instance")
+    if  (factory == null) {
+      throw new SparklerException("Error Loading the Felix Framework Factory Instance")
+    }
+    factory
   }
 
 
-  def load(job:SparklerJob): Unit ={
+  def load(): Unit ={
 
     // Load Felix Configuration Properties
     var felixConfig:mutable.Map[String, String] = loadFelixConfig()
@@ -189,9 +195,20 @@ class PluginService {
     * @return extension
     */
   def getExtension[X <: ExtensionPoint](point:Class[X]):Option[X] = {
-    //if (registry.contains(point)) Some(registry(point).asInstanceOf[X]) else None
-    val references: Array[ServiceReference] = serviceLoader.getBundleContext.getAllServiceReferences(point.getName, null)
-    if (references != null || references.length > 0) Some(serviceLoader.getBundleContext.getService(references(0)).asInstanceOf[X]) else None
+    if (registry.contains(point)) {
+      Some(registry(point).asInstanceOf[X])
+    } else {
+      val references: Array[ServiceReference] = serviceLoader.getBundleContext.getAllServiceReferences(point.getName, null)
+      LOG.debug(serviceLoader.getBundleContext.getBundles.mkString(" "))
+      if (references != null && references.length > 0) {
+        val instance: X = serviceLoader.getBundleContext.getService(references(0)).asInstanceOf[X]
+        instance.init(job)
+        registry.put(point, instance)
+        Some(instance)
+      } else {
+        None
+      }
+    }
   }
 }
 
@@ -203,8 +220,8 @@ object PluginService {
   def getExtension[X <: ExtensionPoint](point:Class[X], job: SparklerJob):Option[X] = {
     if (!cache.contains(job)){
       //lazy initialization for distributed mode (wherever this code gets executed)
-      val service = new PluginService()
-      service.load(job)
+      val service = new PluginService(job)
+      service.load()
       cache.put(job, service)
     }
     cache(job).getExtension(point)

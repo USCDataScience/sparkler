@@ -40,9 +40,19 @@
             <version>${felix.framework.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -51,6 +61,8 @@
         <plugins>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>${maven.jar.plugin.version}</version>
                 <configuration>
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
@@ -66,9 +78,9 @@
                     <instructions>
                         <Bundle-Name>RegexUrlFilter</Bundle-Name>
                         <Bundle-SymbolicName>RegexUrlFilter</Bundle-SymbolicName>
-                        <Bundle-Version>0.1-SNAPSHOT</Bundle-Version>
-                        <Bundle-Activator>edu.usc.irds.sparkler.plugin.Activator</Bundle-Activator>
-                        <Import-Package>org.osgi.framework,edu.usc.irds.sparkler,edu.usc.irds.sparkler.util</Import-Package>
+                        <Bundle-Version>${parent.version}</Bundle-Version>
+                        <Bundle-Activator>edu.usc.irds.sparkler.plugin.RegexURLFilterActivator</Bundle-Activator>
+                        <Import-Package>org.osgi.framework,edu.usc.irds.sparkler,edu.usc.irds.sparkler.util,org.slf4j,org.apache.hadoop.conf</Import-Package>
                     </instructions>
                 </configuration>
                 <executions>

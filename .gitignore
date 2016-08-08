@@ -15,6 +15,7 @@
 
 *.class
 *.log
+*.jar
 
 # sbt specific
 .cache

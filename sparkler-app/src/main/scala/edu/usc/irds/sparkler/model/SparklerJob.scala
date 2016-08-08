@@ -37,7 +37,7 @@ class SparklerJob(val id: String, @transient var config: Configuration, var curr
   }
 
   def newCrawlDbSolrClient(): SolrProxy = {
-    if (!crawlDbUri.startsWith("http://")) {
+    if (!crawlDbUri.startsWith("http://") && !crawlDbUri.startsWith("https://")) {
       throw new RuntimeException(s"$crawlDbUri not supported")
     }
     new SolrProxy(new HttpSolrClient(crawlDbUri))

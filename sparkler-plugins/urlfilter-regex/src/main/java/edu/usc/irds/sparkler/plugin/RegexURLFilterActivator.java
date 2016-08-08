@@ -17,6 +17,7 @@
 
 package edu.usc.irds.sparkler.plugin;
 
+import edu.usc.irds.sparkler.URLFilter;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
@@ -28,17 +29,17 @@ import java.util.Properties;
  * Activates the RegexURL Filter Plugin and register it
  * as a Service in Apache Felix
  */
-public class Activator implements BundleActivator {
+public class RegexURLFilterActivator implements BundleActivator {
 
     // Logger for the class
-    private static final Logger LOG = LoggerFactory.getLogger(Activator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RegexURLFilterActivator.class);
 
     @Override
     public void start(BundleContext bundleContext) throws Exception {
         LOG.info("Activating RegexURL Plugin");
         Properties prop = new Properties();
         prop.put("URLFilter", "RegexURLFilter");
-        bundleContext.registerService(RegexURLFilter.class.getName(), new RegexURLFilter(), prop);
+        bundleContext.registerService(URLFilter.class.getName(), new RegexURLFilter(), prop);
     }
 
     @Override

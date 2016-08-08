@@ -91,7 +91,7 @@ public interface Constants {
          * Specifying Apache Felix bundle directory.
          * TODO:Should come from Sparkler Config
          **/
-        String FELIX_BUNDLE_DIR = "bundles";
+        String FELIX_BUNDLE_DIR = "../bundles";
 
         /**
          * Apache Felix configuration properties file

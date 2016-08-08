@@ -122,7 +122,6 @@
             <version>${felix.main.version}</version>
         </dependency>
 
-
         <!-- TESTING -->
         <!-- http://mvnrepository.com/artifact/junit/junit -->
         <dependency>
@@ -137,7 +136,7 @@
     <build>
         <resources>
             <resource>
-                <directory>${sparkler.conf.dir}</directory>
+                <directory>/Users/karanjeetsingh/git_workspace/sparkler-prod/conf</directory>
             </resource>
         </resources>
         <pluginManagement>
