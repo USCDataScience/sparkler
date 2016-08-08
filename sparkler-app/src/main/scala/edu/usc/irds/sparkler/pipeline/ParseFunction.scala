@@ -19,6 +19,7 @@ package edu.usc.irds.sparkler.pipeline
 
 import java.io.ByteArrayInputStream
 
+import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.CrawlData
 import org.apache.tika.metadata
 import org.apache.tika.parser.AutoDetectParser
@@ -29,16 +30,24 @@ import scala.collection.JavaConverters._
 /**
   * Created by thammegr on 6/7/16.
   */
-object ParseFunction extends ((CrawlData) => Set[String]) with Serializable {
+object ParseFunction extends ((CrawlData) => Set[String]) with Serializable with Loggable {
 
   override def apply(data: CrawlData): Set[String] = {
-    val stream = new ByteArrayInputStream(data.content.content)
-    val linkHandler = new LinkContentHandler()
-    val parser = new AutoDetectParser()
-    val meta = new metadata.Metadata()
-    meta.set("resourceName", data.content.url)
-    parser.parse(stream, linkHandler, meta)
-    stream.close()
-    linkHandler.getLinks.asScala.map(_.getUri.trim).filter(!_.isEmpty).toSet
+    try {
+      LOG.info("PARSING {}", data.content.url)
+      val stream = new ByteArrayInputStream(data.content.content)
+      val linkHandler = new LinkContentHandler()
+      val parser = new AutoDetectParser()
+      val meta = new metadata.Metadata()
+      meta.set("resourceName", data.content.url)
+      parser.parse(stream, linkHandler, meta)
+      stream.close()
+      linkHandler.getLinks.asScala.map(_.getUri.trim).filter(!_.isEmpty).toSet
+    } catch {
+      case e:Throwable =>
+        LOG.warn("PARSER-ERROR {}", data.content.url)
+        LOG.warn(e.getMessage, e)
+        Set.empty[String]
+    }
   }
 }
