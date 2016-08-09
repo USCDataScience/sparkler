@@ -20,7 +20,6 @@ package edu.usc.irds.sparkler.model
 import edu.usc.irds.sparkler.{SparklerConfiguration, Constants, JobContext}
 import edu.usc.irds.sparkler.service.SolrProxy
 import edu.usc.irds.sparkler.util.JobUtil
-import org.apache.hadoop.conf.Configuration
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 
 /**
@@ -30,7 +29,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient
 class SparklerJob(val id: String, @transient var config: SparklerConfiguration, var currentTask: String)
       extends Serializable with JobContext {
 
-  var crawlDbUri: String = config.getCrawldbUri()
+  var crawlDbUri: String = config.get(Constants.key.CRAWLDB).toString();
 
   def this(id: String, conf: SparklerConfiguration) {
     this(id, conf, JobUtil.newSegmentId())

@@ -22,12 +22,16 @@ import edu.usc.irds.sparkler.ExtensionPoint;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class contains some utils to help plugin developers write unit tests easily
  * @since Sparkler 0.1
  */
 public class TestUtils {
+
+    public static Logger LOG = LoggerFactory.getLogger(TestUtils.class);
 
     /**
      * Configuration to be used by  tests
@@ -46,10 +50,10 @@ public class TestUtils {
      * @return instance of the extension
      * @throws SparklerException when an error occurs
      */
-    public static <T extends ExtensionPoint> T newInstance(Class<T> clazz) throws SparklerException {
+    public static <T extends ExtensionPoint> T newInstance(Class<T> clazz, String pluginId) throws SparklerException {
         try {
             T instance = clazz.newInstance();
-            instance.init(JOB_CONTEXT);
+            instance.init(JOB_CONTEXT, pluginId);
             return instance;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new SparklerException("Could not create instance of " + clazz.getName(), e);

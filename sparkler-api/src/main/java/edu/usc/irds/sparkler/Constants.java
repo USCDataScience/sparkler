@@ -18,10 +18,10 @@
 package edu.usc.irds.sparkler;
 
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -62,6 +62,8 @@ public interface Constants {
         // Parser Properties
 
         // Plugin Properties
+        @ConfigKey
+        String PLUGINS = "plugins";
     }
 
 
@@ -70,19 +72,17 @@ public interface Constants {
          * Create configuration instance for Sparkler
          */
         public static SparklerConfiguration newDefaultConfig(){
-
-            Constructor constructor = new Constructor(SparklerConfiguration.class);
-            Yaml yaml = new Yaml(constructor);
-            SparklerConfiguration sparklerConf = null;
-
+            Yaml yaml = new Yaml();
             InputStream input = null;
+            SparklerConfiguration sparklerConf = null;
             try {
                 input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT);
-                sparklerConf = yaml.loadAs(input, SparklerConfiguration.class);
-                input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
-                SparklerConfiguration sparklerSite = yaml.loadAs(input, SparklerConfiguration.class);
-                if(sparklerSite != null)
-                    sparklerConf.mask(sparklerSite);
+                Map<String,Object> yamlMap = (Map<String, Object>) yaml.load(input);
+                sparklerConf = new SparklerConfiguration(yamlMap);
+
+                //input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
+                //if(sparklerSite != null)
+                //    sparklerConf.mask(sparklerSite);
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -95,7 +95,7 @@ public interface Constants {
             }
 
             if (sparklerConf != null)
-                sparklerConf.setUuid(UUID.randomUUID().toString());
+                sparklerConf.put(key.UUID_KEY, UUID.randomUUID().toString());
 
             return sparklerConf;
         }

@@ -17,82 +17,17 @@
 
 package edu.usc.irds.sparkler;
 
-import edu.usc.irds.sparkler.model.PluginModel;
+import org.json.simple.JSONObject;
 
-import java.io.Serializable;
+import java.util.Map;
 
-public class SparklerConfiguration implements Serializable {
+public class SparklerConfiguration extends JSONObject {
 
-    String uuid;
-    String crawldbUri;
-    String sparkMaster;
-    Integer generateTopN = 1024;
-    Integer generateTopGroups = 256;
-    Long fetcherServerDelay = 1000L;
-    PluginModel plugins;
-
-    public String getUuid() {
-        return uuid;
+    public SparklerConfiguration() {
+        super();
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getCrawldbUri() {
-        return crawldbUri;
-    }
-
-    public void setCrawldbUri(String crawldbUri) {
-        this.crawldbUri = crawldbUri;
-    }
-
-    public String getSparkMaster() {
-        return sparkMaster;
-    }
-
-    public void setSparkMaster(String sparkMaster) {
-        this.sparkMaster = sparkMaster;
-    }
-
-    public Integer getGenerateTopN() {
-        return generateTopN;
-    }
-
-    public void setGenerateTopN(Integer generateTopN) {
-        this.generateTopN = generateTopN;
-    }
-
-    public Integer getGenerateTopGroups() {
-        return generateTopGroups;
-    }
-
-    public void setGenerateTopGroups(Integer generateTopGroups) {
-        this.generateTopGroups = generateTopGroups;
-    }
-
-    public Long getFetcherServerDelay() {
-        return fetcherServerDelay;
-    }
-
-    public void setFetcherServerDelay(Long fetcherServerDelay) {
-        this.fetcherServerDelay = fetcherServerDelay;
-    }
-
-    public PluginModel getPlugins() {
-        return plugins;
-    }
-
-    public void setPlugins(PluginModel plugins) {
-        this.plugins = plugins;
-    }
-
-    public void mask(SparklerConfiguration other) {
-        this.crawldbUri = other.crawldbUri == null ? this.crawldbUri : other.crawldbUri;
-        this.sparkMaster = other.sparkMaster == null ? this.sparkMaster : other.sparkMaster;
-        this.generateTopN = other.generateTopN == null ? this.generateTopN : other.generateTopN;
-        this.generateTopGroups = other.generateTopGroups == null ? this.generateTopGroups : other.generateTopGroups;
-        this.fetcherServerDelay = other.fetcherServerDelay == null ? this.fetcherServerDelay : other.fetcherServerDelay;
-        if (other.plugins != null) this.plugins.mask(other.plugins);
+    public SparklerConfiguration(Map<?, ?> map) {
+        super(map);
     }
 }

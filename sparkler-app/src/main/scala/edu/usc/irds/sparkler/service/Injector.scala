@@ -28,7 +28,6 @@ import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
 import scala.collection.JavaConversions._
 import scala.io.Source
-import org.apache.hadoop.conf.Configuration
 
 /**
   *

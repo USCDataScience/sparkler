@@ -19,7 +19,7 @@
 
 # Crawl Database URL. Stores crawl metadata and status updates.
 # Type: String. Default: http://localhost:8983/solr/crawldb
-crawldbUri: http://localhost:8983/solr/crawldb
+crawldb.uri: http://localhost:8983/solr/crawldb
 
 
 
@@ -27,7 +27,7 @@ crawldbUri: http://localhost:8983/solr/crawldb
 
 # URL on which Apache Spark is running.
 # Type: String. Default is "local" for local mode.
-sparkMaster: local
+spark.master: local
 
 
 
@@ -35,19 +35,19 @@ sparkMaster: local
 
 # Generates the top N URLs for fetching.
 # Type: Int. Default: 1000
-generateTopN: 1000
+generate.topn: 1000
 
 # Generates URLs from top N groups for fetching.
 # Type: Int. Default: 256.
-generateTopGroups: 256
+generate.top.groups: 256
 
 
 
 ##################### Fetcher Properties ################################
 
 # Delay (in milliseconds) between two fetch requests for the same host.
-# Type: Long. Default: 1000.
-fetcherServerDelay: 1000
+# Type: Long. Default: 1000L.
+fetcher.server.delay: 1000
 
 
 
@@ -57,6 +57,6 @@ fetcherServerDelay: 1000
 plugins:
   # Regex URL Filter - Filters outlinks from a web page based on Regex
   # expressions.
-  regexUrlFilter:
+  urlfilter.regex:
     # File with Regex Filter Rules
-    urlfilterRegexFile: regex-urlfilter.txt
+    urlfilter.regex.file: regex-urlfilter.txt

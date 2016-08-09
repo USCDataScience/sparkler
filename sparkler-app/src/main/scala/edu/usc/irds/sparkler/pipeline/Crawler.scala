@@ -46,7 +46,7 @@ class Crawler extends CliTool {
 
   @Option(name = "-m", aliases = Array("--master"),
     usage = "Spark Master URI. Ignore this if job is started by spark-submit")
-  var sparkMaster: String = sparklerConf.getSparkMaster()
+  var sparkMaster: String = sparklerConf.get(Constants.key.SPARK_MASTER).asInstanceOf[String]
 
   @Option(name = "-id", aliases = Array("--id"), required = true,
     usage = "Job id. When not sure, get the job id from injector command")
@@ -58,11 +58,11 @@ class Crawler extends CliTool {
 
   @Option(name = "-tn", aliases = Array("--top-n"),
     usage = "Top urls per domain to be selected for a round")
-  var topN: Int = sparklerConf.getGenerateTopN()
+  var topN: Int = sparklerConf.get(Constants.key.GENERATE_TOPN).asInstanceOf[Int]
 
   @Option(name = "-tg", aliases = Array("--top-groups"),
     usage = "Max Groups to be selected for fetch..")
-  var topG: Int = sparklerConf.getGenerateTopGroups()
+  var topG: Int = sparklerConf.get(Constants.key.GENERATE_TOP_GROUPS).asInstanceOf[Int]
 
   @Option(name = "-i", aliases = Array("--iterations"),
     usage = "Number of iterations to run")
@@ -70,7 +70,7 @@ class Crawler extends CliTool {
 
   @Option(name = "-fd", aliases = Array("--fetch-delay"),
     usage = "Delay between two fetch requests")
-  var fetchDelay: Long = sparklerConf.getFetcherServerDelay()
+  var fetchDelay: Long = sparklerConf.get(Constants.key.FETCHER_SERVER_DELAY).asInstanceOf[Number].longValue()
 
   var job: SparklerJob = _
   var sc: SparkContext = _
