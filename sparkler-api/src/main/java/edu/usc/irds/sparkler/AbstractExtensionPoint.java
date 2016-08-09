@@ -41,8 +41,9 @@ public abstract class AbstractExtensionPoint implements ExtensionPoint {
 
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
+        this.jobContext = context;
         this.pluginId = pluginId;
-        LOG.debug("Initialize the Plugin Id");
+        LOG.debug("Initialize the context & Plugin Id");
     }
 
     /**

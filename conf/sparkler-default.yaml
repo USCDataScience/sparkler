@@ -38,7 +38,7 @@ spark.master: local
 generate.topn: 1000
 
 # Generates URLs from top N groups for fetching.
-# Type: Int. Default: 256.
+# Type: Int. Default: 256
 generate.top.groups: 256
 
 
@@ -46,7 +46,7 @@ generate.top.groups: 256
 ##################### Fetcher Properties ################################
 
 # Delay (in milliseconds) between two fetch requests for the same host.
-# Type: Long. Default: 1000L.
+# Type: Long. Default: 1000
 fetcher.server.delay: 1000
 
 
