@@ -15,17 +15,23 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler;
+package edu.usc.irds.sparkler.model;
 
-/**
- * The contract for job Context
- * @since Sparkler 0.1
- */
-public interface JobContext {
+import java.io.Serializable;
 
-    /**
-     * Gets Configuration
-     * @return an instance of {@link }
-     */
-    SparklerConfiguration getConfiguration();
+public class RegexUrlFilterModel implements Serializable {
+
+    String urlfilterRegexFile;
+
+    public String getUrlfilterRegexFile() {
+        return urlfilterRegexFile;
+    }
+
+    public void setUrlfilterRegexFile(String urlfilterRegexFile) {
+        this.urlfilterRegexFile = urlfilterRegexFile;
+    }
+
+    public void mask(RegexUrlFilterModel other) {
+        this.urlfilterRegexFile = other.urlfilterRegexFile == null ? this.urlfilterRegexFile : other.urlfilterRegexFile;
+    }
 }

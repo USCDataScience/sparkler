@@ -20,8 +20,8 @@ package edu.usc.irds.sparkler.util;
 import edu.usc.irds.sparkler.Constants;
 import edu.usc.irds.sparkler.ExtensionPoint;
 import edu.usc.irds.sparkler.JobContext;
+import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
-import org.apache.hadoop.conf.Configuration;
 
 /**
  * This class contains some utils to help plugin developers write unit tests easily
@@ -32,7 +32,7 @@ public class TestUtils {
     /**
      * Configuration to be used by  tests
      */
-    public static final Configuration CONFIG = Constants.defaults.newDefaultConfig();
+    public static final SparklerConfiguration CONFIG = Constants.defaults.newDefaultConfig();
 
     /**
      * Job context to be used by the tests

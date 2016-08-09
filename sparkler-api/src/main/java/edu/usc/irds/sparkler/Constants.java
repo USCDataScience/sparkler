@@ -17,8 +17,11 @@
 
 package edu.usc.irds.sparkler;
 
-import org.apache.hadoop.conf.Configuration;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
 
 /**
@@ -66,21 +69,42 @@ public interface Constants {
         /**
          * Create configuration instance for Sparkler
          */
-        public static Configuration newDefaultConfig(){
+        public static SparklerConfiguration newDefaultConfig(){
 
-            Configuration conf = new Configuration();
-            conf.set(key.UUID_KEY, UUID.randomUUID().toString());
-            conf.addResource(file.SPARKLER_DEFAULT);
-            conf.addResource(file.SPARKLER_SITE);
-            return conf;
+            Constructor constructor = new Constructor(SparklerConfiguration.class);
+            Yaml yaml = new Yaml(constructor);
+            SparklerConfiguration sparklerConf = null;
+
+            InputStream input = null;
+            try {
+                input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT);
+                sparklerConf = yaml.loadAs(input, SparklerConfiguration.class);
+                input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
+                SparklerConfiguration sparklerSite = yaml.loadAs(input, SparklerConfiguration.class);
+                if(sparklerSite != null)
+                    sparklerConf.mask(sparklerSite);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if(input != null)
+                    try {
+                        input.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+            }
+
+            if (sparklerConf != null)
+                sparklerConf.setUuid(UUID.randomUUID().toString());
+
+            return sparklerConf;
         }
-
     }
 
 
     interface file {
-        String SPARKLER_DEFAULT = "sparkler-default.xml";
-        String SPARKLER_SITE = "sparkler-site.xml";
+        String SPARKLER_DEFAULT = "sparkler-default.yaml";
+        String SPARKLER_SITE = "sparkler-site.yaml";
         String CONF_DIR = "conf";
 
         /**

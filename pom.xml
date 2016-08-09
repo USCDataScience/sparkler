@@ -40,6 +40,7 @@
         <felix.core.version>1.4.0</felix.core.version>
         <felix.main.version>5.4.0</felix.main.version>
         <maven.jar.plugin.version>3.0.2</maven.jar.plugin.version>
+        <snakeyaml.version>1.17</snakeyaml.version>
 
         <!-- Tests -->
         <junit.version>4.12</junit.version>
