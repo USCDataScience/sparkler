@@ -17,9 +17,9 @@
 
 package edu.usc.irds.sparkler;
 
+import org.apache.commons.io.IOUtils;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
@@ -86,12 +86,7 @@ public interface Constants {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                if(input != null)
-                    try {
-                        input.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                IOUtils.closeQuietly(input);
             }
 
             if (sparklerConf != null)

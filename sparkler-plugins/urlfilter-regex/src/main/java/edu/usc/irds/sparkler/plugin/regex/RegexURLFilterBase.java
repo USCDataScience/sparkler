@@ -21,7 +21,6 @@ import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
 import edu.usc.irds.sparkler.URLFilter;
-import edu.usc.irds.sparkler.util.CommonUtil;
 import edu.usc.irds.sparkler.util.URLUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,7 +96,7 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
         super.init(context);
         try {
             SparklerConfiguration config = jobContext.getConfiguration();
-            LinkedHashMap pluginConfig = CommonUtil.getPluginConfiguration(config, pluginId);
+            LinkedHashMap pluginConfig = config.getPluginConfiguration(pluginId);
             Reader reader = getRulesReader(pluginConfig);
             this.rules = readRules(reader);
         } catch (IOException e) {
