@@ -37,12 +37,10 @@ public class SparklerConfiguration extends JSONObject {
             LinkedHashMap plugins = (LinkedHashMap) this.get(Constants.key.PLUGINS);
             if (plugins.containsKey(pluginId)) {
                 return (LinkedHashMap) plugins.get(pluginId);
-            }
-            else {
+            } else {
                 throw new SparklerException("No configuration found for Plugin: " + pluginId);
             }
-        }
-        else {
+        } else {
             throw new SparklerException("No plugin configuration found!");
         }
     }

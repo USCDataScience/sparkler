@@ -89,8 +89,9 @@ public interface Constants {
                 IOUtils.closeQuietly(input);
             }
 
-            if (sparklerConf != null)
+            if (sparklerConf != null) {
                 sparklerConf.put(key.UUID_KEY, UUID.randomUUID().toString());
+            }
 
             return sparklerConf;
         }
