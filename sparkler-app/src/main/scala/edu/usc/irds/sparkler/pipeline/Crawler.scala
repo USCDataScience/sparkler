@@ -17,17 +17,14 @@
 
 package edu.usc.irds.sparkler.pipeline
 
-import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, URLFilter}
-import Constants.key
+import edu.usc.irds.sparkler.{SparklerConfiguration, Constants, CrawlDbRDD, URLFilter}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, SparklerJob}
 import edu.usc.irds.sparkler.service.PluginService
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
 import edu.usc.irds.sparkler.util.JobUtil
-import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, URLFilter}
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{Path, FileSystem}
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.SequenceFileOutputFormat
 import org.apache.nutch.protocol
@@ -45,11 +42,11 @@ class Crawler extends CliTool {
   import Crawler._
 
   // Load Sparkler Configuration
-  val sparklerConf: Configuration = Constants.defaults.newDefaultConfig()
+  val sparklerConf: SparklerConfiguration = Constants.defaults.newDefaultConfig()
 
   @Option(name = "-m", aliases = Array("--master"),
     usage = "Spark Master URI. Ignore this if job is started by spark-submit")
-  var sparkMaster: String = sparklerConf.get(key.SPARK_MASTER)
+  var sparkMaster: String = sparklerConf.get(Constants.key.SPARK_MASTER).asInstanceOf[String]
 
   @Option(name = "-id", aliases = Array("--id"), required = true,
     usage = "Job id. When not sure, get the job id from injector command")
@@ -61,11 +58,11 @@ class Crawler extends CliTool {
 
   @Option(name = "-tn", aliases = Array("--top-n"),
     usage = "Top urls per domain to be selected for a round")
-  var topN: Int = sparklerConf.getInt(key.GENERATE_TOPN, DEFAULT_TOP_N)
+  var topN: Int = sparklerConf.get(Constants.key.GENERATE_TOPN).asInstanceOf[Int]
 
   @Option(name = "-tg", aliases = Array("--top-groups"),
     usage = "Max Groups to be selected for fetch..")
-  var topG: Int = sparklerConf.getInt(key.GENERATE_TOP_GROUPS, DEFAULT_TOP_GROUPS)
+  var topG: Int = sparklerConf.get(Constants.key.GENERATE_TOP_GROUPS).asInstanceOf[Int]
 
   @Option(name = "-i", aliases = Array("--iterations"),
     usage = "Number of iterations to run")
@@ -73,7 +70,7 @@ class Crawler extends CliTool {
 
   @Option(name = "-fd", aliases = Array("--fetch-delay"),
     usage = "Delay between two fetch requests")
-  var fetchDelay: Long = sparklerConf.getLong(key.FETCHER_SERVER_DELAY, DEFAULT_FETCH_DELAY)
+  var fetchDelay: Long = sparklerConf.get(Constants.key.FETCHER_SERVER_DELAY).asInstanceOf[Number].longValue()
 
   var job: SparklerJob = _
   var sc: SparkContext = _
@@ -103,7 +100,7 @@ class Crawler extends CliTool {
     init()
 
     val solrc = this.job.newCrawlDbSolrClient()
-    val fetchDelay = DEFAULT_FETCH_DELAY
+    val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
     for (_ <- 1 to iterations) {
       val taskId = JobUtil.newSegmentId(true)
@@ -113,7 +110,7 @@ class Crawler extends CliTool {
       val rdd = new CrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
       val fetchedRdd = rdd.map(r => (r.group, r))
         .groupByKey()
-        .flatMap({ case (grp, rs) => new FairFetcher(rs.iterator, fetchDelay, FetchFunction, ParseFunction) })
+        .flatMap({ case (grp, rs) => new FairFetcher(rs.iterator, localFetchDelay, FetchFunction, ParseFunction) })
         .persist()
 
       //Step: Update status of fetched resources
@@ -162,10 +159,6 @@ object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]
 }
 
 object Crawler extends Loggable with Serializable{
-
-  val DEFAULT_TOP_N = 1024
-  val DEFAULT_TOP_GROUPS = 256
-  val DEFAULT_FETCH_DELAY = 1000L
 
   def storeContent(outputPath:String, rdd:RDD[CrawlData]): Unit = {
     LOG.info(s"Storing output at $outputPath")

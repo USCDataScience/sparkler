@@ -17,22 +17,21 @@
 
 package edu.usc.irds.sparkler.model
 
-import edu.usc.irds.sparkler.{Constants, JobContext}
+import edu.usc.irds.sparkler.{SparklerConfiguration, Constants, JobContext}
 import edu.usc.irds.sparkler.service.SolrProxy
 import edu.usc.irds.sparkler.util.JobUtil
-import org.apache.hadoop.conf.Configuration
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 
 /**
   *
   * @since 5/31/16
   */
-class SparklerJob(val id: String, @transient var config: Configuration, var currentTask: String)
+class SparklerJob(val id: String, @transient var config: SparklerConfiguration, var currentTask: String)
       extends Serializable with JobContext {
 
-  var crawlDbUri: String = config.get(Constants.key.CRAWLDB)
+  var crawlDbUri: String = config.get(Constants.key.CRAWLDB).toString();
 
-  def this(id: String, conf: Configuration) {
+  def this(id: String, conf: SparklerConfiguration) {
     this(id, conf, JobUtil.newSegmentId())
   }
 
@@ -43,7 +42,7 @@ class SparklerJob(val id: String, @transient var config: Configuration, var curr
     new SolrProxy(new HttpSolrClient(crawlDbUri))
   }
 
-  override def getConfiguration: Configuration ={
+  override def getConfiguration: SparklerConfiguration ={
     //FIXME: config has to be serializable
     //FIXME: remove transient annotation from config and remove this reinitialization
     if (config == null) {

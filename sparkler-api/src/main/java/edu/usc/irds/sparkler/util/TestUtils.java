@@ -20,8 +20,10 @@ package edu.usc.irds.sparkler.util;
 import edu.usc.irds.sparkler.Constants;
 import edu.usc.irds.sparkler.ExtensionPoint;
 import edu.usc.irds.sparkler.JobContext;
+import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
-import org.apache.hadoop.conf.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class contains some utils to help plugin developers write unit tests easily
@@ -29,10 +31,12 @@ import org.apache.hadoop.conf.Configuration;
  */
 public class TestUtils {
 
+    public static Logger LOG = LoggerFactory.getLogger(TestUtils.class);
+
     /**
      * Configuration to be used by  tests
      */
-    public static final Configuration CONFIG = Constants.defaults.newDefaultConfig();
+    public static final SparklerConfiguration CONFIG = Constants.defaults.newDefaultConfig();
 
     /**
      * Job context to be used by the tests
@@ -46,10 +50,10 @@ public class TestUtils {
      * @return instance of the extension
      * @throws SparklerException when an error occurs
      */
-    public static <T extends ExtensionPoint> T newInstance(Class<T> clazz) throws SparklerException {
+    public static <T extends ExtensionPoint> T newInstance(Class<T> clazz, String pluginId) throws SparklerException {
         try {
             T instance = clazz.newInstance();
-            instance.init(JOB_CONTEXT);
+            instance.init(JOB_CONTEXT, pluginId);
             return instance;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new SparklerException("Could not create instance of " + clazz.getName(), e);

@@ -21,11 +21,11 @@ package edu.usc.irds.sparkler.plugin;
 import edu.usc.irds.sparkler.ConfigKey;
 import edu.usc.irds.sparkler.plugin.regex.RegexRule;
 import edu.usc.irds.sparkler.plugin.regex.RegexURLFilterBase;
-import org.apache.hadoop.conf.Configuration;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
 
@@ -50,9 +50,8 @@ public class RegexURLFilter extends RegexURLFilterBase {
      * Rules specified as a config property will override rules specified as a
      * config file.
      */
-    protected Reader getRulesReader() throws IOException {
-        Configuration config = jobContext.getConfiguration();
-        String regexFile = config.get(URLFILTER_REGEX_FILE);
+    protected Reader getRulesReader(LinkedHashMap pluginConfig) throws IOException {
+        String regexFile = pluginConfig.get(URLFILTER_REGEX_FILE).toString();
         return new InputStreamReader(jobContext.getClass().getClassLoader().getResource(regexFile).openStream());
     }
 

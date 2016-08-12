@@ -23,7 +23,6 @@ import java.util.Properties
 
 import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.model.SparklerJob
-import org.apache.felix.framework.Felix
 import org.apache.felix.main.AutoProcessor
 import org.osgi.framework.ServiceReference
 import org.osgi.framework.launch.{Framework, FrameworkFactory}
@@ -202,7 +201,7 @@ class PluginService(job:SparklerJob) {
       LOG.debug(serviceLoader.getBundleContext.getBundles.mkString(" "))
       if (references != null && references.length > 0) {
         val instance: X = serviceLoader.getBundleContext.getService(references(0)).asInstanceOf[X]
-        instance.init(job)
+        instance.init(job, references(0).getBundle.getSymbolicName)
         registry.put(point, instance)
         Some(instance)
       } else {

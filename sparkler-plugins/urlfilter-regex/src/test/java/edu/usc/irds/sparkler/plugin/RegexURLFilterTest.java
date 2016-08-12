@@ -24,15 +24,12 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by thammegr on 6/24/16.
- */
 public class RegexURLFilterTest {
 
     @Test
     public void testFilter() throws Exception {
-
-        RegexURLFilter filter = TestUtils.newInstance(RegexURLFilter.class);
+        //TODO: Get pluginId from OSGI Context
+        RegexURLFilter filter = TestUtils.newInstance(RegexURLFilter.class, "urlfilter.regex");
         Map<String, Boolean> expectations = new HashMap<String, Boolean>(){{
             put("http://apache.org", true);
             put("http://irds.usc.edu", true);

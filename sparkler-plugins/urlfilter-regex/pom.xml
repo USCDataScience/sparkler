@@ -76,8 +76,8 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>RegexUrlFilter</Bundle-Name>
-                        <Bundle-SymbolicName>RegexUrlFilter</Bundle-SymbolicName>
+                        <Bundle-Name>urlfilter.regex</Bundle-Name>
+                        <Bundle-SymbolicName>urlfilter.regex</Bundle-SymbolicName>
                         <Bundle-Version>${parent.version}</Bundle-Version>
                         <Bundle-Activator>edu.usc.irds.sparkler.plugin.RegexURLFilterActivator</Bundle-Activator>
                         <Import-Package>org.osgi.framework,edu.usc.irds.sparkler,edu.usc.irds.sparkler.util,org.slf4j,org.apache.hadoop.conf</Import-Package>

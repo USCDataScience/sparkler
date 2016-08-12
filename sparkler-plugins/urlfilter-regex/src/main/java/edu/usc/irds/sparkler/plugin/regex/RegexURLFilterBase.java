@@ -18,6 +18,7 @@ package edu.usc.irds.sparkler.plugin.regex;
 
 import edu.usc.irds.sparkler.AbstractExtensionPoint;
 import edu.usc.irds.sparkler.JobContext;
+import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
 import edu.usc.irds.sparkler.URLFilter;
 import edu.usc.irds.sparkler.util.URLUtil;
@@ -32,6 +33,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 
@@ -60,7 +62,6 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
 
     /** An array of applicable rules */
     private List<RegexRule> rules;
-
 
     /**
      * Constructs a new empty RegexURLFilterBase
@@ -94,11 +95,19 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
     public void init(JobContext context) throws SparklerException {
         super.init(context);
         try {
-            Reader reader = getRulesReader();
+            SparklerConfiguration config = jobContext.getConfiguration();
+            LinkedHashMap pluginConfig = config.getPluginConfiguration(pluginId);
+            Reader reader = getRulesReader(pluginConfig);
             this.rules = readRules(reader);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void init(JobContext context, String pluginId) throws SparklerException {
+        this.pluginId = pluginId;
+        init(context);
     }
 
     /**
@@ -135,7 +144,7 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
      *          is the current configuration.
      * @return the name of the resource containing the rules to use.
      */
-    protected abstract Reader getRulesReader() throws IOException;
+    protected abstract Reader getRulesReader(LinkedHashMap pluginConfig) throws IOException;
 
 
     public boolean filter(String url, String parent) {
@@ -253,6 +262,4 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
             }
         }
     }
-
-
 }

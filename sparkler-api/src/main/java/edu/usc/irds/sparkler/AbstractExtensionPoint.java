@@ -31,11 +31,19 @@ public abstract class AbstractExtensionPoint implements ExtensionPoint {
     public static final Logger LOG = LoggerFactory.getLogger(AbstractExtensionPoint.class);
 
     protected JobContext jobContext;
+    protected String pluginId;
 
     @Override
     public void init(JobContext context) throws SparklerException {
         this.jobContext = context;
         LOG.debug("Initialize the context");
+    }
+
+    @Override
+    public void init(JobContext context, String pluginId) throws SparklerException {
+        this.jobContext = context;
+        this.pluginId = pluginId;
+        LOG.debug("Initialize the context & Plugin Id");
     }
 
     /**

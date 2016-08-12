@@ -17,8 +17,6 @@
 
 package edu.usc.irds.sparkler;
 
-import org.apache.hadoop.conf.Configuration;
-
 /**
  * The contract for job Context
  * @since Sparkler 0.1
@@ -29,5 +27,5 @@ public interface JobContext {
      * Gets Configuration
      * @return an instance of {@link }
      */
-    Configuration getConfiguration();
+    SparklerConfiguration getConfiguration();
 }
