@@ -149,7 +149,10 @@ object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]
 
       .filter({case (url, parent) =>
         val outLinkFilter:scala.Option[URLFilter] = PluginService.getExtension(classOf[URLFilter], job)
-        val result = outLinkFilter.get.filter(url, parent.url)
+        val result = outLinkFilter match {
+          case Some(urLFilter) => urLFilter.filter(url, parent.url)
+          case None => true
+        }
         LOG.debug(s"$result :: filter(${parent.url} --> $url)")
         result
       })
