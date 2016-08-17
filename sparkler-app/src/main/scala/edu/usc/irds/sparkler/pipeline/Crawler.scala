@@ -56,6 +56,14 @@ class Crawler extends CliTool {
     usage = "Output path, default is job id")
   var outputPath: String = ""
 
+  @Option(name = "-kls", aliases = Array("--kafka-listeners"),
+    usage = "Kafka Listeners, default is localhost:9092")
+  var kafkaListeners: String = sparklerConf.get(Constants.key.KAFKA_LISTENERS).asInstanceOf[String]
+
+  @Option(name = "-ktp", aliases = Array("--kafka-topic"),
+    usage = "Kafka Topic, default is sparkler")
+  var kafkaTopic: String = sparklerConf.get(Constants.key.KAFKA_TOPIC).asInstanceOf[String]
+
   @Option(name = "-tn", aliases = Array("--top-n"),
     usage = "Top urls per domain to be selected for a round")
   var topN: Int = sparklerConf.get(Constants.key.GENERATE_TOPN).asInstanceOf[Int]
@@ -113,6 +121,8 @@ class Crawler extends CliTool {
         .flatMap({ case (grp, rs) => new FairFetcher(rs.iterator, localFetchDelay, FetchFunction, ParseFunction) })
         .persist()
 
+      storeContentKafka(kafkaListeners, kafkaTopic, fetchedRdd)
+
       //Step: Update status of fetched resources
       val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => StatusUpdateSolrTransformer(d))
       val statusUpdateFunc = new SolrStatusUpdate(job)
@@ -168,6 +178,23 @@ object Crawler extends Loggable with Serializable{
     rdd.filter(_.content.status == FETCHED)
       .map(d => (new Text(d.res.url), d.content.toNutchContent(new Configuration())))
       .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
+  }
+
+  /**
+   * Used to send crawl dumps to the Kafka Messaging System.
+   * There is a sparklerProducer instantiated per partition and
+   * used to send all crawl data in a partition to Kafka.
+   * @param listeners list of listeners example : host1:9092,host2:9093,host3:9094
+   * @param topic the kafka topic to use
+   * @param rdd the input RDD consisting of the CrawlData
+   */
+  def storeContentKafka(listeners: String, topic: String, rdd:RDD[CrawlData]): Unit = {
+    rdd.foreachPartition(crawlData_iter => {
+      val sparklerProducer = new SparklerProducer(listeners, topic)
+      crawlData_iter.foreach(crawlData => {
+        sparklerProducer.send(crawlData.content.content)
+      })
+    })
   }
 
   def main(args: Array[String]): Unit = {
