@@ -6,10 +6,21 @@ Sparkler (aka Spark-Crawler) is an evolution of Apache Nutch to run on Apache Sp
 Click here for quick start guide : https://github.com/uscdataScience/sparkler/wiki/sparkler-0.1
 
 ### Requires
-  * Solr - config files (schema) in `conf/solr` folder.
-  * Maven
+  * Apache Solr - (required at runtime) - config files (schema) are in `conf/solr` folder.
+  * Apache Maven - (required to build)
+  * Apache Kafka - (optional, to stream output) 
 
 Setup instructions https://github.com/uscdataScience/sparkler/wiki/sparkler-0.1#requirements
+
+### Build
+ To build this project, `cd` to the root directory of the sparkler and run the following command:
+
+     mvn clean org.apache.felix:maven-bundle-plugin:manifest install
+ 
+ Note that this is a multi-module maven project with OSGI bundle support using Apache Felix.
+ On success, the build produces `sparkler-app/target/sparkler-app-xx.jar`
+ For detailed instuctions, visit the [wiki page: Build and Deploy](https://github.com/USCDataScience/sparkler/wiki/Build-and-Deploy)
+
 
 ### Progress so far
 + Injector : Inject urls to crawl db
@@ -27,9 +38,9 @@ This is a multi module maven project
 
 | Module Name| Path | Description | Remarks |
 |---------    |-------|----|----|
-|sparkler-api |  |  | |
-|sparkler-app |  |  | |
-|sparkler-plugins |  |  | |
+|sparkler-api | /sparkler-api | This project defines contracts for plugins and provides common utilities. | This should be shared by all plugins |
+|sparkler-app | /sparkler-app  | This project is the main application that runs on sparks and uses all plugins | |
+|sparkler-plugins | /sparkler-plugins | This project contains build configurations for all plugins  | |
 |sparkler-active-plugins |  |  | |
 
 
@@ -37,7 +48,7 @@ This is a multi module maven project
 
 | Plugin Name| Path | Description | Remarks |
 |---------    |-------|----|----|
-|urlfilter-regex |  |  | |
+|urlfilter-regex | /sparkler-plugins/urlfilter-regex | This plugin provides URL Filter extension | An example plugin in OSGI bundle |
 
 
 ### Contributing to Sparkler
