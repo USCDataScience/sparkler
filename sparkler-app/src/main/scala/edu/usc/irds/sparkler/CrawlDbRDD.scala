@@ -22,8 +22,10 @@ import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
 import edu.usc.irds.sparkler.solr.SolrGroupPartition
 import edu.usc.irds.sparkler.util.SolrResultIterator
 import org.apache.solr.client.solrj.SolrQuery
+import org.apache.solr.client.solrj.util.ClientUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}
+import ClientUtils.escapeQueryChars
 
 import scala.collection.JavaConversions._
 
@@ -47,7 +49,7 @@ class CrawlDbRDD(sc: SparkContext,
     val partition: SolrGroupPartition = split.asInstanceOf[SolrGroupPartition]
     val batchSize = 100
     val query = new SolrQuery(generateQry)
-    query.addFilterQuery(s"${Resource.GROUP}:${partition.group}")
+    query.addFilterQuery(s"""${Resource.GROUP}:"${escapeQueryChars(partition.group)}"""")
     query.addFilterQuery(s"${Resource.JOBID}:${job.id}")
     query.set("sort", sortBy)
     query.setRows(batchSize)
