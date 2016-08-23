@@ -107,6 +107,21 @@ class PluginService(job:SparklerJob) {
     factory
   }
 
+  def shutdownCleanup: Runnable = new Runnable {
+    override def run(): Unit = {
+      try {
+        if (serviceLoader != null) {
+          serviceLoader.stop()
+          serviceLoader.waitForStop(0)
+        }
+      }
+      catch {
+        case e: Exception =>
+          e.printStackTrace()
+          throw new SparklerException("Error Stopping the Felix Framework")
+      }
+    }
+  }
 
   def load(): Unit ={
 
@@ -124,19 +139,7 @@ class PluginService(job:SparklerJob) {
 
     // Register a Shutdown Hook with JVM to make sure Felix framework is cleanly
     // shutdown when JVM exits
-    Runtime.getRuntime().addShutdownHook(new Thread(s"Felix Framework for ${job.id}") {
-      override def run: Unit = {
-        try {
-          if (serviceLoader != null) {
-            serviceLoader.stop()
-            serviceLoader.waitForStop(0)
-          }
-        }
-        catch {
-          case e: Exception => e.printStackTrace(); throw new SparklerException("Error Stopping the Felix Framework")
-        }
-      }
-    })
+    Runtime.getRuntime.addShutdownHook(new Thread(shutdownCleanup, s"Felix-${job.id}"))
 
     // Creating an instance of the Apache Felix framework
     val felixFactory:FrameworkFactory = getFelixFrameworkFactory
@@ -151,7 +154,9 @@ class PluginService(job:SparklerJob) {
 
     // Start the Felix Framework
     serviceLoader.start()
-
+    serviceLoader.getBundleContext.getBundles.foreach(b => {
+      println(s"Bundle Found: ${b.getSymbolicName}" )
+    })
   }
 
   /**
@@ -160,7 +165,8 @@ class PluginService(job:SparklerJob) {
     * @param clazz the class
     * @return true if the given class is an extension
     */
-  def isExtensionPoint(clazz:Class[_]): Boolean = clazz != null && classOf[ExtensionPoint].isAssignableFrom(clazz)
+  def isExtensionPoint(clazz:Class[_]): Boolean =
+    clazz != null && classOf[ExtensionPoint].isAssignableFrom(clazz)
 
   /**
     * Detects the point where an extension can be plugged into sparkler

@@ -17,8 +17,6 @@
 
 package edu.usc.irds.sparkler.util
 
-import edu.usc.irds.sparkler.model.Resource
-import org.apache.solr.client.solrj.impl.HttpSolrClient
 import org.apache.solr.client.solrj.{SolrClient, SolrQuery}
 
 import scala.collection.JavaConversions._
