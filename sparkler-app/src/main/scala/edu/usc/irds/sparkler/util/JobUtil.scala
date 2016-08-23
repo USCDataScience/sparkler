@@ -33,7 +33,7 @@ object JobUtil {
     * Makes new Id for job
     * @return new Id for a job
     */
-  def newJobId(): String = "sparkler-job-" + System.currentTimeMillis()
+  def newJobId(): String = "sjob-" + System.currentTimeMillis()
 
   /**
     * Creates ID for bew segment
@@ -41,6 +41,6 @@ object JobUtil {
     * @return nutch segment Id
     */
   def newSegmentId(nutchCompatible: Boolean = true): String =
-    (if (nutchCompatible) "" else "sparkler-seg-") + DATE_FMT.format(new Date())
+    (if (nutchCompatible) "" else "sseg-") + DATE_FMT.format(new Date())
 
 }
