@@ -34,7 +34,7 @@ object ParseFunction extends ((CrawlData) => Set[String]) with Serializable with
 
   override def apply(data: CrawlData): Set[String] = {
     try {
-      LOG.info("PARSING {}", data.content.url)
+      LOG.info("PARSING  {}", data.content.url)
       val stream = new ByteArrayInputStream(data.content.content)
       val linkHandler = new LinkContentHandler()
       val parser = new AutoDetectParser()
