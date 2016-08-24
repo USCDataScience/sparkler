@@ -36,8 +36,8 @@ spark.master: local
 # Type: String. Default is "localhost:9092" for local mode.
 kafka.listeners: localhost:9092
 # Kafka topic to send dumps to
-# Type: String. Default is "sparkler".
-kafka.topic: sparkler
+# Type: String. Default is "sparkler/<jobid>".
+kafka.topic: sparkler_%s
 
 ##################### Generate Properties ###############################
 

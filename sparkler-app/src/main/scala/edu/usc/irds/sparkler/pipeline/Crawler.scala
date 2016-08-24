@@ -121,7 +121,7 @@ class Crawler extends CliTool {
         .flatMap({ case (grp, rs) => new FairFetcher(rs.iterator, localFetchDelay, FetchFunction, ParseFunction) })
         .persist()
 
-      storeContentKafka(kafkaListeners, kafkaTopic, fetchedRdd)
+      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
 
       //Step: Update status of fetched resources
       val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => StatusUpdateSolrTransformer(d))
