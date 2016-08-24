@@ -30,6 +30,14 @@ crawldb.uri: http://localhost:8983/solr/crawldb
 spark.master: local
 
 
+##################### Apache Kafka Properties ###########################
+
+# Kafka Listeners
+# Type: String. Default is "localhost:9092" for local mode.
+kafka.listeners: localhost:9092
+# Kafka topic to send dumps to
+# Type: String. Default is "sparkler/<jobid>".
+kafka.topic: sparkler_%s
 
 ##################### Generate Properties ###############################
 
