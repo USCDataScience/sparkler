@@ -18,7 +18,7 @@
 package edu.usc.irds.sparkler.pipeline
 
 import java.io.ByteArrayOutputStream
-import java.net.URL
+import java.net.{HttpURLConnection, URL}
 import java.util.Date
 
 import edu.usc.irds.sparkler.base.Loggable
@@ -44,6 +44,9 @@ object FetchFunction extends ((Resource) => Content) with Serializable with Logg
     try {
       val urlConn = new URL(resource.url).openConnection()
       urlConn.setConnectTimeout(FETCH_TIMEOUT)
+
+      val responseCode = urlConn.asInstanceOf[HttpURLConnection].getResponseCode
+      LOG.debug("STATUS CODE : " + responseCode + " " + resource.url)
 
       val inStream = urlConn.getInputStream
       val outStream = new ByteArrayOutputStream()
