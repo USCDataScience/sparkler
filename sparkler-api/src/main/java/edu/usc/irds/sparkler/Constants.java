@@ -44,6 +44,13 @@ public interface Constants {
         @ConfigKey
         String SPARK_MASTER = "spark.master";
 
+        // Apache Kafka Properties
+        @ConfigKey
+        String KAFKA_LISTENERS = "kafka.listeners";
+
+        @ConfigKey
+        String KAFKA_TOPIC = "kafka.topic";
+
         // HTTP Properties
 
         // Database Properties
