@@ -120,6 +120,8 @@
    <field name="status" type="status" indexed="true" stored="true" default="NEW" multiValued="false" required="true" docValues="true" />
    <field name="depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    <field name="score" type="double" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
+   <field name="extractedText" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
+   <field name="title" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
 
 
    <!-- Admin -->

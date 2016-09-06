@@ -17,37 +17,49 @@
 
 package edu.usc.irds.sparkler.pipeline
 
-import java.io.ByteArrayInputStream
+import java.io.{InputStream, ByteArrayInputStream}
 
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.CrawlData
-import org.apache.tika.metadata
+import org.apache.commons.io.IOUtils
+import org.apache.tika.metadata.Metadata
 import org.apache.tika.parser.AutoDetectParser
-import org.apache.tika.sax.LinkContentHandler
+import org.apache.tika.sax.{WriteOutContentHandler, BodyContentHandler, LinkContentHandler}
 
 import scala.collection.JavaConverters._
 
 /**
   * Created by thammegr on 6/7/16.
   */
-object ParseFunction extends ((CrawlData) => Set[String]) with Serializable with Loggable {
+object ParseFunction extends ((CrawlData) => (String, Set[String], Metadata)) with Serializable with Loggable {
 
-  override def apply(data: CrawlData): Set[String] = {
+  override def apply(data: CrawlData): (String, Set[String], Metadata) = {
+    var stream: InputStream = new ByteArrayInputStream(data.content.content)
+    val linkHandler = new LinkContentHandler()
+    val parser = new AutoDetectParser()
+    val meta = new Metadata()
+    val outHandler = new WriteOutContentHandler()
+    val contentHandler = new BodyContentHandler(outHandler)
     try {
       LOG.info("PARSING  {}", data.content.url)
-      val stream = new ByteArrayInputStream(data.content.content)
-      val linkHandler = new LinkContentHandler()
-      val parser = new AutoDetectParser()
-      val meta = new metadata.Metadata()
+
+      // Parse Outlinks
       meta.set("resourceName", data.content.url)
       parser.parse(stream, linkHandler, meta)
-      stream.close()
-      linkHandler.getLinks.asScala.map(_.getUri.trim).filter(!_.isEmpty).toSet
+      val outlinks = linkHandler.getLinks.asScala.map(_.getUri.trim).filter(!_.isEmpty).toSet
+
+      // Parse Text
+      stream = new ByteArrayInputStream(data.content.content)
+      parser.parse(stream, contentHandler, meta)
+
+      (outHandler.toString, outlinks, meta)
     } catch {
       case e:Throwable =>
         LOG.warn("PARSER-ERROR {}", data.content.url)
         LOG.warn(e.getMessage, e)
-        Set.empty[String]
+        ("", Set.empty[String], meta)
+    } finally {
+      IOUtils.closeQuietly(stream)
     }
   }
 }

@@ -17,6 +17,8 @@
 
 package edu.usc.irds.sparkler.model
 
+import org.apache.tika.metadata.Metadata
+
 
 /**
   *
@@ -25,4 +27,6 @@ package edu.usc.irds.sparkler.model
 class CrawlData(val res: Resource) extends Serializable {
   var content: Content = _
   var outLinks: Set[String] = _
+  var extractedText: String = _
+  var metadata: Metadata = _
 }

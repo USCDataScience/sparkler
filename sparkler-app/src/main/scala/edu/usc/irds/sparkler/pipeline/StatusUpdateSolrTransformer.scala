@@ -21,6 +21,7 @@ import java.util.Date
 
 import edu.usc.irds.sparkler.model.{CrawlData, Resource}
 import org.apache.solr.common.SolrInputDocument
+import org.apache.tika.metadata.Metadata
 
 import scala.collection.JavaConverters._
 
@@ -39,6 +40,8 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     sUpdate.setField(Resource.LAST_UPDATED_AT, Map("set" -> new Date()).asJava)
     sUpdate.setField(Resource.NUM_TRIES, Map("inc" -> 1).asJava)
     sUpdate.setField(Resource.NUM_FETCHES, Map("inc" -> 1).asJava)
+    sUpdate.setField(Resource.TITLE, data.metadata.get("title"))
+    sUpdate.setField(Resource.EXTRACTED_TEXT, data.extractedText)
     sUpdate
   }
 }
