@@ -1,7 +1,17 @@
 
 # Sparkler
 
-Sparkler (aka Spark-Crawler) is an evolution of Apache Nutch to run on Apache Spark.
+A web crawler is a bot program that fetches resources from the web for the sake of building applications like search engines, knowledge bases, etc. Sparkler (contraction of Spark-Crawler) is a new web crawler that makes use of recent advancements in distributed computing and information retrieval domains by conglomerating various Apache projects like Spark, Kafka, Lucene/Solr, Tika, and Felix. Sparkler is an extensible, highly scalable, and high-performance web crawler that is an evolution of Apache Nutch and runs on Apache Spark Cluster. 
+
+
+### Notable features of Sparkler are as follows:
+
+* **Provides Higher performance and fault tolerance:** The crawl pipeline has been redesigned to take advantage of the caching and fault tolerance capability of Apache Spark.
+* **Supports complex and near real-time analytics:** The internal data-structure is an indexed store powered by Apache Lucene and has the functionality to answer complex queries in near real time. Apache Solr (Supporting standalone for a quick start and cloud mode to scale horizontally) is used to expose the crawler analytics via HTTP API. These analytics can be visualized using intuitive charts in Admin dashboard (coming soon).
+* **Streams out the content in real-time:** Optionally, Apache Kafka can be configured to retrieve the output content as and when the content becomes available.
+* **Extensible plugin framework:** Apache Felix, an open source community implementation of Open Service Gateway Initiative (OSGi) is embedded under the hood of Sparkler to make it extensible with the plugins.
+* **Universal Parser:** Apache Tika, the most popular content detection, and content analysis toolkit that can deal with thousands of file formats, is used to discover links to the outgoing web resources and also to perform analysis on fetched resources.
+
 
 Click here for quick start guide : https://github.com/uscdataScience/sparkler/wiki/sparkler-0.1
 
