@@ -20,7 +20,7 @@ package edu.usc.irds.sparkler.pipeline
 import java.io.{InputStream, ByteArrayInputStream}
 
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.model.CrawlData
+import edu.usc.irds.sparkler.model.{ParseData, CrawlData}
 import org.apache.commons.io.IOUtils
 import org.apache.tika.metadata.Metadata
 import org.apache.tika.parser.AutoDetectParser
@@ -31,33 +31,41 @@ import scala.collection.JavaConverters._
 /**
   * Created by thammegr on 6/7/16.
   */
-object ParseFunction extends ((CrawlData) => (String, Set[String], Metadata)) with Serializable with Loggable {
+object ParseFunction extends ((CrawlData) => (ParseData)) with Serializable with Loggable {
 
-  override def apply(data: CrawlData): (String, Set[String], Metadata) = {
+  override def apply(data: CrawlData): (ParseData) = {
+    val parseData: ParseData = new ParseData()
     var stream: InputStream = new ByteArrayInputStream(data.content.content)
     val linkHandler = new LinkContentHandler()
     val parser = new AutoDetectParser()
     val meta = new Metadata()
     val outHandler = new WriteOutContentHandler()
     val contentHandler = new BodyContentHandler(outHandler)
+    LOG.info("PARSING  {}", data.content.url)
     try {
-      LOG.info("PARSING  {}", data.content.url)
-
-      // Parse Outlinks
+      // Parse OutLinks
       meta.set("resourceName", data.content.url)
       parser.parse(stream, linkHandler, meta)
-      val outlinks = linkHandler.getLinks.asScala.map(_.getUri.trim).filter(!_.isEmpty).toSet
-
+      parseData.outlinks = linkHandler.getLinks.asScala.map(_.getUri.trim).filter(!_.isEmpty).toSet
+    } catch {
+      case e:Throwable =>
+        LOG.warn("PARSING-OUTLINKS-ERROR {}", data.content.url)
+        LOG.warn(e.getMessage, e)
+    } finally {
+      IOUtils.closeQuietly(stream)
+    }
+    try {
       // Parse Text
       stream = new ByteArrayInputStream(data.content.content)
       parser.parse(stream, contentHandler, meta)
-
-      (outHandler.toString, outlinks, meta)
+      parseData.plainText = outHandler.toString
+      parseData.metadata = meta
+      parseData
     } catch {
       case e:Throwable =>
-        LOG.warn("PARSER-ERROR {}", data.content.url)
+        LOG.warn("PARSING-CONTENT-ERROR {}", data.content.url)
         LOG.warn(e.getMessage, e)
-        ("", Set.empty[String], meta)
+        parseData
     } finally {
       IOUtils.closeQuietly(stream)
     }

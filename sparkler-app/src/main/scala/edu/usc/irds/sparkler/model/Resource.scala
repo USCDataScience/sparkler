@@ -88,8 +88,8 @@ object Resource {
   val SCORE = "score"
   val STATUS = "status"
   val LAST_UPDATED_AT = "lastUpdatedAt"
-  val TITLE = "title"
-  val EXTRACTED_TEXT = "extractedText"
+  val PLAIN_TEXT = "plainText"
+  val MD_SUFFIX = "_md"
 
   def resourceId(url: String, job: SparklerJob): String = s"${job.id}-$url"
 }

@@ -27,6 +27,6 @@ import org.apache.tika.metadata.Metadata
 class CrawlData(val res: Resource) extends Serializable {
   var content: Content = _
   var outLinks: Set[String] = _
-  var extractedText: String = _
+  var plainText: String = _
   var metadata: Metadata = _
 }

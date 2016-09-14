@@ -120,8 +120,21 @@
    <field name="status" type="status" indexed="true" stored="true" default="NEW" multiValued="false" required="true" docValues="true" />
    <field name="depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    <field name="score" type="double" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
-   <field name="extractedText" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
-   <field name="title" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
+   <field name="plainText" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
+
+   <!-- Metadata fields -->
+   <dynamicField name="*_s_md" type="string" indexed="true" stored="true"/>
+   <dynamicField name="*_ss_md" type="string" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_t_md" type="text_general" indexed="true" stored="true"/>
+   <dynamicField name="*_ts_md" type="text_general" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_i_md" type="int" indexed="true" stored="true"/>
+   <dynamicField name="*_is_md" type="int" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_l_md" type="long" indexed="true" stored="true"/>
+   <dynamicField name="*_ls_md" type="long" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_d_md" type="double" indexed="true" stored="true"/>
+   <dynamicField name="*_ds_md" type="double" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_b_md" type="boolean" indexed="true" stored="true"/>
+   <dynamicField name="*_bs_md" type="boolean" indexed="true" stored="true" multiValued="true"/>
 
 
    <!-- Admin -->
