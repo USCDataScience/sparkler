@@ -124,7 +124,7 @@
    <field name="status" type="status" indexed="true" stored="true" default="NEW" multiValued="false" required="true" docValues="true" />
    <field name="depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    <field name="score" type="double" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
-   <field name="plainText" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
+   <field name="plainText" type="text_general" indexed="true" stored="true" multiValued="false" />
 
 
    <!-- Admin -->
@@ -216,10 +216,9 @@
   <copyField source="*_d_md" dest="text"/>
   <copyField source="*_ds_md" dest="text"/>
 
-  <!--
-   <copyField source="title" dest="text"/>
-   <copyField source="body" dest="text"/>
-  -->
+
+   <!-- <copyField source="title" dest="text"/> -->
+   <copyField source="plainText" dest="text"/>
   
     <!-- field type definitions. The "name" attribute is
        just a label to be used by field definitions.  The "class"
