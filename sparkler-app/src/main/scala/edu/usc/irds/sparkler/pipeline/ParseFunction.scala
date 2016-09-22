@@ -38,7 +38,7 @@ object ParseFunction extends ((CrawlData) => (ParseData)) with Serializable with
     var stream: InputStream = new ByteArrayInputStream(data.content.content)
     val linkHandler = new LinkContentHandler()
     val parser = new AutoDetectParser()
-    val meta = new Metadata()
+    var meta = new Metadata()
     val outHandler = new WriteOutContentHandler()
     val contentHandler = new BodyContentHandler(outHandler)
     LOG.info("PARSING  {}", data.content.url)
@@ -55,6 +55,8 @@ object ParseFunction extends ((CrawlData) => (ParseData)) with Serializable with
       IOUtils.closeQuietly(stream)
     }
     try {
+      meta  = new Metadata
+      meta.set("resourceName", data.content.url)
       // Parse Text
       stream = new ByteArrayInputStream(data.content.content)
       parser.parse(stream, contentHandler, meta)
