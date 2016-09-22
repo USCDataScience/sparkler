@@ -20,9 +20,11 @@ package edu.usc.irds.sparkler.pipeline
 import java.util.Date
 
 import edu.usc.irds.sparkler.model.{CrawlData, Resource}
+import edu.usc.irds.sparkler.solr.schema.FieldMapper
 import org.apache.solr.common.SolrInputDocument
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 /**
   * Created by thammegr on 6/7/16.
@@ -39,6 +41,22 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     sUpdate.setField(Resource.LAST_UPDATED_AT, Map("set" -> new Date()).asJava)
     sUpdate.setField(Resource.NUM_TRIES, Map("inc" -> 1).asJava)
     sUpdate.setField(Resource.NUM_FETCHES, Map("inc" -> 1).asJava)
+    sUpdate.setField(Resource.PLAIN_TEXT, data.plainText)
+
+    var mdFields: Map[String, AnyRef] = Map()
+    for (name: String <- data.metadata.names()) {
+      mdFields += (name -> (if (data.metadata.isMultiValued(name)) data.metadata.getValues(name) else data.metadata.get(name)))
+    }
+    val fieldMapper: FieldMapper = FieldMapper.initialize()
+    val mappedMdFields: mutable.Map[String, AnyRef] = fieldMapper.mapFields(mdFields.asJava, true).asScala
+    mappedMdFields.foreach{case (k, v) => {
+      var key: String = k
+      if (!k.endsWith(Resource.MD_SUFFIX)) {
+        key = k + Resource.MD_SUFFIX
+      }
+      sUpdate.setField(key, v)
+    }}
+
     sUpdate
   }
 }

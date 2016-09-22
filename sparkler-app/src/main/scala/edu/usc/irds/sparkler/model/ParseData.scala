@@ -19,14 +19,11 @@ package edu.usc.irds.sparkler.model
 
 import org.apache.tika.metadata.Metadata
 
-
 /**
-  *
-  * @since 5/29/16
+  * Created by karanjeetsingh on 9/12/16.
   */
-class CrawlData(val res: Resource) extends Serializable {
-  var content: Content = _
-  var outLinks: Set[String] = _
+class ParseData extends Serializable {
   var plainText: String = _
-  var metadata: Metadata = _
+  var outlinks: Set[String] = Set.empty[String]
+  var metadata: Metadata = new Metadata()
 }

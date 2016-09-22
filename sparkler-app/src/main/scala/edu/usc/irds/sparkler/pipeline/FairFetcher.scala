@@ -20,14 +20,15 @@ package edu.usc.irds.sparkler.pipeline
 import java.util.concurrent.atomic.AtomicLong
 
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.model.{Content, CrawlData, Resource}
+import edu.usc.irds.sparkler.model.{ParseData, Content, CrawlData, Resource}
+import org.apache.tika.metadata.Metadata
 
 /**
   * Created by thammegr on 6/7/16.
   */
 class FairFetcher(val resources: Iterator[Resource], val delay: Long,
                   val fetchFunc: (Resource => Content),
-                  val parseFunc: ((CrawlData) => Set[String]))
+                  val parseFunc: ((CrawlData) => (ParseData)))
   extends Iterator[CrawlData] {
 
   import FairFetcher.LOG
@@ -53,7 +54,10 @@ class FairFetcher(val resources: Iterator[Resource], val delay: Long,
     hitCounter.set(System.currentTimeMillis())
 
     //STEP: Parse
-    data.outLinks = parseFunc(data)
+    val parseData: ParseData = parseFunc(data)
+    data.plainText = parseData.plainText
+    data.outLinks = parseData.outlinks
+    data.metadata = parseData.metadata
     data
   }
 }

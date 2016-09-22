@@ -13,35 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-*.class
-*.log
-*.jar
+################## Solr Schema Map Properties #######################
 
-# sbt specific
-.cache
-.history
-.lib/
-dist/*
-target/
-lib_managed/
-src_managed/
-project/boot/
-project/plugins/project/
+overrides:
+  id: id
 
-# Scala-IDE specific
-.scala_dependencies
-.worksheet
-**~
-/sparkler-app/sparkler-job-**
-.idea/
-*.iml
+typeSuffix:
+  java.lang.String: _t
+  java.lang.Integer: _i
+  java.lang.Long: _l
+  java.lang.Boolean: _b
+  java.lang.Float: _f
+  java.lang.Double: _d
 
-# Eclipse-IDE specific
-.classpath
-.project
-.cache-main
-.settings/
-
-. auto generated files
-sjob-**
-
+multiValSuffix: s

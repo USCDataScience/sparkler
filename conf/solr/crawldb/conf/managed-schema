@@ -109,7 +109,11 @@
      analysis is possible as long as the indexing process is guaranteed to index the term
      in a compatible way. Any analysis applied to the <uniqueKey> should _not_ produce multiple
      tokens
-   -->   
+   -->
+   <!-- catch-all field -->
+   <field name="text" type="text_general" stored="false" indexed="true" multiValued="true"/>
+
+   <!-- Crawl DB Static Fields -->
    <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" /> 
    <field name="url" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" />
    <field name="jobId" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" />
@@ -120,6 +124,7 @@
    <field name="status" type="status" indexed="true" stored="true" default="NEW" multiValued="false" required="true" docValues="true" />
    <field name="depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    <field name="score" type="double" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
+   <field name="plainText" type="text_general" indexed="true" stored="true" multiValued="false" />
 
 
    <!-- Admin -->
@@ -131,6 +136,21 @@
        EXAMPLE:  name="*_i" will match any field ending in _i (like myid_i, z_i)
        RESTRICTION: the glob-like pattern in the name attribute must have
        a "*" only at the start or the end.  -->
+
+   <!-- Metadata fields -->
+   <dynamicField name="*_s_md" type="string" indexed="true" stored="true"/>
+   <dynamicField name="*_ss_md" type="string" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_t_md" type="text_general" indexed="true" stored="true"/>
+   <dynamicField name="*_ts_md" type="text_general" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_i_md" type="int" indexed="true" stored="true"/>
+   <dynamicField name="*_is_md" type="int" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_l_md" type="long" indexed="true" stored="true"/>
+   <dynamicField name="*_ls_md" type="long" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_d_md" type="double" indexed="true" stored="true"/>
+   <dynamicField name="*_ds_md" type="double" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_b_md" type="boolean" indexed="true" stored="true"/>
+   <dynamicField name="*_bs_md" type="boolean" indexed="true" stored="true" multiValued="true"/>
+
    
    <dynamicField name="*_i"  type="int"    indexed="true"  stored="true"/>
    <dynamicField name="*_is" type="int"    indexed="true"  stored="true"  multiValued="true"/>
@@ -179,15 +199,26 @@
       Unless this field is marked with required="false", it will be a required field
    -->
  <uniqueKey>id</uniqueKey>
+ <defaultSearchField>text</defaultSearchField>
 
   <!-- copyField commands copy one field to another at the time a document
         is added to the index.  It's used either to index the same field differently,
         or to add multiple fields to the same field for easier/faster searching.  -->
 
-  <!--
-   <copyField source="title" dest="text"/>
-   <copyField source="body" dest="text"/>
-  -->
+  <copyField source="*_s_md" dest="text"/>
+  <copyField source="*_ss_md" dest="text"/>
+  <copyField source="*_t_md" dest="text"/>
+  <copyField source="*_ts_md" dest="text"/>
+  <copyField source="*_i_md" dest="text"/>
+  <copyField source="*_is_md" dest="text"/>
+  <copyField source="*_l_md" dest="text"/>
+  <copyField source="*_ls_md" dest="text"/>
+  <copyField source="*_d_md" dest="text"/>
+  <copyField source="*_ds_md" dest="text"/>
+
+
+   <!-- <copyField source="title" dest="text"/> -->
+   <copyField source="plainText" dest="text"/>
   
     <!-- field type definitions. The "name" attribute is
        just a label to be used by field definitions.  The "class"
