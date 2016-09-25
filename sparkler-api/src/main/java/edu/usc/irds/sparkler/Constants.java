@@ -46,6 +46,9 @@ public interface Constants {
 
         // Apache Kafka Properties
         @ConfigKey
+        String KAFKA_ENABLE = "kafka.enable";
+
+        @ConfigKey
         String KAFKA_LISTENERS = "kafka.listeners";
 
         @ConfigKey
