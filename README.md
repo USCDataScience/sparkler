@@ -77,9 +77,7 @@ This is a multi module maven project
 
 3. **Sending pull request:**
 
-  Use github pull request functionality.
-  All pull requests must have an issue created to discuss about it (for the sake of visibility to other members)
-   whether it is bug fix or a feature addition.
+  Use github pull request functionality. All pull requests must be raised against `develop` branch and have an issue created to discuss about it (for the sake of visibility to other members) whether it is bug fix or a feature addition.
 4. **Licence Header:**
 
   All source files should include Apache Licence 2.0 licence header. Refer existing source files for an example.
