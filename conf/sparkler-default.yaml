@@ -31,7 +31,9 @@ spark.master: local
 
 
 ##################### Apache Kafka Properties ###########################
-
+# Enable Kafka Dump
+# Type: Boolean. Default is "false"
+kafka.enable: false
 # Kafka Listeners
 # Type: String. Default is "localhost:9092" for local mode.
 kafka.listeners: localhost:9092

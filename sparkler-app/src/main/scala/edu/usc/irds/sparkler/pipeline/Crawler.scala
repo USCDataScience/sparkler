@@ -56,6 +56,10 @@ class Crawler extends CliTool {
     usage = "Output path, default is job id")
   var outputPath: String = ""
 
+  @Option(name = "-ke", aliases = Array("--kafka-enable"),
+    usage = "Enable Kafka, default is false i.e. disabled")
+  var kafkaEnable: Boolean = sparklerConf.get(Constants.key.KAFKA_ENABLE).asInstanceOf[Boolean]
+
   @Option(name = "-kls", aliases = Array("--kafka-listeners"),
     usage = "Kafka Listeners, default is localhost:9092")
   var kafkaListeners: String = sparklerConf.get(Constants.key.KAFKA_LISTENERS).asInstanceOf[String]
@@ -121,7 +125,9 @@ class Crawler extends CliTool {
         .flatMap({ case (grp, rs) => new FairFetcher(rs.iterator, localFetchDelay, FetchFunction, ParseFunction) })
         .persist()
 
-      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
+      if (kafkaEnable) {
+        storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
+      }
 
       //Step: Update status of fetched resources
       val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => StatusUpdateSolrTransformer(d))
