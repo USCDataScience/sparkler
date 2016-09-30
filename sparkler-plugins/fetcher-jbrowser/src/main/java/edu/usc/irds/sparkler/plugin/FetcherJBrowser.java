@@ -76,7 +76,7 @@ public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
 		
 		LOG.debug("Time taken to load {} - {} ",webUrl, (System.currentTimeMillis() - start));
 		
-		return null ;
+		return new FetchedData(html.getBytes(), "application/html",status) ;
 	}
 
 	public JBrowserDriver createBrowserInstance() {
