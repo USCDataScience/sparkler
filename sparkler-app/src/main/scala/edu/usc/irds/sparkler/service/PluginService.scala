@@ -39,7 +39,7 @@ import scala.io.Source
   */
 class PluginService(job:SparklerJob) {
 
-  val LOG = LoggerFactory.getLogger(PluginService.getClass)
+  import PluginService._
 
   // This map has two functions
   // 1) Keys are set of known extensions
@@ -220,15 +220,17 @@ class PluginService(job:SparklerJob) {
 object PluginService {
 
   //TODO: weak hash map + bounded size + with a sensible expiration policy like LRU
-  val cache = new mutable.HashMap[SparklerJob, PluginService]()
+  //TODO: plugins mapped to jobId. consider the case of having SparklerJob instance
+  val cache = new mutable.HashMap[String, PluginService]()
+  val LOG = LoggerFactory.getLogger(PluginService.getClass)
 
   def getExtension[X <: ExtensionPoint](point:Class[X], job: SparklerJob):Option[X] = {
-    if (!cache.contains(job)){
+    if (!cache.contains(job.id)){
       //lazy initialization for distributed mode (wherever this code gets executed)
       val service = new PluginService(job)
       service.load()
-      cache.put(job, service)
+      cache.put(job.id, service)
     }
-    cache(job).getExtension(point)
+    cache(job.id).getExtension(point)
   }
 }
