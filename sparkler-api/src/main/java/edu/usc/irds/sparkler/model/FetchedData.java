@@ -15,15 +15,29 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler;
+package edu.usc.irds.sparkler.model;
 
-import edu.usc.irds.sparkler.model.FetchedData;
-
-/**
- * Created by thammegr on 6/21/16.
- */
-public interface Fetcher extends ExtensionPoint {
-
-	FetchedData fetch(String url);
-
+public class FetchedData {
+	private byte[] content;
+	private String contentType;
+	private int responseCode;
+	
+	public FetchedData(byte[] content, String contentType, int responseCode) {
+		super();
+		this.content = content;
+		this.contentType = contentType;
+		this.responseCode = responseCode;
+	}
+	
+	public byte[] getContent() {
+		return content;
+	}
+	
+	public String getContentType() {
+		return contentType;
+	}
+	
+	public int getResponseCode() {
+		return responseCode;
+	}
 }

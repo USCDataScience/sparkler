@@ -29,18 +29,18 @@ import java.util.Properties;
 
 /**
  * Loads web page on a browser and returns HTML once page is loaded.
- * Properties can be cofigured 
+ * Properties can be configured 
  */
-public class LoadOnBrowserActivator implements BundleActivator {
+public class FetcherJBrowserActivator implements BundleActivator {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LoadOnBrowserActivator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowserActivator.class);
 
     @Override
     public void start(BundleContext bundleContext) throws Exception {
         LOG.info("Activating LoadOnBrowser Plugin");
         Properties prop = new Properties();
         prop.put("Fetcher", "BrowserFetcher");
-        bundleContext.registerService(Fetcher.class.getName(), new BrowserFetcher(), prop);
+        bundleContext.registerService(Fetcher.class.getName(), new FetcherJBrowser(), prop);
     }
 
     @Override

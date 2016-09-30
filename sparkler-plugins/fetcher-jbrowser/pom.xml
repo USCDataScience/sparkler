@@ -25,10 +25,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>fetcher-browser</artifactId>
+    <artifactId>fetcher-jbrowser</artifactId>
     <packaging>jar</packaging>
 
-    <name>fetcher-browser</name>
+    <name>fetcher-jbrowser</name>
     <url>http://maven.apache.org</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -81,11 +81,11 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>js.pageloader</Bundle-Name>
-                        <Bundle-SymbolicName>js.pageloader</Bundle-SymbolicName>
+                        <Bundle-Name>fetcher.jbrowser</Bundle-Name>
+                        <Bundle-SymbolicName>fetcher.jbrowser</Bundle-SymbolicName>
                         <Bundle-Version>${parent.version}</Bundle-Version>
                         <Bundle-Activator>edu.usc.irds.sparkler.plugin.LoadOnBrowserActivator</Bundle-Activator>
-                        <Import-Package>org.osgi.framework,edu.usc.irds.sparkler,edu.usc.irds.sparkler.util,org.slf4j,org.apache.hadoop.conf</Import-Package>
+                        <Import-Package>org.osgi.framework,edu.usc.irds.sparkler,edu.usc.irds.sparkler.util,org.slf4j,org.apache.hadoop.conf,com.machinepublishers.jbrowserdriver</Import-Package>
                     </instructions>
                 </configuration>
                 <executions>
