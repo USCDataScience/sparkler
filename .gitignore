@@ -45,3 +45,5 @@ project/plugins/project/
 . auto generated files
 sjob-**
 
+# MAC Files
+.DS_Store
