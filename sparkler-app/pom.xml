@@ -145,7 +145,7 @@
     <build>
         <resources>
             <resource>
-                <directory>/Users/karanjeetsingh/git_workspace/sparkler-prod/conf</directory>
+                <directory>${sparkler.conf.dir}</directory>
             </resource>
         </resources>
         <pluginManagement>
