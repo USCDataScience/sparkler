@@ -33,6 +33,7 @@
     <modules>
         <!-- List of all the plugins -->
         <module>urlfilter-regex</module>
+        <module>fetcher-browser</module>
     </modules>
 
     <properties>

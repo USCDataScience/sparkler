@@ -15,13 +15,19 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler;
+package edu.usc.irds.sparkler.plugin;
 
-/**
- * Created by thammegr on 6/21/16.
- */
-public interface Fetcher extends ExtensionPoint {
+import edu.usc.irds.sparkler.util.TestUtils;
+import org.junit.Assert;
+import org.junit.Test;
 
-    String fetch(String url);
+import java.util.HashMap;
+import java.util.Map;
 
+public class LoadOnBrowserTest {
+
+    @Test
+    public void testFilter() throws Exception {
+
+    }
 }
