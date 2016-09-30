@@ -37,14 +37,14 @@ public class FetcherJBrowserActivator implements BundleActivator {
 
     @Override
     public void start(BundleContext bundleContext) throws Exception {
-        LOG.info("Activating LoadOnBrowser Plugin");
+        LOG.info("Activating FetcherJBrowser Plugin");
         Properties prop = new Properties();
-        prop.put("Fetcher", "BrowserFetcher");
+        prop.put("Fetcher", "FetcherJBrowser");
         bundleContext.registerService(Fetcher.class.getName(), new FetcherJBrowser(), prop);
     }
 
     @Override
     public void stop(BundleContext bundleContext) throws Exception {
-        LOG.info("Stopping LoadOnBrowser Plugin");
+        LOG.info("Stopping FetcherJBrowser Plugin");
     }
 }

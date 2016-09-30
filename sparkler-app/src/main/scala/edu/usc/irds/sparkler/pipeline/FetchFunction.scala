@@ -39,22 +39,17 @@ object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializa
 
   override def apply(job: SparklerJob, resource: Resource): Content = {
     LOG.info("FETCHING {}", resource.url)
-    //FIXME: this is a prototype, make it real
-    //TODO: handle errors
+    //TODO: Fetcher Plugin Integrated. Improve on this. Handle Errors
 
     val fetchedAt = new Date()
     val metadata = new Metadata()
     try {
       val fetcher:scala.Option[Fetcher] = PluginService.getExtension(classOf[Fetcher], job)
-      LOG.info("Fetcher Loaded")
       val fetchedData: FetchedData = fetcher.get.fetch(resource.url)
-
-      LOG.info("Data Fetched")
-
-      LOG.info(new String(fetchedData.getContent))
-
       val rawData: Array[Byte] = fetchedData.getContent
-      /*
+
+      /* Legacy Code - Might be required Later. Eg: for Images
+
       val urlConn = new URL(resource.url).openConnection()
       urlConn.setConnectTimeout(FETCH_TIMEOUT)
 
@@ -72,16 +67,13 @@ object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializa
       outStream.close()
       */
 
-
       val status: ResourceStatus = FETCHED
-      // TODO: FIXME: Get content type from fetcher object
       val contentType = fetchedData.getContentType
       new Content(resource.url, rawData, contentType, rawData.length, Array(),
         fetchedAt, status, metadata)
     } catch {
       case e: Exception =>
         LOG.warn("FETCH-ERROR {}", resource.url)
-        e.printStackTrace()
         LOG.debug(e.getMessage, e)
         new Content(resource.url, Array(), "", -1, Array(), fetchedAt, ERROR, metadata)
     }

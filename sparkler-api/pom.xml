@@ -65,7 +65,7 @@
                     <instructions>
                         <Bundle-SymbolicName>${pom.groupId}.${pom.artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${parent.version}</Bundle-Version>
-                        <Export-Package>edu.usc.irds.sparkler,edu.usc.irds.sparkler.util</Export-Package>
+                        <Export-Package>edu.usc.irds.sparkler,edu.usc.irds.sparkler.util,edu.usc.irds.sparkler.model</Export-Package>
                     </instructions>
                 </configuration>
                 <executions>

@@ -17,27 +17,21 @@
 
 package edu.usc.irds.sparkler.plugin;
 
-import java.util.LinkedHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.machinepublishers.jbrowserdriver.Settings;
 import com.machinepublishers.jbrowserdriver.Timezone;
-
-import edu.usc.irds.sparkler.AbstractExtensionPoint;
-import edu.usc.irds.sparkler.Fetcher;
-import edu.usc.irds.sparkler.JobContext;
-import edu.usc.irds.sparkler.SparklerConfiguration;
-import edu.usc.irds.sparkler.SparklerException;
+import edu.usc.irds.sparkler.*;
 import edu.usc.irds.sparkler.model.FetchedData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.LinkedHashMap;
 
 public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
 
 	private static final int DEFAULT_TIMEOUT = 2000;
 	private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
-	private LinkedHashMap<String, String> pluginConfig;
+	private LinkedHashMap<String, ? extends Object> pluginConfig;
 	
 	@Override
     public void init(JobContext context) throws SparklerException {
@@ -81,8 +75,8 @@ public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
 
 	public JBrowserDriver createBrowserInstance() {
 		// TODO: Take from property file
-		int socketTimeout = Integer.parseInt(pluginConfig.get("socket.timeout"));
-		int connectTimeout = Integer.parseInt(pluginConfig.get("connect.timeout"));
+		Integer socketTimeout = (Integer) pluginConfig.get("socket.timeout");
+		Integer connectTimeout = (Integer) pluginConfig.get("connect.timeout");
 		
 		return new JBrowserDriver(Settings.builder()
 				.timezone(Timezone.AMERICA_NEWYORK)
