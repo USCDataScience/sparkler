@@ -122,6 +122,15 @@
             <version>${felix.main.version}</version>
         </dependency>
 
+
+        <!-- JBrowser Plugin -->
+        <dependency>
+            <groupId>com.machinepublishers</groupId>
+            <artifactId>jbrowserdriver</artifactId>
+            <version>${jbrowserdriver.version}</version>
+        </dependency>
+
+
         <!-- TESTING -->
         <!-- http://mvnrepository.com/artifact/junit/junit -->
         <dependency>

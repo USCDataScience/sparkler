@@ -21,9 +21,11 @@ import java.io.ByteArrayOutputStream
 import java.net.{HttpURLConnection, URL}
 import java.util.Date
 
+import edu.usc.irds.sparkler.{Fetcher, URLFilter}
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.ResourceStatus._
-import edu.usc.irds.sparkler.model.{Content, Resource}
+import edu.usc.irds.sparkler.model.{FetchedData, SparklerJob, Content, Resource}
+import edu.usc.irds.sparkler.service.PluginService
 import org.apache.nutch.metadata.Metadata
 
 import scala.language.postfixOps
@@ -31,17 +33,28 @@ import scala.language.postfixOps
 /**
   * Created by thammegr on 6/7/16.
   */
-object FetchFunction extends ((Resource) => Content) with Serializable with Loggable {
+object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializable with Loggable {
 
   val FETCH_TIMEOUT = 1000
 
-  override def apply(resource: Resource): Content = {
+  override def apply(job: SparklerJob, resource: Resource): Content = {
     LOG.info("FETCHING {}", resource.url)
     //FIXME: this is a prototype, make it real
     //TODO: handle errors
+
     val fetchedAt = new Date()
     val metadata = new Metadata()
     try {
+      val fetcher:scala.Option[Fetcher] = PluginService.getExtension(classOf[Fetcher], job)
+      LOG.info("Fetcher Loaded")
+      val fetchedData: FetchedData = fetcher.get.fetch(resource.url)
+
+      LOG.info("Data Fetched")
+
+      LOG.info(new String(fetchedData.getContent))
+
+      val rawData: Array[Byte] = fetchedData.getContent
+      /*
       val urlConn = new URL(resource.url).openConnection()
       urlConn.setConnectTimeout(FETCH_TIMEOUT)
 
@@ -57,15 +70,22 @@ object FetchFunction extends ((Resource) => Content) with Serializable with Logg
 
       val rawData = outStream.toByteArray
       outStream.close()
+      */
+
+
       val status: ResourceStatus = FETCHED
-      val contentType = urlConn.getContentType
+      // TODO: FIXME: Get content type from fetcher object
+      val contentType = fetchedData.getContentType
       new Content(resource.url, rawData, contentType, rawData.length, Array(),
         fetchedAt, status, metadata)
     } catch {
       case e: Exception =>
         LOG.warn("FETCH-ERROR {}", resource.url)
+        e.printStackTrace()
         LOG.debug(e.getMessage, e)
         new Content(resource.url, Array(), "", -1, Array(), fetchedAt, ERROR, metadata)
     }
+
+
   }
 }

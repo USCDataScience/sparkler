@@ -122,7 +122,7 @@ class Crawler extends CliTool {
       val rdd = new CrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
       val fetchedRdd = rdd.map(r => (r.group, r))
         .groupByKey()
-        .flatMap({ case (grp, rs) => new FairFetcher(rs.iterator, localFetchDelay, FetchFunction, ParseFunction) })
+        .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay, FetchFunction, ParseFunction) })
         .persist()
 
       if (kafkaEnable) {
