@@ -21,7 +21,7 @@ public class FetchedData {
 	private byte[] content;
 	private String contentType;
 	private int responseCode;
-	
+
 	public FetchedData(byte[] content, String contentType, int responseCode) {
 		super();
 		this.content = content;

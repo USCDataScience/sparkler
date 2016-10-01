@@ -39,7 +39,7 @@
         <felix.framework.version>2.0.4</felix.framework.version>
         <felix.core.version>1.4.0</felix.core.version>
         <felix.main.version>5.4.0</felix.main.version>
-        <maven.jar.plugin.version>3.0.2</maven.jar.plugin.version>
+        <maven.bundle.plugin.version>2.5.0</maven.bundle.plugin.version>
         <snakeyaml.version>1.17</snakeyaml.version>
         <json.simple.version>1.1.1</json.simple.version>
         <jbrowserdriver.version>0.16.4</jbrowserdriver.version>

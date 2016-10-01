@@ -36,7 +36,7 @@ public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
 	@Override
     public void init(JobContext context) throws SparklerException {
         super.init(context);
-        
+
         SparklerConfiguration config = jobContext.getConfiguration();
         //TODO should change everywhere 
         pluginConfig = config.getPluginConfiguration(pluginId);
@@ -77,7 +77,7 @@ public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
 		// TODO: Take from property file
 		Integer socketTimeout = (Integer) pluginConfig.get("socket.timeout");
 		Integer connectTimeout = (Integer) pluginConfig.get("connect.timeout");
-		
+
 		return new JBrowserDriver(Settings.builder()
 				.timezone(Timezone.AMERICA_NEWYORK)
 				.ajaxResourceTimeout(DEFAULT_TIMEOUT)

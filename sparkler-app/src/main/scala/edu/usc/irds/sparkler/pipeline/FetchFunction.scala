@@ -17,11 +17,9 @@
 
 package edu.usc.irds.sparkler.pipeline
 
-import java.io.ByteArrayOutputStream
-import java.net.{HttpURLConnection, URL}
 import java.util.Date
 
-import edu.usc.irds.sparkler.{Fetcher, URLFilter}
+import edu.usc.irds.sparkler.{Fetcher}
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{FetchedData, SparklerJob, Content, Resource}
@@ -49,10 +47,8 @@ object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializa
       val rawData: Array[Byte] = fetchedData.getContent
 
       /* Legacy Code - Might be required Later. Eg: for Images
-
       val urlConn = new URL(resource.url).openConnection()
       urlConn.setConnectTimeout(FETCH_TIMEOUT)
-
       val responseCode = urlConn.asInstanceOf[HttpURLConnection].getResponseCode
       LOG.debug("STATUS CODE : " + responseCode + " " + resource.url)
 
@@ -74,6 +70,7 @@ object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializa
     } catch {
       case e: Exception =>
         LOG.warn("FETCH-ERROR {}", resource.url)
+        e.printStackTrace()
         LOG.debug(e.getMessage, e)
         new Content(resource.url, Array(), "", -1, Array(), fetchedAt, ERROR, metadata)
     }
