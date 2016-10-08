@@ -82,6 +82,7 @@ public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
 				.timezone(Timezone.AMERICA_NEWYORK)
 				.quickRender(true)
 				.headless(true)
+				.ignoreDialogs(true)
 				.ajaxResourceTimeout(DEFAULT_TIMEOUT)
 				.ajaxWait(DEFAULT_TIMEOUT).socketTimeout(socketTimeout)
 				.connectTimeout(connectTimeout).build());
