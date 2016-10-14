@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
 
 	private static final int DEFAULT_TIMEOUT = 2000;
+	private static final int ERROR_CODE = 400;
 	private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
 	private LinkedHashMap<String, ? extends Object> pluginConfig;
 	
@@ -50,6 +51,15 @@ public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
     
 	@Override
 	public FetchedData fetch(String webUrl) {
+		/*
+		* In this plugin we will work on only HTML data
+		* If data is of any other data type like image, pdf etc plugin will return client error
+		* so it can be fetched using default Fetcher
+		*/
+		if(webUrl.lastIndexOf(".") >= (webUrl.length()-5)){
+			//This should be true for all URLS ending with 4 character file extension 
+			return new FetchedData("".getBytes(), "application/html", ERROR_CODE) ;
+		}
 		long start = System.currentTimeMillis();
 
 		JBrowserDriver driver = createBrowserInstance();
@@ -74,7 +84,6 @@ public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
 	}
 
 	public JBrowserDriver createBrowserInstance() {
-		// TODO: Take from property file
 		Integer socketTimeout = (Integer) pluginConfig.get("socket.timeout");
 		Integer connectTimeout = (Integer) pluginConfig.get("connect.timeout");
 

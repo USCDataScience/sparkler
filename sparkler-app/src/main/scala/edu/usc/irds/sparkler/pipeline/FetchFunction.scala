@@ -43,26 +43,13 @@ object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializa
     val metadata = new Metadata()
     try {
       val fetcher:scala.Option[Fetcher] = PluginService.getExtension(classOf[Fetcher], job)
-      val fetchedData: FetchedData = fetcher.get.fetch(resource.url)
+      var fetchedData: FetchedData = fetcher.get.fetch(resource.url)
+
+      if (!(fetchedData.getResponseCode >=200 && fetchedData.getResponseCode < 300 ) ){ // If not fetched through plugin successfully
+        fetchedData = new FetcherDefault().fetch(resource.url)
+      }
+      
       val rawData: Array[Byte] = fetchedData.getContent
-
-      /* Legacy Code - Might be required Later. Eg: for Images
-      val urlConn = new URL(resource.url).openConnection()
-      urlConn.setConnectTimeout(FETCH_TIMEOUT)
-      val responseCode = urlConn.asInstanceOf[HttpURLConnection].getResponseCode
-      LOG.debug("STATUS CODE : " + responseCode + " " + resource.url)
-
-      val inStream = urlConn.getInputStream
-      val outStream = new ByteArrayOutputStream()
-      Iterator.continually(inStream.read)
-        .takeWhile(-1 != )
-        .foreach(outStream.write)
-      inStream.close()
-
-      val rawData = outStream.toByteArray
-      outStream.close()
-      */
-
       val status: ResourceStatus = FETCHED
       val contentType = fetchedData.getContentType
       new Content(resource.url, rawData, contentType, rawData.length, Array(),
