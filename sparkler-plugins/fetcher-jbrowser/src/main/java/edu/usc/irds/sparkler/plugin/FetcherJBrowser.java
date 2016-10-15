@@ -17,22 +17,31 @@
 
 package edu.usc.irds.sparkler.plugin;
 
-import com.machinepublishers.jbrowserdriver.JBrowserDriver;
-import com.machinepublishers.jbrowserdriver.Settings;
-import com.machinepublishers.jbrowserdriver.Timezone;
-import edu.usc.irds.sparkler.*;
-import edu.usc.irds.sparkler.model.FetchedData;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.LinkedHashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
+import com.machinepublishers.jbrowserdriver.JBrowserDriver;
+import com.machinepublishers.jbrowserdriver.Settings;
+import com.machinepublishers.jbrowserdriver.Timezone;
+
+import edu.usc.irds.sparkler.AbstractExtensionPoint;
+import edu.usc.irds.sparkler.Fetcher;
+import edu.usc.irds.sparkler.JobContext;
+import edu.usc.irds.sparkler.SparklerConfiguration;
+import edu.usc.irds.sparkler.SparklerException;
+import edu.usc.irds.sparkler.model.FetchedData;
 
 public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
 
-	private static final int DEFAULT_TIMEOUT = 2000;
-	private static final int ERROR_CODE = 400;
+	private static final Integer DEFAULT_TIMEOUT = 2000;
+	private static final Integer ERROR_CODE = 400;
 	private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
-	private LinkedHashMap<String, ? extends Object> pluginConfig;
+	private LinkedHashMap<String, Object> pluginConfig;
 	
 	@Override
     public void init(JobContext context) throws SparklerException {
@@ -56,7 +65,8 @@ public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
 		* If data is of any other data type like image, pdf etc plugin will return client error
 		* so it can be fetched using default Fetcher
 		*/
-		if(webUrl.lastIndexOf(".") >= (webUrl.length()-5)){
+		if(! isWebPage(webUrl)){
+			LOG.debug("{} not a html. Falling back to default fetcher.", webUrl);
 			//This should be true for all URLS ending with 4 character file extension 
 			return new FetchedData("".getBytes(), "application/html", ERROR_CODE) ;
 		}
@@ -83,9 +93,20 @@ public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
 		return new FetchedData(html.getBytes(), "application/html",status) ;
 	}
 
+	private boolean isWebPage(String webUrl) {
+		String contentType = "";
+		try {
+			URLConnection conn= new URL(webUrl).openConnection();
+			contentType = conn.getHeaderField("Content-Type");
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+		return contentType.contains("text") || contentType.contains("ml");
+	}
+
 	public JBrowserDriver createBrowserInstance() {
-		Integer socketTimeout = (Integer) pluginConfig.get("socket.timeout");
-		Integer connectTimeout = (Integer) pluginConfig.get("connect.timeout");
+		Integer socketTimeout = (Integer) pluginConfig.getOrDefault("socket.timeout", DEFAULT_TIMEOUT);
+		Integer connectTimeout = (Integer) pluginConfig.getOrDefault("connect.timeout", DEFAULT_TIMEOUT);
 
 		return new JBrowserDriver(Settings.builder()
 				.timezone(Timezone.AMERICA_NEWYORK)
