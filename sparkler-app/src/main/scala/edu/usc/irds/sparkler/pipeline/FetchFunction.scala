@@ -48,7 +48,7 @@ object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializa
       if (!(fetchedData.getResponseCode >=200 && fetchedData.getResponseCode < 300 ) ){ // If not fetched through plugin successfully
         fetchedData = new FetcherDefault().fetch(resource.url)
       }
-      
+
       val rawData: Array[Byte] = fetchedData.getContent
       val status: ResourceStatus = FETCHED
       val contentType = fetchedData.getContentType
