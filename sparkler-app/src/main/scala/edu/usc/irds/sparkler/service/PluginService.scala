@@ -138,8 +138,8 @@ class PluginService(job:SparklerJob) {
     felixConfig(AutoProcessor.AUTO_DEPLOY_DIR_PROPERTY) = Constants.file.FELIX_BUNDLE_DIR
 
     // Register a Shutdown Hook with JVM to make sure Felix framework is cleanly
-    // shutdown when JVM exits
-    Runtime.getRuntime.addShutdownHook(new Thread(shutdownCleanup, s"Felix-${job.id}"))
+    // shutdown when JVM exits. Commenting this.
+    //Runtime.getRuntime.addShutdownHook(new Thread(shutdownCleanup, s"Felix-${job.id}"))
 
     // Creating an instance of the Apache Felix framework
     val felixFactory:FrameworkFactory = getFelixFrameworkFactory
@@ -224,13 +224,22 @@ object PluginService {
   val cache = new mutable.HashMap[String, PluginService]()
   val LOG = LoggerFactory.getLogger(PluginService.getClass)
 
-  def getExtension[X <: ExtensionPoint](point:Class[X], job: SparklerJob):Option[X] = {
-    if (!cache.contains(job.id)){
-      //lazy initialization for distributed mode (wherever this code gets executed)
-      val service = new PluginService(job)
-      service.load()
-      cache.put(job.id, service)
+  // Eager initialization of all plugins
+  def loadAllPlugins(job: SparklerJob): Unit = {
+    val service = new PluginService(job)
+    service.load()
+    cache.put(job.id, service)
+  }
+
+  // Shutting Down Plugin Service
+  def shutdown(job: SparklerJob): Unit = {
+    if (cache.contains(job.id)) {
+      cache(job.id).serviceLoader.stop
+      cache.remove(job.id)
     }
+  }
+
+  def getExtension[X <: ExtensionPoint](point:Class[X], job: SparklerJob):Option[X] = {
     cache(job.id).getExtension(point)
   }
 }
