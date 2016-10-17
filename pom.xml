@@ -27,6 +27,8 @@
     <packaging>pom</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.conf.dir>conf</project.conf.dir>
+        <project.resources.dir>resources</project.resources.dir>
         <project.bundles.directory>sparkler-app${file.separator}bundles</project.bundles.directory>
         <spark.version>1.6.1</spark.version>
         <scala.version>2.11</scala.version>
@@ -54,7 +56,6 @@
         <module>sparkler-api</module>
         <module>sparkler-app</module>
         <module>sparkler-plugins</module>
-        <module>sparkler-plugins-active</module>
     </modules>
 
     <build>

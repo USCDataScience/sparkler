@@ -135,7 +135,7 @@ class PluginService(job:SparklerJob) {
     LOG.info("Felix Configuration loaded successfully")
 
     // Setting configuration to Auto Deploy Felix Bundles
-    felixConfig(AutoProcessor.AUTO_DEPLOY_DIR_PROPERTY) = Constants.file.FELIX_BUNDLE_DIR
+    felixConfig(AutoProcessor.AUTO_DEPLOY_DIR_PROPERTY) = job.getConfiguration.get(Constants.key.PLUGINS_BUNDLE_DIRECTORY).asInstanceOf[String]
 
     // Register a Shutdown Hook with JVM to make sure Felix framework is cleanly
     // shutdown when JVM exits.
@@ -223,21 +223,6 @@ object PluginService {
   //TODO: plugins mapped to jobId. consider the case of having SparklerJob instance
   val cache = new mutable.HashMap[String, PluginService]()
   val LOG = LoggerFactory.getLogger(PluginService.getClass)
-
-  // Eager initialization of all plugins
-  def loadAllPlugins(job: SparklerJob): Unit = {
-    val service = new PluginService(job)
-    service.load()
-    cache.put(job.id, service)
-  }
-
-  // Shutting Down Plugin Service
-  def shutdown(job: SparklerJob): Unit = {
-    if (cache.contains(job.id)) {
-      cache(job.id).serviceLoader.stop
-      cache.remove(job.id)
-    }
-  }
 
   def getExtension[X <: ExtensionPoint](point:Class[X], job: SparklerJob):Option[X] = {
     //lazy initialization for distributed mode (wherever this code gets executed)

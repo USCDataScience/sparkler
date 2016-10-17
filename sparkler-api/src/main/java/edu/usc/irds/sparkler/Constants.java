@@ -73,6 +73,9 @@ public interface Constants {
 
         // Plugin Properties
         @ConfigKey
+        String PLUGINS_BUNDLE_DIRECTORY = "plugins.bundle.directory";
+
+        @ConfigKey
         String PLUGINS = "plugins";
     }
 
@@ -121,8 +124,10 @@ public interface Constants {
          * Specifying Apache Felix bundle directory.
          * TODO:Should come from Sparkler Config
          **/
+        //String FELIX_BUNDLE_DIR = key.PLUGINS_BUNDLE_DIRECTORY;
         //String FELIX_BUNDLE_DIR = "../bundles";
-        String FELIX_BUNDLE_DIR = "/Users/karanjeetsingh/git_workspace/madhav-sparkler/sparkler-app/bundles";
+        //String FELIX_BUNDLE_DIR = "/Users/karanjeetsingh/git_workspace/madhav-sparkler/sparkler-app/bundles";
+
 
         /**
          * Apache Felix configuration properties file
