@@ -116,7 +116,7 @@ class Crawler extends CliTool {
     val job = this.job // local variable to bypass serialization
 
     // Load all Plugins at Start-up
-    PluginService.loadAllPlugins(job)
+    //PluginService.loadAllPlugins(job)
 
     for (_ <- 1 to iterations) {
       val taskId = JobUtil.newSegmentId(true)
@@ -152,7 +152,7 @@ class Crawler extends CliTool {
       solrc.commitCrawlDb()
     }
     solrc.close()
-    PluginService.shutdown(job)
+    //PluginService.shutdown(job)
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
   }

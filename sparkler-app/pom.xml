@@ -197,6 +197,13 @@
                                     </manifestEntries>
                                 </transformer>
                             </transformers>
+                            <relocations>
+                                <!-- To resolve dependency conflict with Spark -->
+                                <relocation> 
+                                    <pattern>org.apache.http</pattern> 
+                                    <shadedPattern>shaded.org.apache.http</shadedPattern> 
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>
