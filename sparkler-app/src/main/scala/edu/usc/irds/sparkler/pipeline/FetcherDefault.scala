@@ -60,7 +60,7 @@ class FetcherDefault extends AbstractExtensionPoint with Fetcher {
     } catch {
       case e: Exception =>
         LOG.warn("FETCH-ERROR {}", url)
-        e.printStackTrace()
+        //e.printStackTrace()
         LOG.debug(e.getMessage, e)
         new FetchedData(Array[Byte](),"",responseCode)
 

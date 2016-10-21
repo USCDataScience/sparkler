@@ -34,6 +34,7 @@ import scala.language.postfixOps
 object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializable with Loggable {
 
   val FETCH_TIMEOUT = 1000
+  val fetcherDefault = new FetcherDefault()
 
   override def apply(job: SparklerJob, resource: Resource): Content = {
     LOG.info("FETCHING {}", resource.url)
@@ -43,10 +44,18 @@ object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializa
     val metadata = new Metadata()
     try {
       val fetcher:scala.Option[Fetcher] = PluginService.getExtension(classOf[Fetcher], job)
-      var fetchedData: FetchedData = fetcher.get.fetch(resource.url)
-
-      if (!(fetchedData.getResponseCode >=200 && fetchedData.getResponseCode < 300 ) ){ // If not fetched through plugin successfully
-        fetchedData = new FetcherDefault().fetch(resource.url)
+      var fetchedData: FetchedData = new FetchedData()
+      fetcher match {
+        case Some(fetcher) => {
+          fetchedData = fetcher.fetch(resource.url)
+          if (!(fetchedData.getResponseCode >=200 && fetchedData.getResponseCode < 300 ) ){ // If not fetched through plugin successfully
+            fetchedData = fetcherDefault.fetch(resource.url)
+          }
+        }
+        case None => {
+          LOG.info("Using Default Fetcher")
+          fetchedData = fetcherDefault.fetch(resource.url)
+        }
       }
 
       val rawData: Array[Byte] = fetchedData.getContent
@@ -57,7 +66,6 @@ object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializa
     } catch {
       case e: Exception =>
         LOG.warn("FETCH-ERROR {}", resource.url)
-        e.printStackTrace()
         LOG.debug(e.getMessage, e)
         new Content(resource.url, Array(), "", -1, Array(), fetchedAt, ERROR, metadata)
     }

@@ -20,7 +20,7 @@ package edu.usc.irds.sparkler.pipeline
 import java.io.{InputStream, ByteArrayInputStream}
 
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.model.{ParseData, CrawlData}
+import edu.usc.irds.sparkler.model.{ParsedData, CrawlData}
 import org.apache.commons.io.IOUtils
 import org.apache.tika.metadata.Metadata
 import org.apache.tika.parser.AutoDetectParser
@@ -31,10 +31,10 @@ import scala.collection.JavaConverters._
 /**
   * Created by thammegr on 6/7/16.
   */
-object ParseFunction extends ((CrawlData) => (ParseData)) with Serializable with Loggable {
+object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable with Loggable {
 
-  override def apply(data: CrawlData): (ParseData) = {
-    val parseData: ParseData = new ParseData()
+  override def apply(data: CrawlData): (ParsedData) = {
+    val parseData: ParsedData = new ParsedData()
     var stream: InputStream = new ByteArrayInputStream(data.content.content)
     val linkHandler = new LinkContentHandler()
     val parser = new AutoDetectParser()

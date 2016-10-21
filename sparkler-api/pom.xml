@@ -33,7 +33,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sparkler.conf.dir>${project.parent.basedir}${file.separator}${project.conf.dir}</sparkler.conf.dir>
-        <sparkler.resources.dir>${project.basedir}${file.separator}..${file.separator}${project.build.directory}${file.separator}${project.resources.dir}</sparkler.resources.dir>
+        <sparkler.resources.dir>${project.basedir}${file.separator}..${file.separator}${project.resources.dir}</sparkler.resources.dir>
     </properties>
     <build>
         <resources>

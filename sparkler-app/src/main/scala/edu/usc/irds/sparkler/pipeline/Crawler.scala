@@ -164,7 +164,7 @@ object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]
 
 
     //Step : UPSERT outlinks
-    rdd.flatMap({ data => for (u <- data.outLinks) yield (u, data.res) }) //expand the set
+    rdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.res) }) //expand the set
 
       .reduceByKey({ case (r1, r2) => if (r1.depth <= r2.depth) r1 else r2 }) // pick a parent
 

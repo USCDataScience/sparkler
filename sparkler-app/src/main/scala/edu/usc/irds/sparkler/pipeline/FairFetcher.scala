@@ -28,7 +28,7 @@ import org.apache.tika.metadata.Metadata
   */
 class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val delay: Long,
                   val fetchFunc: ((SparklerJob, Resource) => Content),
-                  val parseFunc: ((CrawlData) => (ParseData)))
+                  val parseFunc: ((CrawlData) => (ParsedData)))
   extends Iterator[CrawlData] {
 
   import FairFetcher.LOG
@@ -54,10 +54,7 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
     hitCounter.set(System.currentTimeMillis())
 
     //STEP: Parse
-    val parseData: ParseData = parseFunc(data)
-    data.plainText = parseData.plainText
-    data.outLinks = parseData.outlinks
-    data.metadata = parseData.metadata
+    data.parsedData = parseFunc(data)
     data
   }
 }

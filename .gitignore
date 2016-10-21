@@ -32,7 +32,7 @@ project/plugins/project/
 .scala_dependencies
 .worksheet
 **~
-/sparkler-app/sparkler-job-**
+sparkler-job-**
 .idea/
 *.iml
 
@@ -47,3 +47,7 @@ sjob-**
 
 # MAC Files
 .DS_Store
+
+Application Files
+resources/
+felix-cache/

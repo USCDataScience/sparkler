@@ -34,7 +34,7 @@
 
     <properties>
         <sparkler.conf.dir>${project.parent.basedir}${file.separator}${project.conf.dir}</sparkler.conf.dir>
-        <sparkler.resources.dir>${project.parent.build.directory}${file.separator}${project.resources.dir}</sparkler.resources.dir>
+        <sparkler.resources.dir>${project.parent.basedir}${file.separator}${project.resources.dir}</sparkler.resources.dir>
         <!-- Main Class -->
         <exec.mainClass>edu.usc.irds.sparkler.Main</exec.mainClass>
     </properties>

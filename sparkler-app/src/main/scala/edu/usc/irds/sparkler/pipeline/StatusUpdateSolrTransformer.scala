@@ -41,11 +41,11 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     sUpdate.setField(Resource.LAST_UPDATED_AT, Map("set" -> new Date()).asJava)
     sUpdate.setField(Resource.NUM_TRIES, Map("inc" -> 1).asJava)
     sUpdate.setField(Resource.NUM_FETCHES, Map("inc" -> 1).asJava)
-    sUpdate.setField(Resource.PLAIN_TEXT, data.plainText)
+    sUpdate.setField(Resource.PLAIN_TEXT, data.parsedData.plainText)
 
     var mdFields: Map[String, AnyRef] = Map()
-    for (name: String <- data.metadata.names()) {
-      mdFields += (name -> (if (data.metadata.isMultiValued(name)) data.metadata.getValues(name) else data.metadata.get(name)))
+    for (name: String <- data.parsedData.metadata.names()) {
+      mdFields += (name -> (if (data.parsedData.metadata.isMultiValued(name)) data.parsedData.metadata.getValues(name) else data.parsedData.metadata.get(name)))
     }
     val fieldMapper: FieldMapper = FieldMapper.initialize()
     val mappedMdFields: mutable.Map[String, AnyRef] = fieldMapper.mapFields(mdFields.asJava, true).asScala
