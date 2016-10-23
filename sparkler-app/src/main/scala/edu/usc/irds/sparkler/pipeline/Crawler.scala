@@ -164,7 +164,7 @@ object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]
 
 
     //Step : UPSERT outlinks
-    rdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.res) }) //expand the set
+    rdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
 
       .reduceByKey({ case (r1, r2) => if (r1.getDepth <= r2.getDepth) r1 else r2 }) // pick a parent
 
@@ -186,8 +186,8 @@ object Crawler extends Loggable with Serializable{
 
   def storeContent(outputPath:String, rdd:RDD[CrawlData]): Unit = {
     LOG.info(s"Storing output at $outputPath")
-    rdd.filter(_.content.status == FETCHED)
-      .map(d => (new Text(d.res.getUrl), d.content.toNutchContent(new Configuration())))
+    rdd.filter(_.fetchedData.getResource.getStatus == FETCHED)
+      .map(d => (new Text(d.fetchedData.getResource.getUrl), d.fetchedData.toNutchContent(new Configuration())))
       .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
   }
 
@@ -203,7 +203,7 @@ object Crawler extends Loggable with Serializable{
     rdd.foreachPartition(crawlData_iter => {
       val sparklerProducer = new SparklerProducer(listeners, topic)
       crawlData_iter.foreach(crawlData => {
-        sparklerProducer.send(crawlData.content.content)
+        sparklerProducer.send(crawlData.fetchedData.getContent)
       })
     })
   }

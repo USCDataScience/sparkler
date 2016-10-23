@@ -17,10 +17,25 @@
 
 package edu.usc.irds.sparkler.model;
 
-public class FetchedData {
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.nutch.metadata.Metadata;
+
+import java.io.Serializable;
+import java.util.Date;
+
+public class FetchedData implements Serializable {
+
+    private Resource resource;
+
 	private byte[] content;
 	private String contentType;
+    private Integer contentLength;
+    private String[] headers;
+    private Date fetchedAt;
+    private Metadata metadata;
 	private int responseCode;
+
 
 	public FetchedData() {
 	}
@@ -28,12 +43,9 @@ public class FetchedData {
 	public FetchedData(byte[] content, String contentType, int responseCode) {
 		super();
 		this.content = content;
+        this.contentLength = content.length;
 		this.contentType = contentType;
 		this.responseCode = responseCode;
-	}
-	
-	public byte[] getContent() {
-		return content;
 	}
 	
 	public String getContentType() {
@@ -43,4 +55,36 @@ public class FetchedData {
 	public int getResponseCode() {
 		return responseCode;
 	}
+
+    public Resource getResource() { return resource; }
+
+    public byte[] getContent() {
+        return content;
+    }
+
+    public Integer getContentLength() {
+        return contentLength;
+    }
+
+    public String[] getHeaders() {
+        return headers;
+    }
+
+    public Date getFetchedAt() {
+        return fetchedAt;
+    }
+
+    public Metadata getMetadata() {
+        return metadata;
+    }
+
+    public void setResource(Resource resource) {
+        this.resource = resource;
+    }
+
+    // TODO: Move this to Util package
+    public org.apache.nutch.protocol.Content toNutchContent(Configuration conf) {
+        return new org.apache.nutch.protocol.Content(resource.getUrl(), resource.getUrl(), content, contentType, metadata, conf);
+    }
+
 }

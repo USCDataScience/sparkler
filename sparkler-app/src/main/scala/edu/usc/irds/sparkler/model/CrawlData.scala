@@ -21,7 +21,7 @@ package edu.usc.irds.sparkler.model
   *
   * @since 5/29/16
   */
-class CrawlData(val res: Resource) extends Serializable {
-  var content: Content = _
+class CrawlData() extends Serializable {
+  var fetchedData: FetchedData = _
   var parsedData: ParsedData = _
 }

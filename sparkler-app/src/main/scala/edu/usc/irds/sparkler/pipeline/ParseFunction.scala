@@ -35,37 +35,37 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
 
   override def apply(data: CrawlData): (ParsedData) = {
     val parseData: ParsedData = new ParsedData()
-    var stream: InputStream = new ByteArrayInputStream(data.content.content)
+    var stream: InputStream = new ByteArrayInputStream(data.fetchedData.getContent)
     val linkHandler = new LinkContentHandler()
     val parser = new AutoDetectParser()
     var meta = new Metadata()
     val outHandler = new WriteOutContentHandler()
     val contentHandler = new BodyContentHandler(outHandler)
-    LOG.info("PARSING  {}", data.content.url)
+    LOG.info("PARSING  {}", data.fetchedData.getResource.getUrl)
     try {
       // Parse OutLinks
-      meta.set("resourceName", data.content.url)
+      meta.set("resourceName", data.fetchedData.getResource.getUrl)
       parser.parse(stream, linkHandler, meta)
       parseData.outlinks = linkHandler.getLinks.asScala.map(_.getUri.trim).filter(!_.isEmpty).toSet
     } catch {
       case e:Throwable =>
-        LOG.warn("PARSING-OUTLINKS-ERROR {}", data.content.url)
+        LOG.warn("PARSING-OUTLINKS-ERROR {}", data.fetchedData.getResource.getUrl)
         LOG.warn(e.getMessage, e)
     } finally {
       IOUtils.closeQuietly(stream)
     }
     try {
       meta  = new Metadata
-      meta.set("resourceName", data.content.url)
+      meta.set("resourceName", data.fetchedData.getResource.getUrl)
       // Parse Text
-      stream = new ByteArrayInputStream(data.content.content)
+      stream = new ByteArrayInputStream(data.fetchedData.getContent)
       parser.parse(stream, contentHandler, meta)
       parseData.plainText = outHandler.toString
       parseData.metadata = meta
       parseData
     } catch {
       case e:Throwable =>
-        LOG.warn("PARSING-CONTENT-ERROR {}", data.content.url)
+        LOG.warn("PARSING-CONTENT-ERROR {}", data.fetchedData.getResource.getUrl)
         LOG.warn(e.getMessage, e)
         parseData
     } finally {

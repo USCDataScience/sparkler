@@ -19,6 +19,7 @@ package edu.usc.irds.sparkler.pipeline
 
 import java.util.Date
 
+import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.model.{CrawlData, Resource}
 import edu.usc.irds.sparkler.solr.schema.FieldMapper
 import org.apache.solr.common.SolrInputDocument
@@ -35,13 +36,13 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     val sUpdate = new SolrInputDocument()
     //FIXME: handle failure case
     //val x:java.util.Map[String, Object] = Map("ss" -> new Object).asJava
-    sUpdate.setField(Resource.ID, data.res.getId)
-    sUpdate.setField(Resource.STATUS, Map("set" -> data.content.status.toString).asJava)
-    sUpdate.setField(Resource.LAST_FETCHED_AT, Map("set" -> data.content.fetchedAt).asJava)
-    sUpdate.setField(Resource.LAST_UPDATED_AT, Map("set" -> new Date()).asJava)
-    sUpdate.setField(Resource.NUM_TRIES, Map("inc" -> 1).asJava)
-    sUpdate.setField(Resource.NUM_FETCHES, Map("inc" -> 1).asJava)
-    sUpdate.setField(Resource.PLAIN_TEXT, data.parsedData.plainText)
+    sUpdate.setField(Constants.solr.ID, data.fetchedData.getResource.getId)
+    sUpdate.setField(Constants.solr.STATUS, Map("set" -> data.fetchedData.getResource.getStatus).asJava)
+    sUpdate.setField(Constants.solr.LAST_FETCHED_AT, Map("set" -> data.fetchedData.getFetchedAt).asJava)
+    sUpdate.setField(Constants.solr.LAST_UPDATED_AT, Map("set" -> new Date()).asJava)
+    sUpdate.setField(Constants.solr.NUM_TRIES, Map("inc" -> 1).asJava)
+    sUpdate.setField(Constants.solr.NUM_FETCHES, Map("inc" -> 1).asJava)
+    sUpdate.setField(Constants.solr.PLAIN_TEXT, data.parsedData.plainText)
 
     var mdFields: Map[String, AnyRef] = Map()
     for (name: String <- data.parsedData.metadata.names()) {
@@ -51,8 +52,8 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     val mappedMdFields: mutable.Map[String, AnyRef] = fieldMapper.mapFields(mdFields.asJava, true).asScala
     mappedMdFields.foreach{case (k, v) => {
       var key: String = k
-      if (!k.endsWith(Resource.MD_SUFFIX)) {
-        key = k + Resource.MD_SUFFIX
+      if (!k.endsWith(Constants.solr.MD_SUFFIX)) {
+        key = k + Constants.solr.MD_SUFFIX
       }
       sUpdate.setField(key, v)
     }}

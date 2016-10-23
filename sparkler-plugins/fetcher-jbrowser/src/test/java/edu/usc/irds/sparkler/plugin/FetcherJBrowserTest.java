@@ -17,8 +17,7 @@
 
 package edu.usc.irds.sparkler.plugin;
 
-import org.junit.Test;
-
+import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.util.TestUtils;
 
 //TODO - place html and js file in a test folder and serve it through a embeded server in junit
@@ -31,7 +30,8 @@ public class FetcherJBrowserTest {
 //    @Test
     public void testJBrowserHtml() throws Exception {
     	FetcherJBrowser fetcherJBrowser = TestUtils.newInstance(FetcherJBrowser.class, "fetcher.jbrowser");
-    	System.out.println(fetcherJBrowser.fetch("http://nutch.apache.org").getResponseCode());
+		Resource resource = new Resource("http://nutch.apache.org", "nutch.apache.org", TestUtils.JOB_CONTEXT);
+    	System.out.println(fetcherJBrowser.fetch(resource).getResponseCode());
     }
     
     /**
@@ -41,6 +41,7 @@ public class FetcherJBrowserTest {
 //    @Test
     public void testJBrowserImage() throws Exception {
     	FetcherJBrowser fetcherJBrowser = TestUtils.newInstance(FetcherJBrowser.class, "fetcher.jbrowser");
-    	System.out.println(fetcherJBrowser.fetch("http://nutch.apache.org/assets/img/nutch_logo_tm.png").getResponseCode());
+		Resource resource = new Resource("http://nutch.apache.org/assets/img/nutch_logo_tm.png", "nutch.apache.org", TestUtils.JOB_CONTEXT);
+    	System.out.println(fetcherJBrowser.fetch(resource).getResponseCode());
     }
 }

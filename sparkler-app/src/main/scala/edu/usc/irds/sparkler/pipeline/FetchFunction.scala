@@ -19,57 +19,53 @@ package edu.usc.irds.sparkler.pipeline
 
 import java.util.Date
 
-import edu.usc.irds.sparkler.{Fetcher}
+import edu.usc.irds.sparkler.util.FetcherDefault
+import edu.usc.irds.sparkler.Fetcher
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model._
 import edu.usc.irds.sparkler.service.PluginService
 import org.apache.nutch.metadata.Metadata
 
 import scala.language.postfixOps
+import scala.collection.JavaConverters._
 
 /**
   * Created by thammegr on 6/7/16.
   */
-object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializable with Loggable {
+object FetchFunction extends ((SparklerJob, Iterator[Resource]) => Iterator[FetchedData]) with Serializable with Loggable {
 
   val FETCH_TIMEOUT = 1000
   val fetcherDefault = new FetcherDefault()
 
-  override def apply(job: SparklerJob, resource: Resource): Content = {
-    LOG.info("FETCHING {}", resource.getUrl)
+  override def apply(job: SparklerJob, resources: Iterator[Resource]): Iterator[FetchedData] = {
+    //LOG.info("FETCHING {}", resource.getUrl)
     //TODO: Fetcher Plugin Integrated. Improve on this. Handle Errors
 
     val fetchedAt = new Date()
     val metadata = new Metadata()
-    try {
-      val fetcher:scala.Option[Fetcher] = PluginService.getExtension(classOf[Fetcher], job)
-      var fetchedData: FetchedData = new FetchedData()
-      fetcher match {
-        case Some(fetcher) => {
-          fetchedData = fetcher.fetch(resource.getUrl)
-          if (!(fetchedData.getResponseCode >=200 && fetchedData.getResponseCode < 300 ) ){ // If not fetched through plugin successfully
-            fetchedData = fetcherDefault.fetch(resource.getUrl)
-          }
-        }
-        case None => {
-          LOG.info("Using Default Fetcher")
+    var fetchedData: Iterator[FetchedData] = Iterator()
+    val fetcher:scala.Option[Fetcher] = PluginService.getExtension(classOf[Fetcher], job)
+    fetcher match {
+      case Some(fetcher) => {
+        fetchedData = fetcher.fetch(resources.asJava).asScala
+        /*
+        if (!(fetchedData.getResponseCode >=200 && fetchedData.getResponseCode < 300 ) ){ // If not fetched through plugin successfully
           fetchedData = fetcherDefault.fetch(resource.getUrl)
-        }
+        } */
       }
-
-      val rawData: Array[Byte] = fetchedData.getContent
-      val status: ResourceStatus = FETCHED
-      val contentType = fetchedData.getContentType
-      new Content(resource.getUrl, rawData, contentType, rawData.length, Array(),
-        fetchedAt, status, metadata)
-    } catch {
-      case e: Exception =>
-        LOG.warn("FETCH-ERROR {}", resource.getUrl)
-        LOG.debug(e.getMessage, e)
-        new Content(resource.getUrl, Array(), "", -1, Array(), fetchedAt, ERROR, metadata)
+      case None => {
+        LOG.info("Using Default Fetcher")
+        fetchedData = fetcherDefault.fetch(resources.asJava).asScala
+      }
     }
 
-
+    /*
+    val rawData: Array[Byte] = fetchedData.getContent
+    val status: ResourceStatus = FETCHED
+    val contentType = fetchedData.getContentType
+    new Content(resource.getUrl, rawData, contentType, rawData.length, Array(),
+      fetchedAt, status, metadata)
+    */
+    fetchedData
   }
 }

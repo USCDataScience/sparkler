@@ -21,13 +21,12 @@ import java.util.concurrent.atomic.AtomicLong
 
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model._
-import org.apache.tika.metadata.Metadata
 
 /**
   * Created by thammegr on 6/7/16.
   */
 class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val delay: Long,
-                  val fetchFunc: ((SparklerJob, Resource) => Content),
+                  val fetchFunc: ((SparklerJob, Iterator[Resource]) => Iterator[FetchedData]),
                   val parseFunc: ((CrawlData) => (ParsedData)))
   extends Iterator[CrawlData] {
 
@@ -35,22 +34,24 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
 
   val hitCounter = new AtomicLong()
   var lastHit: String = ""
+  val fetchedData: Iterator[FetchedData] = fetchFunc(job, resources)
 
-  override def hasNext: Boolean = resources.hasNext
+  override def hasNext: Boolean = fetchedData.hasNext
 
   override def next(): CrawlData = {
 
-    val data = new CrawlData(resources.next())
+    val data = new CrawlData()
     val nextFetch = hitCounter.get() + delay
     val waitTime = nextFetch - System.currentTimeMillis()
     if (waitTime > 0) {
-      LOG.debug("    Waiting for {} ms, {}", waitTime, data.res.getUrl)
+      LOG.debug("    Waiting for {} ms", waitTime)
       Thread.sleep(waitTime)
     }
 
     //STEP: Fetch
-    data.content = fetchFunc(job, data.res)
-    lastHit = data.res.getUrl
+    //data.content = fetchFunc(job, data.res)
+    data.fetchedData = fetchedData.next
+    lastHit = data.fetchedData.getResource.getUrl
     hitCounter.set(System.currentTimeMillis())
 
     //STEP: Parse

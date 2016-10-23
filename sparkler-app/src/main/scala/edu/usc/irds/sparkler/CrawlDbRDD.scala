@@ -49,8 +49,8 @@ class CrawlDbRDD(sc: SparkContext,
     val partition: SolrGroupPartition = split.asInstanceOf[SolrGroupPartition]
     val batchSize = 100
     val query = new SolrQuery(generateQry)
-    query.addFilterQuery(s"""${Resource.GROUP}:"${escapeQueryChars(partition.group)}"""")
-    query.addFilterQuery(s"${Resource.JOBID}:${job.id}")
+    query.addFilterQuery(s"""${Constants.solr.GROUP}:"${escapeQueryChars(partition.group)}"""")
+    query.addFilterQuery(s"${Constants.solr.JOBID}:${job.id}")
     query.set("sort", sortBy)
     query.setRows(batchSize)
 
@@ -60,11 +60,11 @@ class CrawlDbRDD(sc: SparkContext,
 
   override protected def getPartitions: Array[Partition] = {
     val qry = new SolrQuery(generateQry)
-    qry.addFilterQuery(s"${Resource.JOBID}:${job.id}")
+    qry.addFilterQuery(s"${Constants.solr.JOBID}:${job.id}")
     qry.set("sort", sortBy)
     qry.set("group", true)
     qry.set("group.ngroups", true)
-    qry.set("group.field", Resource.GROUP)
+    qry.set("group.field", Constants.solr.GROUP)
     qry.set("group.limit", 0)
     qry.setRows(maxGroups)
     val proxy = job.newCrawlDbSolrClient()

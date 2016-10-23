@@ -137,4 +137,21 @@ public interface Constants {
 
     }
 
+
+    interface solr { // Solr Fields
+        String ID = "id";
+        String JOBID = "jobId";
+        String URL = "url";
+        String GROUP = "group";
+        String LAST_FETCHED_AT = "lastFetchedAt";
+        String NUM_TRIES = "numTries";
+        String NUM_FETCHES = "numFetches";
+        String DEPTH = "depth";
+        String SCORE = "score";
+        String STATUS = "status";
+        String LAST_UPDATED_AT = "lastUpdatedAt";
+        String PLAIN_TEXT = "plainText";
+        String MD_SUFFIX = "_md";
+    }
+
 }

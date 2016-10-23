@@ -18,12 +18,15 @@
 package edu.usc.irds.sparkler;
 
 import edu.usc.irds.sparkler.model.FetchedData;
+import edu.usc.irds.sparkler.model.Resource;
+
+import java.util.Iterator;
 
 /**
  * Created by thammegr on 6/21/16.
  */
 public interface Fetcher extends ExtensionPoint {
 
-	FetchedData fetch(String url);
+	Iterator<FetchedData> fetch(Iterator<Resource> resources) throws Exception;
 
 }

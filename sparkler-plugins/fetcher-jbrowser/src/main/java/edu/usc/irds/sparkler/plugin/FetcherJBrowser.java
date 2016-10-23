@@ -17,31 +17,30 @@
 
 package edu.usc.irds.sparkler.plugin;
 
+import com.machinepublishers.jbrowserdriver.JBrowserDriver;
+import com.machinepublishers.jbrowserdriver.Settings;
+import com.machinepublishers.jbrowserdriver.Timezone;
+import edu.usc.irds.sparkler.JobContext;
+import edu.usc.irds.sparkler.SparklerConfiguration;
+import edu.usc.irds.sparkler.SparklerException;
+import edu.usc.irds.sparkler.model.FetchedData;
+import edu.usc.irds.sparkler.model.Resource;
+import edu.usc.irds.sparkler.model.ResourceStatus;
+import edu.usc.irds.sparkler.util.FetcherDefault;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.LinkedHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.machinepublishers.jbrowserdriver.JBrowserDriver;
-import com.machinepublishers.jbrowserdriver.Settings;
-import com.machinepublishers.jbrowserdriver.Timezone;
-
-import edu.usc.irds.sparkler.AbstractExtensionPoint;
-import edu.usc.irds.sparkler.Fetcher;
-import edu.usc.irds.sparkler.JobContext;
-import edu.usc.irds.sparkler.SparklerConfiguration;
-import edu.usc.irds.sparkler.SparklerException;
-import edu.usc.irds.sparkler.model.FetchedData;
-
-public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
+public class FetcherJBrowser extends FetcherDefault {
 
 	private static final Integer DEFAULT_TIMEOUT = 2000;
-	private static final Integer ERROR_CODE = 400;
 	private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
 	private LinkedHashMap<String, Object> pluginConfig;
+    private JBrowserDriver driver;
 	
 	@Override
     public void init(JobContext context) throws SparklerException {
@@ -50,6 +49,7 @@ public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
         SparklerConfiguration config = jobContext.getConfiguration();
         //TODO should change everywhere 
         pluginConfig = config.getPluginConfiguration(pluginId);
+        driver = createBrowserInstance();
     }
 
     @Override
@@ -57,50 +57,67 @@ public class FetcherJBrowser extends AbstractExtensionPoint implements Fetcher {
         this.pluginId = pluginId;
         init(context);
     }
-    
+
 	@Override
-	public FetchedData fetch(String webUrl) {
+	public FetchedData fetch(Resource resource) {
+        LOG.info("JBrowser FETCHER {}", resource.getUrl());
+        FetchedData fetchedData;
 		/*
 		* In this plugin we will work on only HTML data
 		* If data is of any other data type like image, pdf etc plugin will return client error
 		* so it can be fetched using default Fetcher
 		*/
-		if(! isWebPage(webUrl)){
-			LOG.debug("{} not a html. Falling back to default fetcher.", webUrl);
-			//This should be true for all URLS ending with 4 character file extension 
-			return new FetchedData("".getBytes(), "application/html", ERROR_CODE) ;
+		if(!isWebPage(resource.getUrl())){
+			LOG.debug("{} not a html. Falling back to default fetcher.", resource.getUrl());
+			//This should be true for all URLS ending with 4 character file extension
+			//return new FetchedData("".getBytes(), "application/html", ERROR_CODE) ;
+            return super.fetch(resource);
 		}
 		long start = System.currentTimeMillis();
-
-		JBrowserDriver driver = createBrowserInstance();
 
 		LOG.debug("Time taken to create driver- {}", (System.currentTimeMillis() - start));
 
 		// This will block for the page load and any
 		// associated AJAX requests
-		driver.get(webUrl);
+		driver.get(resource.getUrl());
 
 		int status = driver.getStatusCode();
 		//content-type
-		
+
 		// Returns the page source in its current state, including
 		// any DOM updates that occurred after page load
 		String html = driver.getPageSource();
-		quitBrowserInstance(driver);
-		
-		LOG.debug("Time taken to load {} - {} ",webUrl, (System.currentTimeMillis() - start));
-		
-		return new FetchedData(html.getBytes(), "application/html",status) ;
+
+        //quitBrowserInstance(driver);
+
+		LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
+
+        if (!(status >=200 && status < 300 )){
+            // If not fetched through plugin successfully
+            // Falling back to default fetcher
+            LOG.info("{} Failed to fetch the page. Falling back to default fetcher.", resource.getUrl());
+            return super.fetch(resource);
+        }
+		fetchedData = new FetchedData(html.getBytes(), "application/html", status);
+        resource.setStatus(ResourceStatus.FETCHED.toString());
+        fetchedData.setResource(resource);
+        return fetchedData;
 	}
 
-	private boolean isWebPage(String webUrl) {
+    @Override
+    public void closeResources() throws Exception {
+        super.closeResources();
+        quitBrowserInstance(driver);
+    }
+
+    private boolean isWebPage(String webUrl) {
 		String contentType = "";
 		try {
 			URLConnection conn= new URL(webUrl).openConnection();
 			contentType = conn.getHeaderField("Content-Type");
 		} catch (IOException e) {
 			e.printStackTrace();
-		} 
+		}
 		return contentType.contains("text") || contentType.contains("ml");
 	}
 

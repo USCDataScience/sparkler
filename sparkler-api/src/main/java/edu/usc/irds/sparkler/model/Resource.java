@@ -13,7 +13,7 @@ import java.util.Date;
  */
 public class Resource implements Serializable {
 
-    //NOTE: keep the variable names in sync with solr schema and the constants below
+    //NOTE: Keep the variable names in sync with solr schema
     @Field private String id;
     @Field private String jobId;
     @Field private String url;
@@ -63,21 +63,6 @@ public class Resource implements Serializable {
     }
 
 
-    // Fields
-    public static final String ID = "id";
-    public static final String JOBID = "jobId";
-    public static final String URL = "url";
-    public static final String GROUP = "group";
-    public static final String LAST_FETCHED_AT = "lastFetchedAt";
-    public static final String NUM_TRIES = "numTries";
-    public static final String NUM_FETCHES = "numFetches";
-    public static final String DEPTH = "depth";
-    public static final String SCORE = "score";
-    public static final String STATUS = "status";
-    public static final String LAST_UPDATED_AT = "lastUpdatedAt";
-    public static final String PLAIN_TEXT = "plainText";
-    public static final String MD_SUFFIX = "_md";
-
     public static String resourceId(String url, JobContext job) {
         return String.format("%s-%s", job.getId(), url);
     }
@@ -92,14 +77,6 @@ public class Resource implements Serializable {
         this.id = id;
     }
 
-    public String getJobId() {
-        return jobId;
-    }
-
-    public void setJobId(String jobId) {
-        this.jobId = jobId;
-    }
-
     public String getUrl() {
         return url;
     }
@@ -112,48 +89,8 @@ public class Resource implements Serializable {
         return group;
     }
 
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
-    public Date getLastFetchedAt() {
-        return lastFetchedAt;
-    }
-
-    public void setLastFetchedAt(Date lastFetchedAt) {
-        this.lastFetchedAt = lastFetchedAt;
-    }
-
-    public Integer getNumTries() {
-        return numTries;
-    }
-
-    public void setNumTries(Integer numTries) {
-        this.numTries = numTries;
-    }
-
-    public Integer getNumFetches() {
-        return numFetches;
-    }
-
-    public void setNumFetches(Integer numFetches) {
-        this.numFetches = numFetches;
-    }
-
     public Integer getDepth() {
         return depth;
-    }
-
-    public void setDepth(Integer depth) {
-        this.depth = depth;
-    }
-
-    public Double getScore() {
-        return score;
-    }
-
-    public void setScore(Double score) {
-        this.score = score;
     }
 
     public String getStatus() {
@@ -162,14 +99,6 @@ public class Resource implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public Date getLastUpdatedAt() {
-        return lastUpdatedAt;
-    }
-
-    public void setLastUpdatedAt(Date lastUpdatedAt) {
-        this.lastUpdatedAt = lastUpdatedAt;
     }
 
 }
