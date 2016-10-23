@@ -35,7 +35,7 @@ class SolrProxy(var crawlDb: SolrClient) extends Closeable with Loggable {
     crawlDb.add(docs)
   }
 
-  def addResources(beans: java.util.Iterator[Resource]): Unit = {
+  def addResources(beans: java.util.Iterator[_]): Unit = {
     try {
       crawlDb.addBeans(beans)
     } catch {
