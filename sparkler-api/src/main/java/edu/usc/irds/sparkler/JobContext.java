@@ -28,4 +28,10 @@ public interface JobContext {
      * @return an instance of {@link }
      */
     SparklerConfiguration getConfiguration();
+
+    /**
+     * Gets Sparkler Job Id
+     * @return Id
+     */
+    String getId();
 }

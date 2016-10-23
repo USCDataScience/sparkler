@@ -22,7 +22,7 @@ import java.util.Date
 import edu.usc.irds.sparkler.{Fetcher}
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.ResourceStatus._
-import edu.usc.irds.sparkler.model.{FetchedData, SparklerJob, Content, Resource}
+import edu.usc.irds.sparkler.model._
 import edu.usc.irds.sparkler.service.PluginService
 import org.apache.nutch.metadata.Metadata
 
@@ -37,7 +37,7 @@ object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializa
   val fetcherDefault = new FetcherDefault()
 
   override def apply(job: SparklerJob, resource: Resource): Content = {
-    LOG.info("FETCHING {}", resource.url)
+    LOG.info("FETCHING {}", resource.getUrl)
     //TODO: Fetcher Plugin Integrated. Improve on this. Handle Errors
 
     val fetchedAt = new Date()
@@ -47,27 +47,27 @@ object FetchFunction extends ((SparklerJob, Resource) => Content) with Serializa
       var fetchedData: FetchedData = new FetchedData()
       fetcher match {
         case Some(fetcher) => {
-          fetchedData = fetcher.fetch(resource.url)
+          fetchedData = fetcher.fetch(resource.getUrl)
           if (!(fetchedData.getResponseCode >=200 && fetchedData.getResponseCode < 300 ) ){ // If not fetched through plugin successfully
-            fetchedData = fetcherDefault.fetch(resource.url)
+            fetchedData = fetcherDefault.fetch(resource.getUrl)
           }
         }
         case None => {
           LOG.info("Using Default Fetcher")
-          fetchedData = fetcherDefault.fetch(resource.url)
+          fetchedData = fetcherDefault.fetch(resource.getUrl)
         }
       }
 
       val rawData: Array[Byte] = fetchedData.getContent
       val status: ResourceStatus = FETCHED
       val contentType = fetchedData.getContentType
-      new Content(resource.url, rawData, contentType, rawData.length, Array(),
+      new Content(resource.getUrl, rawData, contentType, rawData.length, Array(),
         fetchedAt, status, metadata)
     } catch {
       case e: Exception =>
-        LOG.warn("FETCH-ERROR {}", resource.url)
+        LOG.warn("FETCH-ERROR {}", resource.getUrl)
         LOG.debug(e.getMessage, e)
-        new Content(resource.url, Array(), "", -1, Array(), fetchedAt, ERROR, metadata)
+        new Content(resource.getUrl, Array(), "", -1, Array(), fetchedAt, ERROR, metadata)
     }
 
 

@@ -35,7 +35,7 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     val sUpdate = new SolrInputDocument()
     //FIXME: handle failure case
     //val x:java.util.Map[String, Object] = Map("ss" -> new Object).asJava
-    sUpdate.setField(Resource.ID, data.res.id)
+    sUpdate.setField(Resource.ID, data.res.getId)
     sUpdate.setField(Resource.STATUS, Map("set" -> data.content.status.toString).asJava)
     sUpdate.setField(Resource.LAST_FETCHED_AT, Map("set" -> data.content.fetchedAt).asJava)
     sUpdate.setField(Resource.LAST_UPDATED_AT, Map("set" -> new Date()).asJava)

@@ -51,5 +51,9 @@ class SparklerJob(val id: String, @transient var config: SparklerConfiguration, 
     this.config
   }
 
+  override def getId: String = {
+    id
+  }
+
 }
 

@@ -124,7 +124,7 @@ class Crawler extends CliTool {
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
       val rdd = new CrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
-      val fetchedRdd = rdd.map(r => (r.group, r))
+      val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay, FetchFunction, ParseFunction) })
         .persist()
@@ -166,19 +166,19 @@ object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]
     //Step : UPSERT outlinks
     rdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.res) }) //expand the set
 
-      .reduceByKey({ case (r1, r2) => if (r1.depth <= r2.depth) r1 else r2 }) // pick a parent
+      .reduceByKey({ case (r1, r2) => if (r1.getDepth <= r2.getDepth) r1 else r2 }) // pick a parent
 
       .filter({case (url, parent) =>
         val outLinkFilter:scala.Option[URLFilter] = PluginService.getExtension(classOf[URLFilter], job)
         val result = outLinkFilter match {
-          case Some(urLFilter) => urLFilter.filter(url, parent.url)
+          case Some(urLFilter) => urLFilter.filter(url, parent.getUrl)
           case None => true
         }
-        LOG.debug(s"$result :: filter(${parent.url} --> $url)")
+        LOG.debug(s"$result :: filter(${parent.getUrl} --> $url)")
         result
       })
       //TODO: url normalize
-      .map({ case (link, parent) => new Resource(link, parent.depth + 1, job, NEW) }) //create a new resource
+      .map({ case (link, parent) => new Resource(link, parent.getDepth + 1, job, NEW) }) //create a new resource
   }
 }
 
@@ -187,7 +187,7 @@ object Crawler extends Loggable with Serializable{
   def storeContent(outputPath:String, rdd:RDD[CrawlData]): Unit = {
     LOG.info(s"Storing output at $outputPath")
     rdd.filter(_.content.status == FETCHED)
-      .map(d => (new Text(d.res.url), d.content.toNutchContent(new Configuration())))
+      .map(d => (new Text(d.res.getUrl), d.content.toNutchContent(new Configuration())))
       .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
   }
 

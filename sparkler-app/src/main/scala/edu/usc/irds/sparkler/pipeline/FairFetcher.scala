@@ -44,13 +44,13 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
     val nextFetch = hitCounter.get() + delay
     val waitTime = nextFetch - System.currentTimeMillis()
     if (waitTime > 0) {
-      LOG.debug("    Waiting for {} ms, {}", waitTime, data.res.url)
+      LOG.debug("    Waiting for {} ms, {}", waitTime, data.res.getUrl)
       Thread.sleep(waitTime)
     }
 
     //STEP: Fetch
     data.content = fetchFunc(job, data.res)
-    lastHit = data.res.url
+    lastHit = data.res.getUrl
     hitCounter.set(System.currentTimeMillis())
 
     //STEP: Parse

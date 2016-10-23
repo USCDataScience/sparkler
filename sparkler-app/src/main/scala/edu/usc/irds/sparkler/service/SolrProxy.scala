@@ -20,6 +20,7 @@ package edu.usc.irds.sparkler.service
 import java.io.Closeable
 
 import edu.usc.irds.sparkler.base.Loggable
+import edu.usc.irds.sparkler.model.Resource
 import org.apache.solr.client.solrj.SolrClient
 import org.apache.solr.common.SolrInputDocument
 
@@ -34,7 +35,7 @@ class SolrProxy(var crawlDb: SolrClient) extends Closeable with Loggable {
     crawlDb.add(docs)
   }
 
-  def addResources(beans: java.util.Iterator[_]): Unit = {
+  def addResources(beans: java.util.Iterator[Resource]): Unit = {
     try {
       crawlDb.addBeans(beans)
     } catch {

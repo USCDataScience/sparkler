@@ -41,7 +41,18 @@ public class TestUtils {
     /**
      * Job context to be used by the tests
      */
-    public static final JobContext JOB_CONTEXT = () -> CONFIG;
+    public static final JobContext JOB_CONTEXT = new JobContext() {
+        @Override
+        public SparklerConfiguration getConfiguration() {
+            return CONFIG;
+        }
+
+        @Override
+        public String getId() {
+            //FIXME: Pass Job Id here
+            return "";
+        }
+    };
 
     /**
      * Instantiates and tests the

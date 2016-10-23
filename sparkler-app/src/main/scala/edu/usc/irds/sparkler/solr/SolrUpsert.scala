@@ -38,7 +38,7 @@ class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) =>
     val solrClient = job.newCrawlDbSolrClient()
 
     //TODO: handle this in server side - tell solr to skip docs if they already exist
-    val newResources: Iterator[Resource] = for (doc <- docs if solrClient.crawlDb.getById(doc.id) == null) yield doc
+    val newResources: Iterator[Resource] = for (doc <- docs if solrClient.crawlDb.getById(doc.getId) == null) yield doc
     LOG.info("Inserting new resources to Solr ")
     solrClient.addResources(newResources.asJava)
     LOG.debug("New resources inserted, Closing..")
