@@ -1,0 +1,3 @@
+[submodule "banana"]
+	path = banana
+	url = https://github.com/lucidworks/banana
