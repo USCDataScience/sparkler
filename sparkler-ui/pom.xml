@@ -20,22 +20,37 @@
     </properties>
 
     <dependencies>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>${maven.clean.plugin.version}</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${banana.output.directory}</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>${maven.war.plugin.version}</version>
                 <configuration>
                     <outputDirectory>${banana.output.directory}</outputDirectory>
+                    <webResources> 
+                        <resource> 
+                            <directory>${project.build.sourceDirectory}</directory> 
+                        </resource> 
+                        <resource> 
+                            <directory>${project.parent.basedir}${file.separator}${banana.source.directory}</directory> 
+                            <includes>
+                                <include>dist/*</include>
+                            </includes>
+                        </resource> 
+                    </webResources>
                     <webXml>WEB-INF/web.xml</webXml>
                 </configuration>
             </plugin>

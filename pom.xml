@@ -44,11 +44,12 @@
         <snakeyaml.version>1.17</snakeyaml.version>
         <json.simple.version>1.1.1</json.simple.version>
         <jbrowserdriver.version>0.16.4</jbrowserdriver.version>
-        <banana.source.directory>banana/dist</banana.source.directory>
+        <banana.source.directory>banana</banana.source.directory>
 
         <!-- Maven Plugins -->
         <maven.bundle.plugin.version>2.5.0</maven.bundle.plugin.version>
         <maven.war.plugin.version>2.1.1</maven.war.plugin.version>
+        <maven.clean.plugin.version>2.4.1</maven.clean.plugin.version>
 
         <!-- Tests -->
         <junit.version>4.12</junit.version>
