@@ -25,7 +25,7 @@ Setup instructions https://github.com/uscdataScience/sparkler/wiki/sparkler-0.1#
 ### Build
  To build this project, `cd` to the root directory of the sparkler and run the following command:
 
-     mvn clean org.apache.felix:maven-bundle-plugin:manifest install
+     mvn clean install
  
  Note that this is a multi-module maven project with OSGI bundle support using Apache Felix.
  On success, the build produces `sparkler-app/target/sparkler-app-xx.jar`
