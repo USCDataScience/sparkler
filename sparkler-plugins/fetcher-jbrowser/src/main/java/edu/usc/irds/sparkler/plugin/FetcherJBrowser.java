@@ -104,9 +104,7 @@ public class FetcherJBrowser extends FetcherDefault {
         return fetchedData;
 	}
 
-    @Override
-    public void closeResources() throws Exception {
-        super.closeResources();
+    public void closeResources() {
         quitBrowserInstance(driver);
     }
 
@@ -135,8 +133,33 @@ public class FetcherJBrowser extends FetcherDefault {
 				.connectTimeout(connectTimeout).build());
 	}
 
+    private boolean hasDriverQuit() {
+        String result;
+        try {
+            result = driver.toString();
+        } catch (Exception e) {
+            return false;
+        }
+        return result.contains("(null)");
+    }
+
 	public void quitBrowserInstance(JBrowserDriver driver) {
-		driver.quit();
+        if (driver != null) {
+            if(!hasDriverQuit()) {
+                try {
+                    // FIXME - Exception when closing the driver. Adding an unused GET request
+                    driver.get("http://www.apache.org/");
+                    driver.quit();
+                } catch (Exception e) {
+                    LOG.debug("Exception {} raised. The driver is either already closed " +
+                            "or this is an unknown exception", e.getMessage());
+                }
+            } else {
+                LOG.debug("Driver is already quit");
+            }
+        } else {
+            LOG.debug("Driver was null");
+        }
 	}
 
 }

@@ -1,7 +1,6 @@
 package edu.usc.irds.sparkler.util;
 
 import edu.usc.irds.sparkler.AbstractExtensionPoint;
-import edu.usc.irds.sparkler.CloseableIterator;
 import edu.usc.irds.sparkler.Fetcher;
 import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
@@ -27,24 +26,22 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher {
 
     @Override
     public Iterator<FetchedData> fetch(Iterator<Resource> resources) throws Exception {
-        try ( CloseableIterator<FetchedData> iterator = new FetchIterator(resources) ) {
-            return iterator;
-        }
+        return new FetchIterator(resources);
     }
 
     public FetchedData fetch(Resource resource) {
         LOG.info("DEFAULT FETCHER {}", resource.getUrl());
         Integer responseCode = DEFAULT_ERROR_CODE;
         FetchedData fetchedData;
+        InputStream inStream = null;
         try {
             URLConnection urlConn = new URL(resource.getUrl()).openConnection();
             urlConn.setConnectTimeout(FETCH_TIMEOUT);
             responseCode = ((HttpURLConnection)urlConn).getResponseCode();
             LOG.debug("STATUS CODE : " + responseCode + " " + resource.getUrl());
 
-            InputStream inStream = urlConn.getInputStream();
+            inStream = urlConn.getInputStream();
             byte[] rawData = IOUtils.toByteArray(inStream);
-            inStream.close();
             fetchedData = new FetchedData(rawData, urlConn.getContentType(), responseCode);
             resource.setStatus(ResourceStatus.FETCHED.toString());
         } catch (Exception e) {
@@ -53,15 +50,14 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher {
             LOG.debug(e.getMessage(), e);
             fetchedData = new FetchedData(new byte[0], "", responseCode);
             resource.setStatus(ResourceStatus.ERROR.toString());
+        } finally {
+            IOUtils.closeQuietly(inStream);
         }
         fetchedData.setResource(resource);
         return fetchedData;
     }
 
-    public void closeResources() throws Exception {
-    }
-
-    public class FetchIterator implements CloseableIterator<FetchedData> {
+    public class FetchIterator implements Iterator<FetchedData> {
 
         private Iterator<Resource> resources;
 
@@ -78,14 +74,8 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher {
         @Override
         public FetchedData next() {
             Resource resource = resources.next();
-            return fetch(resource);
-        }
-
-        @Override
-        public void close() throws Exception {
-            if(!resources.hasNext()) {
-                closeResources();
-            }
+            FetchedData fetchedData = fetch(resource);
+            return fetchedData;
         }
     }
 }

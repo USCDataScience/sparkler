@@ -34,17 +34,22 @@ import java.util.Properties;
 public class FetcherJBrowserActivator implements BundleActivator {
 
     private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowserActivator.class);
+    private FetcherJBrowser fetcher;
 
     @Override
     public void start(BundleContext bundleContext) throws Exception {
         LOG.info("Activating FetcherJBrowser Plugin");
         Properties prop = new Properties();
         prop.put("Fetcher", "FetcherJBrowser");
-        bundleContext.registerService(Fetcher.class.getName(), new FetcherJBrowser(), prop);
+        fetcher = new FetcherJBrowser();
+        bundleContext.registerService(Fetcher.class.getName(), fetcher, prop);
     }
 
     @Override
     public void stop(BundleContext bundleContext) throws Exception {
         LOG.info("Stopping FetcherJBrowser Plugin");
+        if (fetcher != null) {
+            fetcher.closeResources();
+        }
     }
 }

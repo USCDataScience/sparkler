@@ -49,7 +49,6 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
     }
 
     //STEP: Fetch
-    //data.content = fetchFunc(job, data.res)
     data.fetchedData = fetchedData.next
     lastHit = data.fetchedData.getResource.getUrl
     hitCounter.set(System.currentTimeMillis())
