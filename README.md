@@ -58,7 +58,7 @@ This is a multi module maven project
 | Plugin Name| Path | Description | Remarks |
 |---------    |-------|----|----|
 |urlfilter-regex | /sparkler-plugins/urlfilter-regex | This plugin provides URL Filter extension | An example plugin in OSGI bundle |
-|fetcher-jbrowser | /sparkler-plugins/fetcher-jbrowser | This plugin fetch pages using a headless browser | An OSGI bundle which helps to fetch Javascript enabled pages |
+|fetcher-jbrowser | /sparkler-plugins/fetcher-jbrowser | This plugin use headless browser to fetch a URL | An OSGI bundle which helps to fetch Javascript enabled pages |
 
 
 ### Contributing to Sparkler
