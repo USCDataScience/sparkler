@@ -51,7 +51,6 @@ This is a multi module maven project
 |sparkler-api | /sparkler-api | This project defines contracts for plugins and provides common utilities. | This should be shared by all plugins |
 |sparkler-app | /sparkler-app  | This project is the main application that runs on sparks and uses all plugins | |
 |sparkler-plugins | /sparkler-plugins | This project contains build configurations for all plugins  | |
-|sparkler-active-plugins |  |  | |
 
 
 ### List of Plugins
@@ -59,6 +58,7 @@ This is a multi module maven project
 | Plugin Name| Path | Description | Remarks |
 |---------    |-------|----|----|
 |urlfilter-regex | /sparkler-plugins/urlfilter-regex | This plugin provides URL Filter extension | An example plugin in OSGI bundle |
+|fetcher-jbrowser | /sparkler-plugins/fetcher-jbrowser | This plugin fetch pages using a headless browser | An OSGI bundle which helps to fetch Javascript enabled pages |
 
 
 ### Contributing to Sparkler
