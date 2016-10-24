@@ -29,7 +29,7 @@ import java.util.Properties;
 
 /**
  * Loads web page on a browser and returns HTML once page is loaded.
- * Properties can be configured 
+ * Properties can be configured
  */
 public class FetcherJBrowserActivator implements BundleActivator {
 

@@ -30,19 +30,18 @@ import edu.usc.irds.sparkler.util.FetcherDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.LinkedHashMap;
 
 public class FetcherJBrowser extends FetcherDefault {
 
-	private static final Integer DEFAULT_TIMEOUT = 2000;
-	private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
-	private LinkedHashMap<String, Object> pluginConfig;
+    private static final Integer DEFAULT_TIMEOUT = 2000;
+    private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
+    private LinkedHashMap<String, Object> pluginConfig;
     private JBrowserDriver driver;
-	
-	@Override
+
+    @Override
     public void init(JobContext context) throws SparklerException {
         super.init(context);
 
@@ -58,94 +57,94 @@ public class FetcherJBrowser extends FetcherDefault {
         init(context);
     }
 
-	@Override
-	public FetchedData fetch(Resource resource) {
+    @Override
+    public FetchedData fetch(Resource resource) {
         LOG.info("JBrowser FETCHER {}", resource.getUrl());
         FetchedData fetchedData;
-		/*
+        /*
 		* In this plugin we will work on only HTML data
 		* If data is of any other data type like image, pdf etc plugin will return client error
 		* so it can be fetched using default Fetcher
 		*/
-		if(!isWebPage(resource.getUrl())){
-			LOG.debug("{} not a html. Falling back to default fetcher.", resource.getUrl());
-			//This should be true for all URLS ending with 4 character file extension
-			//return new FetchedData("".getBytes(), "application/html", ERROR_CODE) ;
+        if (!isWebPage(resource.getUrl())) {
+            LOG.debug("{} not a html. Falling back to default fetcher.", resource.getUrl());
+            //This should be true for all URLS ending with 4 character file extension
+            //return new FetchedData("".getBytes(), "application/html", ERROR_CODE) ;
             return super.fetch(resource);
-		}
-		long start = System.currentTimeMillis();
+        }
+        long start = System.currentTimeMillis();
 
-		LOG.debug("Time taken to create driver- {}", (System.currentTimeMillis() - start));
+        LOG.debug("Time taken to create driver- {}", (System.currentTimeMillis() - start));
 
-		// This will block for the page load and any
-		// associated AJAX requests
-		driver.get(resource.getUrl());
+        // This will block for the page load and any
+        // associated AJAX requests
+        driver.get(resource.getUrl());
 
-		int status = driver.getStatusCode();
-		//content-type
+        int status = driver.getStatusCode();
+        //content-type
 
-		// Returns the page source in its current state, including
-		// any DOM updates that occurred after page load
-		String html = driver.getPageSource();
+        // Returns the page source in its current state, including
+        // any DOM updates that occurred after page load
+        String html = driver.getPageSource();
 
         //quitBrowserInstance(driver);
 
-		LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
+        LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
 
-        if (!(status >=200 && status < 300 )){
+        if (!(status >= 200 && status < 300)) {
             // If not fetched through plugin successfully
             // Falling back to default fetcher
             LOG.info("{} Failed to fetch the page. Falling back to default fetcher.", resource.getUrl());
             return super.fetch(resource);
         }
-		fetchedData = new FetchedData(html.getBytes(), "application/html", status);
+        fetchedData = new FetchedData(html.getBytes(), "application/html", status);
         resource.setStatus(ResourceStatus.FETCHED.toString());
         fetchedData.setResource(resource);
         return fetchedData;
-	}
+    }
 
     public void closeResources() {
         quitBrowserInstance(driver);
     }
 
     private boolean isWebPage(String webUrl) {
-		String contentType = "";
-		try {
-			URLConnection conn= new URL(webUrl).openConnection();
-			contentType = conn.getHeaderField("Content-Type");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return contentType.contains("text") || contentType.contains("ml");
-	}
-
-	public JBrowserDriver createBrowserInstance() {
-		Integer socketTimeout = (Integer) pluginConfig.getOrDefault("socket.timeout", DEFAULT_TIMEOUT);
-		Integer connectTimeout = (Integer) pluginConfig.getOrDefault("connect.timeout", DEFAULT_TIMEOUT);
-
-		return new JBrowserDriver(Settings.builder()
-				.timezone(Timezone.AMERICA_NEWYORK)
-				.quickRender(true)
-				.headless(true)
-				.ignoreDialogs(true)
-				.ajaxResourceTimeout(DEFAULT_TIMEOUT)
-				.ajaxWait(DEFAULT_TIMEOUT).socketTimeout(socketTimeout)
-				.connectTimeout(connectTimeout).build());
-	}
-
-    private boolean hasDriverQuit() {
-        String result;
         try {
-            result = driver.toString();
+            URLConnection conn = new URL(webUrl).openConnection();
+            String contentType = conn.getHeaderField("Content-Type");
+            return contentType.contains("text") || contentType.contains("ml");
         } catch (Exception e) {
-            return false;
+            LOG.debug(e.getMessage(), e);
         }
-        return result.contains("(null)");
+        return false;
     }
 
-	public void quitBrowserInstance(JBrowserDriver driver) {
+    public JBrowserDriver createBrowserInstance() {
+        Integer socketTimeout = (Integer) pluginConfig.getOrDefault("socket.timeout", DEFAULT_TIMEOUT);
+        Integer connectTimeout = (Integer) pluginConfig.getOrDefault("connect.timeout", DEFAULT_TIMEOUT);
+
+        return new JBrowserDriver(Settings.builder()
+                .timezone(Timezone.AMERICA_NEWYORK)
+                .quickRender(true)
+                .headless(true)
+                .ignoreDialogs(true)
+                .ajaxResourceTimeout(DEFAULT_TIMEOUT)
+                .ajaxWait(DEFAULT_TIMEOUT).socketTimeout(socketTimeout)
+                .connectTimeout(connectTimeout).build());
+    }
+
+    private boolean hasDriverQuit() {
+        try {
+            String result = driver.toString();
+            return result.contains("(null)");
+        } catch (Exception e) {
+            LOG.debug(e.getMessage(), e);
+        }
+        return false;
+    }
+
+    public void quitBrowserInstance(JBrowserDriver driver) {
         if (driver != null) {
-            if(!hasDriverQuit()) {
+            if (!hasDriverQuit()) {
                 try {
                     // FIXME - Exception when closing the driver. Adding an unused GET request
                     driver.get("http://www.apache.org/");
@@ -160,6 +159,6 @@ public class FetcherJBrowser extends FetcherDefault {
         } else {
             LOG.debug("Driver was null");
         }
-	}
+    }
 
 }
