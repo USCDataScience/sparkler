@@ -45,7 +45,7 @@
                             <directory>${project.build.sourceDirectory}</directory> 
                         </resource> 
                         <resource> 
-                            <directory>${project.parent.basedir}${file.separator}${banana.source.directory}/dist</directory> 
+                            <directory>${project.parent.basedir}${file.separator}${banana.source.directory}</directory> 
                         </resource> 
                     </webResources>
                     <webXml>WEB-INF/web.xml</webXml>

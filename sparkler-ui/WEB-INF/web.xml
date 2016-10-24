@@ -5,7 +5,7 @@
     http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
          version="2.5">
 
-    <display-name>My Application</display-name>
+    <display-name>Sparkler Dashboard</display-name>
 
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
