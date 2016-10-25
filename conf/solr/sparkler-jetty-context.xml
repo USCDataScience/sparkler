@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_9_0.dtd">
+<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+  <Set name="contextPath"><Property name="hostContext" default="/banana"/></Set>
+  <Set name="war"><Property name="jetty.base"/>/solr-webapp/sparkler-dashboard/sparkler-ui-0.1-SNAPSHOT.war</Set>
+</Configure>
