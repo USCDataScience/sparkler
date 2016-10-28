@@ -45,11 +45,6 @@
             <artifactId>sparkler-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>edu.usc.irds.sparkler.plugin</groupId>
-            <artifactId>sparkler-plugins-active</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.spark</groupId>
