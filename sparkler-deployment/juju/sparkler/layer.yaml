@@ -14,3 +14,4 @@
 # limitations under the License.
 
 includes: ['layer:basic', 'interface:java', 'interface:spark'] 
+repo: git@github.com:USCDataScience/sparkler.git

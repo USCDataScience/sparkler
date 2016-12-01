@@ -18,6 +18,8 @@ from charms.reactive import when, when_not, set_state
 
 @when_not('sparkler.installed')
 def install_sparkler():
+    sparkler = resource_get("sparklersoftware")
+
     set_state('sparkler.installed')
 
 @when_not('java.ready')

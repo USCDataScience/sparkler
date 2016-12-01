@@ -30,3 +30,9 @@ requires:
     interface: spark
   solr:
     interface: solr
+resources:
+   sparklersoftware:
+      type: file
+      filename: sparkler-app.jar
+      description: "The Sparkler Jar File"
+
