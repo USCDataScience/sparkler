@@ -9,8 +9,9 @@ provides:
   provides-relation:
     interface: interface-name
 requires:
-  requires-relation:
-    interface: interface-name
-peers:
-  peer-relation:
-    interface: interface-name
+  java:
+    interface: java
+  spark:
+    interface: spark
+  solr:
+    interface: solr
