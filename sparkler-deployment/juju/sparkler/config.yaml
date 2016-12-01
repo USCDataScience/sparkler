@@ -15,16 +15,32 @@
 
 
 options:
-  string-option:
+  crawldb-uri:
     type: string
-    default: "Default Value"
-    description: "A short description of the configuration option"
-  boolean-option:
+    default: ""
+    description: "Override the auto detected crawldb uri"
+  spark-master:
+    type: string
+    default: ""
+    description: "Override the auto detected spark uri"
+  kafka-enable:
     type: boolean
     default: False
-    description: "A short description of the configuration option"
-  int-option:
-    type: int
-    default: 9001
-    description: "A short description of the configuration option"
+    description: "Enable Kafka dump"
+  kafka-listeners:
+    type: string
+    default: ""
+    description: "Override the Kafka listeners"
+  kafka-topic:
+    type: string
+    default: "sparkler_%s"
+    description: "The Kafka topic"
+  generate-topn:
+    type: string
+    default: "1000"
+    description: "Generates the top N URLs for fetching."
+  generate-top-groups:
+    type: string
+    default: 256
+    description: "
 

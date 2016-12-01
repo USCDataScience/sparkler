@@ -19,23 +19,23 @@ from charms.reactive import when, when_not, set_state
 @when_not('sparkler.installed')
 def install_sparkler():
     sparkler = resource_get("sparklersoftware")
-
+    mkdir('/opt/sparkler/')
+    shutil.copy(sparkler, "/opt/sparkler")
     set_state('sparkler.installed')
 
 @when_not('java.ready')
 def no_java():
+    hookenv.status_set('waiting', 'Waiting for Java to become available')
 
 @when_not('spark.joined')
-def no_spark():
-
 @when_not('spark.started')
-def spark_not_started():
-
-@when_not('solr.joined')
-def no_solr():
+def no_spark():
+    hookenv.status_set('waiting', 'Waiting for Spark to become available')
 
 @when_not('solr.started'):
-def solr_not_started():
+@when_not('solr.joined')
+def no_solr():
+    hookenv.status_set('waiting', 'Waiting for Solr to become available')
 
 @when('solr.started')
 @when('spark.started')
