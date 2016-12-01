@@ -42,5 +42,14 @@ options:
   generate-top-groups:
     type: string
     default: 256
-    description: "
+    description: "Generates the Top Groups"
+  fetcher-server-delay:
+    type: string
+    default: "1000"
+    description: "Delay (in milliseconds) between two fetch requests for the same host."
+  plugins-bundle-directory:
+    type: string
+    description: "Plugins Bundle directory. Configured through Maven."
+    default: "${project.parent.basedir}${file.separator}${project.bundles.directory}"
+  
 
