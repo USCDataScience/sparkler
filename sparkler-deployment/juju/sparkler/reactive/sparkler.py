@@ -41,6 +41,9 @@ def no_solr():
 @when('spark.started')
 @when('java.ready')
 def configure_sparkler():
+# Do some stuff to parse the charm config options and inject them into sparkler-default.yaml
 
 @when('sparkler.configured')
 def run_sparkler():
+    hookenv.status_set('running', 'Sparkler is configured awaiting action')
+
