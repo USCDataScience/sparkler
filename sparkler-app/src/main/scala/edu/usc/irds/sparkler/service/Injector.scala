@@ -51,10 +51,19 @@ class Injector extends CliTool {
     usage = "Id of an existing Job to which the urls are to be injected. No argument will create a new job")
   var jobId: String = ""
 
+  @Option(name = "-slr", aliases = Array("--solr-uri"), usage = "Solr URI when not running in local mode")
+  var solrUri: String = ""
+
   override def run(): Unit = {
 
     if (jobId.isEmpty) {
       jobId = JobUtil.newJobId()
+    }
+
+    if(!solrUri.isEmpty) {
+      var uri = conf.asInstanceOf[java.util.HashMap[String,String]]
+
+      uri.put("crawldb.uri", solrUri)
     }
     val job = new SparklerJob(jobId, conf)
 
