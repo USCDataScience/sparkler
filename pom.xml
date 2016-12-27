@@ -43,7 +43,9 @@
         <felix.main.version>5.4.0</felix.main.version>
         <snakeyaml.version>1.17</snakeyaml.version>
         <json.simple.version>1.1.1</json.simple.version>
-        <jbrowserdriver.version>0.16.4</jbrowserdriver.version>
+        <jbrowserdriver.version>1.10.1</jbrowserdriver.version>
+
+        <log4j.configuration>conf/log4j.properties</log4j.configuration>
 
         <!-- Maven Plugins -->
         <maven.bundle.plugin.version>2.5.0</maven.bundle.plugin.version>
@@ -60,6 +62,7 @@
         <module>sparkler-api</module>
         <module>sparkler-app</module>
         <module>sparkler-plugins</module>
+        <module>sparkler-tests-base</module>
     </modules>
 
     <build>

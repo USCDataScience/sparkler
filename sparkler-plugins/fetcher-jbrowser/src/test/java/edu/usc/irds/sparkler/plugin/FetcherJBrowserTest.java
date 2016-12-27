@@ -31,7 +31,7 @@ public class FetcherJBrowserTest {
     public void testJBrowserHtml() throws Exception {
     	FetcherJBrowser fetcherJBrowser = TestUtils.newInstance(FetcherJBrowser.class, "fetcher.jbrowser");
 		Resource resource = new Resource("http://nutch.apache.org", "nutch.apache.org", TestUtils.JOB_CONTEXT);
-    	System.out.println(fetcherJBrowser.fetch(resource).getResponseCode());
+    	System.out.println(fetcherJBrowser.fetch(resource).responseCode());
     }
     
     /**
@@ -42,6 +42,6 @@ public class FetcherJBrowserTest {
     public void testJBrowserImage() throws Exception {
     	FetcherJBrowser fetcherJBrowser = TestUtils.newInstance(FetcherJBrowser.class, "fetcher.jbrowser");
 		Resource resource = new Resource("http://nutch.apache.org/assets/img/nutch_logo_tm.png", "nutch.apache.org", TestUtils.JOB_CONTEXT);
-    	System.out.println(fetcherJBrowser.fetch(resource).getResponseCode());
+    	System.out.println(fetcherJBrowser.fetch(resource).responseCode());
     }
 }

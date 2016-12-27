@@ -29,28 +29,13 @@ import scala.collection.JavaConverters._
 /**
   * Fetcher Function transforms stream of resources to fetched content.
   */
-object FetchFunction
-  extends ((SparklerJob, Iterator[Resource]) => Iterator[FetchedData])
-    with Serializable with Loggable {
-
-  val FETCH_TIMEOUT = 1000
-  val fetcherDefault = new FetcherDefault()
-
-  override def apply(job: SparklerJob, resources: Iterator[Resource])
-  : Iterator[FetchedData] = {
-    val fetcher:scala.Option[Fetcher] = PluginService.getExtension(classOf[Fetcher], job)
-    try {
-      fetcher match {
+object FetchFunction extends Loggable with Serializable {
+  def fetch(job: SparklerJob, resources: Iterator[Resource]): Iterator[FetchedData] = {
+      PluginService.getExtension(classOf[Fetcher], job) match {
         case Some(fetcher) =>
           fetcher.fetch(resources.asJava).asScala
         case None =>
-          LOG.info("Using Default Fetcher")
-          fetcherDefault.fetch(resources.asJava).asScala
+          new FetcherDefault().fetch(resources.asJava).asScala
       }
-    } catch {
-      case e: Exception =>
-        LOG.error(e.getMessage, e)
-        Iterator()
-    }
   }
 }

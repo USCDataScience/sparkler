@@ -79,4 +79,4 @@ plugins:
   fetcher.jbrowser:
     # File with Regex Filter Rules
     socket.timeout: 3000
-    connect.timeout: 3000
+    connect.timeout: 100

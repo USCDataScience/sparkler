@@ -26,7 +26,8 @@ import org.apache.solr.client.solrj.util.ClientUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}
 import ClientUtils.escapeQueryChars
-
+import org.apache.solr.client.solrj.SolrQuery.SortClause
+import org.apache.solr.client.solrj.response.Group
 import scala.collection.JavaConversions._
 
 /**
@@ -35,57 +36,46 @@ import scala.collection.JavaConversions._
   */
 class CrawlDbRDD(sc: SparkContext,
                  job: SparklerJob,
-                 sortBy: String = CrawlDbRDD.DEFAULT_ORDER,
+                 sortBy: SortClause = CrawlDbRDD.DEFAULT_ORDER,
                  generateQry: String = CrawlDbRDD.DEFAULT_FILTER_QRY,
                  maxGroups: Int = CrawlDbRDD.DEFAULT_GROUPS,
                  topN: Int = CrawlDbRDD.DEFAULT_TOPN)
   extends RDD[Resource](sc, Seq.empty) {
 
-
   assert(topN > 0)
   assert(maxGroups > 0)
 
   override def compute(split: Partition, context: TaskContext): Iterator[Resource] = {
-    val partition: SolrGroupPartition = split.asInstanceOf[SolrGroupPartition]
-    val batchSize = 100
-    val query = new SolrQuery(generateQry)
-    query.addFilterQuery(s"""${Constants.solr.GROUP}:"${escapeQueryChars(partition.group)}"""")
-    query.addFilterQuery(s"${Constants.solr.JOBID}:${job.id}")
-    query.set("sort", sortBy)
-    query.setRows(batchSize)
-
-    new SolrResultIterator[Resource](job.newCrawlDbSolrClient().crawlDb, query,
-      batchSize, classOf[Resource], closeClient = true, limit = topN)
+    new SolrResultIterator[Resource](
+      job.solrClient().crawlDb,
+      new SolrQuery(generateQry)
+        .addFilterQuery(s"""${Constants.solr.GROUP_ID}:"${escapeQueryChars(split.asInstanceOf[SolrGroupPartition].group)}"""")
+        .addFilterQuery(s"${Constants.solr.JOBID}:${job.id}")
+        .setRows(CrawlDbRDD.BATCH_SIZE)
+        .setSort(sortBy),
+      CrawlDbRDD.BATCH_SIZE, classOf[Resource], closeClient = true, limit = topN)
   }
 
   override protected def getPartitions: Array[Partition] = {
-    val qry = new SolrQuery(generateQry)
-    qry.addFilterQuery(s"${Constants.solr.JOBID}:${job.id}")
-    qry.set("sort", sortBy)
-    qry.set("group", true)
-    qry.set("group.ngroups", true)
-    qry.set("group.field", Constants.solr.GROUP)
-    qry.set("group.limit", 0)
-    qry.setRows(maxGroups)
-    val proxy = job.newCrawlDbSolrClient()
-    val solr = proxy.crawlDb
-    val groupRes = solr.query(qry).getGroupResponse.getValues.get(0)
-    val grps = groupRes.getValues
-    CrawlDbRDD.LOG.info(s"selecting ${grps.size()} out of ${groupRes.getNGroups}")
-    val res = new Array[Partition](grps.size())
-    for (i <- 0 until grps.size()) {
-      //TODO: improve partitioning : (1) club smaller domains, (2) support for multiple partitions for larger domains
-      res(i) = new SolrGroupPartition(i, grps(i).getGroupValue)
-    }
-    proxy.close()
-    res
+    job.solrClient().crawlDb.query(new SolrQuery(generateQry)
+      .addFilterQuery(s"${Constants.solr.JOBID}:${job.id}")
+      .setSort(sortBy)
+      .setParam("group", true)
+      .setParam("group.ngroups", true)
+      .setParam("group.field", Constants.solr.GROUP_ID)
+      .setParam("group.limit", "0")
+      .setRows(maxGroups))
+      .getGroupResponse.getValues.get(0)
+      .getValues()
+      .zipWithIndex
+      .map({case (s: Group, i: Int) => new SolrGroupPartition(i, s.getGroupValue)})
+      .toArray
   }
 }
 
-
 object CrawlDbRDD extends Loggable {
-
-  val DEFAULT_ORDER = "depth asc,score asc"
+  val BATCH_SIZE = 10
+  val DEFAULT_ORDER = SortClause.create("depth", SolrQuery.ORDER.asc) //+add: sort by lastFetch
   val DEFAULT_FILTER_QRY = "status:NEW"
   val DEFAULT_GROUPS = 1000
   val DEFAULT_TOPN = 1000

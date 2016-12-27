@@ -20,44 +20,24 @@ package edu.usc.irds.sparkler.pipeline
 import java.util.Date
 
 import edu.usc.irds.sparkler.Constants
-import edu.usc.irds.sparkler.model.{CrawlData, Resource}
-import edu.usc.irds.sparkler.solr.schema.FieldMapper
+import edu.usc.irds.sparkler.model.FetchedData
 import org.apache.solr.common.SolrInputDocument
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 /**
   * Created by thammegr on 6/7/16.
   */
-object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) with Serializable {
-
-  override def apply(data: CrawlData): SolrInputDocument = {
+object StatusUpdateSolrTransformer extends (FetchedData => SolrInputDocument ) with Serializable {
+  override def apply(data: FetchedData): SolrInputDocument = {
     val sUpdate = new SolrInputDocument()
-    //FIXME: handle failure case
-    //val x:java.util.Map[String, Object] = Map("ss" -> new Object).asJava
-    sUpdate.setField(Constants.solr.ID, data.fetchedData.getResource.getId)
-    sUpdate.setField(Constants.solr.STATUS, Map("set" -> data.fetchedData.getResource.getStatus).asJava)
-    sUpdate.setField(Constants.solr.LAST_FETCHED_AT, Map("set" -> data.fetchedData.getFetchedAt).asJava)
+    sUpdate.setField(Constants.solr.ID, data.resource.id)
+    sUpdate.setField(Constants.solr.GROUP_ID, data.resource.groupID)
+    sUpdate.setField(Constants.solr.STATUS, Map("set" -> data.resource.status).asJava)
+    sUpdate.setField(Constants.solr.LAST_FETCHED_AT, Map("set" -> data.fetchedAt).asJava)
     sUpdate.setField(Constants.solr.LAST_UPDATED_AT, Map("set" -> new Date()).asJava)
     sUpdate.setField(Constants.solr.NUM_TRIES, Map("inc" -> 1).asJava)
     sUpdate.setField(Constants.solr.NUM_FETCHES, Map("inc" -> 1).asJava)
-    sUpdate.setField(Constants.solr.PLAIN_TEXT, data.parsedData.plainText)
-
-    var mdFields: Map[String, AnyRef] = Map()
-    for (name: String <- data.parsedData.metadata.names()) {
-      mdFields += (name -> (if (data.parsedData.metadata.isMultiValued(name)) data.parsedData.metadata.getValues(name) else data.parsedData.metadata.get(name)))
-    }
-    val fieldMapper: FieldMapper = FieldMapper.initialize()
-    val mappedMdFields: mutable.Map[String, AnyRef] = fieldMapper.mapFields(mdFields.asJava, true).asScala
-    mappedMdFields.foreach{case (k, v) => {
-      var key: String = k
-      if (!k.endsWith(Constants.solr.MD_SUFFIX)) {
-        key = k + Constants.solr.MD_SUFFIX
-      }
-      sUpdate.setField(key, v)
-    }}
-
     sUpdate
   }
 }

@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
+import java.util.Random;
 
 /**
  * Created by karanjeetsingh on 10/22/16.
@@ -14,7 +15,10 @@ import java.util.Date;
 public class Resource implements Serializable {
 
     //NOTE: Keep the variable names in sync with solr schema
+    private static final int GROUP_RANGE = 100;
+
     @Field private String id;
+    @Field private String group_id;
     @Field private String jobId;
     @Field private String url;
     @Field private String group;
@@ -31,10 +35,11 @@ public class Resource implements Serializable {
 
     public Resource(String url, String group, JobContext job) {
         super();
-        this.id = resourceId(url, job);
+        id = resourceId(url, job);
         this.url = url;
         this.group = group;
-        this.jobId = job.getId();
+        jobId = job.getId();
+        setGroupId();
     }
 
     public Resource(String url, String group, JobContext sparklerJob, Date lastFetchedAt) {
@@ -42,8 +47,18 @@ public class Resource implements Serializable {
         this.lastFetchedAt = lastFetchedAt;
     }
 
-    public Resource(String url, Integer depth, JobContext sparklerJob, ResourceStatus status) throws MalformedURLException {
-        this(url, new URL(url).getHost(), sparklerJob);
+    public Resource(String url, Integer depth, JobContext sparklerJob, ResourceStatus status)
+        throws MalformedURLException {
+        this(url, "", sparklerJob);
+
+        try {
+            setGroup(new URL(url).getHost());
+        } catch(MalformedURLException e) {
+            this.url = "www.error.com";
+            id = resourceId(this.url, sparklerJob);
+            setGroup(this.url);
+        }
+
         this.depth = depth;
         this.status = status.toString();
     }
@@ -58,8 +73,9 @@ public class Resource implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("Resource(%s, $s, %s, %s, %s, %s, %s, %s)",
-                id, group, lastFetchedAt, numTries, numFetches, depth, score, status);
+        return String.format("Resource(%s, $s, %d, %s, %s, %s, %s, %s, %s)", id,
+            group,
+            group_id, lastFetchedAt, numTries, numFetches, depth, score, status);
     }
 
 
@@ -67,17 +83,23 @@ public class Resource implements Serializable {
         return String.format("%s-%s", job.getId(), url);
     }
 
+    public void setGroupId() {
+        group_id = String.valueOf(((new Random()).nextInt(GROUP_RANGE) + 1));
+    }
 
-    // Getters & Setters
-    public String getId() {
-        return id;
+    public String groupID() {
+        return String.valueOf(group_id);
     }
 
     public void setId(String id) {
         this.id = id;
     }
 
-    public String getUrl() {
+    public String id() {
+        return id;
+    }
+
+    public String url() {
         return url;
     }
 
@@ -85,15 +107,19 @@ public class Resource implements Serializable {
         this.url = url;
     }
 
-    public String getGroup() {
+    public void setGroup(String g) {
+        group = g;
+    }
+
+    public String group() {
         return group;
     }
 
-    public Integer getDepth() {
+    public Integer depth() {
         return depth;
     }
 
-    public String getStatus() {
+    public String status() {
         return status;
     }
 

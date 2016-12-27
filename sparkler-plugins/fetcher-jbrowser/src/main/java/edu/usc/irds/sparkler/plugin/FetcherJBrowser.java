@@ -17,9 +17,6 @@
 
 package edu.usc.irds.sparkler.plugin;
 
-import com.machinepublishers.jbrowserdriver.JBrowserDriver;
-import com.machinepublishers.jbrowserdriver.Settings;
-import com.machinepublishers.jbrowserdriver.Timezone;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
@@ -27,28 +24,39 @@ import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import edu.usc.irds.sparkler.util.FetcherDefault;
+import org.apache.commons.io.IOUtils;
+import org.jsoup.HttpStatusException;
+import org.jsoup.UnsupportedMimeTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FetcherJBrowser extends FetcherDefault {
-
-    private static final Integer DEFAULT_TIMEOUT = 2000;
+    private static final String HTML_TAG_PATTERN = "(?i)<a([^>]+)>(.+?)</a>";
+    private static final String HTML_HREF_TAG_PATTERN = "\\s*(?i)href\\s*=\\s*(\"([^\"]*\")|'[^']*'|([^'\">\\s]+))";
+    private static final Integer DEFAULT_TIMEOUT = 1000;
+    private static final Integer MAX_SIZE_PAGE_KB = 500;
     private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
     private LinkedHashMap<String, Object> pluginConfig;
-    private JBrowserDriver driver;
+    private Integer connectTimeout;
 
     @Override
     public void init(JobContext context) throws SparklerException {
         super.init(context);
 
         SparklerConfiguration config = jobContext.getConfiguration();
-        //TODO should change everywhere 
+        //TODO should change everywhere
         pluginConfig = config.getPluginConfiguration(pluginId);
-        driver = createBrowserInstance();
+        connectTimeout = (Integer) pluginConfig.getOrDefault("connect.timeout", DEFAULT_TIMEOUT);
     }
 
     @Override
@@ -59,106 +67,73 @@ public class FetcherJBrowser extends FetcherDefault {
 
     @Override
     public FetchedData fetch(Resource resource) throws Exception {
-        LOG.info("JBrowser FETCHER {}", resource.getUrl());
-        FetchedData fetchedData;
-        /*
-		* In this plugin we will work on only HTML data
-		* If data is of any other data type like image, pdf etc plugin will return client error
-		* so it can be fetched using default Fetcher
-		*/
-        if (!isWebPage(resource.getUrl())) {
-            LOG.debug("{} not a html. Falling back to default fetcher.", resource.getUrl());
-            //This should be true for all URLS ending with 4 character file extension
-            //return new FetchedData("".getBytes(), "application/html", ERROR_CODE) ;
+        try {
+            URLConnection urlConn = new URL(resource.url()).openConnection();
+            HttpURLConnection connection;
+
+            if (urlConn != null && urlConn.getDate() > 0) {
+                connection = (HttpURLConnection) urlConn;
+            }
+            else
+                throw new FetchedException();
+
+            if (connection.getContentLengthLong() > MAX_SIZE_PAGE_KB*1000)
+                throw new FetchedException();
+
+            connection.setConnectTimeout(connectTimeout);
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode > 308)
+                throw new FetchedException();
+
+            InputStream inStream = connection.getInputStream();
+            byte[] rawData = IOUtils.toByteArray(inStream);
+            FetchedData fetchedData = new FetchedData(rawData, connection.getContentType(), responseCode);
+            resource.setStatus(ResourceStatus.FETCHED.toString());
+            fetchedData.setResource(resource);
+
+            // URL
+            Pattern pTag = Pattern.compile(HTML_TAG_PATTERN);
+            Pattern pLink = Pattern.compile(HTML_HREF_TAG_PATTERN);
+            Matcher mTag = pTag.matcher(IOUtils.toString(rawData,
+                String.valueOf(StandardCharsets.UTF_8)));
+
+            //http://www.java2s.com/Code/Java/Regular-Expressions/Findallmatches.htm
+            while (mTag.find()) {
+                String href = mTag.group(1);     // get the values of href
+                Matcher mLink = pLink.matcher(href);
+                while (mLink.find()) {
+                    String link = mLink.group(1).replaceAll("^\"|\"$|^'|'$", "");;
+                    fetchedData.addOutlink(link);
+                }
+            }
+            return fetchedData;
+        }
+        catch (HttpStatusException e) {
+            LOG.warn("FETCH-Jsoup http status error {}", e.getStatusCode(), resource.url());
+            return this.fakeFetchedData(resource, ResourceStatus.ERROR);
+        }
+        catch (FetchedException e) {
+            LOG.warn("FETCH-Jsoup FetchedException {}", resource.url());
+            return this.fakeFetchedData(resource, ResourceStatus.ERROR);
+        }
+        catch (SocketTimeoutException e) {
+            LOG.warn("FETCH-Jsoup timeout {}", resource.url());
+            return this.fakeFetchedData(resource, ResourceStatus.TIMEOUT);
+        }
+        catch (UnsupportedMimeTypeException e) {
+            LOG.warn("FETCH-Jsoup unsupported mime type {}", resource.url());
+            return this.fakeFetchedData(resource, ResourceStatus.ERROR);
+        }
+        catch (Exception e) {
+            LOG.warn("FETCH-Jsoup EXCEPTION {}", resource.url());
             return super.fetch(resource);
         }
-        long start = System.currentTimeMillis();
-
-        LOG.debug("Time taken to create driver- {}", (System.currentTimeMillis() - start));
-
-        // This will block for the page load and any
-        // associated AJAX requests
-        driver.get(resource.getUrl());
-
-        int status = driver.getStatusCode();
-        //content-type
-
-        // Returns the page source in its current state, including
-        // any DOM updates that occurred after page load
-        String html = driver.getPageSource();
-
-        //quitBrowserInstance(driver);
-
-        LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
-
-        if (!(status >= 200 && status < 300)) {
-            // If not fetched through plugin successfully
-            // Falling back to default fetcher
-            LOG.info("{} Failed to fetch the page. Falling back to default fetcher.", resource.getUrl());
-            return super.fetch(resource);
-        }
-        fetchedData = new FetchedData(html.getBytes(), "application/html", status);
-        resource.setStatus(ResourceStatus.FETCHED.toString());
-        fetchedData.setResource(resource);
-        return fetchedData;
     }
 
     public void closeResources() {
-        quitBrowserInstance(driver);
     }
 
-    private boolean isWebPage(String webUrl) {
-        try {
-            URLConnection conn = new URL(webUrl).openConnection();
-            String contentType = conn.getHeaderField("Content-Type");
-            return contentType.contains("text") || contentType.contains("ml");
-        } catch (Exception e) {
-            LOG.debug(e.getMessage(), e);
-        }
-        return false;
+    private class FetchedException extends Exception {
     }
-
-    public JBrowserDriver createBrowserInstance() {
-        Integer socketTimeout = (Integer) pluginConfig.getOrDefault("socket.timeout", DEFAULT_TIMEOUT);
-        Integer connectTimeout = (Integer) pluginConfig.getOrDefault("connect.timeout", DEFAULT_TIMEOUT);
-
-        return new JBrowserDriver(Settings.builder()
-                .timezone(Timezone.AMERICA_NEWYORK)
-                .quickRender(true)
-                .headless(true)
-                .ignoreDialogs(true)
-                .ajaxResourceTimeout(DEFAULT_TIMEOUT)
-                .ajaxWait(DEFAULT_TIMEOUT).socketTimeout(socketTimeout)
-                .connectTimeout(connectTimeout).build());
-    }
-
-    private boolean hasDriverQuit() {
-        try {
-            String result = driver.toString();
-            return result.contains("(null)");
-        } catch (Exception e) {
-            LOG.debug(e.getMessage(), e);
-        }
-        return false;
-    }
-
-    public void quitBrowserInstance(JBrowserDriver driver) {
-        if (driver != null) {
-            if (!hasDriverQuit()) {
-                try {
-                    // FIXME - Exception when closing the driver. Adding an unused GET request
-                    driver.get("http://www.apache.org/");
-                    driver.quit();
-                } catch (Exception e) {
-                    LOG.debug("Exception {} raised. The driver is either already closed " +
-                            "or this is an unknown exception", e.getMessage());
-                }
-            } else {
-                LOG.debug("Driver is already quit");
-            }
-        } else {
-            LOG.debug("Driver was null");
-        }
-    }
-
 }
