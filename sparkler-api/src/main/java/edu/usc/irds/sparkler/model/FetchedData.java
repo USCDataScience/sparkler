@@ -46,6 +46,7 @@ public class FetchedData implements Serializable {
         this.contentLength = content.length;
 		this.contentType = contentType;
 		this.responseCode = responseCode;
+        this.metadata = new Metadata();
 	}
 	
 	public String getContentType() {
