@@ -58,7 +58,7 @@ public class FetcherJBrowser extends FetcherDefault {
     }
 
     @Override
-    public FetchedData fetch(Resource resource) {
+    public FetchedData fetch(Resource resource) throws Exception {
         LOG.info("JBrowser FETCHER {}", resource.getUrl());
         FetchedData fetchedData;
         /*

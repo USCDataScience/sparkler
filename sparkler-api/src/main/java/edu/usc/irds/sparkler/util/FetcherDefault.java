@@ -14,11 +14,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Iterator;
+import java.util.function.Function;
 
 /**
- * Created by karanjeetsingh on 10/23/16.
+ * This class is a default implementation of {@link Fetcher} contract.
+ * This fetcher doesn't depends on external libraries,
+ * instead it uses URLConnection provided by JDK to fetch the resources.
+ *
  */
-public class FetcherDefault extends AbstractExtensionPoint implements Fetcher {
+public class FetcherDefault extends AbstractExtensionPoint
+        implements Fetcher, Function<Resource, FetchedData> {
 
     public static final Logger LOG = LoggerFactory.getLogger(FetcherDefault.class);
     public static final Integer FETCH_TIMEOUT = 1000;
@@ -26,56 +31,36 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher {
 
     @Override
     public Iterator<FetchedData> fetch(Iterator<Resource> resources) throws Exception {
-        return new FetchIterator(resources);
+        return new StreamTransformer<>(resources, this);
     }
 
-    public FetchedData fetch(Resource resource) {
+    public FetchedData fetch(Resource resource) throws Exception {
         LOG.info("DEFAULT FETCHER {}", resource.getUrl());
-        Integer responseCode = DEFAULT_ERROR_CODE;
-        FetchedData fetchedData;
-        InputStream inStream = null;
-        try {
-            URLConnection urlConn = new URL(resource.getUrl()).openConnection();
-            urlConn.setConnectTimeout(FETCH_TIMEOUT);
-            responseCode = ((HttpURLConnection)urlConn).getResponseCode();
-            LOG.debug("STATUS CODE : " + responseCode + " " + resource.getUrl());
-
-            inStream = urlConn.getInputStream();
+        URLConnection urlConn = new URL(resource.getUrl()).openConnection();
+        urlConn.setConnectTimeout(FETCH_TIMEOUT);
+        int responseCode = ((HttpURLConnection)urlConn).getResponseCode();
+        LOG.debug("STATUS CODE : " + responseCode + " " + resource.getUrl());
+        try (InputStream inStream = urlConn.getInputStream()) {
             byte[] rawData = IOUtils.toByteArray(inStream);
-            fetchedData = new FetchedData(rawData, urlConn.getContentType(), responseCode);
+            FetchedData fetchedData = new FetchedData(rawData, urlConn.getContentType(), responseCode);
             resource.setStatus(ResourceStatus.FETCHED.toString());
-        } catch (Exception e) {
-            LOG.warn("FETCH-ERROR {}", resource.getUrl());
-            //e.printStackTrace()
-            LOG.debug(e.getMessage(), e);
-            fetchedData = new FetchedData(new byte[0], "", responseCode);
-            resource.setStatus(ResourceStatus.ERROR.toString());
-        } finally {
-            IOUtils.closeQuietly(inStream);
-        }
-        fetchedData.setResource(resource);
-        return fetchedData;
-    }
-
-    public class FetchIterator implements Iterator<FetchedData> {
-
-        private Iterator<Resource> resources;
-
-        public FetchIterator(Iterator<Resource> resources) {
-            super();
-            this.resources = resources;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return resources.hasNext();
-        }
-
-        @Override
-        public FetchedData next() {
-            Resource resource = resources.next();
-            FetchedData fetchedData = fetch(resource);
+            fetchedData.setResource(resource);
             return fetchedData;
         }
     }
+
+    @Override
+    public FetchedData apply(Resource resource) {
+        try {
+            return this.fetch(resource);
+        } catch (Exception e) {
+            LOG.warn("FETCH-ERROR {}", resource.getUrl());
+            LOG.debug(e.getMessage(), e);
+            FetchedData fetchedData = new FetchedData(new byte[0], "", DEFAULT_ERROR_CODE);
+            resource.setStatus(ResourceStatus.ERROR.toString());
+            fetchedData.setResource(resource);
+            return fetchedData;
+        }
+    }
+
 }

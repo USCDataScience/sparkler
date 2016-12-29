@@ -23,10 +23,18 @@ import edu.usc.irds.sparkler.model.Resource;
 import java.util.Iterator;
 
 /**
- * Created by thammegr on 6/21/16.
+ * This class defines contact for Fetcher plugins.
+ * A fetcher takes a stream of uri to resources and fetches returns a
+ * lazy contract for stream of fetched data.
  */
 public interface Fetcher extends ExtensionPoint {
 
-	Iterator<FetchedData> fetch(Iterator<Resource> resources) throws Exception;
+    /**
+     *
+     * @param resources iterator of resources to be fetched
+     * @return iterator of fetched data off input resources
+     * @throws Exception when an error occurs
+     */
+    Iterator<FetchedData> fetch(Iterator<Resource> resources) throws Exception;
 
 }
