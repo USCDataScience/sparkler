@@ -21,7 +21,7 @@ package edu.usc.irds.sparkler.pipeline
 import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, SparklerConfiguration, URLFilter}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
-import edu.usc.irds.sparkler.model.{CrawlData, Resource, SparklerJob}
+import edu.usc.irds.sparkler.model.{ResourceStatus, CrawlData, Resource, SparklerJob}
 import edu.usc.irds.sparkler.service.PluginService
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
 import edu.usc.irds.sparkler.util.JobUtil
@@ -178,8 +178,6 @@ class Crawler extends CliTool {
 object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) with Serializable with Loggable {
   override def apply(job: SparklerJob, rdd: RDD[CrawlData]): RDD[Resource] = {
 
-
-
     //Step : UPSERT outlinks
     rdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
 
@@ -203,7 +201,7 @@ object Crawler extends Loggable with Serializable{
 
   def storeContent(outputPath:String, rdd:RDD[CrawlData]): Unit = {
     LOG.info(s"Storing output at $outputPath")
-    rdd.filter(_.fetchedData.getResource.getStatus == FETCHED)
+    rdd.filter(_.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
       .map(d => (new Text(d.fetchedData.getResource.getUrl), d.fetchedData.toNutchContent(new Configuration())))
       .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
   }
@@ -212,8 +210,8 @@ object Crawler extends Loggable with Serializable{
    * Used to send crawl dumps to the Kafka Messaging System.
    * There is a sparklerProducer instantiated per partition and
    * used to send all crawl data in a partition to Kafka.
-    *
-    * @param listeners list of listeners example : host1:9092,host2:9093,host3:9094
+   *
+   * @param listeners list of listeners example : host1:9092,host2:9093,host3:9094
    * @param topic the kafka topic to use
    * @param rdd the input RDD consisting of the CrawlData
    */
