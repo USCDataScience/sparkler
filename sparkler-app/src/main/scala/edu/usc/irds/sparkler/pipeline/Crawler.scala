@@ -33,7 +33,9 @@ import org.apache.solr.common.SolrInputDocument
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.kohsuke.args4j.Option
+import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
+import scala.collection.mutable.ListBuffer
 import scala.reflect.io.File
 
 /**
@@ -87,8 +89,8 @@ class Crawler extends CliTool {
     usage = "Delay between two fetch requests")
   var fetchDelay: Long = sparklerConf.get(Constants.key.FETCHER_SERVER_DELAY).asInstanceOf[Number].longValue()
 
-  @Option(name = "-aj", aliases = Array("--add-jar"), usage = "Add sparkler jar to spark context")
-  var path : String = ""
+  @Option(name = "-aj", handler = classOf[StringArrayOptionHandler], aliases = Array("--add-jar"), usage = "Add sparkler jar to spark context")
+  var jarPath : Array[String] = new Array[String](0)
 
   var job: SparklerJob = _
   var sc: SparkContext = _
@@ -103,11 +105,11 @@ class Crawler extends CliTool {
     }
     sc = new SparkContext(conf)
 
-    if(!path.isEmpty && path == "true"){
-      sc.addJar(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)
+    if(!jarPath.isEmpty && jarPath(0) == "true"){
+      sc.getConf.setJars(Array[String](getClass.getProtectionDomain.getCodeSource.getLocation.getPath))
     }
-    else if(!path.isEmpty) {
-      sc.addJar(path)
+    else if(!jarPath.isEmpty) {
+      sc.getConf.setJars(jarPath)
     }
 
     job = new SparklerJob(jobId, sparklerConf, "")
