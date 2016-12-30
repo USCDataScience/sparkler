@@ -1,0 +1,52 @@
+addseedurls:
+    description: Add seed urls to sparkler
+    params:
+        urls:
+            type: string
+            description: Comma separated list of urls
+    requires: [urls]
+
+removeseedurls:
+    description: Remove seed urls
+    params:
+        urls:
+            type: string
+            description: Comma separated list of urls to remove
+    requires: [urls]
+
+removeallseedurls:
+    description: Remove all seed urls from Sparkler
+
+inject:
+    description: Inject seed urls
+    params:
+        jobid:
+            type: string
+            description: Id of an existing Job to which the urls are to be injected. No argument will create a new job.
+        crawldb-uri:
+            type: string
+            description: Crawldb uri
+crawl:
+    description: Crawl the urls
+    params:
+        jobid:
+            type: string
+            description: Job id. When not sure, get the job id from injector command
+        iterations:
+            type: string
+            description: Number of iterations to run
+        sparkmaster:
+            type: string
+            description: Spark Master URI. Not required if relation to spark is set.
+        crawldb-uri:
+            type: string
+            description: Crawldb uri
+        output:
+            type: string
+            description: Output path
+        topgroups:
+            type: string
+            description: Max Groups to be selected for fetch
+        topn:
+            type: string
+            description: Top urls per domain to be selected for a round.
