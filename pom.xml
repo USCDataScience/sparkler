@@ -54,12 +54,13 @@
         <junit.version>4.12</junit.version>
         <args4j.version>2.0.29</args4j.version>
         <slf4j.version>1.7.12</slf4j.version>
-        <tika.version>1.13</tika.version>
+        <tika.version>1.14</tika.version>
     </properties>
     <modules>
         <module>sparkler-api</module>
         <module>sparkler-app</module>
         <module>sparkler-plugins</module>
+        <module>sparkler-tests-base</module>
     </modules>
 
     <build>
