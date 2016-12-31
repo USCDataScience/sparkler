@@ -42,6 +42,10 @@ class Crawler extends CliTool {
     usage = "Spark Master URI. Ignore this if job is started by spark-submit")
   var sparkMaster: String = sparklerConf.get(Constants.key.SPARK_MASTER).asInstanceOf[String]
 
+  @Option(name = "-cdb", aliases = Array("--crawldb"),
+    usage = "Crawdb URI.")
+  var sparkSolr: String = sparklerConf.get(Constants.key.CRAWLDB).asInstanceOf[String]
+
   @Option(name = "-id", aliases = Array("--id"), required = true,
     usage = "Job id. When not sure, get the job id from injector command")
   var jobId: String = ""
@@ -96,6 +100,10 @@ class Crawler extends CliTool {
     if (!sparkMaster.isEmpty) {
       conf.setMaster(sparkMaster)
     }
+    if (!sparkSolr.isEmpty){
+      sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put("crawldb.uri", sparkSolr)
+    }
+
     sc = new SparkContext(conf)
 
     if (!path.isEmpty && path == "true") {

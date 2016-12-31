@@ -27,18 +27,17 @@ def install_sparkler():
 def no_java():
     hookenv.status_set('waiting', 'Waiting for Java to become available')
 
-@when_not('spark.joined')
-@when_not('spark.started')
-def no_spark():
-    hookenv.status_set('waiting', 'Waiting for Spark to become available')
+#@when_not('spark.joined')
+#@when_not('spark.started')
+#def no_spark():
+#    hookenv.status_set('waiting', 'Waiting for Spark to become available')
 
-@when_not('solr.started'):
+@when_not('solr.started')
 @when_not('solr.joined')
 def no_solr():
     hookenv.status_set('waiting', 'Waiting for Solr to become available')
 
 @when('solr.started')
-@when('spark.started')
 @when('java.ready')
 def configure_sparkler():
 # Do some stuff to parse the charm config options and inject them into sparkler-default.yaml

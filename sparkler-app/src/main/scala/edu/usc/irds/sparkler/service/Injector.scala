@@ -51,7 +51,15 @@ class Injector extends CliTool {
     usage = "Id of an existing Job to which the urls are to be injected. No argument will create a new job")
   var jobId: String = ""
 
+  @Option(name = "-cdb", aliases = Array("--crawldb"),
+    usage = "Crawdb URI.")
+  var sparkSolr: String = conf.get(Constants.key.CRAWLDB).asInstanceOf[String]
+
   override def run(): Unit = {
+    if (!sparkSolr.isEmpty){
+      var uri = conf.asInstanceOf[java.util.HashMap[String,String]]
+      uri.put("crawldb.uri", sparkSolr)
+    }
 
     if (jobId.isEmpty) {
       jobId = JobUtil.newJobId()
