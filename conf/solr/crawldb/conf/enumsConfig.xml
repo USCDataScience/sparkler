@@ -17,11 +17,12 @@
   -->
 
 <enumsConfig>
-  <enum name="status">
-    <value>NEW</value>
-    <value>FETCHING</value>
-    <value>FETCHED</value>
-    <value>IGNORED</value>
-    <value>ERROR</value>
-  </enum>
+    <enum name="status">
+        <value>NEW</value>
+        <value>FETCHING</value>
+        <value>FETCHED</value>
+        <value>IGNORED</value>
+        <value>ERROR</value>
+        <value>TIMEOUT</value>
+    </enum>
 </enumsConfig>

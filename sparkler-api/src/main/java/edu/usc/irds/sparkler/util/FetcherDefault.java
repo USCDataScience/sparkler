@@ -35,11 +35,11 @@ public class FetcherDefault extends AbstractExtensionPoint
     }
 
     public FetchedData fetch(Resource resource) throws Exception {
-        LOG.info("DEFAULT FETCHER {}", resource.getUrl());
-        URLConnection urlConn = new URL(resource.getUrl()).openConnection();
+        LOG.info("DEFAULT FETCHER {}", resource.url());
+        URLConnection urlConn = new URL(resource.url()).openConnection();
         urlConn.setConnectTimeout(FETCH_TIMEOUT);
         int responseCode = ((HttpURLConnection)urlConn).getResponseCode();
-        LOG.debug("STATUS CODE : " + responseCode + " " + resource.getUrl());
+        LOG.debug("STATUS CODE : " + responseCode + " " + resource.url());
         try (InputStream inStream = urlConn.getInputStream()) {
             byte[] rawData = IOUtils.toByteArray(inStream);
             FetchedData fetchedData = new FetchedData(rawData, urlConn.getContentType(), responseCode);
@@ -53,14 +53,18 @@ public class FetcherDefault extends AbstractExtensionPoint
     public FetchedData apply(Resource resource) {
         try {
             return this.fetch(resource);
-        } catch (Exception e) {
-            LOG.warn("FETCH-ERROR {}", resource.getUrl());
+        }
+        catch (Exception e) {
+            LOG.warn("FETCH-ERROR {}", resource.url());
             LOG.debug(e.getMessage(), e);
-            FetchedData fetchedData = new FetchedData(new byte[0], "", DEFAULT_ERROR_CODE);
-            resource.setStatus(ResourceStatus.ERROR.toString());
-            fetchedData.setResource(resource);
-            return fetchedData;
+            return this.fakeFetchedData(resource, ResourceStatus.ERROR);
         }
     }
 
+    protected FetchedData fakeFetchedData(Resource r, ResourceStatus status) {
+        FetchedData fetchedData = new FetchedData(new byte[0], "", DEFAULT_ERROR_CODE);
+        r.setStatus(status.toString());
+        fetchedData.setResource(r);
+        return fetchedData;
+    }
 }

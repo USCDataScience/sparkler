@@ -143,6 +143,7 @@ public interface Constants {
         String JOBID = "jobId";
         String URL = "url";
         String GROUP = "group";
+        String GROUP_ID = "group_id";
         String LAST_FETCHED_AT = "lastFetchedAt";
         String NUM_TRIES = "numTries";
         String NUM_FETCHES = "numFetches";

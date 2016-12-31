@@ -60,7 +60,7 @@ class SolrResultIterator[T] extends Iterator[T] {
       //there are more
       query.setStart(nextStart)
       try {
-        LOG.debug("Query {}, Start = {}", query.getQuery, nextStart)
+        //LOG.debug("Query {}, Start = {}", query.getQuery, nextStart)
         val response = solr.query(query)
         numFound = response.getResults.getNumFound
         currentPage = response.getBeans(beanType).iterator()
@@ -74,7 +74,7 @@ class SolrResultIterator[T] extends Iterator[T] {
     if (count < limit && currentPage.hasNext) {
       Some(currentPage.next())
     } else {
-      SolrResultIterator.LOG.debug("Reached the end of result set")
+      //SolrResultIterator.LOG.debug("Reached the end of result set")
       if (closeClient) {
         SolrResultIterator.LOG.debug("closing solr client.")
         solr.close()

@@ -59,10 +59,10 @@
         </dependency>
 
         <dependency>
-           <groupId>org.apache.kafka</groupId>
-           <artifactId>kafka-clients</artifactId>
-           <version>${kafka.version}</version>
-         </dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka.version}</version>
+        </dependency>
 
         <!--<dependency>
           <groupId>org.apache.hbase</groupId>
@@ -121,8 +121,8 @@
 
         <!-- JBrowser Plugin -->
         <dependency>
-            <groupId>com.machinepublishers</groupId>
-            <artifactId>jbrowserdriver</artifactId>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
             <version>${jbrowserdriver.version}</version>
         </dependency>
 
@@ -248,6 +248,20 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>${maven.clean.plugin.version}</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${project.basedir}/bundles</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.parent.basedir}/felix-cache</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
             </plugin>
         </plugins>
     </build>

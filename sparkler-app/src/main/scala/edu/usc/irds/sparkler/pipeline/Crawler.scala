@@ -17,18 +17,12 @@
 
 package edu.usc.irds.sparkler.pipeline
 
-import edu.usc.irds.sparkler.{SparklerConfiguration, Constants, CrawlDbRDD, URLFilter}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
-import edu.usc.irds.sparkler.model.{ResourceStatus, CrawlData, Resource, SparklerJob}
+import edu.usc.irds.sparkler.model._
 import edu.usc.irds.sparkler.service.PluginService
-import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
 import edu.usc.irds.sparkler.util.JobUtil
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.io.Text
-import org.apache.hadoop.mapred.SequenceFileOutputFormat
-import org.apache.nutch.protocol
-import org.apache.solr.common.SolrInputDocument
+import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, SparklerConfiguration, URLFilter}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.kohsuke.args4j.Option
@@ -88,6 +82,9 @@ class Crawler extends CliTool {
     usage = "Delay between two fetch requests")
   var fetchDelay: Long = sparklerConf.get(Constants.key.FETCHER_SERVER_DELAY).asInstanceOf[Number].longValue()
 
+  @Option(name = "-aj", aliases = Array("--add-jar"), usage = "Add sparkler jar to spark context")
+  var path: String = ""
+
   var job: SparklerJob = _
   var sc: SparkContext = _
 
@@ -95,7 +92,11 @@ class Crawler extends CliTool {
     if (this.outputPath.isEmpty) {
       this.outputPath = jobId
     }
+
+    //http://techkites.blogspot.fr/
     val conf = new SparkConf().setAppName(jobId)
+      //.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+
     if (!sparkMaster.isEmpty) {
       conf.setMaster(sparkMaster)
     }
@@ -104,115 +105,82 @@ class Crawler extends CliTool {
     }
 
     sc = new SparkContext(conf)
+
+    if (!path.isEmpty && path == "true") {
+      sc.addJar(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)
+    }
+    else if (!path.isEmpty) {
+      sc.addJar(path)
+    }
+
     job = new SparklerJob(jobId, sparklerConf, "")
   }
-  //TODO: URL normalizers
-  //TODO: URL filters
-  //TODO: Data Sink
-  //TODO: Robots.txt
-  //TODO: Fetcher + User Agent
-  //TODO: JS render
-  //TODO: Job Id
 
   override def run(): Unit = {
 
-    //STEP : Initialize environment
+    //Initialize environment
     init()
 
-    val solrc = this.job.newCrawlDbSolrClient()
-    val localFetchDelay = fetchDelay
-    val job = this.job // local variable to bypass serialization
-
-    // Load all Plugins at Start-up
-    //PluginService.loadAllPlugins(job)
+    val solrc = this.job.solrClient()
+    val job = this.job
 
     for (_ <- 1 to iterations) {
-      val taskId = JobUtil.newSegmentId(true)
-      job.currentTask = taskId
-      LOG.info(s"Starting the job:$jobId, task:$taskId")
+      job.currentTask = JobUtil.newSegmentId(true)
+      LOG.info(s"Starting job $jobId")
 
-      val rdd = new CrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
-      val fetchedRdd = rdd.map(r => (r.getGroup, r))
-        .groupByKey()
-        .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay, FetchFunction, ParseFunction) })
+      // Crawl new web documents
+      val fetchedRdd = new CrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
+        .mapPartitions(it => FetchFunction.fetch(job, it))
         .persist()
 
-      if (kafkaEnable) {
-        storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
-      }
+      //Update status
+      fetchedRdd
+        .map(d => StatusUpdateSolrTransformer(d))
+        .foreachPartition(p => job.solrClient().addResourceDocs(p).close())
 
-      //Step: Update status of fetched resources
-      val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => StatusUpdateSolrTransformer(d))
-      val statusUpdateFunc = new SolrStatusUpdate(job)
-      sc.runJob(statusUpdateRdd, statusUpdateFunc)
+      //Filter and insert new URLs
+      addOutlinks(job, fetchedRdd)
 
-      //Step: Filter Outlinks and Upsert new URLs into CrawlDb
-      val outlinksRdd = OutLinkFilterFunc(job, fetchedRdd)
-      val upsertFunc = new SolrUpsert(job)
-      sc.runJob(outlinksRdd, upsertFunc)
-
-      //Step: Store these to nutch segments
-      val outputPath = this.outputPath + "/" + taskId
-
-      storeContent(outputPath, fetchedRdd)
-
-      LOG.info("Committing crawldb..")
-      solrc.commitCrawlDb()
+      LOG.info("Committing.")
+      solrc.commit()
+      fetchedRdd.unpersist()
     }
+
     solrc.close()
-    //PluginService.shutdown(job)
-    LOG.info("Shutting down Spark CTX..")
+    LOG.info("Shutdown.")
     sc.stop()
   }
 }
 
-object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) with Serializable with Loggable {
-  override def apply(job: SparklerJob, rdd: RDD[CrawlData]): RDD[Resource] = {
-
-    //Step : UPSERT outlinks
-    rdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
-
-      .reduceByKey({ case (r1, r2) => if (r1.getDepth <= r2.getDepth) r1 else r2 }) // pick a parent
-
-      .filter({case (url, parent) =>
-        val outLinkFilter:scala.Option[URLFilter] = PluginService.getExtension(classOf[URLFilter], job)
-        val result = outLinkFilter match {
-          case Some(urLFilter) => urLFilter.filter(url, parent.getUrl)
-          case None => true
-        }
-        LOG.debug(s"$result :: filter(${parent.getUrl} --> $url)")
-        result
-      })
-      //TODO: url normalize
-      .map({ case (link, parent) => new Resource(link, parent.getDepth + 1, job, NEW) }) //create a new resource
-  }
-}
-
-object Crawler extends Loggable with Serializable{
-
-  def storeContent(outputPath:String, rdd:RDD[CrawlData]): Unit = {
-    LOG.info(s"Storing output at $outputPath")
-    rdd.filter(_.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
-      .map(d => (new Text(d.fetchedData.getResource.getUrl), d.fetchedData.toNutchContent(new Configuration())))
-      .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
-  }
-
+object Crawler extends Loggable with Serializable {
   /**
-   * Used to send crawl dumps to the Kafka Messaging System.
-   * There is a sparklerProducer instantiated per partition and
-   * used to send all crawl data in a partition to Kafka.
- *
-   * @param listeners list of listeners example : host1:9092,host2:9093,host3:9094
-   * @param topic the kafka topic to use
-   * @param rdd the input RDD consisting of the CrawlData
-   */
-  def storeContentKafka(listeners: String, topic: String, rdd:RDD[CrawlData]): Unit = {
+    * Used to send crawl dumps to the Kafka Messaging System.
+    * There is a sparklerProducer instantiated per partition and
+    * used to send all crawl data in a partition to Kafka.
+    *
+    * @param listeners list of listeners example : host1:9092,host2:9093,host3:9094
+    * @param topic     the kafka topic to use
+    * @param rdd       the input RDD consisting of the FetchedData
+    */
+  def storeContentKafka(listeners: String, topic: String, rdd: RDD[FetchedData]): Unit = {
     rdd.foreachPartition(crawlData_iter => {
       val sparklerProducer = new SparklerProducer(listeners, topic)
       crawlData_iter.foreach(crawlData => {
-        sparklerProducer.send(crawlData.fetchedData.getContent)
+        sparklerProducer.send(crawlData.content)
       })
     })
+  }
+
+  def addOutlinks(job: SparklerJob, rdd: RDD[FetchedData]): Unit = {
+    rdd.flatMap({ data => for (u <- data.outlinks) yield (u, data.resource) }) //expand the set
+      .reduceByKey({ case (r1, r2) => if (r1.depth <= r2.depth) r1 else r2 }) // pick a parent
+      .filter({ case (url, parent) => PluginService.getExtension(classOf[URLFilter], job) match {
+          case Some(urLFilter) => urLFilter.filter(url, parent.url)
+          case None => true
+        }
+      })
+      .map({ case (link, parent) => new Resource(link, parent.depth + 1, job, NEW) }) //create a new resource
+      .foreachPartition(p => job.solrClient().addResources(p).close());
   }
 
   def main(args: Array[String]): Unit = {

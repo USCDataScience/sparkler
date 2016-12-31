@@ -37,7 +37,7 @@ public class WebServer extends Server {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebServer.class);
 
-    public static final int DEFAULT_PORT = 8080;
+    public static final int DEFAULT_PORT = 2000;
     public static File getDefaultPath(){
         LOG.info("Looking for resources, PWD={}", new File(".").getAbsolutePath());
         String resRootPath = "src" + File.separator + "main" + File.separator + "webapp";

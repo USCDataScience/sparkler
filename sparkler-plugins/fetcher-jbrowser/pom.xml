@@ -53,8 +53,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-			<groupId>com.machinepublishers</groupId>
-			<artifactId>jbrowserdriver</artifactId>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
 			<version>${jbrowserdriver.version}</version>
 		</dependency>
         <dependency>

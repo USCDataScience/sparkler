@@ -17,75 +17,85 @@
 
 package edu.usc.irds.sparkler.model;
 
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.nutch.metadata.Metadata;
-
 import java.io.Serializable;
 import java.util.Date;
 
 public class FetchedData implements Serializable {
 
-    private Resource resource;
+    private Resource _resource;
+    private byte[] _content;
+    private String _contentType;
+    private Integer _contentLength;
+    private String[] _headers;
+    private Date _fetchedAt;
+    private int _responseCode;
+    private String[] _outlinks;
+    private String _html;
+    private int _lastOutlinkInserted;
 
-	private byte[] content;
-	private String contentType;
-    private Integer contentLength;
-    private String[] headers;
-    private Date fetchedAt;
-    private Metadata metadata;
-	private int responseCode;
-
-
-	public FetchedData() {
-	}
-
-	public FetchedData(byte[] content, String contentType, int responseCode) {
-		super();
-		this.content = content;
-        this.contentLength = content.length;
-		this.contentType = contentType;
-		this.responseCode = responseCode;
-        this.metadata = new Metadata();
-	}
-	
-	public String getContentType() {
-		return contentType;
-	}
-	
-	public int getResponseCode() {
-		return responseCode;
-	}
-
-    public Resource getResource() { return resource; }
-
-    public byte[] getContent() {
-        return content;
+    public FetchedData(byte[] content, String contentType, int responseCode) {
+        _content = content;
+        _contentLength = content.length;
+        _contentType = contentType;
+        _responseCode = responseCode;
+        _outlinks = new String[0];
+        _lastOutlinkInserted = 0;
     }
 
-    public Integer getContentLength() {
-        return contentLength;
+    public String contentType() {
+        return _contentType;
     }
 
-    public String[] getHeaders() {
-        return headers;
+    public int responseCode() {
+        return _responseCode;
     }
 
-    public Date getFetchedAt() {
-        return fetchedAt;
+    public String[] outlinks() {
+        if (_outlinks == null)
+            return new String[0];
+
+        return _outlinks;
     }
 
-    public Metadata getMetadata() {
-        return metadata;
+    public void addOutlink(String o) {
+        // Avoid Serialization error, no ArrayList.
+        int l = _outlinks.length;
+        if (_lastOutlinkInserted >= 0) {
+            String[] prev = _outlinks;
+            _outlinks = new String[l+1];
+            for (int i = 0; i < prev.length; i++) {
+                _outlinks[i] = prev[i];
+            }
+        }
+        _outlinks[_lastOutlinkInserted] = o;
+        _lastOutlinkInserted++;
+    }
+
+    public void addOutlinks(String[] outlinks) {
+        _outlinks = outlinks;
+    }
+
+    public Resource resource() {
+        return _resource;
     }
 
     public void setResource(Resource resource) {
-        this.resource = resource;
+        _resource = resource;
     }
 
-    // TODO: Move this to Util package
-    public org.apache.nutch.protocol.Content toNutchContent(Configuration conf) {
-        return new org.apache.nutch.protocol.Content(resource.getUrl(), resource.getUrl(), content, contentType, metadata, conf);
+    public byte[] content() {
+        return _content;
     }
 
+    public Integer contentLength() {
+        return _contentLength;
+    }
+
+    public String[] headers() {
+        return _headers;
+    }
+
+    public Date fetchedAt() {
+        return _fetchedAt;
+    }
 }

@@ -20,41 +20,38 @@ package edu.usc.irds.sparkler.service
 import java.io.Closeable
 
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.model.Resource
 import org.apache.solr.client.solrj.SolrClient
 import org.apache.solr.common.SolrInputDocument
+import edu.usc.irds.sparkler.model.Resource
+import scala.collection.JavaConverters._
 
 /**
   *
   * @since 5/28/16
   */
-class SolrProxy(var crawlDb: SolrClient) extends Closeable with Loggable {
+class SolrProxy(val crawlDb: SolrClient) extends Closeable with Loggable with Serializable {
 
 
-  def addResourceDocs(docs: java.util.Iterator[SolrInputDocument]): Unit = {
-    crawlDb.add(docs)
+  def addResourceDocs(docs: Iterator[SolrInputDocument]): SolrProxy = {
+    crawlDb.add(docs.asJava)
+    this
   }
 
-  def addResources(beans: java.util.Iterator[_]): Unit = {
-    try {
-      crawlDb.addBeans(beans)
-    } catch {
-      case e: Exception =>
-        LOG.debug("Caught {} while adding beans, trying to add one by one", e.getMessage)
-        while (beans.hasNext) {
-          val bean = beans.next()
-          try { // to add one by one
-            crawlDb.addBean(bean)
-          } catch {
-            case e2: Exception =>
-              LOG.warn("(SKIPPED) {} while adding {}", e2.getMessage, bean)
-              LOG.debug(e2.getMessage, e2)
-          }
+  def addResources(beans: Iterator[Resource]): SolrProxy = {
+    for (doc: Resource <- beans) {
+      if (crawlDb.getById(doc.id) == null) {
+        try {
+          crawlDb.addBean(doc)
+        } catch {
+          case e2: Exception =>
+            LOG.debug(e2.getMessage, e2)
         }
+      }
     }
+    this
   }
 
-  def commitCrawlDb(): Unit = {
+  def commit(): Unit = {
     crawlDb.commit()
   }
 
