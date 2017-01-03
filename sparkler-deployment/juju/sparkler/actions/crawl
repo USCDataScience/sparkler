@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -ex
+
+## TODO implement custom job it
+JOBID=`action-get jobid`
+
+CRAWLDB=`config-get crawldb-uri`
+
+java -jar /opt/sparkler/sparkler-app-0.1-SNAPSHOT.jar crawl -cdb "$CRAWLDB" -id "$JOBID" -m local[*] -i 1
+

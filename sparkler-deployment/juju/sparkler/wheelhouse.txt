@@ -1,0 +1,3 @@
+charms.benchmark>=1.0.0,<2.0.0
+charms.templating.jinja2>=1.0.0,<2.0.0
+jujuresources<1.0.0

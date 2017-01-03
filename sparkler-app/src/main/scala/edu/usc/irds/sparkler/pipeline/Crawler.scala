@@ -17,7 +17,8 @@
 
 package edu.usc.irds.sparkler.pipeline
 
-import edu.usc.irds.sparkler.{SparklerConfiguration, Constants, CrawlDbRDD, URLFilter}
+
+import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, SparklerConfiguration, URLFilter}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{ResourceStatus, CrawlData, Resource, SparklerJob}
@@ -32,6 +33,10 @@ import org.apache.solr.common.SolrInputDocument
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.kohsuke.args4j.Option
+import org.kohsuke.args4j.spi.StringArrayOptionHandler
+
+import scala.collection.mutable.ListBuffer
+import scala.reflect.io.File
 
 /**
   *
@@ -88,6 +93,9 @@ class Crawler extends CliTool {
     usage = "Delay between two fetch requests")
   var fetchDelay: Long = sparklerConf.get(Constants.key.FETCHER_SERVER_DELAY).asInstanceOf[Number].longValue()
 
+  @Option(name = "-aj", handler = classOf[StringArrayOptionHandler], aliases = Array("--add-jar"), usage = "Add sparkler jar to spark context")
+  var jarPath : Array[String] = new Array[String](0)
+
   var job: SparklerJob = _
   var sc: SparkContext = _
 
@@ -104,6 +112,14 @@ class Crawler extends CliTool {
     }
 
     sc = new SparkContext(conf)
+
+    if(!jarPath.isEmpty && jarPath(0) == "true"){
+      sc.getConf.setJars(Array[String](getClass.getProtectionDomain.getCodeSource.getLocation.getPath))
+    }
+    else if(!jarPath.isEmpty) {
+      sc.getConf.setJars(jarPath)
+    }
+
     job = new SparklerJob(jobId, sparklerConf, "")
   }
   //TODO: URL normalizers
@@ -130,6 +146,7 @@ class Crawler extends CliTool {
       val taskId = JobUtil.newSegmentId(true)
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
+
 
       val rdd = new CrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
@@ -201,7 +218,7 @@ object Crawler extends Loggable with Serializable{
    * Used to send crawl dumps to the Kafka Messaging System.
    * There is a sparklerProducer instantiated per partition and
    * used to send all crawl data in a partition to Kafka.
- *
+   *
    * @param listeners list of listeners example : host1:9092,host2:9093,host3:9094
    * @param topic the kafka topic to use
    * @param rdd the input RDD consisting of the CrawlData
