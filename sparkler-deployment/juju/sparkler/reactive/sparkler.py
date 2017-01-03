@@ -15,10 +15,15 @@
 
 from charms.reactive import when, when_not, set_state
 from charmhelpers.core.hookenv import status_set, log
-from charmhelpers.core import hookenv
+from charmhelpers.core import hookenv, unitdata
 import jujuresources
 from charmhelpers.core.host import adduser, chownr, mkdir
 import urllib
+
+
+hook_data = unitdata.HookData()
+db = unitdata.kv()
+hooks = hookenv.Hooks()
 
 resources = {
     'sparkler-0.1': 'sparkler-0.1'
@@ -30,7 +35,7 @@ def install_sparkler():
     resource = resources[resource_key]
     mkdir('/opt/sparkler/')
     urllib.request.urlretrieve("https://dl.dropboxusercontent.com/u/8503756/sparkler-app-0.1-SNAPSHOT.jar", "/opt/sparkler/sparkler-app-0.1-SNAPSHOT.jar")
-    #jujuresources.install(resource,
+    #jujuresources.install(1resource,
     #                      destination="/opt/sparkler",
     #                      skip_top_level=False)
     set_state('sparkler.installed')
@@ -47,10 +52,6 @@ def no_solr():
 @when('solr-interface.available')
 @when('java.ready')
 def configure_sparkler(j, s):
-    if not (hookenv.config('crawldb-uri')):
-        print("setting: "+s.connection_string())
-        config = hookenv.config()
-        config["crawldb-uri"] =  s.connection_string()
     set_state('sparkler.configured')
 
 

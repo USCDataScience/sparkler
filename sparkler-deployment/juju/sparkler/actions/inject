@@ -1,13 +1,23 @@
-#!/usr/bin/env bash
+#!/usr/bin/python3
 
-set -ex
+from charmhelpers.core.hookenv import relation_ids, related_units, relation_get, action_get, config
+from subprocess import check_output
+
 
 ## TODO implement custom job it
-JOBID=`action-get jobid`
+jobid = action_get('jobid')
 
-CRAWLDB=`config-get crawldb-uri`
 
-java -jar /opt/sparkler/sparkler-app-0.1-SNAPSHOT.jar inject -sf /opt/sparkler/seed.txt -cdb "$CRAWLDB"
+if config('crawldb-uri'):
+    #run command with crawldb-uri
+    check_output(['java', '-jar', '/opt/sparkler/sparkler-app-0.1-SNAPSHOT.jar', 'inject', '-cdb', config('crawldb-uri'), '-sf', '/opt/sparkler/seed.txt'])
+else:
+    #run command with generated uri
+    for rid in relation_ids('solr-interface'):
+        for u in related_units(rid):
+            ip = relation_get('private-address', unit=u, rid=rid)
+            check_output(['java', '-jar', '/opt/sparkler/sparkler-app-0.1-SNAPSHOT.jar', 'inject', '-cdb', 'http://'+ip+':8983/solr/crawldb', '-sf', '/opt/sparkler/seed.txt'])
+            break
 
 
 
