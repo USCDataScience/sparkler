@@ -28,12 +28,20 @@ if config('spark-master'):
 
 configopts = ""
 
+for rid in relation_ids('kafka'):
+    for u in related_units(rid):
+        kafkaip = relation_get('private-address', unit=u, rid=rid)
+        kafkaurl = kafkaip+":9092"
+        break
+
 
 if config('kafka-enable'):
     configopts += " -ke " + config('kafka-enable')
 
 if config('kafka-listeners'):
     configopts += " -kls " + config('kafka-listeners')
+elif kafkaurl:
+    configopts += " -kls " + kafkaurl
 
 if config('kafka-topic'):
     configopts += " -ktp " + config('kafka-topic')
