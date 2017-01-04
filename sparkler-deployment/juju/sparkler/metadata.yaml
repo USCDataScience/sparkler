@@ -25,6 +25,8 @@ requires:
     interface: spark
   solr-interface:
     interface: solr-interface
+  kafka:
+    interface: kafka
 provides:
   java:
     interface: java

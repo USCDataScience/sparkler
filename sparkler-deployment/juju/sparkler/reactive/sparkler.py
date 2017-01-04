@@ -18,7 +18,6 @@ from charmhelpers.core.hookenv import status_set, log
 from charmhelpers.core import hookenv, unitdata
 import jujuresources
 from charmhelpers.core.host import adduser, chownr, mkdir
-import urllib
 
 
 hook_data = unitdata.HookData()
@@ -34,10 +33,8 @@ def install_sparkler():
     resource_key="sparkler-0.1"
     resource = resources[resource_key]
     mkdir('/opt/sparkler/')
-    urllib.request.urlretrieve("https://dl.dropboxusercontent.com/u/8503756/sparkler-app-0.1-SNAPSHOT.jar", "/opt/sparkler/sparkler-app-0.1-SNAPSHOT.jar")
-    #jujuresources.install(1resource,
-    #                      destination="/opt/sparkler",
-    #                      skip_top_level=False)
+    jujuresources.install(resource,
+                          destination="/opt/sparkler/sparkler.jar")
     set_state('sparkler.installed')
 
 @when_not('java.ready')
