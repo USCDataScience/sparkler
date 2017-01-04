@@ -93,7 +93,7 @@ class Crawler extends CliTool {
     usage = "Delay between two fetch requests")
   var fetchDelay: Long = sparklerConf.get(Constants.key.FETCHER_SERVER_DELAY).asInstanceOf[Number].longValue()
 
-  @Option(name = "-aj", handler = classOf[StringArrayOptionHandler], aliases = Array("--add-jar"), usage = "Add sparkler jar to spark context")
+  @Option(name = "-aj", handler = classOf[StringArrayOptionHandler], aliases = Array("--add-jars"), usage = "Add sparkler jar to spark context")
   var jarPath : Array[String] = new Array[String](0)
 
   var job: SparklerJob = _
