@@ -1,10 +1,9 @@
 #!/usr/bin/python3
 
 
-from charmhelpers.core.hookenv import relation_ids, related_units, relation_get, action_get, config
+from charmhelpers.core.hookenv import relation_ids, relation_id, related_units, relation_get, action_get, config
 from subprocess import check_output
 
-## TODO implement spark support
 ## TODO implement solr cloud support
 ## TODO clean up file name
 ## TODO implement custom solr db over relation
@@ -12,14 +11,22 @@ from subprocess import check_output
 
 jobid = action_get('jobid')
 
+sparkurl = 'local[*]'
+
+for rid in relation_ids('spark'):
+    for u in related_units(rid):
+        sparkip = relation_get('private-address', unit=u, rid=rid)
+        sparkurl = "spark://"+sparkip+":7077"
+        break
+
 if config('crawldb-uri'):
     #run command with crawldb-uri
-    check_output(['java', '-jar', '/opt/sparkler/sparkler-app-0.1-SNAPSHOT.jar', 'crawl', '-cdb', config('crawldb-uri'), '-id',  jobid, '-m', 'local[*]', '-i', '1'])
+    check_output(['java', '-jar', '/opt/sparkler/sparkler-app-0.1-SNAPSHOT.jar', 'crawl', '-cdb', config('crawldb-uri'), '-id',  jobid, '-m', sparkurl, '-i', '1', '-aj', 'true', '-o', '/tmp/crawl'])
 else:
     #run command with generated uri
     for rid in relation_ids('solr-interface'):
         for u in related_units(rid):
             ip = relation_get('private-address', unit=u, rid=rid)
-            check_output(['java', '-jar', '/opt/sparkler/sparkler-app-0.1-SNAPSHOT.jar', 'crawl', '-cdb', 'http://'+ip+':8983/solr/crawldb', '-id',  jobid, '-m', 'local[*]', '-i', '1'])
+            check_output(['java', '-jar', '/opt/sparkler/sparkler-app-0.1-SNAPSHOT.jar', 'crawl', '-cdb', 'http://'+ip+':8983/solr/crawldb', '-id',  jobid, '-m', sparkurl, '-i', '1', '-aj', 'true', '-o', '/tmp/crawl'])
             break
 

@@ -1,5 +1,10 @@
 series: xenial
 applications: 
+  java: 
+    charm: "cs:openjdk-4"
+    annotations: 
+      "gui-x": "958"
+      "gui-y": "314.29491924311225"
   sparkler: 
     charm: "cs:~spiculecharms/sparkler-1"
     num_units: 1
@@ -10,52 +15,27 @@ applications:
       "gui-y": "660.7050807568877"
     to: 
       - "1"
-  java: 
-    charm: "cs:openjdk-4"
-    annotations: 
-      "gui-x": "958"
-      "gui-y": "314.29491924311225"
   solr: 
     charm: "cs:~spiculecharms/apache-solr-4"
     num_units: 1
     options: 
       solrcloud: false
-    expose: true
     annotations: 
       "gui-x": "758"
       "gui-y": "660.7050807568877"
     to: 
       - "0"
-  spark: 
-    charm: "cs:~spiculecharms/apache-spark-0"
-    num_units: 1
-    options: 
-      spark_bench_enabled: true
-      spark_version: "1.6.1-hadoop2.6.0-scala211"
-    expose: true
-    annotations: 
-      "gui-x": "1421"
-      "gui-y": "328"
-    to: 
-      - "2"
 relations: 
-  - - "java:java"
-    - "sparkler:java"
-  - - "java:java"
-    - "spark:java"
-  - - "spark:client"
-    - "sparkler:spark"
   - - "java:java"
     - "solr:java"
   - - "solr:solr-interface"
     - "sparkler:solr-interface"
+  - - "java:java"
+    - "sparkler:java"
 machines: 
   "0": 
     series: xenial
     constraints: "arch=amd64 cpu-cores=1 cpu-power=350 mem=3840 root-disk=8192"
   "1": 
-    series: xenial
-    constraints: "arch=amd64 cpu-cores=1 cpu-power=350 mem=3840 root-disk=8192"
-  "2": 
     series: xenial
     constraints: "arch=amd64 cpu-cores=1 cpu-power=350 mem=3840 root-disk=8192"
