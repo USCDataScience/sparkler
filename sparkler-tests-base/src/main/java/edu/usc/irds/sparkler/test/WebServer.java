@@ -21,14 +21,9 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 
 /**
  * @since 12/28/16
@@ -38,32 +33,22 @@ public class WebServer extends Server {
     private static final Logger LOG = LoggerFactory.getLogger(WebServer.class);
 
     public static final int DEFAULT_PORT = 8080;
-    public static File getDefaultPath(){
-        LOG.info("Looking for resources, PWD={}", new File(".").getAbsolutePath());
-        String resRootPath = "src" + File.separator + "main" + File.separator + "webapp";
-        File resRoot = new File(resRootPath);
 
-        if (!resRoot.exists()) { //see if a child directory contains this
-            LOG.warn("{} doesn't exists", resRoot.getAbsolutePath());
-            resRoot = new File(".." + File.separator + "sparkler-tests-base" + File.separator + resRootPath);
-            if (!resRoot.exists()){
-                LOG.error("{} doesn't exists", resRoot.getAbsolutePath());
-                throw new RuntimeException("Web resources doesn't exists");
-            }
-        }
-        return resRoot;
+    public static String getDefaultPath(){
+        return WebServer.class.getClassLoader().getResource("webapp").toExternalForm();
     }
+
     public WebServer(){
         this(DEFAULT_PORT, getDefaultPath());
     }
 
-    public WebServer(int port, File resRoot){
+    public WebServer(int port, String resRoot){
         super(port);
-
+        LOG.info("Port:{}, Resources Root:{}", port, resRoot);
         ResourceHandler rh0 = new ResourceHandler();
         ContextHandler context0 = new ContextHandler();
         context0.setContextPath("/");
-        context0.setBaseResource(Resource.newResource(resRoot));
+        context0.setResourceBase(resRoot);
         context0.setHandler(rh0);
 
         // Create a ContextHandlerCollection and set the context handlers to it.
