@@ -67,7 +67,9 @@ class SparklerJob(val id: String,
     } else if (!crawlDbUri.startsWith("http://")|| !crawlDbUri.startsWith("https://")){
       // usually cloud uri has multi ZK hosts separated by comma(,)
       LOG.info("Solr Cloud Client : ZKHost={}", crawlDbUri)
-      new CloudSolrClient(crawlDbUri)
+      var client = new CloudSolrClient(crawlDbUri)
+      client.setDefaultCollection("crawldb")
+      client
     } else {
       throw new RuntimeException(s"$crawlDbUri not supported")
     }
