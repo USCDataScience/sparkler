@@ -64,7 +64,7 @@ class SparklerJob(val id: String,
       val coreContainer: CoreContainer = new CoreContainer(solrHome)
       coreContainer.load
       new EmbeddedSolrServer(coreContainer, coreName)
-    } else if (crawlDbUri.contains(",")){
+    } else if (!crawlDbUri.startsWith("http://")|| !crawlDbUri.startsWith("https://")){
       // usually cloud uri has multi ZK hosts separated by comma(,)
       LOG.info("Solr Cloud Client : ZKHost={}", crawlDbUri)
       new CloudSolrClient(crawlDbUri)
