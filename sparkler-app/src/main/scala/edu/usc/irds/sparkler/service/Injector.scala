@@ -83,7 +83,7 @@ class Injector extends CliTool {
     val seeds: util.Collection[Resource] =
       urls.map(_.trim)
         .filter(x => !x.isEmpty)
-        .map(x => new Resource(x, 0, job, ResourceStatus.NEW))
+        .map(x => new Resource(x, 0, job, ResourceStatus.UNFETCHED))
     val solrClient = job.newCrawlDbSolrClient()
     solrClient.addResources(seeds.iterator())
     solrClient.commitCrawlDb()

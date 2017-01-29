@@ -23,7 +23,7 @@ public class Resource implements Serializable {
     @Field private Integer numFetches = 0;
     @Field private Integer depth = 0;
     @Field private Double score = 0.0;
-    @Field private String status = ResourceStatus.NEW.toString();
+    @Field private String status = ResourceStatus.UNFETCHED.toString();
     @Field private Date lastUpdatedAt;
 
     public Resource() {

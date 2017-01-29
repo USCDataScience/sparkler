@@ -201,7 +201,7 @@ object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]
         result
       })
       //TODO: url normalize
-      .map({ case (link, parent) => new Resource(link, parent.getDepth + 1, job, NEW) }) //create a new resource
+      .map({ case (link, parent) => new Resource(link, parent.getDepth + 1, job, UNFETCHED) }) //create a new resource
   }
 }
 
