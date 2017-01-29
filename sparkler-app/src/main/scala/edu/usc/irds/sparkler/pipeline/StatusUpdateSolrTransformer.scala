@@ -38,11 +38,11 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     //val x:java.util.Map[String, Object] = Map("ss" -> new Object).asJava
     sUpdate.setField(Constants.solr.ID, data.fetchedData.getResource.getId)
     sUpdate.setField(Constants.solr.STATUS, Map("set" -> data.fetchedData.getResource.getStatus).asJava)
-    sUpdate.setField(Constants.solr.LAST_FETCHED_AT, Map("set" -> data.fetchedData.getFetchedAt).asJava)
+    sUpdate.setField(Constants.solr.FETCH_TIMESTAMP, Map("set" -> data.fetchedData.getFetchedAt).asJava)
     sUpdate.setField(Constants.solr.LAST_UPDATED_AT, Map("set" -> new Date()).asJava)
-    sUpdate.setField(Constants.solr.NUM_TRIES, Map("inc" -> 1).asJava)
-    sUpdate.setField(Constants.solr.NUM_FETCHES, Map("inc" -> 1).asJava)
-    sUpdate.setField(Constants.solr.PLAIN_TEXT, data.parsedData.plainText)
+    //sUpdate.setField(Constants.solr.NUM_TRIES, Map("inc" -> 1).asJava)
+    //sUpdate.setField(Constants.solr.NUM_FETCHES, Map("inc" -> 1).asJava)
+    sUpdate.setField(Constants.solr.EXTRACTED_TEXT, data.parsedData.plainText)
 
     var mdFields: Map[String, AnyRef] = Map()
     for (name: String <- data.parsedData.metadata.names()) {

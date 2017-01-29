@@ -291,7 +291,7 @@
           "title": "Table panel",
           "important_fields": [
             "_version_",
-            "depth",
+            "crawlerDiscoverDepth",
             "group",
             "id",
             "indexedAt",
@@ -365,13 +365,13 @@
           "loadingEditor": false,
           "queries": {
             "mode": "all",
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexedAt:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=depth&facet.limit=10",
+            "query": "q=*%3A*&wt=json&rows=0&fq=indexedAt:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=crawlerDiscoverDepth&facet.limit=10",
             "custom": "",
             "ids": [
               0
             ]
           },
-          "field": "depth",
+          "field": "crawlerDiscoverDepth",
           "size": 10,
           "spyable": true,
           "show_queries": true,

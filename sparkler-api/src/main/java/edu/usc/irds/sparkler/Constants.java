@@ -140,17 +140,17 @@ public interface Constants {
 
     interface solr { // Solr Fields
         String ID = "id";
-        String JOBID = "jobId";
+        String CRAWL_ID = "crawl_id";
         String URL = "url";
         String GROUP = "group";
-        String LAST_FETCHED_AT = "lastFetchedAt";
+        String FETCH_TIMESTAMP = "fetch_timestamp";
         String NUM_TRIES = "numTries";
         String NUM_FETCHES = "numFetches";
-        String DEPTH = "depth";
+        String CRAWLER_DISCOVER_DEPTH = "crawler_discover_depth";
         String SCORE = "score";
         String STATUS = "status";
-        String LAST_UPDATED_AT = "lastUpdatedAt";
-        String PLAIN_TEXT = "plainText";
+        String LAST_UPDATED_AT = "last_updated_at";
+        String EXTRACTED_TEXT = "extracted_text";
         String MD_SUFFIX = "_md";
     }
 

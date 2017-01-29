@@ -189,7 +189,7 @@ object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]
     //Step : UPSERT outlinks
     rdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
 
-      .reduceByKey({ case (r1, r2) => if (r1.getDepth <= r2.getDepth) r1 else r2 }) // pick a parent
+      .reduceByKey({ case (r1, r2) => if (r1.getCrawlerDiscoverDepth <= r2.getCrawlerDiscoverDepth) r1 else r2 }) // pick a parent
 
       .filter({case (url, parent) =>
         val outLinkFilter:scala.Option[URLFilter] = PluginService.getExtension(classOf[URLFilter], job)
@@ -201,7 +201,7 @@ object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]
         result
       })
       //TODO: url normalize
-      .map({ case (link, parent) => new Resource(link, parent.getDepth + 1, job, UNFETCHED) }) //create a new resource
+      .map({ case (link, parent) => new Resource(link, parent.getCrawlerDiscoverDepth + 1, job, UNFETCHED, parent.getFetchTimestamp) }) //create a new resource
   }
 }
 

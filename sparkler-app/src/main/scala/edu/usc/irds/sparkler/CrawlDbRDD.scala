@@ -18,7 +18,7 @@
 package edu.usc.irds.sparkler
 
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
+import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.solr.SolrGroupPartition
 import edu.usc.irds.sparkler.util.SolrResultIterator
 import org.apache.solr.client.solrj.SolrQuery
@@ -50,7 +50,7 @@ class CrawlDbRDD(sc: SparkContext,
     val batchSize = 100
     val query = new SolrQuery(generateQry)
     query.addFilterQuery(s"""${Constants.solr.GROUP}:"${escapeQueryChars(partition.group)}"""")
-    query.addFilterQuery(s"${Constants.solr.JOBID}:${job.id}")
+    query.addFilterQuery(s"${Constants.solr.CRAWL_ID}:${job.id}")
     query.set("sort", sortBy)
     query.setRows(batchSize)
 
@@ -60,7 +60,7 @@ class CrawlDbRDD(sc: SparkContext,
 
   override protected def getPartitions: Array[Partition] = {
     val qry = new SolrQuery(generateQry)
-    qry.addFilterQuery(s"${Constants.solr.JOBID}:${job.id}")
+    qry.addFilterQuery(s"${Constants.solr.CRAWL_ID}:${job.id}")
     qry.set("sort", sortBy)
     qry.set("group", true)
     qry.set("group.ngroups", true)
@@ -85,8 +85,8 @@ class CrawlDbRDD(sc: SparkContext,
 
 object CrawlDbRDD extends Loggable {
 
-  val DEFAULT_ORDER = "depth asc,score asc"
-  val DEFAULT_FILTER_QRY = "status:NEW"
+  val DEFAULT_ORDER = Constants.solr.CRAWLER_DISCOVER_DEPTH + " asc," + Constants.solr.SCORE + " asc"
+  val DEFAULT_FILTER_QRY = Constants.solr.STATUS + ":" + ResourceStatus.UNFETCHED
   val DEFAULT_GROUPS = 1000
   val DEFAULT_TOPN = 1000
 }
