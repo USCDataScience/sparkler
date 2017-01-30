@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-includes: ['layer:basic', 'interface:java', 'interface:spark'] 
+includes: ['layer:basic', 'interface:java', 'interface:spark', 'interface:solr-interface']
 repo: git@github.com:USCDataScience/sparkler.git

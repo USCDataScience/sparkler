@@ -10,5 +10,5 @@ if [ ! -f "$JAR" ]
 fi
 
 # run
-java -cp $DIR/resources:$JAR \
+java -Xms1g -cp $DIR/resources:$JAR \
     edu.usc.irds.sparkler.Main $@

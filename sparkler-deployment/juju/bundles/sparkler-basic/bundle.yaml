@@ -1,0 +1,41 @@
+series: xenial
+applications: 
+  java: 
+    charm: "cs:openjdk-4"
+    annotations: 
+      "gui-x": "958"
+      "gui-y": "314.29491924311225"
+  sparkler: 
+    charm: "cs:~spiculecharms/sparkler-1"
+    num_units: 1
+    options: 
+      "kafka-enable": false
+    annotations: 
+      "gui-x": "1158"
+      "gui-y": "660.7050807568877"
+    to: 
+      - "1"
+  solr: 
+    charm: "cs:~spiculecharms/apache-solr-4"
+    num_units: 1
+    options: 
+      solrcloud: false
+    annotations: 
+      "gui-x": "758"
+      "gui-y": "660.7050807568877"
+    to: 
+      - "0"
+relations: 
+  - - "java:java"
+    - "solr:java"
+  - - "solr:solr-interface"
+    - "sparkler:solr-interface"
+  - - "java:java"
+    - "sparkler:java"
+machines: 
+  "0": 
+    series: xenial
+    constraints: "arch=amd64 cpu-cores=1 cpu-power=350 mem=3840 root-disk=8192"
+  "1": 
+    series: xenial
+    constraints: "arch=amd64 cpu-cores=1 cpu-power=350 mem=3840 root-disk=8192"

@@ -41,7 +41,7 @@ options:
     description: "Generates the top N URLs for fetching."
   generate-top-groups:
     type: string
-    default: 256
+    default: "256"
     description: "Generates the Top Groups"
   fetcher-server-delay:
     type: string

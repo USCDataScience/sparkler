@@ -14,36 +14,46 @@
 # limitations under the License.
 
 from charms.reactive import when, when_not, set_state
+from charmhelpers.core.hookenv import status_set, log
+from charmhelpers.core import hookenv, unitdata
+import jujuresources
+from charmhelpers.core.host import adduser, chownr, mkdir
 
+
+hook_data = unitdata.HookData()
+db = unitdata.kv()
+hooks = hookenv.Hooks()
+
+resources = {
+    'sparkler-0.1': 'sparkler-0.1'
+}
 
 @when_not('sparkler.installed')
 def install_sparkler():
-    sparkler = resource_get("sparklersoftware")
+    resource_key="sparkler-0.1"
+    resource = resources[resource_key]
     mkdir('/opt/sparkler/')
-    shutil.copy(sparkler, "/opt/sparkler")
+    jujuresources.install(resource,
+                          destination="/opt/sparkler/sparkler.jar")
     set_state('sparkler.installed')
 
 @when_not('java.ready')
 def no_java():
-    hookenv.status_set('waiting', 'Waiting for Java to become available')
+    status_set('waiting', 'Waiting for Java to become available')
 
-@when_not('spark.joined')
-@when_not('spark.started')
-def no_spark():
-    hookenv.status_set('waiting', 'Waiting for Spark to become available')
-
-@when_not('solr.started'):
-@when_not('solr.joined')
+@when_not('solr-interface.connected')
+@when_not('solr-interface.available')
 def no_solr():
-    hookenv.status_set('waiting', 'Waiting for Solr to become available')
+    status_set('waiting', 'Waiting for Solr to become available')
 
-@when('solr.started')
-@when('spark.started')
+@when('solr-interface.available')
 @when('java.ready')
-def configure_sparkler():
-# Do some stuff to parse the charm config options and inject them into sparkler-default.yaml
+def configure_sparkler(j, s):
+    set_state('sparkler.configured')
+
+
 
 @when('sparkler.configured')
 def run_sparkler():
-    hookenv.status_set('running', 'Sparkler is configured awaiting action')
+    status_set('active', 'Sparkler is configured awaiting action')
 
