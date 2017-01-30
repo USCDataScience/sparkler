@@ -1,6 +1,7 @@
 package edu.usc.irds.sparkler.model;
 
 import edu.usc.irds.sparkler.JobContext;
+import edu.usc.irds.sparkler.util.StringUtil;
 import org.apache.solr.client.solrj.beans.Field;
 
 import java.io.Serializable;
@@ -15,56 +16,76 @@ public class Resource implements Serializable {
 
     //NOTE: Keep the variable names in sync with solr schema
     @Field private String id;
-    @Field private String jobId;
+    @Field("crawl_id") private String crawlId;
     @Field private String url;
     @Field private String group;
-    @Field private Date lastFetchedAt;
-    @Field private Integer numTries = 0;
-    @Field private Integer numFetches = 0;
-    @Field private Integer depth = 0;
+    @Field("fetch_timestamp") private Date fetchTimestamp;
+    //@Field private Integer numTries = 0;
+    //@Field private Integer numFetches = 0;
+    @Field("discover_depth") private Integer discoverDepth = 0;
     @Field private Double score = 0.0;
-    @Field private String status = ResourceStatus.NEW.toString();
-    @Field private Date lastUpdatedAt;
+    @Field private String status = ResourceStatus.UNFETCHED.toString();
+    @Field("last_updated_at") private Date lastUpdatedAt;
+    @Field("indexed_at") private Date indexedAt;
+    @Field private String hostname;
+    @Field private String parent;
 
     public Resource() {
     }
 
     public Resource(String url, String group, JobContext job) {
         super();
-        this.id = resourceId(url, job);
+        //this.id = resourceId(url, job);
         this.url = url;
         this.group = group;
-        this.jobId = job.getId();
+        this.hostname = group;
+        this.crawlId = job.getId();
     }
 
-    public Resource(String url, String group, JobContext sparklerJob, Date lastFetchedAt) {
+    public Resource(String url, String group, JobContext sparklerJob, Date fetchTimestamp) {
         this(url, group, sparklerJob);
-        this.lastFetchedAt = lastFetchedAt;
+        this.id = resourceId(url, sparklerJob, fetchTimestamp);
+        this.fetchTimestamp = fetchTimestamp;
     }
 
-    public Resource(String url, Integer depth, JobContext sparklerJob, ResourceStatus status) throws MalformedURLException {
+    public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status) throws MalformedURLException {
         this(url, new URL(url).getHost(), sparklerJob);
-        this.depth = depth;
+        this.indexedAt = new Date();
+        this.id = resourceId(url, sparklerJob, this.indexedAt);
+        this.discoverDepth = discoverDepth;
         this.status = status.toString();
     }
 
-    public Resource(String url, String group, JobContext sparklerJob, Date lastFetchedAt, Integer numTries,
+    public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status,
+                    Date fetchTimestamp, String parent) throws MalformedURLException {
+        this(url, new URL(url).getHost(), sparklerJob);
+        this.id = resourceId(url, sparklerJob, fetchTimestamp);
+        this.discoverDepth = discoverDepth;
+        this.status = status.toString();
+        this.parent = parent;
+    }
+
+    public Resource(String url, String group, JobContext sparklerJob, Date fetchTimestamp, Integer numTries,
                     Integer numFetches, ResourceStatus status) {
-        this(url, group, sparklerJob, lastFetchedAt);
-        this.numTries = numTries;
-        this.numFetches = numFetches;
+        this(url, group, sparklerJob, fetchTimestamp);
+        //this.numFetches = numFetches;
         this.status = status.toString();
     }
 
     @Override
     public String toString() {
         return String.format("Resource(%s, $s, %s, %s, %s, %s, %s, %s)",
-                id, group, lastFetchedAt, numTries, numFetches, depth, score, status);
+                id, group, fetchTimestamp, discoverDepth, score, status);
+                //id, group, fetchTimestamp, numTries, numFetches, discoverDepth, score, status);
     }
 
 
     public static String resourceId(String url, JobContext job) {
         return String.format("%s-%s", job.getId(), url);
+    }
+
+    public static String resourceId(String url, JobContext job, Date timestamp) {
+        return StringUtil.sha256hash(String.format("%s-%s-%s", job.getId(), url, timestamp.getTime()));
     }
 
 
@@ -89,16 +110,17 @@ public class Resource implements Serializable {
         return group;
     }
 
-    public Integer getDepth() {
-        return depth;
+    public Integer getDiscoverDepth() {
+        return discoverDepth;
     }
 
-    public String getStatus() {
-        return status;
-    }
+    public String getStatus() { return status; }
 
     public void setStatus(String status) {
         this.status = status;
     }
 
+    public Date getFetchTimestamp() { return fetchTimestamp; }
+
+    public void setFetchTimestamp(Date fetchTimestamp) { this.fetchTimestamp = fetchTimestamp; }
 }

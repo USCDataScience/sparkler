@@ -60,7 +60,7 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
       // Parse Text
       stream = new ByteArrayInputStream(data.fetchedData.getContent)
       parser.parse(stream, contentHandler, meta)
-      parseData.plainText = outHandler.toString
+      parseData.extractedText = outHandler.toString
       parseData.metadata = meta
       parseData
     } catch {

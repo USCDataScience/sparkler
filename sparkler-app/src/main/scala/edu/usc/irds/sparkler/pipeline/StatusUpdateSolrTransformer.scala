@@ -22,6 +22,7 @@ import java.util.Date
 import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.model.{CrawlData, Resource}
 import edu.usc.irds.sparkler.solr.schema.FieldMapper
+import edu.usc.irds.sparkler.util.{StringUtil, URLUtil}
 import org.apache.solr.common.SolrInputDocument
 
 import scala.collection.JavaConverters._
@@ -38,11 +39,17 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     //val x:java.util.Map[String, Object] = Map("ss" -> new Object).asJava
     sUpdate.setField(Constants.solr.ID, data.fetchedData.getResource.getId)
     sUpdate.setField(Constants.solr.STATUS, Map("set" -> data.fetchedData.getResource.getStatus).asJava)
-    sUpdate.setField(Constants.solr.LAST_FETCHED_AT, Map("set" -> data.fetchedData.getFetchedAt).asJava)
+    sUpdate.setField(Constants.solr.FETCH_TIMESTAMP, Map("set" -> data.fetchedData.getFetchedAt).asJava)
     sUpdate.setField(Constants.solr.LAST_UPDATED_AT, Map("set" -> new Date()).asJava)
-    sUpdate.setField(Constants.solr.NUM_TRIES, Map("inc" -> 1).asJava)
-    sUpdate.setField(Constants.solr.NUM_FETCHES, Map("inc" -> 1).asJava)
-    sUpdate.setField(Constants.solr.PLAIN_TEXT, data.parsedData.plainText)
+    sUpdate.setField(Constants.solr.RETRIES_SINCE_FETCH, Map("inc" -> 1).asJava)
+    //sUpdate.setField(Constants.solr.NUM_FETCHES, Map("inc" -> 1).asJava)
+    sUpdate.setField(Constants.solr.EXTRACTED_TEXT, data.parsedData.extractedText)
+    sUpdate.setField(Constants.solr.CONTENT_TYPE, data.fetchedData.getContentType.split("; ")(0))
+    sUpdate.setField(Constants.solr.FETCH_STATUS_CODE, data.fetchedData.getResponseCode)
+    sUpdate.setField(Constants.solr.SIGNATURE, StringUtil.sha256hash(new String(data.fetchedData.getContent)))
+    sUpdate.setField(Constants.solr.RELATIVE_PATH, URLUtil.reverseUrl(data.fetchedData.getResource.getUrl))
+    //FIXME: Apply URL Filter(s), if required
+    sUpdate.setField(Constants.solr.OUTLINKS, data.parsedData.outlinks.toArray)
 
     var mdFields: Map[String, AnyRef] = Map()
     for (name: String <- data.parsedData.metadata.names()) {
