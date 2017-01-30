@@ -67,10 +67,10 @@ class SparklerJob(val id: String,
     } else if (crawlDbUri.contains("::")){
       //Expected format = collection::zkhost1:port1,zkhost2:port2
       // usually cloud uri has multi ZK hosts separated by comma(,)
-      val Array(collection, zkhosts) = crawlDbUri.split("::")
-      LOG.info("Solr Cloud Client : Collection:{} ZKHost={}", collection, zkhosts)
-      val client = new CloudSolrClient(zkhosts)
-      client.setDefaultCollection(collection)
+      val Array(collectionName, zkhosts) = crawlDbUri.split("::")
+      LOG.info("Solr crawldb.uri:{}, Cloud Client: Collection:{} ZKHost={}", crawlDbUri, collectionName, zkhosts)
+      val client = new CloudSolrClient.Builder().withZkHost(zkhosts).build()
+      client.setDefaultCollection(collectionName)
       client
     } else {
       throw new RuntimeException(s"$crawlDbUri not supported")
