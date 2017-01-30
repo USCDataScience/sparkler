@@ -127,6 +127,7 @@
    <!-- <field name="status" type="status" indexed="true" stored="true" default="NEW" multiValued="false" required="true" docValues="true" /> -->
    <!-- <field name="depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" /> -->
    <!-- <field name="plainText" type="text_general" indexed="true" stored="true" multiValued="false" /> -->
+   <!-- <field name="lastUpdatedAt" type="date" indexed="true" stored="true" multiValued="false" default="NOW" /> -->
 
    <!-- Proposed Sparkler Schema -->
    <field name="fetch_timestamp" type="date" indexed="true" stored="true" multiValued="false" docValues="true" /> 
@@ -145,19 +146,22 @@
    <field name="fetch_depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    <field name="relative_path" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
    <field name="parent" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
-   <field name="inlinks" type="string" indexed="true" stored="true" multiValued="true" />
 
    <field name="modified_time" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
    <field name="retries_since_fetch" type="int" indexed="true" stored="true" default="-1" multiValued="false" docValues="true" />
-   <field name="retry_interval_days" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
-   <field name="retry_interval_seconds" type="long" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
-   
+
   <!-- Admin -->
   <field name="indexed_at" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
   <field name="last_updated_at" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
 
-  <!-- Deprecated Fields -->
-  <!-- <field name="lastUpdatedAt" type="date" indexed="true" stored="true" multiValued="false" default="NOW" /> -->
+
+  <!-- Future Use -->         
+  <!-- <field name="retry_interval_days" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" /> -->
+  <!-- <field name="retry_interval_seconds" type="long" indexed="true" stored="true" default="0" multiValued="false" docValues="true" /> -->
+
+  <!-- Post Crawl Utilities only - Don't use them for crawling -->
+  <!-- <field name="inlinks" type="string" indexed="true" stored="true" multiValued="true" /> --> 
+
 
    <!-- Dynamic field definitions allow using convention over configuration
        for fields via the specification of patterns to match field names. 
