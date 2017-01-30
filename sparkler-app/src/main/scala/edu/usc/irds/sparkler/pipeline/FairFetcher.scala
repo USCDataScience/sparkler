@@ -27,7 +27,8 @@ import edu.usc.irds.sparkler.model._
   */
 class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val delay: Long,
                   val fetchFunc: ((SparklerJob, Iterator[Resource]) => Iterator[FetchedData]),
-                  val parseFunc: ((CrawlData) => (ParsedData)))
+                  val parseFunc: ((CrawlData) => (ParsedData)),
+                  val outLinkFilterFunc: ((SparklerJob, CrawlData) => (Set[String])))
   extends Iterator[CrawlData] {
 
   import FairFetcher.LOG
@@ -56,6 +57,9 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
 
     //STEP: Parse
     data.parsedData = parseFunc(data)
+
+    //STEP: URL Filter
+    data.parsedData.outlinks = outLinkFilterFunc(job, data)
     data
   }
 }
