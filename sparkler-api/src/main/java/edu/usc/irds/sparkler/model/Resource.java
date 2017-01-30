@@ -28,6 +28,7 @@ public class Resource implements Serializable {
     @Field("last_updated_at") private Date lastUpdatedAt;
     @Field("indexed_at") private Date indexedAt;
     @Field private String hostname;
+    @Field private String parent;
 
     public Resource() {
     }
@@ -55,11 +56,13 @@ public class Resource implements Serializable {
         this.status = status.toString();
     }
 
-    public Resource(String url, Integer crawlerDiscoverDepth, JobContext sparklerJob, ResourceStatus status, Date fetchTimestamp) throws MalformedURLException {
+    public Resource(String url, Integer crawlerDiscoverDepth, JobContext sparklerJob, ResourceStatus status,
+                    Date fetchTimestamp, String parent) throws MalformedURLException {
         this(url, new URL(url).getHost(), sparklerJob);
         this.id = resourceId(url, sparklerJob, fetchTimestamp);
         this.crawlerDiscoverDepth = crawlerDiscoverDepth;
         this.status = status.toString();
+        this.parent = parent;
     }
 
     public Resource(String url, String group, JobContext sparklerJob, Date fetchTimestamp, Integer numTries,

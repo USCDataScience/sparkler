@@ -143,12 +143,12 @@
    <field name="outlinks" type="string" indexed="true" stored="true" multiValued="true" />
    <field name="crawler_discover_depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    <field name="crawler_fetch_depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
-   <field name="obj_relative_path" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
-   <field name="obj_parent" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
+   <field name="relative_path" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
+   <field name="parent" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
    <field name="inlinks" type="string" indexed="true" stored="true" multiValued="true" />
 
    <field name="modified_time" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
-   <field name="retries_since_fetch" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
+   <field name="retries_since_fetch" type="int" indexed="true" stored="true" default="-1" multiValued="false" docValues="true" />
    <field name="retry_interval_days" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    <field name="retry_interval_seconds" type="long" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    

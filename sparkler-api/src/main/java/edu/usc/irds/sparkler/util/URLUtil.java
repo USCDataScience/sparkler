@@ -17,6 +17,10 @@
 
 package edu.usc.irds.sparkler.util;
 
+import org.apache.nutch.util.TableUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.IDN;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -25,6 +29,8 @@ import java.util.regex.Pattern;
 
 /** Utility class for URL analysis */
 public class URLUtil {
+
+    public static Logger LOG = LoggerFactory.getLogger(URLUtil.class);
 
     /**
      * Resolve relative URL-s and fix a java.net.URL error in handling of URLs
@@ -512,6 +518,20 @@ public class URLUtil {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static String reverseUrl(String url) {
+        String reversedURLPath = "";
+        try {
+            String[] reversedURL = TableUtil.reverseUrl(url).split(":");
+            reversedURL[0] = reversedURL[0].replace('.', '/');
+
+            reversedURLPath = reversedURL[0] + "/" + StringUtil.sha256hash(url);
+        } catch (MalformedURLException e) {
+            LOG.error("Error occurred while reversing the URL " + url);
+            e.printStackTrace();
+        }
+        return reversedURLPath;
     }
 
     /** For testing */
