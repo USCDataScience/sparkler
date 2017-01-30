@@ -85,7 +85,7 @@ class CrawlDbRDD(sc: SparkContext,
 
 object CrawlDbRDD extends Loggable {
 
-  val DEFAULT_ORDER = Constants.solr.CRAWLER_DISCOVER_DEPTH + " asc," + Constants.solr.SCORE + " asc"
+  val DEFAULT_ORDER = Constants.solr.DISCOVER_DEPTH + " asc," + Constants.solr.SCORE + " asc"
   val DEFAULT_FILTER_QRY = Constants.solr.STATUS + ":" + ResourceStatus.UNFETCHED
   val DEFAULT_GROUPS = 1000
   val DEFAULT_TOPN = 1000

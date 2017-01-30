@@ -22,7 +22,7 @@ public class Resource implements Serializable {
     @Field("fetch_timestamp") private Date fetchTimestamp;
     //@Field private Integer numTries = 0;
     //@Field private Integer numFetches = 0;
-    @Field("crawler_discover_depth") private Integer crawlerDiscoverDepth = 0;
+    @Field("discover_depth") private Integer discoverDepth = 0;
     @Field private Double score = 0.0;
     @Field private String status = ResourceStatus.UNFETCHED.toString();
     @Field("last_updated_at") private Date lastUpdatedAt;
@@ -48,19 +48,19 @@ public class Resource implements Serializable {
         this.fetchTimestamp = fetchTimestamp;
     }
 
-    public Resource(String url, Integer crawlerDiscoverDepth, JobContext sparklerJob, ResourceStatus status) throws MalformedURLException {
+    public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status) throws MalformedURLException {
         this(url, new URL(url).getHost(), sparklerJob);
         this.indexedAt = new Date();
         this.id = resourceId(url, sparklerJob, this.indexedAt);
-        this.crawlerDiscoverDepth = crawlerDiscoverDepth;
+        this.discoverDepth = discoverDepth;
         this.status = status.toString();
     }
 
-    public Resource(String url, Integer crawlerDiscoverDepth, JobContext sparklerJob, ResourceStatus status,
+    public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status,
                     Date fetchTimestamp, String parent) throws MalformedURLException {
         this(url, new URL(url).getHost(), sparklerJob);
         this.id = resourceId(url, sparklerJob, fetchTimestamp);
-        this.crawlerDiscoverDepth = crawlerDiscoverDepth;
+        this.discoverDepth = discoverDepth;
         this.status = status.toString();
         this.parent = parent;
     }
@@ -68,7 +68,6 @@ public class Resource implements Serializable {
     public Resource(String url, String group, JobContext sparklerJob, Date fetchTimestamp, Integer numTries,
                     Integer numFetches, ResourceStatus status) {
         this(url, group, sparklerJob, fetchTimestamp);
-        //this.numTries = numTries;
         //this.numFetches = numFetches;
         this.status = status.toString();
     }
@@ -76,8 +75,8 @@ public class Resource implements Serializable {
     @Override
     public String toString() {
         return String.format("Resource(%s, $s, %s, %s, %s, %s, %s, %s)",
-                id, group, fetchTimestamp, crawlerDiscoverDepth, score, status);
-                //id, group, fetchTimestamp, numTries, numFetches, crawlerDiscoverDepth, score, status);
+                id, group, fetchTimestamp, discoverDepth, score, status);
+                //id, group, fetchTimestamp, numTries, numFetches, discoverDepth, score, status);
     }
 
 
@@ -111,8 +110,8 @@ public class Resource implements Serializable {
         return group;
     }
 
-    public Integer getCrawlerDiscoverDepth() {
-        return crawlerDiscoverDepth;
+    public Integer getDiscoverDepth() {
+        return discoverDepth;
     }
 
     public String getStatus() { return status; }

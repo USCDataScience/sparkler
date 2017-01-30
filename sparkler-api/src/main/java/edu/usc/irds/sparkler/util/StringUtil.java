@@ -48,9 +48,9 @@ public class StringUtil {
             byte[] digest = md.digest();
             hash = String.format("%064x", new java.math.BigInteger(1, digest)).toUpperCase();
         } catch (NoSuchAlgorithmException e) {
-            LOG.error("Not a valid Hash Algorithm for string: " + str, e.getMessage());
+            LOG.error("Not a valid Hash Algorithm for string: " + str, e);
         } catch (UnsupportedEncodingException e) {
-            LOG.error("Not a valid Encoding for string: " + str, e.getMessage());
+            LOG.error("Not a valid Encoding for string: " + str, e);
         }
         return hash;
     }

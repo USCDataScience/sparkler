@@ -146,7 +146,8 @@ public interface Constants {
         String FETCH_TIMESTAMP = "fetch_timestamp";
         String RETRIES_SINCE_FETCH = "retries_since_fetch";
         String NUM_FETCHES = "numFetches";
-        String CRAWLER_DISCOVER_DEPTH = "crawler_discover_depth";
+        String DISCOVER_DEPTH = "discover_depth";
+        String FETCH_DEPTH = "fetch_depth";
         String SCORE = "score";
         String STATUS = "status";
         String LAST_UPDATED_AT = "last_updated_at";
@@ -155,7 +156,6 @@ public interface Constants {
         String FETCH_STATUS_CODE = "fetch_status_code";
         String SIGNATURE = "signature";
         String OUTLINKS = "outlinks";
-        String CRAWLER_FETCH_DEPTH = "crawler_fetch_depth";
         String RELATIVE_PATH = "relative_path";
         String MD_SUFFIX = "_md";
     }

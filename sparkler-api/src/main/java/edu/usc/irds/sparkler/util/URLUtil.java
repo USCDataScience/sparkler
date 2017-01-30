@@ -528,8 +528,7 @@ public class URLUtil {
 
             reversedURLPath = reversedURL[0] + "/" + StringUtil.sha256hash(url);
         } catch (MalformedURLException e) {
-            LOG.error("Error occurred while reversing the URL " + url);
-            e.printStackTrace();
+            LOG.error("Error occurred while reversing the URL " + url, e);
         }
         return reversedURLPath;
     }

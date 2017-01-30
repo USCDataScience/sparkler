@@ -50,9 +50,7 @@ public class FetchedData implements Serializable {
         this.fetchedAt = new Date();
 	}
 	
-	public String getContentType() {
-		return contentType;
-	}
+	public String getContentType() { return contentType == null ? "" : contentType; }
 	
 	public int getResponseCode() {
 		return responseCode;

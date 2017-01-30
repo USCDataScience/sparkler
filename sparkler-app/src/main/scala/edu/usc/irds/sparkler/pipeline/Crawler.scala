@@ -187,9 +187,9 @@ object OutLinkUpsert extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) wi
     //Step : UPSERT outlinks
     rdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
 
-      .reduceByKey({ case (r1, r2) => if (r1.getCrawlerDiscoverDepth <= r2.getCrawlerDiscoverDepth) r1 else r2 }) // pick a parent
+      .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
-      .map({ case (link, parent) => new Resource(link, parent.getCrawlerDiscoverDepth + 1, job, UNFETCHED,
+      .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
       parent.getFetchTimestamp, parent.getId) }) //create a new resource
   }
 }
