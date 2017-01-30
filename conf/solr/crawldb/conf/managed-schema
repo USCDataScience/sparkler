@@ -141,8 +141,8 @@
    <field name="signature" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
    <field name="version" type="float" indexed="true" stored="true" required="true" default="1.0" multiValued="false" docValues="true" />
    <field name="outlinks" type="string" indexed="true" stored="true" multiValued="true" />
-   <field name="crawler_discover_depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
-   <field name="crawler_fetch_depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
+   <field name="discover_depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
+   <field name="fetch_depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    <field name="relative_path" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
    <field name="parent" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
    <field name="inlinks" type="string" indexed="true" stored="true" multiValued="true" />
