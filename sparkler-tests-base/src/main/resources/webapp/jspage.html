@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <!--
   ~  Licensed to the Apache Software Foundation (ASF) under one or more
   ~  contributor license agreements.  See the NOTICE file distributed with
@@ -15,12 +16,19 @@
   ~  limitations under the License.
   -->
 
-<html>
+<html lang="en">
 <head>
-  <title>sample web page</title>
+  <meta charset="UTF-8">
+  <title>Title</title>
 </head>
 <body>
-<h1>This is title</h1>
+<h1>This page is for testing JavaScript</h1>
+<div>
+  Java Script Enabled : <span id="js-ans">No</span>
+  <script type="text/javascript">
+    document.getElementById('js-ans').innerHTML = 'Yes'
+  </script>
+</div>
 
 </body>
 </html>

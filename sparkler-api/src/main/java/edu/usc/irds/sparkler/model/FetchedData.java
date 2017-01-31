@@ -28,29 +28,31 @@ public class FetchedData implements Serializable {
 
     private Resource resource;
 
-	private byte[] content;
-	private String contentType;
+    private byte[] content;
+    private String contentType;
     private Integer contentLength;
     private String[] headers;
     private Date fetchedAt;
     private Metadata metadata;
-	private int responseCode;
+    private int responseCode;
 
 
-	public FetchedData() {
-	}
+    public FetchedData() {
+    }
 
-	public FetchedData(byte[] content, String contentType, int responseCode) {
-		super();
-		this.content = content;
+    public FetchedData(byte[] content, String contentType, int responseCode) {
+        super();
+        this.content = content;
         this.contentLength = content.length;
-		this.contentType = contentType;
-		this.responseCode = responseCode;
+        this.contentType = contentType;
+        this.responseCode = responseCode;
         this.metadata = new Metadata();
         this.fetchedAt = new Date();
 	}
 	
-	public String getContentType() { return contentType == null ? "" : contentType; }
+	public String getContentType() {
+        return contentType == null ? "" : contentType;
+	}
 	
 	public int getResponseCode() {
 		return responseCode;

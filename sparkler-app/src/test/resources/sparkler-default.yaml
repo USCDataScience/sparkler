@@ -19,18 +19,15 @@
 
 # Crawl Database URL. Stores crawl metadata and status updates.
 # Type: String. Default: http://localhost:8983/solr/crawldb
-# for standalone server
-crawldb.uri: http://localhost:8983/solr/crawldb
+crawldb.uri: file://conf/solr/crawldb
 
-# for cloudmode with zookeepers; Format = collectionName::zkhost1:port1,zkhost2:port2,zkhost3:port3
-# crawldb.uri: crawldb::localhost:9983
 
 
 ##################### Apache Spark Properties ###########################
 
 # URL on which Apache Spark is running.
-# Type: String. Default is "local[*]" for local mode.
-spark.master: local[*]
+# Type: String. Default is "local" for local mode.
+spark.master: local
 
 
 ##################### Apache Kafka Properties ###########################

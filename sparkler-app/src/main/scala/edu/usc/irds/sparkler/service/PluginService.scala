@@ -17,7 +17,6 @@
 
 package edu.usc.irds.sparkler.service
 
-import java.io.{File, FileInputStream}
 import java.net.URL
 import java.util.Properties
 

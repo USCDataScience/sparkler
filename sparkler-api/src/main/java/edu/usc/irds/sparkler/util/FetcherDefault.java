@@ -9,6 +9,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -54,9 +55,13 @@ public class FetcherDefault extends AbstractExtensionPoint
         try {
             return this.fetch(resource);
         } catch (Exception e) {
+            int statusCode =  DEFAULT_ERROR_CODE;
+            if (e instanceof FileNotFoundException){
+                statusCode = 404;
+            }
             LOG.warn("FETCH-ERROR {}", resource.getUrl());
             LOG.debug(e.getMessage(), e);
-            FetchedData fetchedData = new FetchedData(new byte[0], "", DEFAULT_ERROR_CODE);
+            FetchedData fetchedData = new FetchedData(new byte[0], "", statusCode);
             resource.setStatus(ResourceStatus.ERROR.toString());
             fetchedData.setResource(resource);
             return fetchedData;
