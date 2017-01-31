@@ -48,15 +48,15 @@ public class FetchedData implements Serializable {
         this.responseCode = responseCode;
         this.metadata = new Metadata();
         this.fetchedAt = new Date();
-    }
-
-    public String getContentType() {
-        return contentType;
-    }
-
-    public int getResponseCode() {
-        return responseCode;
-    }
+	}
+	
+	public String getContentType() {
+        return contentType == null ? "" : contentType;
+	}
+	
+	public int getResponseCode() {
+		return responseCode;
+	}
 
     public Resource getResource() { return resource; }
 
