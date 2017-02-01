@@ -153,6 +153,7 @@
   <!-- Admin -->
   <field name="indexed_at" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
   <field name="last_updated_at" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
+  <field name="dedupe_id" type="string" stored="true" indexed="true" multiValued="false" />
 
 
   <!-- Future Use -->         
