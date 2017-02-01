@@ -19,13 +19,12 @@ package edu.usc.irds.sparkler.solr
 
 import org.slf4j.LoggerFactory
 import SolrUpsert.LOG
-
-import edu.usc.irds.sparkler.model.SparklerJob
+import edu.usc.irds.sparkler.Constants
+import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import org.apache.spark.TaskContext
-import org.apache.solr.common.SolrInputDocument
 
 import scala.collection.JavaConverters._
-import edu.usc.irds.sparkler.model.Resource
+import org.apache.solr.client.solrj.SolrQuery
 
 
 /**
@@ -38,9 +37,16 @@ class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) =>
     val solrClient = job.newCrawlDbSolrClient()
 
     //TODO: handle this in server side - tell solr to skip docs if they already exist
-    val newResources: Iterator[Resource] = for (doc <- docs if solrClient.crawlDb.getById(doc.getId) == null) yield doc
+    var newResources: Set[Resource] = Set()
+    for (doc <- docs) {
+      val qry: SolrQuery = new SolrQuery(Constants.solr.STATUS + ":" + ResourceStatus.UNFETCHED)
+      qry.addFilterQuery(s"${Constants.solr.DEDUPE_ID}:${doc.getDedupeId}")
+      if (solrClient.crawlDb.query(qry).getResults.size() == 0) {
+        newResources += doc
+      }
+    }
     LOG.info("Inserting new resources to Solr ")
-    solrClient.addResources(newResources.asJava)
+    solrClient.addResources(newResources.iterator.asJava)
     LOG.debug("New resources inserted, Closing..")
     solrClient.close()
   }

@@ -26,7 +26,8 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 
 /**
- * Created by karanjeetsingh on 9/13/16.
+ * Created by thammegowda
+ * Modified by karanjeetsingh
  */
 public class StringEvaluator {
     private static final Logger LOG = LoggerFactory.getLogger(StringEvaluator.class);
