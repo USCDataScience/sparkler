@@ -51,8 +51,6 @@ def no_solr():
 def configure_sparkler(j, s):
     set_state('sparkler.configured')
 
-
-
 @when('sparkler.configured')
 def run_sparkler():
     status_set('active', 'Sparkler is configured awaiting action')
