@@ -82,6 +82,11 @@
             <version>${solr.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-core</artifactId> <!-- Needed to support Embedded Solr -->
+            <version>${solr.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
             <version>${tika.version}</version>
@@ -192,6 +197,7 @@
                                         <Main-Class>${exec.mainClass}</Main-Class>
                                     </manifestEntries>
                                 </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
                             <relocations>
                                 <!-- To resolve dependency conflict with Spark -->

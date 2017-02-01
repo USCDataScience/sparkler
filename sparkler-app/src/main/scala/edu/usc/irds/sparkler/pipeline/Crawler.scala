@@ -139,9 +139,6 @@ class Crawler extends CliTool {
     val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
 
-    // Load all Plugins at Start-up
-    //PluginService.loadAllPlugins(job)
-
     for (_ <- 1 to iterations) {
       val taskId = JobUtil.newSegmentId(true)
       job.currentTask = taskId
@@ -151,7 +148,8 @@ class Crawler extends CliTool {
       val rdd = new CrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
-        .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay, FetchFunction, ParseFunction) })
+        .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
+          FetchFunction, ParseFunction, OutLinkFilterFunction) })
         .persist()
 
       if (kafkaEnable) {
@@ -164,7 +162,7 @@ class Crawler extends CliTool {
       sc.runJob(statusUpdateRdd, statusUpdateFunc)
 
       //Step: Filter Outlinks and Upsert new URLs into CrawlDb
-      val outlinksRdd = OutLinkFilterFunc(job, fetchedRdd)
+      val outlinksRdd = OutLinkUpsert(job, fetchedRdd)
       val upsertFunc = new SolrUpsert(job)
       sc.runJob(outlinksRdd, upsertFunc)
 
@@ -183,25 +181,16 @@ class Crawler extends CliTool {
   }
 }
 
-object OutLinkFilterFunc extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) with Serializable with Loggable {
+object OutLinkUpsert extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) with Serializable with Loggable {
   override def apply(job: SparklerJob, rdd: RDD[CrawlData]): RDD[Resource] = {
 
     //Step : UPSERT outlinks
     rdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
 
-      .reduceByKey({ case (r1, r2) => if (r1.getDepth <= r2.getDepth) r1 else r2 }) // pick a parent
-
-      .filter({case (url, parent) =>
-        val outLinkFilter:scala.Option[URLFilter] = PluginService.getExtension(classOf[URLFilter], job)
-        val result = outLinkFilter match {
-          case Some(urLFilter) => urLFilter.filter(url, parent.getUrl)
-          case None => true
-        }
-        LOG.debug(s"$result :: filter(${parent.getUrl} --> $url)")
-        result
-      })
+      .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
-      .map({ case (link, parent) => new Resource(link, parent.getDepth + 1, job, NEW) }) //create a new resource
+      .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
+      parent.getFetchTimestamp, parent.getId) }) //create a new resource
   }
 }
 

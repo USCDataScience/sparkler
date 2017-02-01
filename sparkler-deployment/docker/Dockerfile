@@ -60,7 +60,9 @@ RUN cd /data/sparkler/sparkler-ui/banana && \
 
 RUN cd /data/sparkler && mvn clean install
 
-RUN apt-get install libwebkit2gtk-3.0-25 # needed by the Jbrowser for rendering fonts
+
+RUN apt install --fix-missing openjfx  # needed by the Jbrowser
+
 
 # Define default command.
 CMD ["bash"]

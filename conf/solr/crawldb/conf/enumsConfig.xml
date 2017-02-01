@@ -18,7 +18,7 @@
 
 <enumsConfig>
   <enum name="status">
-    <value>NEW</value>
+    <value>UNFETCHED</value>
     <value>FETCHING</value>
     <value>FETCHED</value>
     <value>IGNORED</value>
