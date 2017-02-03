@@ -62,7 +62,7 @@ if config('fetcher-server-delay'):
 
 ip = ""
 #run command with generated uri
-for rid in relation_ids('solr-interface'):
+for rid in relation_ids('solr'):
     for u in related_units(rid):
         ip = relation_get('private-address', unit=u, rid=rid)
         break

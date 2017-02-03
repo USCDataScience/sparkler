@@ -23,8 +23,8 @@ subordinate: false
 requires:
   spark:
     interface: spark
-  solr-interface:
-    interface: solr-interface
+  solr:
+    interface: solr
   kafka:
     interface: kafka
 provides:
