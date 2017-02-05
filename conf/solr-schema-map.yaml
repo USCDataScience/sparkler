@@ -15,8 +15,8 @@
 
 ################## Solr Schema Map Properties #######################
 
-overrides:
-  id: id
+#overrides:
+#  id: id
 
 typeSuffix:
   java.lang.String: _t

@@ -157,6 +157,7 @@ public interface Constants {
         String SIGNATURE = "signature";
         String OUTLINKS = "outlinks";
         String RELATIVE_PATH = "relative_path";
+        String DEDUPE_ID = "dedupe_id";
         String MD_SUFFIX = "_md";
     }
 

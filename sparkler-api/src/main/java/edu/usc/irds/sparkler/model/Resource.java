@@ -29,6 +29,8 @@ public class Resource implements Serializable {
     @Field("indexed_at") private Date indexedAt;
     @Field private String hostname;
     @Field private String parent;
+    @Field("dedupe_id") private String dedupeId;
+
 
     public Resource() {
     }
@@ -40,6 +42,7 @@ public class Resource implements Serializable {
         this.group = group;
         this.hostname = group;
         this.crawlId = job.getId();
+        this.dedupeId = StringUtil.sha256hash(url + "-" + job.getId());
     }
 
     public Resource(String url, String group, JobContext sparklerJob, Date fetchTimestamp) {
@@ -123,4 +126,12 @@ public class Resource implements Serializable {
     public Date getFetchTimestamp() { return fetchTimestamp; }
 
     public void setFetchTimestamp(Date fetchTimestamp) { this.fetchTimestamp = fetchTimestamp; }
+
+    public String getCrawlId() { return crawlId; }
+
+    public void setCrawlId(String crawlId) { this.crawlId = crawlId; }
+
+    public String getDedupeId() { return dedupeId; }
+
+    public void setDedupeId(String dedupeId) { this.dedupeId = dedupeId; }
 }

@@ -48,7 +48,6 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     sUpdate.setField(Constants.solr.FETCH_STATUS_CODE, data.fetchedData.getResponseCode)
     sUpdate.setField(Constants.solr.SIGNATURE, StringUtil.sha256hash(new String(data.fetchedData.getContent)))
     sUpdate.setField(Constants.solr.RELATIVE_PATH, URLUtil.reverseUrl(data.fetchedData.getResource.getUrl))
-    //FIXME: Apply URL Filter(s), if required
     sUpdate.setField(Constants.solr.OUTLINKS, data.parsedData.outlinks.toArray)
 
     var mdFields: Map[String, AnyRef] = Map()
