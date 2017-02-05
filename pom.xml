@@ -43,6 +43,7 @@
         <felix.main.version>5.4.0</felix.main.version>
         <snakeyaml.version>1.17</snakeyaml.version>
         <json.simple.version>1.1.1</json.simple.version>
+        <commons.validator.version>1.5.1</commons.validator.version>
         <jbrowserdriver.version>0.16.4</jbrowserdriver.version>
 
         <!-- Maven Plugins -->
