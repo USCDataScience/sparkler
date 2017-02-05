@@ -122,6 +122,11 @@
             <artifactId>org.apache.felix.main</artifactId>
             <version>${felix.main.version}</version>
         </dependency>
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>${commons.validator.version}</version>
+        </dependency>
 
 
         <!-- JBrowser Plugin -->
