@@ -27,7 +27,8 @@ public class FetcherDefault extends AbstractExtensionPoint
         implements Fetcher, Function<Resource, FetchedData> {
 
     public static final Logger LOG = LoggerFactory.getLogger(FetcherDefault.class);
-    public static final Integer FETCH_TIMEOUT = 1000;
+    public static final Integer CONNECT_TIMEOUT = 5000;
+    public static final Integer READ_TIMEOUT = 10000;
     public static final Integer DEFAULT_ERROR_CODE = 400;
 
     @Override
@@ -38,7 +39,8 @@ public class FetcherDefault extends AbstractExtensionPoint
     public FetchedData fetch(Resource resource) throws Exception {
         LOG.info("DEFAULT FETCHER {}", resource.getUrl());
         URLConnection urlConn = new URL(resource.getUrl()).openConnection();
-        urlConn.setConnectTimeout(FETCH_TIMEOUT);
+        urlConn.setConnectTimeout(CONNECT_TIMEOUT);
+        urlConn.setReadTimeout(READ_TIMEOUT);
         int responseCode = ((HttpURLConnection)urlConn).getResponseCode();
         LOG.debug("STATUS CODE : " + responseCode + " " + resource.getUrl());
         try (InputStream inStream = urlConn.getInputStream()) {

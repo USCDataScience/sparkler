@@ -21,6 +21,7 @@ import edu.usc.irds.sparkler.URLFilter
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model._
 import edu.usc.irds.sparkler.service.PluginService
+import org.apache.commons.validator.routines.UrlValidator
 
 import scala.language.postfixOps
 
@@ -35,9 +36,10 @@ object OutLinkFilterFunction
   : Set[String] = {
     val outLinkFilter: scala.Option[URLFilter] = PluginService.getExtension(classOf[URLFilter], job)
     var filteredOutLinks: Set[String] = Set()
+    val urlValidator: UrlValidator = new UrlValidator()
     for (url <- data.parsedData.outlinks) {
       val result = outLinkFilter match {
-        case Some(urLFilter) => urLFilter.filter(url, data.fetchedData.getResource.getUrl)
+        case Some(urLFilter) => urlValidator.isValid(url) && urLFilter.filter(url, data.fetchedData.getResource.getUrl)
         case None => true
       }
       if (result) {
