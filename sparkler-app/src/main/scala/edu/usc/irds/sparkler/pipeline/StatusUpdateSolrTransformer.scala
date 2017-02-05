@@ -19,6 +19,7 @@ package edu.usc.irds.sparkler.pipeline
 
 import java.util.Date
 
+import com.google.common.hash.{HashFunction, Hashing}
 import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.model.{CrawlData, Resource}
 import edu.usc.irds.sparkler.solr.schema.FieldMapper
@@ -30,10 +31,12 @@ import scala.collection.mutable
 
 /**
   * Created by thammegr on 6/7/16.
+  * Modified by karanjeets
   */
 object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) with Serializable {
 
   override def apply(data: CrawlData): SolrInputDocument = {
+    val hashFunction: HashFunction = Hashing.sha256()
     val sUpdate = new SolrInputDocument()
     //FIXME: handle failure case
     //val x:java.util.Map[String, Object] = Map("ss" -> new Object).asJava
@@ -46,7 +49,7 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     sUpdate.setField(Constants.solr.EXTRACTED_TEXT, data.parsedData.extractedText)
     sUpdate.setField(Constants.solr.CONTENT_TYPE, data.fetchedData.getContentType.split("; ")(0))
     sUpdate.setField(Constants.solr.FETCH_STATUS_CODE, data.fetchedData.getResponseCode)
-    sUpdate.setField(Constants.solr.SIGNATURE, StringUtil.sha256hash(new String(data.fetchedData.getContent)))
+    sUpdate.setField(Constants.solr.SIGNATURE, hashFunction.hashBytes(data.fetchedData.getContent).toString)
     sUpdate.setField(Constants.solr.RELATIVE_PATH, URLUtil.reverseUrl(data.fetchedData.getResource.getUrl))
     sUpdate.setField(Constants.solr.OUTLINKS, data.parsedData.outlinks.toArray)
 
