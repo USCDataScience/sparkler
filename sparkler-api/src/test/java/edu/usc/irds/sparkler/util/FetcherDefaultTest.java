@@ -23,9 +23,9 @@ import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import org.junit.Test;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -38,9 +38,10 @@ public class FetcherDefaultTest {
     private FetcherDefault fetcher = new FetcherDefault();
 
     private JobContext job = TestUtils.JOB_CONTEXT;
-    private Resource indexPage = new Resource("http://localhost:8080/index.html", "localhost", job);
-    private Resource jsPage = new Resource("http://localhost:8080/jspage.html", "localhost", job);
-    private Resource notFound = new Resource("http://localhost:8080/vacduyc_NOT_FOUND.html", "localhost", job);
+    private Resource indexPage = new Resource("http://localhost:8080/res/index.html", "localhost", job);
+    private Resource jsPage = new Resource("http://localhost:8080/res/jspage.html", "localhost", job);
+    private Resource notFound = new Resource("http://localhost:8080/res/vacduyc_NOT_FOUND.html", "localhost", job);
+
     private List<Resource> resources = Arrays.asList(indexPage, jsPage, notFound);
 
     @Test
@@ -77,4 +78,20 @@ public class FetcherDefaultTest {
         }
     }
 
+    @Test
+    public void testReadTimeout() throws Exception {
+
+        String url = "http://localhost:8080/slavesite?action=read-timeout&timeout=";
+        url += FetcherDefault.READ_TIMEOUT + 1000;
+        Resource timeoutPage = new Resource(url, "localhost", job);
+        try {
+            fetcher.fetch(timeoutPage);
+            fail("Exception expected");
+        } catch (SocketTimeoutException e){
+            // pass ; expected
+        }
+        catch (Exception e){
+            fail("Socket Exception expected, but found:" + e.getClass().getName());
+        }
+    }
 }
