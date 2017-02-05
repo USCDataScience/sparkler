@@ -17,14 +17,13 @@
 
 package edu.usc.irds.sparkler.solr
 
-import org.slf4j.LoggerFactory
-import SolrUpsert.LOG
 import edu.usc.irds.sparkler.Constants
-import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
-import org.apache.spark.TaskContext
-
-import scala.collection.JavaConverters._
+import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
 import org.apache.solr.client.solrj.SolrQuery
+import org.apache.spark.TaskContext
+import org.slf4j.LoggerFactory
+
+import scala.collection.JavaConversions._
 
 
 /**
@@ -32,21 +31,25 @@ import org.apache.solr.client.solrj.SolrQuery
  */
 class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) => Any) with Serializable {
 
+  import edu.usc.irds.sparkler.solr.SolrUpsert.LOG
+
   override def apply(context: TaskContext, docs: Iterator[Resource]): Any = {
     LOG.debug("Inserting new resources into CrawlDb")
     val solrClient = job.newCrawlDbSolrClient()
 
     //TODO: handle this in server side - tell solr to skip docs if they already exist
-    var newResources: Set[Resource] = Set()
-    for (doc <- docs) {
-      val qry: SolrQuery = new SolrQuery(Constants.solr.STATUS + ":" + ResourceStatus.UNFETCHED)
-      qry.addFilterQuery(s"${Constants.solr.DEDUPE_ID}:${doc.getDedupeId}")
-      if (solrClient.crawlDb.query(qry).getResults.size() == 0) {
-        newResources += doc
-      }
+
+    //This filter function returns true if there is no other resource  with the same dedupe_id
+    val newLinksFilter: (Resource => Boolean) = doc => {
+      val qry = new SolrQuery(s"${Constants.solr.DEDUPE_ID}:${doc.getDedupeId}")
+      qry.setRows(0) //we are interested in counts only and not the contents
+      solrClient.crawlDb.query(qry).getResults.size() == 0
+      // if zero hits, then there are no duplicates
     }
+    val newResources = docs.withFilter(newLinksFilter)
+
     LOG.info("Inserting new resources to Solr ")
-    solrClient.addResources(newResources.iterator.asJava)
+    solrClient.addResources(newResources)
     LOG.debug("New resources inserted, Closing..")
     solrClient.close()
   }
