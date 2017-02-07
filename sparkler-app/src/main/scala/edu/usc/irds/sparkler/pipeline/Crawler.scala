@@ -18,11 +18,10 @@
 package edu.usc.irds.sparkler.pipeline
 
 
-import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, SparklerConfiguration, URLFilter}
+import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, SparklerConfiguration}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{ResourceStatus, CrawlData, Resource, SparklerJob}
-import edu.usc.irds.sparkler.service.PluginService
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
 import edu.usc.irds.sparkler.util.JobUtil
 import org.apache.hadoop.conf.Configuration
@@ -35,8 +34,6 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
-import scala.collection.mutable.ListBuffer
-import scala.reflect.io.File
 
 /**
   *
@@ -123,11 +120,8 @@ class Crawler extends CliTool {
     job = new SparklerJob(jobId, sparklerConf, "")
   }
   //TODO: URL normalizers
-  //TODO: URL filters
-  //TODO: Data Sink
   //TODO: Robots.txt
   //TODO: Fetcher + User Agent
-  //TODO: JS render
   //TODO: Job Id
 
   override def run(): Unit = {

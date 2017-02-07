@@ -23,7 +23,8 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 /**
  * Activates the RegexURL Filter Plugin and register it
@@ -37,7 +38,7 @@ public class RegexURLFilterActivator implements BundleActivator {
     @Override
     public void start(BundleContext bundleContext) throws Exception {
         LOG.info("Activating RegexURL Plugin");
-        Properties prop = new Properties();
+        Dictionary<String, String> prop = new Hashtable<>();
         prop.put("URLFilter", "RegexURLFilter");
         bundleContext.registerService(URLFilter.class.getName(), new RegexURLFilter(), prop);
     }

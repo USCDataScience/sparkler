@@ -25,7 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.usc.irds.sparkler.Fetcher;
 
-import java.util.Properties;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 /**
  * Loads web page on a browser and returns HTML once page is loaded.
@@ -39,7 +40,7 @@ public class FetcherJBrowserActivator implements BundleActivator {
     @Override
     public void start(BundleContext bundleContext) throws Exception {
         LOG.info("Activating FetcherJBrowser Plugin");
-        Properties prop = new Properties();
+        Dictionary<String, String> prop = new Hashtable<>();
         prop.put("Fetcher", "FetcherJBrowser");
         fetcher = new FetcherJBrowser();
         bundleContext.registerService(Fetcher.class.getName(), fetcher, prop);

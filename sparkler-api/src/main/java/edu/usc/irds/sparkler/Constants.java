@@ -77,6 +77,9 @@ public interface Constants {
 
         @ConfigKey
         String PLUGINS = "plugins";
+
+        @ConfigKey
+        String ACTIVE_PLUGINS = "plugins.active";
     }
 
 
@@ -85,6 +88,7 @@ public interface Constants {
          * Create configuration instance for Sparkler
          */
         public static SparklerConfiguration newDefaultConfig(){
+            //FIXME: needs rework!
             Yaml yaml = new Yaml();
             InputStream input = null;
             SparklerConfiguration sparklerConf = null;
