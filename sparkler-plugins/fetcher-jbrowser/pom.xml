@@ -37,7 +37,7 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.framework</artifactId>
-            <version>${felix.framework.version}</version>
+            <version>${felix.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -73,9 +73,9 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>fetcher.jbrowser</Bundle-Name>
+                        <Bundle-Name>${groupId}:${artifactId}</Bundle-Name>  <!-- -->
                         <Bundle-SymbolicName>fetcher.jbrowser</Bundle-SymbolicName>
-                        <Bundle-Version>${parent.version}</Bundle-Version>
+                        <Bundle-Version>${project.parent.version}</Bundle-Version>
                         <Bundle-Activator>edu.usc.irds.sparkler.plugin.FetcherJBrowserActivator</Bundle-Activator>
                         <Import-Package>org.osgi.framework,edu.usc.irds.sparkler,edu.usc.irds.sparkler.model, org.slf4j,
                             javax.net.ssl
