@@ -29,12 +29,12 @@
       ],
       "list": {
         "0": {
-          "from": "NOW/MINUTE-15MINUTE",
-          "to": "NOW/MINUTE%2B1MINUTE",
-          "field": "indexedAt",
+          "from": "NOW/DAY-30DAY",
+          "to": "NOW/DAY%2B1DAY",
+          "field": "indexed_at",
           "type": "time",
-          "fromDateObj": "2016-12-26T17:41:09.642Z",
-          "toDateObj": "2016-12-26T17:56:09.642Z",
+          "fromDateObj": "2017-01-09T22:28:42.623Z",
+          "toDateObj": "2017-02-08T22:28:42.623Z",
           "mandate": "must",
           "active": true,
           "alias": "",
@@ -74,11 +74,11 @@
             "7d",
             "30d"
           ],
-          "timespan": "15m",
-          "timefield": "indexedAt",
+          "timespan": "30d",
+          "timefield": "indexed_at",
           "timeformat": "",
           "refresh": {
-            "enable": false,
+            "enable": true,
             "interval": 5,
             "min": 3
           },
@@ -113,7 +113,7 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&fq=indexedAt:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&stats=true&stats.field=id&wt=json&rows=0\n",
+            "query": "q=*%3A*&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&stats=true&stats.field=id&wt=json&rows=0\n",
             "basic_query": "",
             "custom": ""
           },
@@ -139,7 +139,7 @@
               "field": "id",
               "decimalDigits": 0,
               "label": "",
-              "value": "0"
+              "value": "13426"
             }
           ],
           "refresh": {
@@ -181,13 +181,13 @@
           "type": "histogram",
           "loadingEditor": false,
           "mode": "count",
-          "time_field": "indexedAt",
+          "time_field": "indexed_at",
           "queries": {
             "mode": "all",
             "ids": [
               0
             ],
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexedAt:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.range=indexedAt&facet.range.start=NOW/MINUTE-15MINUTE&facet.range.end=NOW/MINUTE%2B1MINUTE&facet.range.gap=%2B10SECOND\n",
+            "query": "q=*%3A*&wt=json&rows=0&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&facet=true&facet.range=indexed_at&facet.range.start=NOW/DAY-30DAY&facet.range.end=NOW/DAY%2B1DAY&facet.range.gap=%2B12HOUR\n",
             "custom": ""
           },
           "max_rows": 100000,
@@ -195,7 +195,7 @@
           "group_field": null,
           "auto_int": true,
           "resolution": 100,
-          "interval": "10s",
+          "interval": "12h",
           "intervals": [
             "auto",
             "1s",
@@ -259,8 +259,8 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&fq=indexedAt:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&wt=json&rows=500",
-            "basic_query": "q=*%3A*&fq=indexedAt:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]",
+            "query": "q=*%3A*&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&wt=json&rows=500",
+            "basic_query": "q=*%3A*&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]",
             "custom": ""
           },
           "size": 100,
@@ -291,14 +291,14 @@
           "title": "Table panel",
           "important_fields": [
             "_version_",
-            "discoverDepth",
+            "discover_depth",
             "group",
             "id",
-            "indexedAt",
-            "jobId",
-            "lastUpdatedAt",
+            "indexed_at",
+            "job_id",
+            "last_updated_at",
             "numFetches",
-            "numTries",
+            "retries_since_fetch",
             "score",
             "status",
             "url"
@@ -327,7 +327,7 @@
           "loadingEditor": false,
           "queries": {
             "mode": "all",
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexedAt:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=status&facet.limit=3",
+            "query": "q=*%3A*&wt=json&rows=0&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&facet=true&facet.field=status&facet.limit=3",
             "custom": "",
             "ids": [
               0
@@ -346,7 +346,7 @@
           "loadingEditor": false,
           "queries": {
             "mode": "all",
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexedAt:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=group&facet.limit=10",
+            "query": "q=*%3A*&wt=json&rows=0&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&facet=true&facet.field=group&facet.limit=10",
             "custom": "",
             "ids": [
               0
@@ -365,13 +365,13 @@
           "loadingEditor": false,
           "queries": {
             "mode": "all",
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexedAt:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=discoverDepth&facet.limit=10",
+            "query": "q=*%3A*&wt=json&rows=0&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&facet=true&facet.field=discover_depth&facet.limit=10",
             "custom": "",
             "ids": [
               0
             ]
           },
-          "field": "discoverDepth",
+          "field": "discover_depth",
           "size": 10,
           "spyable": true,
           "show_queries": true,
@@ -396,7 +396,7 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexedAt:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=keywords_t_md&facet.limit=20",
+            "query": "q=*%3A*&wt=json&rows=0&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&facet=true&facet.field=keywords_t_md&facet.limit=20",
             "custom": ""
           },
           "field": "keywords_t_md",
@@ -418,7 +418,7 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexedAt:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=content-type_t_md&facet.limit=10",
+            "query": "q=*%3A*&wt=json&rows=0&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&facet=true&facet.field=content-type_t_md&facet.limit=10",
             "custom": ""
           },
           "field": "content-type_t_md",
@@ -440,14 +440,14 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&fq=indexedAt:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&wt=json&facet=true&facet.pivot=plainText&facet.limit=15&rows=0",
+            "query": "q=*%3A*&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&wt=json&facet=true&facet.pivot=extracted_text&facet.limit=15&rows=0",
             "custom": ""
           },
           "facet_limit": 15,
           "spyable": true,
           "show_queries": true,
           "facet_pivot_strings": [
-            "plainText"
+            "extracted_text"
           ],
           "title": "Words"
         }
@@ -491,9 +491,7 @@
     "server": "/solr/",
     "core_name": "crawldb",
     "core_list": [
-      "crawldb",
-      "crawldb2",
-      "sparkler"
+      "crawldb"
     ],
     "global_params": ""
   },
