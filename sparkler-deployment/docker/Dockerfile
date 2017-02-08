@@ -58,11 +58,11 @@ RUN cd /data/sparkler/sparkler-ui/banana && \
     git submodule update && \
     cd /data/sparkler/sparkler-ui/ && mvn clean package
 
-RUN cd /data/sparkler && mvn clean install
+RUN cd /data/sparkler && mvn clean install -DskipTests
 
 # Setup Sparkler Web Dashboard UI
 RUN cp -r /data/sparkler/sparkler-ui/sparkler-dashboard /data/solr/server/solr-webapp/ && \
-    cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/ &&
+    cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
 
 
 RUN apt-get update && apt-get install -y --fix-missing openjfx  # needed by the Jbrowser
