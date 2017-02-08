@@ -5,7 +5,6 @@ import edu.usc.irds.sparkler.Fetcher;
 import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +29,7 @@ public class FetcherDefault extends AbstractExtensionPoint
     public static final Logger LOG = LoggerFactory.getLogger(FetcherDefault.class);
     public static final Integer CONNECT_TIMEOUT = 5000; // Milliseconds. FIXME: Get from Configuration
     public static final Integer READ_TIMEOUT = 10000; // Milliseconds. FIXME: Get from Configuration
-    public static final Long SIZE_LIMIT = 8388608L; // Bytes. FIXME: Get from Configuration
+    public static final Long CONTENT_LIMIT = 8388608L; // Bytes. FIXME: Get from Configuration
     public static final Integer DEFAULT_ERROR_CODE = 400;
 
     @Override
@@ -52,7 +51,7 @@ public class FetcherDefault extends AbstractExtensionPoint
             int read = 0;
             while((read = inStream.read(buffer, 0, buffer.length)) != -1) {
                 bufferOutStream.write(buffer, 0, read);
-                if (bufferOutStream.size() >= SIZE_LIMIT) {
+                if (bufferOutStream.size() >= CONTENT_LIMIT) {
                     LOG.info("Size is greater than the allowed limit. Truncating the data.");
                     break;
                 }
