@@ -61,7 +61,7 @@ RUN cd /data/sparkler/sparkler-ui/banana && \
 RUN cd /data/sparkler && mvn clean install
 
 
-RUN apt install -y openjfx  # needed by the Jbrowser
+RUN apt-get update && apt-get install -y --fix-missing openjfx  # needed by the Jbrowser
 
 
 # Define default command.
