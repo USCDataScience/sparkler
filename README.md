@@ -34,16 +34,9 @@ Setup instructions https://github.com/uscdataScience/sparkler/wiki/sparkler-0.1#
  On success, the build produces `sparkler-app/target/sparkler-app-xx.jar`
  For detailed instuctions, visit the [wiki page: Build and Deploy](https://github.com/USCDataScience/sparkler/wiki/Build-and-Deploy)
 
+### Dashboard
+![](docs/Sparkler-Dashboard.png)
 
-### Progress so far
-+ Injector : Inject urls to crawl db
-+ Crawler : basic crawl loop pipeline
-    + partitions urls based on group(domain)
-    + configurable params like topN and maxGroups
-    + Delay between requests
-    + updates the status
-    + inserts new outlinks
-    + stores out put in nutch segment format
 
 ### Navigating/Diving into source code
 This is a multi module maven project
