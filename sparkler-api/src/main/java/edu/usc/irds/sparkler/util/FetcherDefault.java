@@ -1,7 +1,6 @@
 package edu.usc.irds.sparkler.util;
 
-import edu.usc.irds.sparkler.AbstractExtensionPoint;
-import edu.usc.irds.sparkler.Fetcher;
+import edu.usc.irds.sparkler.*;
 import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
@@ -14,7 +13,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Iterator;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -30,6 +29,36 @@ public class FetcherDefault extends AbstractExtensionPoint
     public static final Integer CONNECT_TIMEOUT = 5000;
     public static final Integer READ_TIMEOUT = 10000;
     public static final Integer DEFAULT_ERROR_CODE = 400;
+    public static final String USER_AGENT = "User-Agent";
+
+    protected List<String> userAgents;
+    protected int userAgentIndex = 0; // index for rotating the agents
+    protected Map<String, String> httpHeaders;
+
+
+    @Override
+    public void init(JobContext context) throws SparklerException {
+        super.init(context);
+        SparklerConfiguration conf = context.getConfiguration();
+        if (conf.containsKey(Constants.key.FETCHER_USER_AGENTS)) {
+            this.userAgents = (List<String>) conf.get(Constants.key.FETCHER_USER_AGENTS);
+        }
+        if (conf.containsKey(Constants.key.FETCHER_HEADERS)) {
+            this.httpHeaders = (Map<String, String>) conf.get(Constants.key.FETCHER_HEADERS);
+        }
+    }
+
+    /**
+     * Gets a user agent from a list of configured values, rotates the list for each call
+     * @return get a user agent string from the list of configured values
+     */
+    public String getUserAgent(){
+        if (userAgents == null || userAgents.isEmpty()){
+            return null;
+        }
+        userAgentIndex = (userAgentIndex + 1) % userAgents.size();
+        return userAgents.get(userAgentIndex);
+    }
 
     @Override
     public Iterator<FetchedData> fetch(Iterator<Resource> resources) throws Exception {
@@ -39,6 +68,15 @@ public class FetcherDefault extends AbstractExtensionPoint
     public FetchedData fetch(Resource resource) throws Exception {
         LOG.info("DEFAULT FETCHER {}", resource.getUrl());
         URLConnection urlConn = new URL(resource.getUrl()).openConnection();
+        if (httpHeaders != null){
+            httpHeaders.entrySet().forEach(e -> urlConn.setRequestProperty(e.getKey(), e.getValue()));
+        }
+        String userAgentValue = getUserAgent();
+        if (getUserAgent() != null) {
+            LOG.debug(USER_AGENT + ": " + userAgentValue);
+            urlConn.setRequestProperty(USER_AGENT, userAgentValue);
+        }
+
         urlConn.setConnectTimeout(CONNECT_TIMEOUT);
         urlConn.setReadTimeout(READ_TIMEOUT);
         int responseCode = ((HttpURLConnection)urlConn).getResponseCode();

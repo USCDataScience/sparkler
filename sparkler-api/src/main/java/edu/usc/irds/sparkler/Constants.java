@@ -80,6 +80,12 @@ public interface Constants {
 
         @ConfigKey
         String ACTIVE_PLUGINS = "plugins.active";
+
+        @ConfigKey
+        String FETCHER_HEADERS = "fetcher.headers";
+
+        @ConfigKey
+        String FETCHER_USER_AGENTS = "fetcher.user.agents";
     }
 
 

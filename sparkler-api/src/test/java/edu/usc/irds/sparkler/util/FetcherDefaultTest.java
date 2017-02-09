@@ -19,6 +19,7 @@ package edu.usc.irds.sparkler.util;
 
 import com.google.common.collect.Iterators;
 import edu.usc.irds.sparkler.JobContext;
+import edu.usc.irds.sparkler.SparklerException;
 import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import org.junit.Test;
@@ -36,13 +37,26 @@ import static junit.framework.Assert.*;
 public class FetcherDefaultTest {
 
     private FetcherDefault fetcher = new FetcherDefault();
-
     private JobContext job = TestUtils.JOB_CONTEXT;
+    {
+        try {
+            fetcher.init(job);
+        } catch (SparklerException e) {
+            e.printStackTrace();
+        }
+    }
     private Resource indexPage = new Resource("http://localhost:8080/res/index.html", "localhost", job);
     private Resource jsPage = new Resource("http://localhost:8080/res/jspage.html", "localhost", job);
     private Resource notFound = new Resource("http://localhost:8080/res/vacduyc_NOT_FOUND.html", "localhost", job);
 
     private List<Resource> resources = Arrays.asList(indexPage, jsPage, notFound);
+
+    @Test
+    public void testUserAgentRotation(){
+        String ua1 = fetcher.getUserAgent();
+        String ua2 = fetcher.getUserAgent();
+        assertNotSame(ua1, ua2);
+    }
 
     @Test
     public void fetch() throws Exception {
