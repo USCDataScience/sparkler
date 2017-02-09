@@ -29,12 +29,10 @@
       ],
       "list": {
         "0": {
-          "from": "NOW/DAY-30DAY",
-          "to": "NOW/DAY%2B1DAY",
-          "field": "indexed_at",
+          "from": "2017-01-31T05:00:00.000Z",
+          "to": "2017-02-28T04:59:59.000Z",
+          "field": "last_updated_at",
           "type": "time",
-          "fromDateObj": "2017-01-09T22:28:42.623Z",
-          "toDateObj": "2017-02-08T22:28:42.623Z",
           "mandate": "must",
           "active": true,
           "alias": "",
@@ -48,59 +46,30 @@
   },
   "rows": [
     {
-      "title": "Query and Time Window",
+      "title": "Overview",
       "height": "50px",
       "editable": true,
       "collapse": false,
       "collapsable": true,
       "panels": [
         {
-          "error": "",
+          "error": false,
           "span": 5,
           "editable": true,
-          "type": "timepicker",
-          "loadingEditor": false,
-          "status": "Stable",
-          "mode": "relative",
-          "time_options": [
-            "1m",
-            "2m",
-            "5m",
-            "15m",
-            "1h",
-            "6h",
-            "12h",
-            "24h",
-            "7d",
-            "30d"
-          ],
-          "timespan": "30d",
-          "timefield": "indexed_at",
-          "timeformat": "",
-          "refresh": {
-            "enable": true,
-            "interval": 5,
-            "min": 3
-          },
-          "filter_id": 0,
           "spyable": true,
-          "title": "Time Window"
-        },
-        {
-          "error": false,
-          "span": 4,
-          "editable": true,
           "group": [
             "default"
           ],
           "type": "query",
           "label": "Search",
-          "history": [],
+          "history": [
+            "*:*",
+            "*"
+          ],
           "remember": 10,
           "pinned": true,
-          "query": "*:*",
+          "query": "*",
           "title": "Search",
-          "spyable": true,
           "def_type": ""
         },
         {
@@ -113,12 +82,12 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&stats=true&stats.field=id&wt=json&rows=0\n",
+            "query": "q=*%3A*&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&stats=true&stats.field=id&wt=json&rows=0\n",
             "basic_query": "",
             "custom": ""
           },
           "style": {
-            "font-size": "14pt"
+            "font-size": "32pt"
           },
           "arrangement": "horizontal",
           "chart": "total",
@@ -127,72 +96,117 @@
           "tilt": false,
           "labels": true,
           "spyable": true,
-          "title": "Total Hits",
           "show_queries": true,
-          "show_stats": false,
-          "stats_type": "mean",
-          "stats_field": "",
-          "stats_decimal_points": 2,
           "metrics": [
             {
               "type": "count",
               "field": "id",
               "decimalDigits": 0,
               "label": "",
-              "value": "13426"
+              "value": "1659"
             }
           ],
           "refresh": {
             "enable": false,
             "interval": 2
-          }
+          },
+          "title": "Total Documents"
+        },
+        {
+          "error": "",
+          "span": 4,
+          "editable": true,
+          "type": "timepicker",
+          "loadingEditor": false,
+          "status": "Stable",
+          "mode": "absolute",
+          "time_options": [
+            "5m",
+            "15m",
+            "1h",
+            "6h",
+            "12h"
+          ],
+          "timespan": "15m",
+          "timefield": "last_updated_at",
+          "timeformat": "",
+          "spyable": true,
+          "refresh": {
+            "enable": false,
+            "interval": 30,
+            "min": 3
+          },
+          "filter_id": 0,
+          "time": {
+            "from": "01/31/2017 00:00:00",
+            "to": "02/27/2017 23:59:59"
+          },
+          "title": "Indexed Time"
         }
       ]
     },
     {
-      "title": "Filters",
-      "height": "50px",
+      "title": "Time Series",
+      "height": "150px",
       "editable": true,
       "collapse": false,
       "collapsable": true,
       "panels": [
         {
-          "error": false,
-          "span": 12,
+          "span": 4,
           "editable": true,
-          "spyable": true,
-          "group": [
-            "default"
-          ],
-          "type": "filtering"
-        }
-      ]
-    },
-    {
-      "title": "Graph",
-      "height": "250px",
-      "editable": true,
-      "collapse": true,
-      "collapsable": true,
-      "panels": [
-        {
-          "span": 12,
-          "editable": true,
-          "type": "histogram",
+          "type": "facet",
           "loadingEditor": false,
-          "mode": "count",
-          "time_field": "indexed_at",
+          "status": "Stable",
           "queries": {
             "mode": "all",
             "ids": [
               0
             ],
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&facet=true&facet.range=indexed_at&facet.range.start=NOW/DAY-30DAY&facet.range.end=NOW/DAY%2B1DAY&facet.range.gap=%2B12HOUR\n",
+            "query": "q=*%3A*&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&facet=true&facet.field=crawl_id&facet.field=status&facet.field=hostname&facet.field=discover_depth&wt=json",
+            "basic_query": "q=*%3A*&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&facet=true&facet.field=crawl_id&facet.field=status&facet.field=hostname&facet.field=discover_depth",
+            "custom": ""
+          },
+          "group": "default",
+          "style": {
+            "font-size": "9pt"
+          },
+          "overflow": "min-height",
+          "fields": [
+            "crawl_id",
+            "status",
+            "hostname",
+            "discover_depth"
+          ],
+          "spyable": true,
+          "facet_limit": 10,
+          "maxnum_facets": 5,
+          "foundResults": true,
+          "header_title": "",
+          "toggle_element": null,
+          "show_queries": true,
+          "title": "Facet Search",
+          "exportSize": null,
+          "offset": 0
+        },
+        {
+          "span": 8,
+          "editable": true,
+          "type": "histogram",
+          "loadingEditor": false,
+          "mode": "count",
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ],
+            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&facet=true&facet.range=last_updated_at&facet.range.start=2017-01-31T05:00:00.000Z&facet.range.end=2017-02-28T04:59:59.000Z&facet.range.gap=%2B12HOUR\n",
             "custom": ""
           },
           "max_rows": 100000,
-          "value_field": null,
-          "group_field": null,
+          "value_field": "id",
+          "group_field": "fetch_timestamp",
+          "sum_value": false,
           "auto_int": true,
           "resolution": 100,
           "interval": "12h",
@@ -220,32 +234,352 @@
           "stack": true,
           "points": false,
           "lines": false,
+          "lines_smooth": false,
           "legend": true,
           "x-axis": true,
           "y-axis": true,
           "percentage": false,
           "interactive": true,
           "options": true,
+          "show_queries": true,
           "tooltip": {
             "value_type": "cumulative",
             "query_as_alias": false
           },
-          "title": "Event Counts",
-          "lines_smooth": false,
-          "show_queries": true,
-          "sum_value": false,
           "refresh": {
             "enable": false,
             "interval": 2
-          }
+          },
+          "title": "Crawl Time Series"
         }
       ]
     },
     {
-      "title": "Table",
-      "height": "150px",
+      "title": "Query and Time Window",
+      "height": "180",
       "editable": true,
-      "collapse": true,
+      "collapse": false,
+      "collapsable": true,
+      "panels": [
+        {
+          "span": 4,
+          "editable": true,
+          "type": "terms",
+          "loadingEditor": false,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ],
+            "query": "q=*%3A*&wt=json&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&facet=true&facet.field=group&facet.limit=5&facet.missing=true&f.group.facet.sort=count",
+            "custom": ""
+          },
+          "mode": "count",
+          "field": "group",
+          "stats_field": "",
+          "decimal_points": 0,
+          "exclude": [],
+          "missing": false,
+          "other": false,
+          "size": 5,
+          "sortBy": "count",
+          "order": "descending",
+          "style": {
+            "font-size": "10pt"
+          },
+          "donut": false,
+          "tilt": false,
+          "labels": true,
+          "logAxis": false,
+          "arrangement": "horizontal",
+          "chart": "bar",
+          "counter_pos": "above",
+          "exportSize": 10000,
+          "lastColor": "",
+          "spyable": true,
+          "show_queries": true,
+          "chartColors": [
+            "#7EB26D",
+            "#EAB839",
+            "#6ED0E0",
+            "#EF843C",
+            "#E24D42",
+            "#1F78C1",
+            "#BA43A9",
+            "#705DA0",
+            "#508642",
+            "#CCA300",
+            "#447EBC",
+            "#C15C17",
+            "#890F02",
+            "#0A437C",
+            "#6D1F62",
+            "#584477",
+            "#B7DBAB",
+            "#F4D598",
+            "#70DBED",
+            "#F9BA8F",
+            "#F29191",
+            "#82B5D8",
+            "#E5A8E2",
+            "#AEA2E0",
+            "#629E51",
+            "#E5AC0E",
+            "#64B0C8",
+            "#E0752D",
+            "#BF1B00",
+            "#0A50A1",
+            "#962D82",
+            "#614D93",
+            "#9AC48A",
+            "#F2C96D",
+            "#65C5DB",
+            "#F9934E",
+            "#EA6460",
+            "#5195CE",
+            "#D683CE",
+            "#806EB7",
+            "#3F6833",
+            "#967302",
+            "#2F575E",
+            "#99440A",
+            "#58140C",
+            "#052B51",
+            "#511749",
+            "#3F2B5B",
+            "#E0F9D7",
+            "#FCEACA",
+            "#CFFAFF",
+            "#F9E2D2",
+            "#FCE2DE",
+            "#BADFF4",
+            "#F9D9F9",
+            "#DEDAF7"
+          ],
+          "refresh": {
+            "enable": false,
+            "interval": 2
+          },
+          "title": "Domains"
+        },
+        {
+          "span": 4,
+          "editable": true,
+          "type": "terms",
+          "loadingEditor": false,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ],
+            "query": "q=*%3A*&wt=json&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&facet=true&facet.field=discover_depth&facet.limit=5&facet.missing=true&f.discover_depth.facet.sort=index",
+            "custom": ""
+          },
+          "mode": "count",
+          "field": "discover_depth",
+          "stats_field": "",
+          "decimal_points": 0,
+          "exclude": [],
+          "missing": false,
+          "other": false,
+          "size": 5,
+          "sortBy": "index",
+          "order": "ascending",
+          "style": {
+            "font-size": "10pt"
+          },
+          "donut": false,
+          "tilt": false,
+          "labels": true,
+          "logAxis": false,
+          "arrangement": "horizontal",
+          "chart": "bar",
+          "counter_pos": "above",
+          "exportSize": 10000,
+          "lastColor": "",
+          "spyable": true,
+          "show_queries": true,
+          "chartColors": [
+            "#7EB26D",
+            "#EAB839",
+            "#6ED0E0",
+            "#EF843C",
+            "#E24D42",
+            "#1F78C1",
+            "#BA43A9",
+            "#705DA0",
+            "#508642",
+            "#CCA300",
+            "#447EBC",
+            "#C15C17",
+            "#890F02",
+            "#0A437C",
+            "#6D1F62",
+            "#584477",
+            "#B7DBAB",
+            "#F4D598",
+            "#70DBED",
+            "#F9BA8F",
+            "#F29191",
+            "#82B5D8",
+            "#E5A8E2",
+            "#AEA2E0",
+            "#629E51",
+            "#E5AC0E",
+            "#64B0C8",
+            "#E0752D",
+            "#BF1B00",
+            "#0A50A1",
+            "#962D82",
+            "#614D93",
+            "#9AC48A",
+            "#F2C96D",
+            "#65C5DB",
+            "#F9934E",
+            "#EA6460",
+            "#5195CE",
+            "#D683CE",
+            "#806EB7",
+            "#3F6833",
+            "#967302",
+            "#2F575E",
+            "#99440A",
+            "#58140C",
+            "#052B51",
+            "#511749",
+            "#3F2B5B",
+            "#E0F9D7",
+            "#FCEACA",
+            "#CFFAFF",
+            "#F9E2D2",
+            "#FCE2DE",
+            "#BADFF4",
+            "#F9D9F9",
+            "#DEDAF7"
+          ],
+          "refresh": {
+            "enable": false,
+            "interval": 2
+          },
+          "title": "Discover Depth"
+        },
+        {
+          "span": 4,
+          "editable": true,
+          "type": "terms",
+          "loadingEditor": false,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ],
+            "query": "q=*%3A*&wt=json&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&fq=-title_t_md:a&fq=-title_t_md:an&fq=-title_t_md:the&fq=-title_t_md:about&fq=-title_t_md:and&fq=-title_t_md:by&fq=-title_t_md:301&fq=-title_t_md:302&facet=true&facet.field=title_t_md&facet.limit=5&facet.missing=true&f.title_t_md.facet.sort=count",
+            "custom": ""
+          },
+          "mode": "count",
+          "field": "title_t_md",
+          "stats_field": "",
+          "decimal_points": 0,
+          "exclude": [
+            "a",
+            "an",
+            "the",
+            "about",
+            "and",
+            "by",
+            "301",
+            "302"
+          ],
+          "missing": false,
+          "other": false,
+          "size": 5,
+          "sortBy": "count",
+          "order": "descending",
+          "style": {
+            "font-size": "10pt"
+          },
+          "donut": false,
+          "tilt": false,
+          "labels": false,
+          "logAxis": false,
+          "arrangement": "horizontal",
+          "chart": "pie",
+          "counter_pos": "above",
+          "exportSize": 10000,
+          "lastColor": "",
+          "spyable": true,
+          "show_queries": true,
+          "chartColors": [
+            "#7EB26D",
+            "#EAB839",
+            "#6ED0E0",
+            "#EF843C",
+            "#E24D42",
+            "#1F78C1",
+            "#BA43A9",
+            "#705DA0",
+            "#508642",
+            "#CCA300",
+            "#447EBC",
+            "#C15C17",
+            "#890F02",
+            "#0A437C",
+            "#6D1F62",
+            "#584477",
+            "#B7DBAB",
+            "#F4D598",
+            "#70DBED",
+            "#F9BA8F",
+            "#F29191",
+            "#82B5D8",
+            "#E5A8E2",
+            "#AEA2E0",
+            "#629E51",
+            "#E5AC0E",
+            "#64B0C8",
+            "#E0752D",
+            "#BF1B00",
+            "#0A50A1",
+            "#962D82",
+            "#614D93",
+            "#9AC48A",
+            "#F2C96D",
+            "#65C5DB",
+            "#F9934E",
+            "#EA6460",
+            "#5195CE",
+            "#D683CE",
+            "#806EB7",
+            "#3F6833",
+            "#967302",
+            "#2F575E",
+            "#99440A",
+            "#58140C",
+            "#052B51",
+            "#511749",
+            "#3F2B5B",
+            "#E0F9D7",
+            "#FCEACA",
+            "#CFFAFF",
+            "#F9E2D2",
+            "#FCE2DE",
+            "#BADFF4",
+            "#F9D9F9",
+            "#DEDAF7"
+          ],
+          "refresh": {
+            "enable": false,
+            "interval": 2
+          },
+          "title": "Terms"
+        }
+      ]
+    },
+    {
+      "title": "Results",
+      "height": "50px",
+      "editable": true,
+      "collapse": false,
       "collapsable": true,
       "panels": [
         {
@@ -259,207 +593,59 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&wt=json&rows=500",
-            "basic_query": "q=*%3A*&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]",
+            "query": "q=*%3A*&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&wt=json&rows=200",
+            "basic_query": "q=*%3A*&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]",
             "custom": ""
           },
-          "size": 100,
-          "pages": 5,
+          "size": 20,
+          "pages": 10,
           "offset": 0,
           "sort": [],
+          "sortable": false,
           "group": "default",
           "style": {
             "font-size": "9pt"
           },
           "overflow": "min-height",
-          "fields": [],
+          "fields": [
+            "hostname",
+            "url",
+            "title_t_md",
+            "fetch_timestamp"
+          ],
+          "important_fields": [
+            "id",
+            "crawl_id",
+            "hostname",
+            "url",
+            "extracted_text",
+            "fetch_timestamp",
+            "title_t_md"
+          ],
           "highlight": [],
-          "sortable": false,
           "header": true,
           "paging": true,
-          "field_list": true,
+          "field_list": false,
           "trimFactor": 300,
           "normTimes": true,
           "spyable": true,
           "saveOption": "json",
-          "exportSize": 500,
+          "exportSize": 200,
           "exportAll": true,
           "displayLinkIcon": true,
           "imageFields": [],
           "imgFieldWidth": "auto",
           "imgFieldHeight": "85px",
-          "title": "Table panel",
-          "important_fields": [
-            "_version_",
-            "discover_depth",
-            "group",
-            "id",
-            "indexed_at",
-            "job_id",
-            "last_updated_at",
-            "numFetches",
-            "retries_since_fetch",
-            "score",
-            "status",
-            "url"
-          ],
           "show_queries": true,
           "maxNumCalcTopFields": 20,
           "calcTopFieldValuesFromAllData": false,
           "refresh": {
             "enable": false,
             "interval": 2
-          }
+          },
+          "title": "Results"
         }
       ]
-    },
-    {
-      "title": "Grouping",
-      "height": "500px",
-      "editable": true,
-      "collapse": false,
-      "collapsable": true,
-      "panels": [
-        {
-          "span": 4,
-          "editable": true,
-          "type": "bar",
-          "loadingEditor": false,
-          "queries": {
-            "mode": "all",
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&facet=true&facet.field=status&facet.limit=3",
-            "custom": "",
-            "ids": [
-              0
-            ]
-          },
-          "field": "status",
-          "size": 3,
-          "spyable": true,
-          "show_queries": true,
-          "title": "Status"
-        },
-        {
-          "span": 4,
-          "editable": true,
-          "type": "bar",
-          "loadingEditor": false,
-          "queries": {
-            "mode": "all",
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&facet=true&facet.field=group&facet.limit=10",
-            "custom": "",
-            "ids": [
-              0
-            ]
-          },
-          "field": "group",
-          "size": 10,
-          "spyable": true,
-          "show_queries": true,
-          "title": "Group"
-        },
-        {
-          "span": 4,
-          "editable": true,
-          "type": "bar",
-          "loadingEditor": false,
-          "queries": {
-            "mode": "all",
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&facet=true&facet.field=discover_depth&facet.limit=10",
-            "custom": "",
-            "ids": [
-              0
-            ]
-          },
-          "field": "discover_depth",
-          "size": 10,
-          "spyable": true,
-          "show_queries": true,
-          "title": "Depth"
-        }
-      ]
-    },
-    {
-      "title": "Time",
-      "height": "300px",
-      "editable": true,
-      "collapse": false,
-      "collapsable": true,
-      "panels": [
-        {
-          "span": 4,
-          "editable": true,
-          "type": "tagcloud",
-          "loadingEditor": false,
-          "queries": {
-            "mode": "all",
-            "ids": [
-              0
-            ],
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&facet=true&facet.field=keywords_t_md&facet.limit=20",
-            "custom": ""
-          },
-          "field": "keywords_t_md",
-          "size": 20,
-          "alignment": "vertical and horizontal",
-          "fontScale": 3,
-          "ignoreStopWords": false,
-          "spyable": true,
-          "show_queries": true,
-          "title": "Common Words"
-        },
-        {
-          "span": 4,
-          "editable": true,
-          "type": "tagcloud",
-          "loadingEditor": false,
-          "queries": {
-            "mode": "all",
-            "ids": [
-              0
-            ],
-            "query": "q=*%3A*&wt=json&rows=0&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&facet=true&facet.field=content-type_t_md&facet.limit=10",
-            "custom": ""
-          },
-          "field": "content-type_t_md",
-          "size": 10,
-          "alignment": "vertical and horizontal",
-          "fontScale": 4,
-          "ignoreStopWords": false,
-          "spyable": true,
-          "show_queries": true,
-          "title": "Content Type"
-        },
-        {
-          "span": 4,
-          "editable": true,
-          "type": "sunburst",
-          "loadingEditor": false,
-          "queries": {
-            "mode": "all",
-            "ids": [
-              0
-            ],
-            "query": "q=*%3A*&fq=indexed_at:[NOW/DAY-30DAY%20TO%20NOW/DAY%2B1DAY]&wt=json&facet=true&facet.pivot=extracted_text&facet.limit=15&rows=0",
-            "custom": ""
-          },
-          "facet_limit": 15,
-          "spyable": true,
-          "show_queries": true,
-          "facet_pivot_strings": [
-            "extracted_text"
-          ],
-          "title": "Words"
-        }
-      ]
-    },
-    {
-      "title": "Test",
-      "height": "150px",
-      "editable": true,
-      "collapse": false,
-      "collapsable": true,
-      "panels": []
     }
   ],
   "editable": true,
@@ -468,11 +654,11 @@
     "pattern": "[logstash-]YYYY.MM.DD",
     "default": "_all"
   },
-  "style": "light",
+  "style": "dark",
   "failover": false,
   "panel_hints": true,
   "loader": {
-    "save_gist": false,
+    "save_gist": true,
     "save_elasticsearch": true,
     "save_local": true,
     "save_default": true,
