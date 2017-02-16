@@ -5,5 +5,5 @@ import org.junit.runner.RunWith
 import cucumber.api.junit.Cucumber
 
 @RunWith(classOf[Cucumber])
-@CucumberOptions(plugin =Array("pretty","json:target/cucumber.json"))
+@CucumberOptions(plugin =Array("json:target/cucumber.json"))
 class RunCukesTest
