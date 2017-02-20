@@ -18,6 +18,7 @@ from charmhelpers.core.hookenv import status_set, log
 from charmhelpers.core import hookenv, unitdata
 import jujuresources
 from charmhelpers.core.host import adduser, chownr, mkdir
+import urllib.request
 
 
 hook_data = unitdata.HookData()
@@ -31,8 +32,11 @@ resources = {
 @when_not('sparkler.installed')
 def install_sparkler():
     mkdir('/opt/sparkler/')
-    jujuresources.install('sparkler',
-                          destination="/opt/sparkler/")
+
+    urllib.request.urlretrieve("https://dl.dropboxusercontent.com/u/8503756/sparkler.jar", "/opt/sparkler/sparkler.jar")
+
+    #jujuresources.install('sparkler',
+    #                      destination="/opt/sparkler/")
     set_state('sparkler.installed')
 
 @when_not('javao\.ready')
