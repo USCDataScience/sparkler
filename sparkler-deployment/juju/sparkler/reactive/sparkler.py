@@ -39,7 +39,7 @@ def install_sparkler():
     #                      destination="/opt/sparkler/")
     set_state('sparkler.installed')
 
-@when_not('javao\.ready')
+@when_not('java.ready')
 def no_java():
     status_set('waiting', 'Waiting for Java to become available')
 
