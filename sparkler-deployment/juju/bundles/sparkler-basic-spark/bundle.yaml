@@ -17,7 +17,7 @@ applications:
       "gui-x": "658"
       "gui-y": "314.29491924311225"
   sparkler: 
-    charm: "cs:~spiculecharms/sparkler-9"
+    charm: "cs:~spiculecharms/sparkler-10"
     num_units: 1
     options: 
       "kafka-enable": false
