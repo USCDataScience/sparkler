@@ -48,6 +48,7 @@ public class FetcherDefault extends AbstractExtensionPoint
             FetchedData fetchedData = new FetchedData(rawData, urlConn.getContentType(), responseCode);
             resource.setStatus(ResourceStatus.FETCHED.toString());
             fetchedData.setResource(resource);
+            fetchedData.setHeaders(urlConn.getHeaderFields());
             return fetchedData;
         }
     }

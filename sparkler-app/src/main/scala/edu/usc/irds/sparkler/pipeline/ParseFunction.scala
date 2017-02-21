@@ -17,25 +17,30 @@
 
 package edu.usc.irds.sparkler.pipeline
 
-import java.io.{InputStream, ByteArrayInputStream}
+import java.io.ByteArrayInputStream
+import java.net.HttpURLConnection
 
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.model.{ParsedData, CrawlData}
+import edu.usc.irds.sparkler.model.{CrawlData, ParsedData}
 import org.apache.commons.io.IOUtils
 import org.apache.tika.metadata.Metadata
 import org.apache.tika.parser.AutoDetectParser
-import org.apache.tika.sax.{WriteOutContentHandler, BodyContentHandler, LinkContentHandler}
+import org.apache.tika.sax.{BodyContentHandler, LinkContentHandler, WriteOutContentHandler}
 
 import scala.collection.JavaConverters._
 
 /**
-  * Created by thammegr on 6/7/16.
+  * This is a transformation function for transforming raw data from crawler to parsed data
   */
 object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable with Loggable {
+  val redirectStatuses = Set(
+    HttpURLConnection.HTTP_MOVED_PERM,
+    HttpURLConnection.HTTP_MOVED_TEMP,
+    HttpURLConnection.HTTP_SEE_OTHER)
 
   override def apply(data: CrawlData): (ParsedData) = {
-    val parseData: ParsedData = new ParsedData()
-    var stream: InputStream = new ByteArrayInputStream(data.fetchedData.getContent)
+    val parseData = new ParsedData()
+    var stream = new ByteArrayInputStream(data.fetchedData.getContent)
     val linkHandler = new LinkContentHandler()
     val parser = new AutoDetectParser()
     var meta = new Metadata()
@@ -47,15 +52,18 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
       meta.set("resourceName", data.fetchedData.getResource.getUrl)
       parser.parse(stream, linkHandler, meta)
       parseData.outlinks = linkHandler.getLinks.asScala.map(_.getUri.trim).filter(!_.isEmpty).toSet
+      if (data.fetchedData.getHeaders.containsKey("Location")) {
+        // redirect
+        val redirectUrls = data.fetchedData.getHeaders.get("Location")
+        parseData.outlinks ++= redirectUrls.asScala.filter(u => u != null && !u.isEmpty)
+      }
     } catch {
-      case e:Throwable =>
+      case e: Throwable =>
         LOG.warn("PARSING-OUTLINKS-ERROR {}", data.fetchedData.getResource.getUrl)
         LOG.warn(e.getMessage, e)
-    } finally {
-      IOUtils.closeQuietly(stream)
-    }
+    } finally { IOUtils.closeQuietly(stream) }
     try {
-      meta  = new Metadata
+      meta = new Metadata
       meta.set("resourceName", data.fetchedData.getResource.getUrl)
       // Parse Text
       stream = new ByteArrayInputStream(data.fetchedData.getContent)
@@ -64,12 +72,10 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
       parseData.metadata = meta
       parseData
     } catch {
-      case e:Throwable =>
+      case e: Throwable =>
         LOG.warn("PARSING-CONTENT-ERROR {}", data.fetchedData.getResource.getUrl)
         LOG.warn(e.getMessage, e)
         parseData
-    } finally {
-      IOUtils.closeQuietly(stream)
-    }
+    } finally { IOUtils.closeQuietly(stream) }
   }
 }

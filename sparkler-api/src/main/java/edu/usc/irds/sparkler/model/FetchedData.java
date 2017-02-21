@@ -23,6 +23,8 @@ import org.apache.nutch.metadata.Metadata;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class FetchedData implements Serializable {
 
@@ -31,7 +33,7 @@ public class FetchedData implements Serializable {
     private byte[] content;
     private String contentType;
     private Integer contentLength;
-    private String[] headers;
+    private Map<String, List<String>> headers;
     private Date fetchedAt;
     private Metadata metadata;
     private int responseCode;
@@ -68,8 +70,12 @@ public class FetchedData implements Serializable {
         return contentLength;
     }
 
-    public String[] getHeaders() {
+    public Map<String, List<String>> getHeaders() {
         return headers;
+    }
+
+    public void setHeaders(Map<String, List<String>> headers) {
+        this.headers = headers;
     }
 
     public Date getFetchedAt() {
