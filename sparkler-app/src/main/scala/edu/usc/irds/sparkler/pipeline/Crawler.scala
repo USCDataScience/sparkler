@@ -215,7 +215,6 @@ object Crawler extends Loggable with Serializable{
   }
 
   def main(args: Array[String]): Unit = {
-    val args2 = "-id test".split(" ")
-    new Crawler().run(args2)
+    new Crawler().run(args)
   }
 }

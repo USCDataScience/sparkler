@@ -19,6 +19,8 @@ package edu.usc.irds.sparkler.pipeline
 
 import java.io.ByteArrayInputStream
 import java.text.{ParseException, SimpleDateFormat}
+import java.util
+import java.util.Date
 
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.{CrawlData, ParsedData}
@@ -26,13 +28,10 @@ import org.apache.commons.io.IOUtils
 import org.apache.tika.metadata.Metadata
 import org.apache.tika.parser.AutoDetectParser
 import org.apache.tika.sax.{BodyContentHandler, LinkContentHandler, WriteOutContentHandler}
-import java.util
 
-import java.util.Date
-
-import scala.collection.mutable
-import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 /**
   * This is a transformation function for transforming raw data from crawler to parsed data
