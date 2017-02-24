@@ -138,7 +138,6 @@ public interface Constants {
          * TODO:Should come from Sparler Config
          */
         String FELIX_CONFIG = "felix-config.properties";
-
     }
 
 
@@ -163,6 +162,7 @@ public interface Constants {
         String RELATIVE_PATH = "relative_path";
         String DEDUPE_ID = "dedupe_id";
         String MD_SUFFIX = "_md";
+        String HDR_SUFFIX = "_hd";
     }
 
 }

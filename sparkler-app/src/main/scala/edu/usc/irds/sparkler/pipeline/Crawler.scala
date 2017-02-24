@@ -34,7 +34,6 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
-
 /**
   *
   * @since 5/28/16
@@ -216,6 +215,7 @@ object Crawler extends Loggable with Serializable{
   }
 
   def main(args: Array[String]): Unit = {
-    new Crawler().run(args)
+    val args2 = "-id test".split(" ")
+    new Crawler().run(args2)
   }
 }
