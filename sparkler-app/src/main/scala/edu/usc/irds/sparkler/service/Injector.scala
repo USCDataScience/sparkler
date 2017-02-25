@@ -99,7 +99,7 @@ class Injector extends CliTool {
 
   override def parseArgs(args: Array[String]): Unit = {
     super.parseArgs(args)
-    if (if (seedFile != null) && seedUrls.isEmpty) {
+    if (seedFile == null && seedUrls == null) {
       cliParser.printUsage(Console.out)
       throw new RuntimeException("either -sf or -su should be specified")
     }
