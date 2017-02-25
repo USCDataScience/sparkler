@@ -75,7 +75,7 @@ class Injector extends CliTool {
     val job = new SparklerJob(jobId, conf)
 
     val urls: util.Collection[String] =
-      if (seedFile.exists()) {
+      if (seedFile != null) {
         if (seedFile.isFile) {
           Source.fromFile(seedFile).getLines().toList
         } else {
@@ -99,7 +99,7 @@ class Injector extends CliTool {
 
   override def parseArgs(args: Array[String]): Unit = {
     super.parseArgs(args)
-    if (!seedFile.exists() && seedUrls.isEmpty) {
+    if (if (seedFile != null) && seedUrls.isEmpty) {
       cliParser.printUsage(Console.out)
       throw new RuntimeException("either -sf or -su should be specified")
     }
