@@ -30,8 +30,9 @@ import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
 import scala.collection.JavaConversions._
 import scala.io.Source
-
 import java.nio.file.NotDirectoryException
+
+import org.apache.commons.validator.routines.UrlValidator
 
 import scala.collection.mutable.Stack
 import scala.collection.mutable.ArrayBuffer
@@ -46,6 +47,9 @@ class Injector extends CliTool {
 
   // Load Sparkler Configuration
   val conf: SparklerConfiguration = Constants.defaults.newDefaultConfig()
+
+  // Initialize URL Validator
+  val urlValidator: UrlValidator = new UrlValidator()
 
   @Option(name = "-sf", aliases = Array("--seed-file"), forbids = Array("-su"),
     usage = "path to seed file")
@@ -86,11 +90,13 @@ class Injector extends CliTool {
       }
 
     // TODO: Add URL normalizer and filters before injecting the seeds
-    LOG.info("Injecting {} seeds", urls.size())
     val seeds: util.Collection[Resource] =
       urls.map(_.trim)
-        .filter(x => !x.isEmpty)
+        .filter(url => urlValidator.isValid(url))
         .map(x => new Resource(x, 0, job, ResourceStatus.UNFETCHED))
+
+    LOG.info("Injecting {} seeds", seeds.size())
+
     val solrClient = job.newCrawlDbSolrClient()
     solrClient.addResources(seeds.iterator())
     solrClient.commitCrawlDb()
