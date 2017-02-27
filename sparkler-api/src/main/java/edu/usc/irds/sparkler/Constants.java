@@ -87,15 +87,18 @@ public interface Constants {
         /**
          * Create configuration instance for Sparkler
          */
-        public static SparklerConfiguration newDefaultConfig(){
-            //FIXME: needs rework!
+        public static SparklerConfiguration newDefaultConfig() {
             Yaml yaml = new Yaml();
-            InputStream input = null;
+            InputStream defaultConfig = null;
+            InputStream overrideConfig = null;
             SparklerConfiguration sparklerConf = null;
             try {
-                input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT);
-                Map<String,Object> yamlMap = (Map<String, Object>) yaml.load(input);
-                sparklerConf = new SparklerConfiguration(yamlMap);
+                String temp = file.SPARKLER_DEFAULT;
+                defaultConfig = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT);
+                overrideConfig = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
+                Map<String, Object> defaultConfigMap = (Map<String, Object>) yaml.load(defaultConfig);
+                Map<String, Object> overrideConfigMap = (Map<String, Object>) yaml.load(overrideConfig);
+                sparklerConf = new SparklerConfiguration(defaultConfigMap);
 
                 //input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
                 //if(sparklerSite != null)
@@ -103,7 +106,8 @@ public interface Constants {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                IOUtils.closeQuietly(input);
+                IOUtils.closeQuietly(defaultConfig);
+                IOUtils.closeQuietly(overrideConfig);
             }
 
             if (sparklerConf != null) {
@@ -111,6 +115,18 @@ public interface Constants {
             }
 
             return sparklerConf;
+        }
+
+        /**
+         * @param defaultConfig
+         * @param overrideConfig
+         * @return Config setup for the system to run.
+         * @note This function is responsible for setting up the config for the system.
+         * If SPARKLER_SITE has some override properties defined then those need to be
+         * validated and overridden in the default config.
+         */
+        public static Map<String, Object> validateConfigData(Map<String, Object> defaultConfig, Map<String, Object> overrideConfig) {
+            return defaultConfig;
         }
     }
 
@@ -135,7 +151,7 @@ public interface Constants {
 
         /**
          * Apache Felix configuration properties file
-         * TODO:Should come from Sparler Config
+         * TODO:Should come from Sparkler Config
          */
         String FELIX_CONFIG = "felix-config.properties";
 
