@@ -56,7 +56,9 @@ public class FetcherDefault extends AbstractExtensionPoint
         if (userAgents == null || userAgents.isEmpty()){
             return null;
         }
-        userAgentIndex = (userAgentIndex + 1) % userAgents.size();
+        synchronized (this) {
+            userAgentIndex = (userAgentIndex + 1) % userAgents.size();
+        }
         return userAgents.get(userAgentIndex);
     }
 
@@ -72,7 +74,7 @@ public class FetcherDefault extends AbstractExtensionPoint
             httpHeaders.entrySet().forEach(e -> urlConn.setRequestProperty(e.getKey(), e.getValue()));
         }
         String userAgentValue = getUserAgent();
-        if (getUserAgent() != null) {
+        if (userAgentValue != null) {
             LOG.debug(USER_AGENT + ": " + userAgentValue);
             urlConn.setRequestProperty(USER_AGENT, userAgentValue);
         }

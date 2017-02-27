@@ -19,21 +19,15 @@
 
 # Crawl Database URL. Stores crawl metadata and status updates.
 # Type: String. Default: http://localhost:8983/solr/crawldb
-# for standalone server
-crawldb.uri: http://localhost:8983/solr/crawldb
+crawldb.uri: file://conf/solr/crawldb
 
-# for quick test crawls using embedded solr
-#crawldb.uri: file://conf/solr/crawldb
-
-# for cloudmode with zookeepers; Format = collectionName::zkhost1:port1,zkhost2:port2,zkhost3:port3
-# crawldb.uri: crawldb::localhost:9983
 
 
 ##################### Apache Spark Properties ###########################
 
 # URL on which Apache Spark is running.
-# Type: String. Default is "local[*]" for local mode.
-spark.master: local[*]
+# Type: String. Default is "local" for local mode.
+spark.master: local
 
 
 ##################### Apache Kafka Properties ###########################
@@ -65,19 +59,14 @@ generate.top.groups: 256
 # Type: Long. Default: 1000
 fetcher.server.delay: 1000
 
-# list of headers to be included for each outgoing requests
-fetcher.headers:
-  User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version}"
-  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
-  Accept-Language: "en-US,en"
-
 # rotating agents
 # The list of agents overrides the default agent set in fetcher.headers.
 # This is an unbounded list, it can take any number of agents you wish.
 # for every request the agents are used one after the other in sequence
-# fetcher.user.agents:
-#    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client1"
-#    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client2"
+fetcher.user.agents:
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client1"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client2"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client3"
 
 ##################### Plugins ###########################################
 
@@ -85,22 +74,16 @@ fetcher.headers:
 # Discouraged to Modify unless specifically required.
 plugins.bundle.directory: ${project.parent.basedir}${file.separator}${project.bundles.directory}
 
-# List of activated plugins
-plugins.active:
-    - urlfilter.regex
-    # - fetcher.jbrowser
-
 # All Plugins are listed under this tree
 plugins:
   # Regex URL Filter - Filters outlinks from a web page based on Regex
   # expressions.
   urlfilter.regex:
-    #
     # File with Regex Filter Rules
     urlfilter.regex.file: regex-urlfilter.txt
-  # Fetcher jBrowser - Headless browser to fetch javascript and AJAX 
-  # based document/content.
+  # Regex URL Filter - Filters outlinks from a web page based on Regex
+  # expressions.
   fetcher.jbrowser:
-    # Configuration Properties
+    # File with Regex Filter Rules
     socket.timeout: 3000
     connect.timeout: 3000
