@@ -18,8 +18,10 @@
 package edu.usc.irds.sparkler.service
 
 import java.io.File
+import java.nio.file.NotDirectoryException
 import java.util
-import edu.usc.irds.sparkler.{SparklerConfiguration, Constants}
+
+import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.util.JobUtil
@@ -29,11 +31,17 @@ import org.kohsuke.args4j.spi.StringArrayOptionHandler
 import scala.collection.JavaConversions._
 import scala.io.Source
 
+import java.nio.file.NotDirectoryException
+
+import scala.collection.mutable.Stack
+import scala.collection.mutable.ArrayBuffer
+
 /**
   *
   * @since 5/28/16
   */
 class Injector extends CliTool {
+
   import Injector.LOG
 
   // Load Sparkler Configuration
@@ -56,8 +64,8 @@ class Injector extends CliTool {
   var sparkSolr: String = conf.get(Constants.key.CRAWLDB).asInstanceOf[String]
 
   override def run(): Unit = {
-    if (!sparkSolr.isEmpty){
-      var uri = conf.asInstanceOf[java.util.HashMap[String,String]]
+    if (!sparkSolr.isEmpty) {
+      val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
       uri.put("crawldb.uri", sparkSolr)
     }
 
@@ -70,15 +78,14 @@ class Injector extends CliTool {
       if (seedFile != null) {
         if (seedFile.isFile) {
           Source.fromFile(seedFile).getLines().toList
-        } else { // FIXME: scan directory
-          throw new RuntimeException("Not implemented yet")
+        } else {
+          stackListFiles(seedFile).par.flatMap((file) => Source.fromFile(file).getLines()).toList
         }
       } else {
         seedUrls.toList
       }
 
     // TODO: Add URL normalizer and filters before injecting the seeds
-
     LOG.info("Injecting {} seeds", urls.size())
     val seeds: util.Collection[Resource] =
       urls.map(_.trim)
@@ -90,18 +97,46 @@ class Injector extends CliTool {
     solrClient.close()
   }
 
-  override def parseArgs(args: Array[String]): Unit ={
+  override def parseArgs(args: Array[String]): Unit = {
     super.parseArgs(args)
     if (seedFile == null && seedUrls == null) {
       cliParser.printUsage(Console.out)
       throw new RuntimeException("either -sf or -su should be specified")
     }
   }
+
+  /**
+    * @note
+    * This function is used to list all the text files in the directory provided
+    * as a parameter to this function. This function uses a stack to read all
+    * the subdirectories in the directory provided and uses a ArrayBuffer to collect
+    * all the text files in the directory. Stack is chosen to avoid StackOverFlow
+    * Exceptions.
+    * @param directory directory that needs to be read
+    * @return Array[File] Containing all extracted text(.txt) files
+    * @throws NotDirectoryException is thrown if provided file is not a directory
+    */
+  def stackListFiles(directory: File): Array[File] = {
+    if (!directory.isDirectory) throw new NotDirectoryException(directory.getName + " is not a directory")
+    val stack = Stack[File](directory)
+    val arrayBuffer = ArrayBuffer[File]()
+    while (stack.nonEmpty) {
+      val directory = stack.pop
+      for (i <- directory.listFiles) {
+        //TODO: Should this only read .txt files?
+        if (i.isFile && i.getName.endsWith(".txt")) {
+          arrayBuffer.append(i)
+        }
+        else if (i.isDirectory) stack.push(i)
+      }
+    }
+    arrayBuffer.toArray
+  }
 }
 
 object Injector extends Loggable {
 
-  def main(args: Array[String]): Unit ={
+  def main(args: Array[String]): Unit = {
     val injector = new Injector()
     injector.run(args)
     println(s">>jobId = ${injector.jobId}")
