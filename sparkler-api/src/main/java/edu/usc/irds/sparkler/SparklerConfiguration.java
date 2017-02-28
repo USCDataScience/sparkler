@@ -32,7 +32,7 @@ public class SparklerConfiguration extends JSONObject {
         super(map);
     }
 
-    public LinkedHashMap<String,Object> getPluginConfiguration(String pluginId) throws SparklerException {
+    public LinkedHashMap<String, Object> getPluginConfiguration(String pluginId) throws SparklerException {
         if (this.containsKey(Constants.key.PLUGINS)) {
             LinkedHashMap plugins = (LinkedHashMap) this.get(Constants.key.PLUGINS);
             if (plugins.containsKey(pluginId)) {

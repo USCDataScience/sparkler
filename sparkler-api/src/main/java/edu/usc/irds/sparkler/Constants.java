@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -98,7 +99,7 @@ public interface Constants {
                 overrideConfig = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
                 Map<String, Object> defaultConfigMap = (Map<String, Object>) yaml.load(defaultConfig);
                 Map<String, Object> overrideConfigMap = (Map<String, Object>) yaml.load(overrideConfig);
-                sparklerConf = new SparklerConfiguration(defaultConfigMap);
+                sparklerConf = new SparklerConfiguration(overrideConfigData(defaultConfigMap, overrideConfigMap));
 
                 //input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
                 //if(sparklerSite != null)
@@ -123,9 +124,22 @@ public interface Constants {
          * @return Config setup for the system to run.
          * @note This function is responsible for setting up the config for the system.
          * If SPARKLER_SITE has some override properties defined then those need to be
-         * validated and overridden in the default config.
+         * overridden in the default config. This function does that precisely.
          */
-        public static Map<String, Object> validateConfigData(Map<String, Object> defaultConfig, Map<String, Object> overrideConfig) {
+        public static Map<String, Object> overrideConfigData(Map<String, Object> defaultConfig, Map<String, Object> overrideConfig) {
+            if (overrideConfig == null) {
+                //overrideConfig was not provided going with default then.
+                return defaultConfig;
+            }
+            //Iterating over pair in map and overriding it with new config
+            Iterator iterator = defaultConfig.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry pair = (Map.Entry) iterator.next();
+                //Override the config parameter
+                if (overrideConfig.containsKey(pair.getKey().toString())) {
+                    defaultConfig.put(pair.getKey().toString(), overrideConfig.get(pair.getKey()));
+                }
+            }
             return defaultConfig;
         }
     }
