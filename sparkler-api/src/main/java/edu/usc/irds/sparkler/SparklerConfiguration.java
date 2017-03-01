@@ -17,12 +17,51 @@
 
 package edu.usc.irds.sparkler;
 
+import org.hibernate.validator.constraints.URL;
 import org.json.simple.JSONObject;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class SparklerConfiguration extends JSONObject {
+    @NotNull
+    boolean kafkaEnable;
+
+    @NotNull
+    int generateTopn;
+
+    @NotNull
+    String sparkMaster;
+
+    @NotNull
+    @URL
+    String crawlDBURI;
+
+    @NotNull
+    @Min(1)
+    int generateTopGroups;
+
+    @NotNull
+    String kafkaTopic;
+
+    @NotNull
+    @Min(200)
+    int fetcherServerDelay;
+
+    @NotNull
+    String pluginsBundleDirectory;
+
+    @NotNull
+    String kafkaListeners;
+
+    private static Validator validator;
 
     public SparklerConfiguration() {
         super();
@@ -30,9 +69,19 @@ public class SparklerConfiguration extends JSONObject {
 
     public SparklerConfiguration(Map<?, ?> map) {
         super(map);
+        crawlDBURI = map.get("crawldb.uri").toString();
+    }
+
+    public void validateConfigs() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+        System.out.println(this);
+        Set<ConstraintViolation<SparklerConfiguration>> constraintViolations = validator.validate(this);
+        System.out.println(constraintViolations.size());
     }
 
     public LinkedHashMap<String, Object> getPluginConfiguration(String pluginId) throws SparklerException {
+
         if (this.containsKey(Constants.key.PLUGINS)) {
             LinkedHashMap plugins = (LinkedHashMap) this.get(Constants.key.PLUGINS);
             if (plugins.containsKey(pluginId)) {

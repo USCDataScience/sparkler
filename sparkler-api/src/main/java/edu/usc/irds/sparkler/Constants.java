@@ -100,10 +100,7 @@ public interface Constants {
                 Map<String, Object> defaultConfigMap = (Map<String, Object>) yaml.load(defaultConfig);
                 Map<String, Object> overrideConfigMap = (Map<String, Object>) yaml.load(overrideConfig);
                 sparklerConf = new SparklerConfiguration(overrideConfigData(defaultConfigMap, overrideConfigMap));
-
-                //input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
-                //if(sparklerSite != null)
-                //    sparklerConf.mask(sparklerSite);
+                sparklerConf.validateConfigs();
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
