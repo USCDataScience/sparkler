@@ -119,7 +119,7 @@ class Crawler extends CliTool {
 
     job = new SparklerJob(jobId, sparklerConf, "")
   }
-  //TODO: URL normalizers
+  //TODO: URL nor malizers
   //TODO: Robots.txt
   //TODO: Fetcher + User Agent
   //TODO: Job Id
