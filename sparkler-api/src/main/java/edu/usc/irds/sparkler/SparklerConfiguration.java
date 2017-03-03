@@ -17,6 +17,8 @@
 
 package edu.usc.irds.sparkler;
 
+import edu.usc.irds.sparkler.util.HibernateConstraints.Directory.IsDirectory;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.URL;
 import org.json.simple.JSONObject;
 
@@ -30,36 +32,58 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+
 public class SparklerConfiguration extends JSONObject {
-    @NotNull
-    boolean kafkaEnable;
-
-    @NotNull
-    int generateTopn;
-
-    @NotNull
-    String sparkMaster;
-
-    @NotNull
-    @URL
+    /*********************
+     * Solr Related Config
+     ********************/
+    @NotNull(message = "crawldb.uri needs to be provided")
+    @URL(message = "crawldb.uri is not a valid URL")
     String crawlDBURI;
 
-    @NotNull
-    @Min(1)
-    int generateTopGroups;
+    /*********************
+     * Apache Spark Config
+     ********************/
+    @NotEmpty(message = "spark.master needs to be provided")
+    String sparkMaster;
 
-    @NotNull
+    /*********************
+     * Apache Kafka Config
+     ********************/
+    @NotNull(message = "kafka.enable should be set to true or false")
+    boolean kafkaEnable;
+
+    @NotEmpty
     String kafkaTopic;
 
-    @NotNull
-    @Min(200)
+    @NotEmpty
+    String kafkaListeners;
+
+    /*********************
+     * Generate Properties
+     ********************/
+    @NotNull(message = "generate.topn needs to be provided")
+    @Min(value = 1, message = "generate.topn should be at least 1")
+    int generateTopn;
+
+    @NotNull(message = "generate.top.groups needs to be provided")
+    @Min(value = 1, message = "generate.top.groups should be at least 1")
+    int generateTopGroups;
+
+    /***************************
+     * Fetcher Server Properties
+     **************************/
+    @NotNull(message = "fetcher.server.delay needs to be provided")
+    @Min(value = 200, message = "fetcher.server.delay should be at least 200 to maintain politeness")
     int fetcherServerDelay;
 
-    @NotNull
+    /****************
+     * Plugins Config
+     ***************/
+    @NotEmpty(message = "plugins.bundle.directory should be provided")
+    @IsDirectory(message = "not a directory")
     String pluginsBundleDirectory;
 
-    @NotNull
-    String kafkaListeners;
 
     private static Validator validator;
 
