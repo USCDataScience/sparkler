@@ -95,7 +95,6 @@ public interface Constants {
             InputStream overrideConfig = null;
             SparklerConfiguration sparklerConf = null;
             try {
-                String temp = file.SPARKLER_DEFAULT;
                 defaultConfig = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT);
                 overrideConfig = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
                 Map<String, Object> defaultConfigMap = (Map<String, Object>) yaml.load(defaultConfig);
