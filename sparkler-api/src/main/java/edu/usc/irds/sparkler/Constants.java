@@ -20,6 +20,7 @@ package edu.usc.irds.sparkler;
 import org.apache.commons.io.IOUtils;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
@@ -100,9 +101,11 @@ public interface Constants {
                 Map<String, Object> defaultConfigMap = (Map<String, Object>) yaml.load(defaultConfig);
                 Map<String, Object> overrideConfigMap = (Map<String, Object>) yaml.load(overrideConfig);
                 sparklerConf = new SparklerConfiguration(overrideConfigData(defaultConfigMap, overrideConfigMap));
-                sparklerConf.validateConfigs();
             } catch (Exception e) {
                 e.printStackTrace();
+                IOUtils.closeQuietly(defaultConfig);
+                IOUtils.closeQuietly(overrideConfig);
+                System.exit(1);
             } finally {
                 IOUtils.closeQuietly(defaultConfig);
                 IOUtils.closeQuietly(overrideConfig);

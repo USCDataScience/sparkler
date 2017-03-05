@@ -19,7 +19,6 @@ package edu.usc.irds.sparkler;
 
 import edu.usc.irds.sparkler.util.HibernateConstraints.AnotherFieldTrue.AnotherFieldTrue;
 import edu.usc.irds.sparkler.util.HibernateConstraints.IsDirectory.IsDirectory;
-import edu.usc.irds.sparkler.util.HibernateConstraints.IsFile.IsFile;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.URL;
 import org.json.simple.JSONObject;
@@ -81,7 +80,10 @@ public class SparklerConfiguration extends JSONObject {
      ********************/
     boolean kafkaEnable;
 
-    //Kafka Properties class
+    /**
+     * @apiNote This class helps in making config variables for kafka
+     * plugin in sparkler.
+     */
     class KafkaProperties {
         @NotEmpty(message = "kafka.topic should be provided")
         String kafkaTopic;
@@ -90,6 +92,7 @@ public class SparklerConfiguration extends JSONObject {
         @URL(message = "kafka.listeners should be valid URL")
         String kafkaListeners;
 
+        //Getters and Setters
         public String getKafkaTopic() {
             return kafkaTopic;
         }
@@ -113,7 +116,13 @@ public class SparklerConfiguration extends JSONObject {
     //URL Filter Properties
     boolean urlfilterRegexEnable;
 
+    /**
+     * @apiNote This class is responsible for storing config properties of
+     * URL filters. Any change related to plugin should be updated
+     * here.
+     */
     private class UrlFiltersRegexProperties {
+        //TODO: IsFile annotation should be added in this.
         @NotEmpty(message = "urlfilter.regex.file should be provided")
         String urlfilterRegexFile;
 
@@ -132,6 +141,10 @@ public class SparklerConfiguration extends JSONObject {
     //fetcher jbrowser properties
     boolean fetcherJBrowserEnable;
 
+    /**
+     * @apiNote This class is responsible for maintaining configs of JBrowser
+     * plugin. Any updates to JBrowser config should be updated here.
+     */
     class JBrowserProperties {
 
         @NotNull(message = "socket.timeout should be provided")
@@ -163,7 +176,7 @@ public class SparklerConfiguration extends JSONObject {
     JBrowserProperties jBrowserProperties;
 
     //Validator Instance of Hibernate
-    private static Validator validator;
+    private Validator validator;
 
     public void validateConfigs() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -175,99 +188,129 @@ public class SparklerConfiguration extends JSONObject {
             ConstraintViolation constraintViolation = (ConstraintViolation) it.next();
             st.append(constraintViolation.getMessage() + "\n");
         }
-        try {
-            if (!constraintViolations.isEmpty()) {
-                throw new RuntimeException(st.toString());
-            }
-        } catch (Exception e) {
-            System.err.println(e);
-            System.exit(1);
+        if (!constraintViolations.isEmpty()) {
+            throw new RuntimeException(st.toString());
         }
-
     }
 
     //TODO: Move things to getters and setters
+
+    //QUESTION: Why is this even required? Is it because of JSONObject
+    //Extension? If yes, then that should be removed once we are on getters
+    //and setters or else it should be removed now as it is of no use.
     public SparklerConfiguration() {
         super();
+        throw new RuntimeException("Configuration file not provided");
     }
 
+    //Constructor initializing the config.
     public SparklerConfiguration(Map<?, ?> map) {
         super(map);
         //CrawlDB reads
-        this.crawlDBURI = map.get("crawldb.uri").toString();
-        //Spark Reads
-        this.sparkMaster = map.get("spark.master").toString();
         boolean errorFound = false;
-
-
+        StringBuilder errorMessage = new StringBuilder();
+        try {
+            this.crawlDBURI = map.get("crawldb.uri").toString();
+        } catch (NullPointerException e) {
+            errorMessage.append("crawldb.uri should be provided\n");
+            errorFound = true;
+        }
+        //Spark Reads
+        try {
+            this.sparkMaster = map.get("spark.master").toString();
+        } catch (NullPointerException e) {
+            errorMessage.append("spark.master should be provided\n");
+            errorFound = true;
+        }
         //generate properties reads
         try {
             this.generateTopn = Integer.parseInt(map.get("generate.topn").toString());
         } catch (Exception e) {
-            System.err.println("generate.topn is not a valid Integer value");
+            errorMessage.append("generate.topn is not a valid Integer value\n");
             errorFound = true;
         }
         try {
             this.generateTopGroups = Integer.parseInt(map.get("generate.top.groups").toString());
         } catch (Exception e) {
-            System.err.println("generate.top.groups is not a valid Integer value");
+            errorMessage.append("generate.top.groups is not a valid Integer value\n");
             errorFound = true;
         }
         //fetcher reads
         try {
             this.fetcherServerDelay = Integer.parseInt(map.get("fetcher.server.delay").toString());
         } catch (Exception e) {
-            System.err.println("fetcher.server.delay is not a valid Integer value");
+            errorMessage.append("fetcher.server.delay is not a valid Integer value\n");
             errorFound = true;
         }
         //Plugins List Read
-        pluginsBundleDirectory = map.get("plugins.bundle.directory").toString();
-
+        try {
+            pluginsBundleDirectory = map.get("plugins.bundle.directory").toString();
+        } catch (NullPointerException e) {
+            errorMessage.append("plugins.bundle.directory should be provided\n");
+        }
         try {
             this.pluginsActive = (ArrayList<String>) map.get("plugins.active");
         } catch (Exception e) {
-            System.err.println("plugins.active is not a valid list of plugins");
+            errorMessage.append("plugins.active is not a valid list of plugins\n");
             errorFound = true;
         }
 
         //Kafka Reads
-        this.kafkaEnable = Boolean.parseBoolean(map.get("kafka.enable").toString());
+        try {
+            this.kafkaEnable = Boolean.parseBoolean(map.get("kafka.enable").toString());
+        } catch (Exception e) {
+            errorMessage.append("kafka.enable should be specified\n");
+            errorFound = true;
+        }
         if (kafkaEnable) {
-            this.kafkaProperties = new KafkaProperties();
-            this.kafkaProperties.setKafkaListeners(map.get("kafka.listeners").toString());
-            this.kafkaProperties.setKafkaTopic(map.get("kafka.topic").toString());
-        }
-        //Plugins Map
-        Map<String, Object> pluginsMap = (Map<String, Object>) map.get("plugins");
-        //URLFilter Reads
-        this.urlfilterRegexEnable = this.pluginsActive.contains("urlfilter.regex");
-        if (this.urlfilterRegexEnable) {
             try {
-                Map<String, Object> urlFilterMap = (Map<String, Object>) pluginsMap.get("urlfilter.regex");
-                this.urlFiltersRegexProperties = new UrlFiltersRegexProperties();
-                this.urlFiltersRegexProperties.setUrlfilterRegexFile(urlFilterMap.get("urlfilter.regex.file").toString());
+                this.kafkaProperties = new KafkaProperties();
+                this.kafkaProperties.setKafkaListeners(map.get("kafka.listeners").toString());
+                this.kafkaProperties.setKafkaTopic(map.get("kafka.topic").toString());
             } catch (Exception e) {
                 errorFound = true;
-                System.err.println("plugins->urlfilter.regex property is not valid");
+                errorMessage.append("Kafka Properties are not valid\n");
             }
         }
+        if (this.pluginsActive != null) {
+            //Plugins Map
+            Map<String, Object> pluginsMap = (Map<String, Object>) map.get("plugins");
+            //URLFilter Reads
+            this.urlfilterRegexEnable = this.pluginsActive.contains("urlfilter.regex");
+            if (this.urlfilterRegexEnable) {
+                try {
+                    Map<String, Object> urlFilterMap = (Map<String, Object>) pluginsMap.get("urlfilter.regex");
+                    this.urlFiltersRegexProperties = new UrlFiltersRegexProperties();
+                    this.urlFiltersRegexProperties.setUrlfilterRegexFile(urlFilterMap.get("urlfilter.regex.file").toString());
+                } catch (Exception e) {
+                    errorFound = true;
+                    errorMessage.append("plugins->urlfilter.regex property is not valid\n");
+                }
+            }
 
-        //JBrowser Reads
-        this.fetcherJBrowserEnable = this.pluginsActive.contains("fetcher.jbrowser");
-        if (this.fetcherJBrowserEnable) {
-            try {
-                Map<String, Object> fetcherjbrowserMap = (Map<String, Object>) pluginsMap.get("fetcher.jbrowser");
-                this.jBrowserProperties = new JBrowserProperties();
-                this.jBrowserProperties.setSocketTimeout(Integer.parseInt(fetcherjbrowserMap.get("socket.timeout").toString()));
-                this.jBrowserProperties.setConnectTimeout(Integer.parseInt(fetcherjbrowserMap.get("connect.timeout").toString()));
-            } catch (Exception e) {
-                errorFound = true;
-                System.err.println("plugins->fetcher.jbrowser property not valid");
+            //JBrowser Reads
+            this.fetcherJBrowserEnable = this.pluginsActive.contains("fetcher.jbrowser");
+            if (this.fetcherJBrowserEnable) {
+                try {
+                    Map<String, Object> fetcherjbrowserMap = (Map<String, Object>) pluginsMap.get("fetcher.jbrowser");
+                    this.jBrowserProperties = new JBrowserProperties();
+                    this.jBrowserProperties.setSocketTimeout(Integer.parseInt(fetcherjbrowserMap.get("socket.timeout").toString()));
+                    this.jBrowserProperties.setConnectTimeout(Integer.parseInt(fetcherjbrowserMap.get("connect.timeout").toString()));
+                } catch (Exception e) {
+                    errorFound = true;
+                    errorMessage.append("plugins->fetcher.jbrowser property not valid\n");
+                }
             }
+        } else {
+            errorFound = true;
+            errorMessage.append("plugins.active is an empty list\n");
         }
         //Some errors found in config
         if (errorFound) {
-            System.exit(1);
+            throw new RuntimeException(errorMessage.toString());
+        } else {
+            //config properties are mentioned. Now going for validation.
+            this.validateConfigs();
         }
     }
 
@@ -390,11 +433,11 @@ public class SparklerConfiguration extends JSONObject {
         this.jBrowserProperties = jBrowserProperties;
     }
 
-    public static Validator getValidator() {
+    public Validator getValidator() {
         return validator;
     }
 
-    public static void setValidator(Validator validator) {
-        SparklerConfiguration.validator = validator;
+    public void setValidator(Validator validator) {
+        this.validator = validator;
     }
 }
