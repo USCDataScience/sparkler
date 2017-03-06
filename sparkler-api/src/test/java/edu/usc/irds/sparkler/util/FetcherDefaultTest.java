@@ -42,7 +42,7 @@ public class FetcherDefaultTest {
         try {
             fetcher.init(job);
         } catch (SparklerException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
     private Resource indexPage = new Resource("http://localhost:8080/res/index.html", "localhost", job);
