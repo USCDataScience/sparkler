@@ -65,19 +65,17 @@ generate.top.groups: 256
 # Type: Long. Default: 1000
 fetcher.server.delay: 1000
 
-# list of headers to be included for each outgoing requests
+# list of headers to be included for each outgoing request
 fetcher.headers:
   User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version}"
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
   Accept-Language: "en-US,en"
 
-# rotating agents
-# The list of agents overrides the default agent set in fetcher.headers.
+# Rotating agents file.
+# File should contain a list of agents which will be used to override the default agent string
 # This is an unbounded list, it can take any number of agents you wish.
 # for every request the agents are used one after the other in sequence
-# fetcher.user.agents:
-#    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client1"
-#    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client2"
+fetcher.user.agents: user-agents.txt
 
 ##################### Plugins ###########################################
 

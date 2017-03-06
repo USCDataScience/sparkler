@@ -59,14 +59,15 @@ generate.top.groups: 256
 # Type: Long. Default: 1000
 fetcher.server.delay: 1000
 
+# list of headers to be included for each outgoing request
+fetcher.headers:
+  Custom-Header: "Custom Header Value"
+
 # rotating agents
 # The list of agents overrides the default agent set in fetcher.headers.
 # This is an unbounded list, it can take any number of agents you wish.
 # for every request the agents are used one after the other in sequence
-fetcher.user.agents:
-    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client1"
-    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client2"
-    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client3"
+fetcher.user.agents: user-agents.txt
 
 ##################### Plugins ###########################################
 

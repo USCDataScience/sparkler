@@ -108,4 +108,31 @@ public class FetcherDefaultTest {
             fail("Socket Exception expected, but found:" + e.getClass().getName());
         }
     }
+
+    @Test
+    public void testHeaders() throws Exception {
+        /**
+         * This test case tests two functionality
+         * 1. A custom header can be sent to requests
+         * 2. User agent is set
+         */
+        String url = "http://localhost:8080/slavesite?action=return-headers";
+        Resource page = new Resource(url, "localhost", job);
+        FetchedData fetchedData = fetcher.fetch(page);
+
+        boolean headerFound = false;
+        boolean userAgentFound = false;
+        String[] lines = new String(fetchedData.getContent()).split("\n");
+        for (String line : lines) {
+            String[] split = line.trim().split(":");
+            if (split[0].equals("Custom-Header")){
+                headerFound = split[1].trim().equals("Custom Header Value");
+            }
+            if (split[0].equals("User-Agent")){
+                userAgentFound = split[1].trim().contains("Sparkler");
+            }
+        }
+        assertTrue(headerFound);
+        assertTrue(userAgentFound);
+    }
 }

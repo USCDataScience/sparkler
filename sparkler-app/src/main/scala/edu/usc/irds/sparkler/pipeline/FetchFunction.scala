@@ -36,6 +36,14 @@ object FetchFunction
   val FETCH_TIMEOUT = 1000
   val fetcherDefault = new FetcherDefault()
 
+  /**
+    * Initialize the internal modules
+    * @param job reference to Sparkler Job Context
+    */
+  def init(job: SparklerJob): Unit ={
+    fetcherDefault.init(job)
+  }
+
   override def apply(job: SparklerJob, resources: Iterator[Resource])
   : Iterator[FetchedData] = {
     val fetcher:scala.Option[Fetcher] = PluginService.getExtension(classOf[Fetcher], job)

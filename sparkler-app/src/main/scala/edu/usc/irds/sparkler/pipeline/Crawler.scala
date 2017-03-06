@@ -118,11 +118,11 @@ class Crawler extends CliTool {
     }
 
     job = new SparklerJob(jobId, sparklerConf, "")
+    FetchFunction.init(job)
+
   }
   //TODO: URL normalizers
   //TODO: Robots.txt
-  //TODO: Fetcher + User Agent
-  //TODO: Job Id
 
   override def run(): Unit = {
 

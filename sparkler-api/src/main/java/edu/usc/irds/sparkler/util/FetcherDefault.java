@@ -1,6 +1,11 @@
 package edu.usc.irds.sparkler.util;
 
-import edu.usc.irds.sparkler.*;
+import edu.usc.irds.sparkler.AbstractExtensionPoint;
+import edu.usc.irds.sparkler.Constants;
+import edu.usc.irds.sparkler.Fetcher;
+import edu.usc.irds.sparkler.JobContext;
+import edu.usc.irds.sparkler.SparklerConfiguration;
+import edu.usc.irds.sparkler.SparklerException;
 import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
@@ -9,12 +14,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.*;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * This class is a default implementation of {@link Fetcher} contract.
@@ -35,14 +48,34 @@ public class FetcherDefault extends AbstractExtensionPoint
     protected int userAgentIndex = 0; // index for rotating the agents
     protected Map<String, String> httpHeaders;
 
-
     @Override
     public void init(JobContext context) throws SparklerException {
         super.init(context);
         SparklerConfiguration conf = context.getConfiguration();
         if (conf.containsKey(Constants.key.FETCHER_USER_AGENTS)) {
-            this.userAgents = (List<String>) conf.get(Constants.key.FETCHER_USER_AGENTS);
+            Object agents = conf.get(Constants.key.FETCHER_USER_AGENTS);
+            if (agents instanceof String) { // it is a file name
+                try (InputStream stream = getClass().getClassLoader()
+                        .getResourceAsStream(agents.toString())) {
+                    if (stream == null) {
+                        this.userAgents = Collections.EMPTY_LIST;
+                        LOG.warn("Could not find Rotating user agents file in class path");
+                    } else {
+                        this.userAgents = IOUtils.readLines(stream, StandardCharsets.UTF_8).stream()
+                                .map(String::trim)                               // white spaces are trimmed
+                                .filter(s -> !s.isEmpty() && s.charAt(0) != '#') //remove empty and comment lines
+                                .collect(Collectors.toList());
+                    }
+                }  catch (IOException e){
+                    throw new SparklerException("Cant read user agent file", e);
+                }
+            } else { //it is a list
+                this.userAgents = (List<String>) conf.get(Constants.key.FETCHER_USER_AGENTS);
+            }
+            //remove duplicates while preserving the order
+            this.userAgents = new ArrayList<>(new LinkedHashSet<>(this.userAgents));
         }
+
         if (conf.containsKey(Constants.key.FETCHER_HEADERS)) {
             this.httpHeaders = (Map<String, String>) conf.get(Constants.key.FETCHER_HEADERS);
         }
@@ -56,10 +89,11 @@ public class FetcherDefault extends AbstractExtensionPoint
         if (userAgents == null || userAgents.isEmpty()){
             return null;
         }
-        synchronized (this) {
+        String agent = userAgents.get(userAgentIndex);
+        synchronized (this) { // rotate index
             userAgentIndex = (userAgentIndex + 1) % userAgents.size();
         }
-        return userAgents.get(userAgentIndex);
+        return agent;
     }
 
     @Override
@@ -72,11 +106,16 @@ public class FetcherDefault extends AbstractExtensionPoint
         URLConnection urlConn = new URL(resource.getUrl()).openConnection();
         if (httpHeaders != null){
             httpHeaders.entrySet().forEach(e -> urlConn.setRequestProperty(e.getKey(), e.getValue()));
+            LOG.debug("Adding headers:{}", httpHeaders.keySet());
+        } else {
+            LOG.debug("No headers are available");
         }
         String userAgentValue = getUserAgent();
         if (userAgentValue != null) {
             LOG.debug(USER_AGENT + ": " + userAgentValue);
             urlConn.setRequestProperty(USER_AGENT, userAgentValue);
+        } else {
+            LOG.debug("No rotating agents are available");
         }
 
         urlConn.setConnectTimeout(CONNECT_TIMEOUT);
@@ -84,7 +123,12 @@ public class FetcherDefault extends AbstractExtensionPoint
         int responseCode = ((HttpURLConnection)urlConn).getResponseCode();
         LOG.debug("STATUS CODE : " + responseCode + " " + resource.getUrl());
         try (InputStream inStream = urlConn.getInputStream()) {
-            byte[] rawData = IOUtils.toByteArray(inStream);
+            byte[] rawData;
+            if (inStream != null) {
+                rawData = IOUtils.toByteArray(inStream);
+            } else {
+                rawData = new byte[0]; //no content received
+            }
             FetchedData fetchedData = new FetchedData(rawData, urlConn.getContentType(), responseCode);
             resource.setStatus(ResourceStatus.FETCHED.toString());
             fetchedData.setResource(resource);
