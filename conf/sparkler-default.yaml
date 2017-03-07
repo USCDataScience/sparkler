@@ -75,7 +75,7 @@ fetcher.headers:
 # File should contain a list of agents which will be used to override the default agent string
 # This is an unbounded list, it can take any number of agents you wish.
 # for every request the agents are used one after the other in sequence
-fetcher.user.agents: user-agents.txt
+#fetcher.user.agents: user-agents.txt
 
 ##################### Plugins ###########################################
 
