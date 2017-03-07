@@ -1,10 +1,15 @@
 package edu.usc.irds.sparkler.test;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,9 +20,12 @@ import java.util.Map;
  */
 public class TestSlaveServlet extends HttpServlet {
 
+    private static final Logger LOG = LoggerFactory.getLogger(TestSlaveServlet.class);
+
     private static Map<String, Class<? extends TestAction>> actionsRegistry = new HashMap<>();
     static {
         actionsRegistry.put("read-timeout", ReadTimeoutAction.class);
+        actionsRegistry.put("return-headers", RequestHeadersAction.class);
         actionsRegistry.put(null, DefaultAction.class);
         actionsRegistry.put("", DefaultAction.class);
     }
@@ -60,6 +68,30 @@ public class TestSlaveServlet extends HttpServlet {
                 throw new IOException(e);
             }
             resp.getWriter().println("<h2>Done</h2> <br/>");
+        }
+    }
+
+
+    /**
+     * This action replies back with the request headers,
+     * It can be used for writing test cases on request headers.
+     */
+    public static class RequestHeadersAction implements TestAction {
+
+        @Override
+        public void run(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+            LOG.info("Request Headers Action");
+            Enumeration<String> headers = req.getHeaderNames();
+            try (PrintWriter out = resp.getWriter()) {
+                while (headers.hasMoreElements()) {
+                    String name = headers.nextElement();
+                    String value = req.getHeader(name);
+                    //write to body
+                    out.println(name + ":" + value);
+                    //write to header
+                    resp.setHeader(name, value);
+                }
+            }
         }
     }
 
