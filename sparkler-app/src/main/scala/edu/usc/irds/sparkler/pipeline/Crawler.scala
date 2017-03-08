@@ -34,7 +34,6 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
-
 /**
   *
   * @since 5/28/16

@@ -17,9 +17,8 @@
 
 package edu.usc.irds.sparkler.solr
 
-import org.slf4j.LoggerFactory
 import SolrStatusUpdate.LOG
-
+import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.SparklerJob
 import org.apache.spark.TaskContext
 import org.apache.solr.common.SolrInputDocument
@@ -39,6 +38,4 @@ class SolrStatusUpdate(job: SparklerJob) extends ((TaskContext, Iterator[SolrInp
   }
 }
 
-object SolrStatusUpdate {
-  val LOG = LoggerFactory.getLogger(SolrStatusUpdate.getClass())
-}
+object SolrStatusUpdate extends Loggable;

@@ -25,5 +25,6 @@ typeSuffix:
   java.lang.Boolean: _b
   java.lang.Float: _f
   java.lang.Double: _d
+  java.util.Date: _dt
 
 multiValSuffix: s

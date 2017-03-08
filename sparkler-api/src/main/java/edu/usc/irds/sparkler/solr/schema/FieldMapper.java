@@ -159,17 +159,14 @@ public class FieldMapper {
      */
     public Map<String, Object> mapFields(Map<String, Object> fields, boolean eval){
         Map<String, Object> result = new HashMap<>();
-
-        fields.forEach((k,v) ->{
-            if (eval && evaluator.canEval(v)) {
-                v = evaluator.eval(v);
+        fields.forEach((k, v) ->{
+            if (k != null) {
+                if (eval && evaluator.canEval(v)) {
+                    v = evaluator.eval(v);
+                }
+                result.put(mapField(k, v), v);
             }
-            result.put(mapField(k, v), v);
         });
         return result;
     }
-
-
-
-
 }
