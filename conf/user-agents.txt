@@ -13,18 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-################## Solr Schema Map Properties #######################
-
-#overrides:
-#  id: id
-
-typeSuffix:
-  java.lang.String: _t
-  java.lang.Integer: _i
-  java.lang.Long: _l
-  java.lang.Boolean: _b
-  java.lang.Float: _f
-  java.lang.Double: _d
-  java.util.Date: _dt
-
-multiValSuffix: s
+# User agents to be used
+# Each line contains an agent
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client1
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client2
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client3
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client4

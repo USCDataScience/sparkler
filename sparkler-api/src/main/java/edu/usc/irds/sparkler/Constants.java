@@ -80,6 +80,12 @@ public interface Constants {
 
         @ConfigKey
         String ACTIVE_PLUGINS = "plugins.active";
+
+        @ConfigKey
+        String FETCHER_HEADERS = "fetcher.headers";
+
+        @ConfigKey
+        String FETCHER_USER_AGENTS = "fetcher.user.agents";
     }
 
 
@@ -138,7 +144,6 @@ public interface Constants {
          * TODO:Should come from Sparler Config
          */
         String FELIX_CONFIG = "felix-config.properties";
-
     }
 
 
@@ -163,6 +168,7 @@ public interface Constants {
         String RELATIVE_PATH = "relative_path";
         String DEDUPE_ID = "dedupe_id";
         String MD_SUFFIX = "_md";
+        String HDR_SUFFIX = "_hd";
     }
 
 }

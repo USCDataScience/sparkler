@@ -50,5 +50,5 @@ sjob-**
 .DS_Store
 
 Application Files
-resources/
+/resources
 felix-cache/

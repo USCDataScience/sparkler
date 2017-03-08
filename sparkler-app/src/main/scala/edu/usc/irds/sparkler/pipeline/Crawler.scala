@@ -34,7 +34,6 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
-
 /**
   *
   * @since 5/28/16
@@ -118,11 +117,11 @@ class Crawler extends CliTool {
     }
 
     job = new SparklerJob(jobId, sparklerConf, "")
+    FetchFunction.init(job)
+
   }
   //TODO: URL nor malizers
   //TODO: Robots.txt
-  //TODO: Fetcher + User Agent
-  //TODO: Job Id
 
   override def run(): Unit = {
 
