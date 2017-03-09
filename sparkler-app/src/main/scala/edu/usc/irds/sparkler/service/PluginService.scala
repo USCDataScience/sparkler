@@ -174,9 +174,9 @@ class PluginService(job:SparklerJob) {
       LOG.info(s"Activated User bundles count = ${requiredBundles.size}")
       val seenBundles = mutable.HashSet[String]() // these are the plugins seen by loader
 
-      val ctx = loader.getBundleContext
-      val bundleFiles = new File(bundlesDir).listFiles().filter(_.getName.endsWith(".jar"))
-      val bundles = new mutable.ListBuffer[Bundle]
+      //val ctx = loader.getBundleContext
+      //val bundleFiles = new File(bundlesDir).listFiles().filter(_.getName.endsWith(".jar"))
+      /*val bundles = new mutable.ListBuffer[Bundle]
       bundleFiles.foreach(bf => {
         val b = ctx.installBundle(bf.getAbsoluteFile.toURI.toString)
         val name = b.getSymbolicName
@@ -196,7 +196,7 @@ class PluginService(job:SparklerJob) {
         LOG.error(s"Missing : $diff")
         throw new SparklerException(s"Plugin bundles are missing $diff." +
           s" Either remove them from `plugins.active` or make them available to loader")
-      }
+      }*/
     }
   }
 

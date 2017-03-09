@@ -120,7 +120,7 @@ class Crawler extends CliTool {
     FetchFunction.init(job)
 
   }
-  //TODO: URL normalizers
+  //TODO: URL nor malizers
   //TODO: Robots.txt
 
   override def run(): Unit = {
