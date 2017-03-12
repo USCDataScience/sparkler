@@ -108,9 +108,6 @@ public interface Constants {
                 sparklerConf = new SparklerConfiguration(overrideConfigData(defaultConfigMap, overrideConfigMap));
             } catch (Exception e) {
                 e.printStackTrace();
-                IOUtils.closeQuietly(defaultConfig);
-                IOUtils.closeQuietly(overrideConfig);
-                System.exit(1);
             } finally {
                 IOUtils.closeQuietly(defaultConfig);
                 IOUtils.closeQuietly(overrideConfig);

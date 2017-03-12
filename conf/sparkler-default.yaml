@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
 ##################### General Properties ################################
 
 # Crawl Database URL. Stores crawl metadata and status updates.
