@@ -1,0 +1,69 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+
+##################### CrawlDB Properties ################################
+# Crawl Database URL. Stores crawl metadata and status updates.
+# Type: String. Default: http://localhost:8983/solr/crawldb
+# for standalone server
+crawlDBProperties:
+ uri: http://localhost:8983/solr/crawldb
+
+# for quick test crawls using embedded solr
+#crawldb.uri: file://conf/solr/crawldb
+
+# for cloudmode with zookeepers; Format = collectionName::zkhost1:port1,zkhost2:port2,zkhost3:port3
+# crawldb.uri: crawldb::localhost:9983
+
+##################### Apache Spark Properties ###########################
+# URL on which Apache Spark is running.
+# Type: String. Default is "local[*]" for local mode.
+sparkProperties:
+ sparkMaster: local[*]
+
+##################### Apache Kafka Properties ###########################
+kafkaProperties:
+ kafkaEnable: false
+ kafkaListeners: localhost:9092
+ kafkaTopic: sparkler_%s
+
+##################### Generate Properties ###############################
+generateProperties:
+ generateTopGroups: 256
+ generateTopn: 1000
+
+##################### Fetcher Properties ################################
+fetcherProperties:
+ headers: 
+   User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version}"
+   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+   Accept-Language: "en-US,en"
+ serverDelay: 1000
+ userAgents: 
+
+##################### Plugins ###########################################
+# Plugins Bundle directory. Configured through Maven.
+# Discouraged to Modify unless specifically required.
+plugins.bundle.directory: ${project.parent.basedir}${file.separator}${project.bundles.directory}
+
+#################### Url Filter Regex ###################################
+urlFiltersRegexProperties:
+ urlfilterRegexEnable: true
+ urlfilterRegexFile: regex-urlfilter.txt
+
+################### Fetcher JBrowser ####################################
+jBrowserProperties:
+ fetcherJBrowserEnable: true
+ connectTimeout: 3000
+ socketTimeout: 3000
+
