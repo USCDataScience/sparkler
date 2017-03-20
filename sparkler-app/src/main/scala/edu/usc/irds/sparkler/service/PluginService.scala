@@ -176,7 +176,7 @@ class PluginService(job:SparklerJob) {
 
       //val ctx = loader.getBundleContext
       //val bundleFiles = new File(bundlesDir).listFiles().filter(_.getName.endsWith(".jar"))
-      /*val bundles = new mutable.ListBuffer[Bundle]
+      val bundles = new mutable.ListBuffer[Bundle]
       bundleFiles.foreach(bf => {
         val b = ctx.installBundle(bf.getAbsoluteFile.toURI.toString)
         val name = b.getSymbolicName
@@ -196,7 +196,7 @@ class PluginService(job:SparklerJob) {
         LOG.error(s"Missing : $diff")
         throw new SparklerException(s"Plugin bundles are missing $diff." +
           s" Either remove them from `plugins.active` or make them available to loader")
-      }*/
+      }
     }
   }
 
