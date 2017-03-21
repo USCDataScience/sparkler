@@ -33,7 +33,7 @@ resources = {
 def install_sparkler():
     mkdir('/opt/sparkler/')
 
-    urllib.request.urlretrieve("https://dl.dropboxusercontent.com/u/8503756/sparkler.jar", "/opt/sparkler/sparkler.jar")
+    urllib.request.urlretrieve("https://www.dropbox.com/s/1wewnm080a3240u/sparkler-app-0.1-SNAPSHOT.jar?dl=0", "/opt/sparkler/sparkler.jar")
 
     #jujuresources.install('sparkler',
     #                      destination="/opt/sparkler/")
