@@ -174,8 +174,8 @@ class PluginService(job:SparklerJob) {
       LOG.info(s"Activated User bundles count = ${requiredBundles.size}")
       val seenBundles = mutable.HashSet[String]() // these are the plugins seen by loader
 
-      //val ctx = loader.getBundleContext
-      //val bundleFiles = new File(bundlesDir).listFiles().filter(_.getName.endsWith(".jar"))
+      val ctx = loader.getBundleContext
+      val bundleFiles = new File(bundlesDir).listFiles().filter(_.getName.endsWith(".jar"))
       val bundles = new mutable.ListBuffer[Bundle]
       bundleFiles.foreach(bf => {
         val b = ctx.installBundle(bf.getAbsoluteFile.toURI.toString)
