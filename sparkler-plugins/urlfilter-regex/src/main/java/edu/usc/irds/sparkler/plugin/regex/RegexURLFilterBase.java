@@ -92,8 +92,8 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
     }
 
     @Override
-    public void init(JobContext context) throws SparklerException {
-        super.init(context);
+    public void init(JobContext context, String pluginId) throws SparklerException {
+        super.init(context, pluginId);
         try {
             SparklerConfiguration config = jobContext.getConfiguration();
             LinkedHashMap pluginConfig = config.getPluginConfiguration(pluginId);
@@ -102,12 +102,6 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void init(JobContext context, String pluginId) throws SparklerException {
-        this.pluginId = pluginId;
-        init(context);
     }
 
     /**
