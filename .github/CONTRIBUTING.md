@@ -32,14 +32,14 @@ Contributions to Sparkler should be made in the form of GitHub pull requests. Ea
 
 - **Code style:**
 
- **Java style:** The project includes a code format file named  `eclipse-codeformat.xml` in the root directory.
+   *Java style:* The project includes a code format file named  `eclipse-codeformat.xml` in the root directory.
  Depending on the IDE you use, please configure the code style rules from this XML file.
 
- ** Scala Style:** The project also includes a code format file named `scalastyle_config.xml` in the root directory.
+   *Scala Style:* The project also includes a code format file named `scalastyle_config.xml` in the root directory.
  Depending on the IDE you use, please configure the code style rules from this XML file. Visit http://www.scalastyle.org/
  for more details
 
-4. **License Header:**
+- **License Header:**
 
   All source files should include Apache License 2.0 header. Refer existing source files (.java, .scala or .xml) for an example.
 
