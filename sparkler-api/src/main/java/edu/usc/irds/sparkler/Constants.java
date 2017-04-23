@@ -93,19 +93,15 @@ public interface Constants {
         /**
          * Create configuration instance for Sparkler
          */
-        public static SparklerConfiguration newDefaultConfig(){
+        public static SparklerConfiguration newDefaultConfig() {
             //FIXME: needs rework!
             Yaml yaml = new Yaml();
             InputStream input = null;
             SparklerConfiguration sparklerConf = null;
             try {
                 input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT);
-                Map<String,Object> yamlMap = (Map<String, Object>) yaml.load(input);
+                Map<String, Object> yamlMap = (Map<String, Object>) yaml.load(input);
                 sparklerConf = new SparklerConfiguration(yamlMap);
-
-                //input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
-                //if(sparklerSite != null)
-                //    sparklerConf.mask(sparklerSite);
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -115,8 +111,23 @@ public interface Constants {
             if (sparklerConf != null) {
                 sparklerConf.put(key.UUID_KEY, UUID.randomUUID().toString());
             }
-
             return sparklerConf;
+        }
+
+        public static SparklerConfig newDefaultSparklerConfig() {
+
+            InputStream input = null;
+            SparklerConfig sparklerConfig = null;
+            try {
+                input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT_CONF);
+
+                sparklerConfig = SparklerConfig.getSparklerConfig(input);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                IOUtils.closeQuietly();
+            }
+            return sparklerConfig;
         }
     }
 
@@ -125,6 +136,7 @@ public interface Constants {
         String SPARKLER_DEFAULT = "sparkler-default.yaml";
         String SPARKLER_SITE = "sparkler-site.yaml";
         String CONF_DIR = "conf";
+        String SPARKLER_DEFAULT_CONF = "Sparkler-default.yaml";
 
         /**
          * Apache Felix Framework Factory META file

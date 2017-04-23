@@ -51,15 +51,17 @@ fetcher:
    accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
    acceptLanguage: "en-US,en"
 
-# ##################### Plugins ###########################################
+###################### Plugins ###########################################
 plugins:
- active:
-  - urlFilter
-  # - fetcherJbrowser
  urlFilter:
   regexFile: regex-urlfilter.txt
  fetcherJbrowser:
    socketTimeout: 3000
    connectTimeout: 3000
+
+##################### Active Plugins #####################################
+activePlugins:
+ - urlFilter
+ - fetcherJbrowser
 
 
