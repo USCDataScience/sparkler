@@ -1,8 +1,13 @@
 package edu.usc.irds.sparkler.configUtils;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 public class Headers {
+    @NotEmpty
     private String userAgent;
+    @NotEmpty
     private String accept;
+    @NotEmpty
     private String acceptLanguage;
 
     public String getUserAgent() {

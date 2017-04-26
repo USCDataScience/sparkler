@@ -2,12 +2,17 @@ package edu.usc.irds.sparkler.configUtils;
 
 
 import edu.usc.irds.sparkler.BaseConfig;
+import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 
 public class KafkaProps implements BaseConfig {
+    @NotNull
     private boolean enable;
+    @NotNull
     private URI listeners;
+    @NotEmpty
     private String topic;
 
     public boolean isEnable() {

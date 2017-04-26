@@ -9,6 +9,8 @@ import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.NodeId;
 import org.yaml.snakeyaml.representer.Representer;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,16 +19,32 @@ import java.util.Map;
 /**
  * @apiNote This class will help in parsing the configs for
  * Sparkler. This uses SNAKE YAML parser for parsing the config
- * structure present in conf folder.
+ * structure present in conf folder. The validations of the config
+ * are done using hibernate-validator
  * @see org.yaml.snakeyaml.Yaml
+ * @see org.hibernate.validator
  */
 public class SparklerConfig implements BaseConfig {
+    @NotNull
+    @Valid
     private CrawldbProps crawldb;
+    @NotNull
+    @Valid
     private SparkProps spark;
+    @NotNull
+    @Valid
     private KafkaProps kafka;
+    @NotNull
+    @Valid
     private GenerateProps generate;
+    @NotNull
+    @Valid
     private FetcherProps fetcher;
+    @NotNull
+    @Valid
     private Map<String, PluginsProps> plugins;
+    @NotNull
+    @Valid
     private List<String> activePlugins;
 
     private static class SparklerConfigConstructor extends Constructor {
@@ -46,13 +64,11 @@ public class SparklerConfig implements BaseConfig {
     }
 
     public Object getPluginProps(String pluginId, Class<?> classToParse) {
-
         Yaml yaml = new Yaml();
         Map<String, PluginsProps> map = new LinkedHashMap<>();
         map.put(pluginId, plugins.get(pluginId));
         String dumpedData = yaml.dump(map);
         yaml = new Yaml(new Constructor(classToParse));
-        System.out.println(yaml.load(dumpedData));
         return yaml.load(dumpedData);
     }
 

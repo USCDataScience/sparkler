@@ -1,8 +1,16 @@
 package edu.usc.irds.sparkler.configUtils;
 
-public class FetcherProps {
-    private int serverDelay;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
+public class FetcherProps {
+    @Max(1)
+    @NotNull
+    private int serverDelay;
+    @Valid
+    @NotNull
     private Headers headers;
 
     public int getServerDelay() {

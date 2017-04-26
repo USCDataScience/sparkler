@@ -6,6 +6,12 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.NodeId;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import java.util.Set;
+
 /**
  * @apiNote This test suit will test the parsing of
  * sparkler configuration files.
@@ -14,6 +20,12 @@ public class SparklerConfigurationsTest {
     @Test
     public void test() throws Exception {
         SparklerConfig sparklerConfig = Constants.defaults.newDefaultSparklerConfig();
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<SparklerConfig>> constraintViolations = validator.validate(sparklerConfig);
+        for (ConstraintViolation constraintViolation : constraintViolations) {
+
+        }
     }
 }
 
