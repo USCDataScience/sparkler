@@ -10,6 +10,7 @@ import org.yaml.snakeyaml.nodes.NodeId;
 import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.InputStream;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,13 +36,24 @@ public class SparklerConfig implements BaseConfig {
         }
 
         class SparklerConfigConstruct extends Constructor.ConstructMapping {
+
             @Override
             protected Object constructJavaBean2ndStep(MappingNode node, Object object) {
                 Class type = node.getType();
-                System.out.println(type);
                 return super.constructJavaBean2ndStep(node, object);
             }
         }
+    }
+
+    public Object getPluginProps(String pluginId, Class<?> classToParse) {
+
+        Yaml yaml = new Yaml();
+        Map<String, PluginsProps> map = new LinkedHashMap<>();
+        map.put(pluginId, plugins.get(pluginId));
+        String dumpedData = yaml.dump(map);
+        yaml = new Yaml(new Constructor(classToParse));
+        System.out.println(yaml.load(dumpedData));
+        return yaml.load(dumpedData);
     }
 
     private static class SparklerConfigRepresenter extends Representer {
@@ -60,7 +72,6 @@ public class SparklerConfig implements BaseConfig {
         SparklerConfigConstructor sparklerConfigConstructor = new SparklerConfigConstructor(SparklerConfig.class);
         SparklerConfigLoaderOptions sparklerConfigLoaderOptions = new SparklerConfigLoaderOptions();
         sparklerConfigLoaderOptions.setAllowDuplicateKeys(false);
-        System.out.println("here");
         Yaml yaml = new Yaml(sparklerConfigConstructor, new SparklerConfigRepresenter(), new SparklerConfigDumperOpts(), sparklerConfigLoaderOptions);
         return (SparklerConfig) yaml.load(inputStream);
     }

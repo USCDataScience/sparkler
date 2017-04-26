@@ -28,11 +28,6 @@ class SparklerConfigConstructor extends Constructor {
         protected Object constructJavaBean2ndStep(MappingNode node, Object object) {
             Class type = node.getType();
             if (type.equals(PluginsProps.class)) {
-                //System.out.println(constructMapping(node).getClass());
-//                List<NodeTuple> list = new ArrayList<>();
-
-                // NodeTuple nodeTuple = new NodeTuple();
-
                 return null;
             } else {
                 return super.constructJavaBean2ndStep(node, object);
