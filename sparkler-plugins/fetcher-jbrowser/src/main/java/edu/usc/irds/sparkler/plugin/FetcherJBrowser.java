@@ -42,19 +42,13 @@ public class FetcherJBrowser extends FetcherDefault {
     private JBrowserDriver driver;
 
     @Override
-    public void init(JobContext context) throws SparklerException {
-        super.init(context);
+    public void init(JobContext context, String pluginId) throws SparklerException {
+        super.init(context, pluginId);
 
         SparklerConfiguration config = jobContext.getConfiguration();
         //TODO should change everywhere 
         pluginConfig = config.getPluginConfiguration(pluginId);
         driver = createBrowserInstance();
-    }
-
-    @Override
-    public void init(JobContext context, String pluginId) throws SparklerException {
-        this.pluginId = pluginId;
-        init(context);
     }
 
     @Override

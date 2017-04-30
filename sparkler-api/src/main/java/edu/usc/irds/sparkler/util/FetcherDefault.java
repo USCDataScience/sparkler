@@ -43,14 +43,16 @@ public class FetcherDefault extends AbstractExtensionPoint
     public static final Integer READ_TIMEOUT = 10000;
     public static final Integer DEFAULT_ERROR_CODE = 400;
     public static final String USER_AGENT = "User-Agent";
+    public static final Integer CONTENT_LIMIT = 100 * 1024 * 1024;
+    public static final String TRUNCATED = "X-Content-Truncated";
 
     protected List<String> userAgents;
     protected int userAgentIndex = 0; // index for rotating the agents
     protected Map<String, String> httpHeaders;
 
     @Override
-    public void init(JobContext context) throws SparklerException {
-        super.init(context);
+    public void init(JobContext context, String pluginId) throws SparklerException {
+        super.init(context, pluginId);
         SparklerConfiguration conf = context.getConfiguration();
         if (conf.containsKey(Constants.key.FETCHER_USER_AGENTS)) {
             Object agents = conf.get(Constants.key.FETCHER_USER_AGENTS);
