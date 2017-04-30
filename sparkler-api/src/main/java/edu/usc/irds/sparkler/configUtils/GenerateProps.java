@@ -1,17 +1,17 @@
 package edu.usc.irds.sparkler.configUtils;
 
 
-import com.sun.istack.NotNull;
 import edu.usc.irds.sparkler.BaseConfig;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 public class GenerateProps implements BaseConfig {
-    @NotNull
-    @Min(1)
+    @NotNull(message = "generate.topN cannot be null")
+    @Min(value = 1, message = "generate.topN value cannot be less than 1")
     private int topN;
-    @NotNull
-    @Min(1)
+    @NotNull(message = "generate.topGroups cannot be null")
+    @Min(value = 1, message = "generate.topGroups value cannot be less than 1")
     private int topGroups;
 
     public int getTopN() {

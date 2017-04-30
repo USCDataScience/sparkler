@@ -4,7 +4,7 @@ import edu.usc.irds.sparkler.BaseConfig;
 import org.hibernate.validator.constraints.NotEmpty;
 
 public class SparkProps implements BaseConfig {
-    @NotEmpty
+    @NotEmpty(message = "spark.url cannot be null")
     private String master;
 
     public String getMaster() {

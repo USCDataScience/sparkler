@@ -1,8 +1,8 @@
 package edu.usc.irds.sparkler.configUtils;
 
 
-import java.util.LinkedHashMap;
+import java.util.Map;
 
-public class PluginsProps extends LinkedHashMap<String, Object> {
+abstract public class PluginsProps implements Map<String, Object> {
 
 }

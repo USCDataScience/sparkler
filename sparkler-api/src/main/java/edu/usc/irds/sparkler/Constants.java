@@ -114,20 +114,35 @@ public interface Constants {
             return sparklerConf;
         }
 
-        public static SparklerConfig newDefaultSparklerConfig() {
-
-            InputStream input = null;
-            SparklerConfig sparklerConfig = null;
-            try {
-                input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT_CONF);
-
-                sparklerConfig = SparklerConfig.getSparklerConfig(input);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                IOUtils.closeQuietly();
-            }
+        /**
+         * @return SparklerConfig Object
+         * @throws SparklerException if the parsing of the yaml failed
+         * @apiNote This function helps in getting the SparklerConfig Object
+         */
+        public static SparklerConfig newDefaultSparklerConfig() throws SparklerException {
+            InputStream defaultStream = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT_CONF);
+            InputStream siteStream = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE_CONF);
+            Yaml yaml = new Yaml();
+            Map<String, Object> defaultMap = (Map<String, Object>) yaml.load(defaultStream);
+            Map<String, Object> siteMap = (Map<String, Object>) yaml.load(siteStream);
+            SparklerConfig sparklerConfig = SparklerConfig.getSparklerConfig(mask(defaultMap, siteMap));
+            IOUtils.closeQuietly();
             return sparklerConfig;
+        }
+
+        /**
+         * @param defaultMap default yaml file
+         * @param siteMap    site yaml file
+         * @return masked default yaml file
+         * @apiNote This function masks the default yaml with site yaml data
+         */
+        public static Map<String, Object> mask(Map<String, Object> defaultMap, Map<String, Object> siteMap) {
+            for (String key : defaultMap.keySet()) {
+                if (siteMap.containsKey(key)) {
+                    defaultMap.put(key, siteMap.get(key));
+                }
+            }
+            return defaultMap;
         }
     }
 
@@ -136,7 +151,8 @@ public interface Constants {
         String SPARKLER_DEFAULT = "sparkler-default.yaml";
         String SPARKLER_SITE = "sparkler-site.yaml";
         String CONF_DIR = "conf";
-        String SPARKLER_DEFAULT_CONF = "Sparkler-default.yaml";
+        String SPARKLER_DEFAULT_CONF = "sparklerDefault.yaml";
+        String SPARKLER_SITE_CONF = "sparklerSite.yaml";
 
         /**
          * Apache Felix Framework Factory META file

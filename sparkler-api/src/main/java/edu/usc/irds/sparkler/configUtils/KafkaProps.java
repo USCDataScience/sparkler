@@ -5,14 +5,14 @@ import edu.usc.irds.sparkler.BaseConfig;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
-import java.net.URI;
+import java.net.URL;
 
 public class KafkaProps implements BaseConfig {
-    @NotNull
+    @NotNull(message = "kafka.enable cannot be null")
     private boolean enable;
-    @NotNull
-    private URI listeners;
-    @NotEmpty
+    @NotNull(message = "kafka.listeners cannot be null")
+    private URL listeners;
+    @NotEmpty(message = "kafka.topic cannot be empty")
     private String topic;
 
     public boolean isEnable() {
@@ -23,11 +23,11 @@ public class KafkaProps implements BaseConfig {
         this.enable = enable;
     }
 
-    public URI getListeners() {
+    public URL getListeners() {
         return listeners;
     }
 
-    public void setListeners(URI listeners) {
+    public void setListeners(URL listeners) {
         this.listeners = listeners;
     }
 

@@ -9,12 +9,14 @@ import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.NodeId;
 import org.yaml.snakeyaml.representer.Representer;
 
-import javax.validation.Valid;
+import javax.validation.*;
 import javax.validation.constraints.NotNull;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.LinkedHashMap;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @apiNote This class will help in parsing the configs for
@@ -25,28 +27,34 @@ import java.util.Map;
  * @see org.hibernate.validator
  */
 public class SparklerConfig implements BaseConfig {
-    @NotNull
+    /****************************
+     * CONFIGURATIONS OF SPARKLER
+     ***************************/
+    @NotNull(message = "crawldb properties cannot be null")
     @Valid
     private CrawldbProps crawldb;
-    @NotNull
+    @NotNull(message = "spark properties cannot be null")
     @Valid
     private SparkProps spark;
-    @NotNull
+    @NotNull(message = "kafka properties cannot be null")
     @Valid
     private KafkaProps kafka;
-    @NotNull
+    @NotNull(message = "generate properties cannot be null")
     @Valid
     private GenerateProps generate;
-    @NotNull
+    @NotNull(message = "fetcher properties cannot be null")
     @Valid
     private FetcherProps fetcher;
-    @NotNull
+    @NotNull(message = "plugins cannot be null")
     @Valid
     private Map<String, PluginsProps> plugins;
-    @NotNull
+    @NotNull(message = "activePlugins list cannot be null")
     @Valid
     private List<String> activePlugins;
 
+    /***************************
+     * SNAKE-YAML configurations
+     ***************************/
     private static class SparklerConfigConstructor extends Constructor {
         public SparklerConfigConstructor(Class type) {
             super(type);
@@ -57,19 +65,10 @@ public class SparklerConfig implements BaseConfig {
 
             @Override
             protected Object constructJavaBean2ndStep(MappingNode node, Object object) {
-                Class type = node.getType();
+
                 return super.constructJavaBean2ndStep(node, object);
             }
         }
-    }
-
-    public Object getPluginProps(String pluginId, Class<?> classToParse) {
-        Yaml yaml = new Yaml();
-        Map<String, PluginsProps> map = new LinkedHashMap<>();
-        map.put(pluginId, plugins.get(pluginId));
-        String dumpedData = yaml.dump(map);
-        yaml = new Yaml(new Constructor(classToParse));
-        return yaml.load(dumpedData);
     }
 
     private static class SparklerConfigRepresenter extends Representer {
@@ -84,6 +83,31 @@ public class SparklerConfig implements BaseConfig {
 
     }
 
+    /***************************************************************
+     * @param pluginId     the plugin conf id that needs to be
+     *                     parsed
+     * @param classToParse class in which pluginId data needs to be
+     *                     parsed
+     * @return Object - Parsed into the respective class
+     * @apiNote This function helps in second level plugin props
+     * parsing. Pass the plugin Id and this utility function will
+     * fetch from the plugins map and parse it into a plugin bean
+     * class.
+     **************************************************************/
+    public Object getPluginProps(String pluginId, Class<?> classToParse) {
+        Yaml yaml = new Yaml();
+        String dumpedData = yaml.dump(plugins.get(pluginId));
+        yaml = new Yaml(new Constructor(classToParse));
+        return yaml.load(dumpedData);
+    }
+
+    /********************************************************************
+     * @param inputStream Stream of data that needs to be parsed into
+     *                    SparklerConfig object
+     * @return SparklerConfig Object
+     * @apiNote This function helps in parsing input stream to a sparkler
+     * config object
+     *******************************************************************/
     public static SparklerConfig getSparklerConfig(InputStream inputStream) {
         SparklerConfigConstructor sparklerConfigConstructor = new SparklerConfigConstructor(SparklerConfig.class);
         SparklerConfigLoaderOptions sparklerConfigLoaderOptions = new SparklerConfigLoaderOptions();
@@ -92,10 +116,42 @@ public class SparklerConfig implements BaseConfig {
         return (SparklerConfig) yaml.load(inputStream);
     }
 
+    /***********************************************************
+     * @param map that needs to be parsed into sparkler config
+     *            object
+     * @return SparklerConfig Object
+     * @apiNote This function helps in parsing map to a sparkler
+     * config object
+     **********************************************************/
+    public static SparklerConfig getSparklerConfig(Map<String, Object> map) {
+        Yaml yaml = new Yaml();
+        String dumpedData = yaml.dump(map);
+        InputStream inputStream = new ByteArrayInputStream(dumpedData.getBytes(StandardCharsets.UTF_8));
+        return getSparklerConfig(inputStream);
+    }
+
+    /**
+     * @return true if the sparkler configuration object parsed is valid
+     * @throws SparklerException
+     * @apiNote This function validates the SparklerConfig Object
+     */
+    public Boolean validateSparklerConfig() throws SparklerException {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<SparklerConfig>> constraintViolations = validator.validate(this);
+        for (ConstraintViolation constraintViolation : constraintViolations) {
+            throw (new SparklerException(constraintViolation.getMessage()));
+        }
+        return true;
+    }
+
     public SparklerConfig() {
 
     }
 
+    /*****************************************
+     * GETTERS AND SETTERS FOR SPARKLER-CONFIG
+     ****************************************/
     public CrawldbProps getCrawldb() {
         return crawldb;
     }

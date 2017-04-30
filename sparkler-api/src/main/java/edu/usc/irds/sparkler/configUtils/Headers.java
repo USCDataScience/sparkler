@@ -3,11 +3,11 @@ package edu.usc.irds.sparkler.configUtils;
 import org.hibernate.validator.constraints.NotEmpty;
 
 public class Headers {
-    @NotEmpty
+    @NotEmpty(message = "fetcher.headers.userAgent cannot be null")
     private String userAgent;
-    @NotEmpty
+    @NotEmpty(message = "fetcher.headers.accept cannot be null")
     private String accept;
-    @NotEmpty
+    @NotEmpty(message = "fetcher.headers.acceptLanguage cannot be null")
     private String acceptLanguage;
 
     public String getUserAgent() {

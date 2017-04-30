@@ -21,47 +21,13 @@
 # Type: String. Default: http://localhost:8983/solr/crawldb
 # for standalone server
 crawldb:
- uri: http://localhost:8983/solr/
+ url: http://localhost:8981/solr/
 
 #################### Apache Spark Properties ###########################
 
 # URL on which Apache Spark is running.
 # Type: String. Default is "local[*]" for local mode.
 spark:
- master: local[*]
-
-##################### Apache Kafka Properties ###########################
-# Enable Kafka Dump
-# Type: Boolean. Default is "false"
-kafka:
- enable: false
- listeners: localhost:9092
- topic: sparkler_%s
-
-##################### Generate Properties ###############################
-generate:
- topN: 1000
- topGroups: 256
- 
-##################### Fetcher Properties ################################
-fetcher:
- serverDelay: 1000
- headers:
-   userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version}"
-   accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
-   acceptLanguage: "en-US,en"
-
-###################### Plugins ###########################################
-plugins:
- urlFilter:
-  regexFile: regex-urlfilter.txt
- fetcherJbrowser:
-   socketTimeout: 3000
-   connectTimeout: 3000
-
-##################### Active Plugins #####################################
-activePlugins:
- - urlFilter
- - fetcherJbrowser
+ master: http://localhost:8080/test
 
 

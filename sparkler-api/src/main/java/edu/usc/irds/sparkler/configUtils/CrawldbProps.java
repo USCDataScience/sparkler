@@ -1,19 +1,20 @@
 package edu.usc.irds.sparkler.configUtils;
 
+
 import edu.usc.irds.sparkler.BaseConfig;
 
 import javax.validation.constraints.NotNull;
-import java.net.URI;
+import java.net.URL;
 
 public class CrawldbProps implements BaseConfig {
-    @NotNull
-    private URI uri;
+    @NotNull(message = "crawldb.url cannot be null")
+    private URL url;
 
-    public URI getUri() {
-        return uri;
+    public URL getUrl() {
+        return url;
     }
 
-    public void setUri(URI uri) {
-        this.uri = uri;
+    public void setUrl(URL url) {
+        this.url = url;
     }
 }
