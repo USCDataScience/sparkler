@@ -5,10 +5,10 @@
 [![Join the chat at https://gitter.im/USCDataScience/sparkler](https://badges.gitter.im/USCDataScience/sparkler.svg)](https://gitter.im/USCDataScience/sparkler?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/USCDataScience/sparkler.svg?branch=master)](https://travis-ci.org/USCDataScience/sparkler)
 
-A web crawler is a bot program that fetches resources from the web for the sake of building applications like search engines, knowledge bases, etc. Sparkler (contraction of Spark-Crawler) is a new web crawler that makes use of recent advancements in distributed computing and information retrieval domains by conglomerating various Apache projects like Spark, Kafka, Lucene/Solr, Tika, and Felix. Sparkler is an extensible, highly scalable, and high-performance web crawler that is an evolution of Apache Nutch and runs on Apache Spark Cluster. 
+A web crawler is a bot program that fetches resources from the web for the sake of building applications like search engines, knowledge bases, etc. Sparkler (contraction of Spark-Crawler) is a new web crawler that makes use of recent advancements in distributed computing and information retrieval domains by conglomerating various Apache projects like Spark, Kafka, Lucene/Solr, Tika, and Felix. Sparkler is an extensible, highly scalable, and high-performance web crawler that is an evolution of Apache Nutch and runs on Apache Spark Cluster.
 
 ### NOTE:
-Sparkler is being proposed to [Apache Incubator](http://incubator.apache.org/). Review the proposal document and provide your suggestions here [here](https://docs.google.com/document/d/1SU0YESlY5JViA9ezCSPr_SSF9e9VuvyFRICupGlfUKs/edit?usp=sharing) 
+Sparkler is being proposed to [Apache Incubator](http://incubator.apache.org/). Review the proposal document and provide your suggestions here [here](https://docs.google.com/document/d/1SU0YESlY5JViA9ezCSPr_SSF9e9VuvyFRICupGlfUKs/edit?usp=sharing)
 
 ### Notable features of Sparkler are as follows:
 
@@ -25,7 +25,7 @@ Click here for quick start guide : https://github.com/uscdataScience/sparkler/wi
 ### Requires
   * Apache Solr - (required at runtime) - config files (schema) are in `conf/solr` folder.
   * Apache Maven - (required to build)
-  * Apache Kafka - (optional, to stream output) 
+  * Apache Kafka - (optional, to stream output)
 
 Setup instructions https://github.com/uscdataScience/sparkler/wiki/sparkler-0.1#requirements
 
@@ -33,7 +33,7 @@ Setup instructions https://github.com/uscdataScience/sparkler/wiki/sparkler-0.1#
  To build this project, `cd` to the root directory of the sparkler and run the following command:
 
      mvn clean install
- 
+
  Note that this is a multi-module maven project with OSGI bundle support using Apache Felix.
  On success, the build produces `sparkler-app/target/sparkler-app-xx.jar`
  For detailed instuctions, visit the [wiki page: Build and Deploy](https://github.com/USCDataScience/sparkler/wiki/Build-and-Deploy)
@@ -61,31 +61,8 @@ This is a multi module maven project
 |fetcher-jbrowser | /sparkler-plugins/fetcher-jbrowser | This plugin use headless browser to fetch a URL | An OSGI bundle which helps to fetch Javascript enabled pages |
 
 
-### Contributing to Sparkler
-1. **Code style:**
-
- **a) Java style:** The project includes a code format file named  `eclipse-codeformat.xml` in the root directory.
- Depending on the IDE you use, please configure the code style rules from this XML file.
-
- **b) Scala Style:** The project also includes a code format file named `scalastyle_config.xml` in the root directory.
- Depending on the IDE you use, please configure the code style rules from this XML file. Visit http://www.scalastyle.org/
- for more details
-
-2. **Reporting bugs or requesting features:**
-
-   Create an issue in github, https://github.com/uscdataScience/sparkler/issues
-
-3. **Sending pull request:**
-
-  Use github pull request functionality. All pull requests must be raised against `develop` branch and have an issue created to discuss about it (for the sake of visibility to other members) whether it is bug fix or a feature addition.
-4. **Licence Header:**
-
-  All source files should include Apache Licence 2.0 licence header. Refer existing source files for an example.
-
-
 ### Contact Us
 
 In case you have any questions or suggestions, please drop them at [irds-l@mymaillists.usc.edu](mailto:irds-l@mymaillists.usc.edu)
 
 Website: [http://irds.usc.edu](http://irds.usc.edu)
-
