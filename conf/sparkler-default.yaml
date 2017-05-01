@@ -53,14 +53,16 @@ fetcher:
 
 ###################### Plugins ###########################################
 plugins:
- urlFilter:
-  regexFile: regex-urlfilter.txt
- fetcherJbrowser:
-   socketTimeout: 3000
-   connectTimeout: 3000
+  urlfilter-regex:
+    regexFile: regex-urlfilter.txt
+  fetcher-jbrowser:
+    socketTimeout: 3000
+    connectTimeout: 3000
 
 ##################### Active Plugins #####################################
 activePlugins:
- - urlFilter
- - fetcherJbrowser
+  - urlfilter-regex
+  - fetcher-jbrowser
 
+################Plugin Bundles Directory #################
+pluginsDir: ${project.parent.basedir}${file.separator}${project.bundles.directory}
