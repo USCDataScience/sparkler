@@ -1,8 +1,7 @@
-package edu.usc.irds.sparkler.configUtils;
+package edu.usc.irds.sparkler.config;
 
 
 import edu.usc.irds.sparkler.BaseConfig;
-import edu.usc.irds.sparkler.SparklerConfig;
 import edu.usc.irds.sparkler.SparklerException;
 
 import javax.validation.ConstraintViolation;

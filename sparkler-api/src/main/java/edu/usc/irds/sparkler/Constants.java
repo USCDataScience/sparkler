@@ -17,6 +17,7 @@
 
 package edu.usc.irds.sparkler;
 
+import edu.usc.irds.sparkler.config.SparklerConfig;
 import org.apache.commons.io.IOUtils;
 import org.yaml.snakeyaml.Yaml;
 

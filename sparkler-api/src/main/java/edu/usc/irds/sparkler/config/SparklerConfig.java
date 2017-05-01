@@ -1,6 +1,7 @@
-package edu.usc.irds.sparkler;
+package edu.usc.irds.sparkler.config;
 
-import edu.usc.irds.sparkler.config.*;
+import edu.usc.irds.sparkler.BaseConfig;
+import edu.usc.irds.sparkler.SparklerException;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;

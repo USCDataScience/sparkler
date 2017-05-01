@@ -1,5 +1,6 @@
 package edu.usc.irds.sparkler;
 
+import edu.usc.irds.sparkler.config.SparklerConfig;
 import org.junit.Test;
 
 /**
