@@ -1,4 +1,4 @@
-package edu.usc.irds.sparkler.configUtils;
+package edu.usc.irds.sparkler.config;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
