@@ -1,7 +1,7 @@
 package edu.usc.irds.sparkler.config;
 
-import edu.usc.irds.sparkler.BaseConfig;
 import edu.usc.irds.sparkler.SparklerException;
+import edu.usc.irds.sparkler.SparklerRuntimeException;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -49,9 +49,14 @@ public class SparklerConfig implements BaseConfig {
     @NotNull(message = "plugins cannot be null")
     @Valid
     private Map<String, PluginsProps> plugins;
+
     @NotNull(message = "activePlugins list cannot be null")
     @Valid
     private List<String> activePlugins;
+
+    @NotNull(message = "pluginsDir should not be null")
+    @Valid
+    private String pluginsDir;
 
     /***************************
      * SNAKE-YAML configurations
@@ -95,11 +100,16 @@ public class SparklerConfig implements BaseConfig {
      * fetch from the plugins map and parse it into a plugin bean
      * class.
      **************************************************************/
-    public Object getPluginProps(String pluginId, Class<?> classToParse) {
+    public<T> T getPluginProps(String pluginId, Class<T> classToParse) {
+
+        if (!plugins.containsKey(pluginId)){
+            throw new SparklerRuntimeException("No plugin conf found for id:'"
+                    + pluginId + "'. Available:" + plugins.keySet());
+        }
         Yaml yaml = new Yaml();
         String dumpedData = yaml.dump(plugins.get(pluginId));
         yaml = new Yaml(new Constructor(classToParse));
-        return yaml.load(dumpedData);
+        return (T) yaml.load(dumpedData);
     }
 
     /********************************************************************
@@ -113,7 +123,10 @@ public class SparklerConfig implements BaseConfig {
         SparklerConfigConstructor sparklerConfigConstructor = new SparklerConfigConstructor(SparklerConfig.class);
         SparklerConfigLoaderOptions sparklerConfigLoaderOptions = new SparklerConfigLoaderOptions();
         sparklerConfigLoaderOptions.setAllowDuplicateKeys(false);
-        Yaml yaml = new Yaml(sparklerConfigConstructor, new SparklerConfigRepresenter(), new SparklerConfigDumperOpts(), sparklerConfigLoaderOptions);
+        Yaml yaml = new Yaml(sparklerConfigConstructor,
+                new SparklerConfigRepresenter(),
+                new SparklerConfigDumperOpts(),
+                sparklerConfigLoaderOptions);
         return (SparklerConfig) yaml.load(inputStream);
     }
 
@@ -207,5 +220,13 @@ public class SparklerConfig implements BaseConfig {
 
     public void setActivePlugins(List<String> activePlugins) {
         this.activePlugins = activePlugins;
+    }
+
+    public String getPluginsDir() {
+        return pluginsDir;
+    }
+
+    public void setPluginsDir(String pluginsDir) {
+        this.pluginsDir = pluginsDir;
     }
 }

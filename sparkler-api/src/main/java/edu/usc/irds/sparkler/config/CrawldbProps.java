@@ -1,8 +1,6 @@
 package edu.usc.irds.sparkler.config;
 
 
-import edu.usc.irds.sparkler.BaseConfig;
-
 import javax.validation.constraints.NotNull;
 import java.net.URL;
 

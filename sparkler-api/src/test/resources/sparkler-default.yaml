@@ -45,21 +45,24 @@ generate:
 ##################### Fetcher Properties ################################
 fetcher:
  serverDelay: 1000
+ userAgents: user-agents.txt
+
  headers:
-   userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version}"
-   accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
-   acceptLanguage: "en-US,en"
+  Custom-Header: "Custom Header Value"
 
 ###################### Plugins ###########################################
 plugins:
- urlFilter:
+ urlfilter-regex:
   regexFile: regex-urlfilter.txt
- fetcherJbrowser:
+ fetcher-jbrowser:
    socketTimeout: 3000
    connectTimeout: 3000
 
 ##################### Active Plugins #####################################
 activePlugins:
- - urlFilter
- - fetcherJbrowser
+ - urlfilter-regex
+ - fetcher-jbrowser
+
+################Plugin Bundles Directory #################
+pluginsDir: ${project.parent.basedir}${file.separator}${project.bundles.directory}
 

@@ -1,6 +1,5 @@
 package edu.usc.irds.sparkler.config;
 
-import edu.usc.irds.sparkler.BaseConfig;
 import org.hibernate.validator.constraints.NotEmpty;
 
 public class SparkProps implements BaseConfig {
