@@ -21,6 +21,7 @@ import edu.usc.irds.sparkler.config.SparklerConfig;
 import org.apache.commons.io.IOUtils;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
@@ -121,14 +122,21 @@ public interface Constants {
          * @apiNote This function helps in getting the SparklerConfig Object
          */
         public static SparklerConfig newDefaultSparklerConfig() throws SparklerException {
-            InputStream defaultStream = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT_CONF);
-            InputStream siteStream = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE_CONF);
-            Yaml yaml = new Yaml();
-            Map<String, Object> defaultMap = (Map<String, Object>) yaml.load(defaultStream);
-            Map<String, Object> siteMap = (Map<String, Object>) yaml.load(siteStream);
-            SparklerConfig sparklerConfig = SparklerConfig.getSparklerConfig(mask(defaultMap, siteMap));
-            IOUtils.closeQuietly();
-            return sparklerConfig;
+            ClassLoader loader = Constants.class.getClassLoader();
+            try (InputStream defaultStream = loader.getResourceAsStream(file.SPARKLER_DEFAULT_CONF)) {
+                assert defaultStream != null;
+                Yaml yaml = new Yaml();
+                Map<String, Object> confMap = (Map<String, Object>) yaml.load(defaultStream);
+                try (InputStream siteStream = loader.getResourceAsStream(file.SPARKLER_SITE_CONF)) {
+                    if (siteStream != null) {
+                        Map<String, Object> siteMap = (Map<String, Object>) yaml.load(siteStream);
+                        confMap = mask(confMap, siteMap);
+                    }
+                }
+                return SparklerConfig.getSparklerConfig(confMap);
+            } catch (IOException e){
+                throw new SparklerException(e.getMessage(), e);
+            }
         }
 
         /**
@@ -163,10 +171,6 @@ public interface Constants {
          * Specifying Apache Felix bundle directory.
          * TODO:Should come from Sparkler Config
          **/
-        //String FELIX_BUNDLE_DIR = key.PLUGINS_BUNDLE_DIRECTORY;
-        //String FELIX_BUNDLE_DIR = "../bundles";
-        //String FELIX_BUNDLE_DIR = "/Users/karanjeetsingh/git_workspace/madhav-sparkler/sparkler-app/bundles";
-
 
         /**
          * Apache Felix configuration properties file
