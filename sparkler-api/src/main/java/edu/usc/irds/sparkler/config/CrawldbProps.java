@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 import java.net.URL;
 
 public class CrawldbProps implements BaseConfig {
+
     @NotNull(message = "crawldb.url cannot be null")
     private URL url;
 

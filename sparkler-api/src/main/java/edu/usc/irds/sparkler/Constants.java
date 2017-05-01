@@ -123,14 +123,15 @@ public interface Constants {
          */
         public static SparklerConfig newDefaultSparklerConfig() throws SparklerException {
             ClassLoader loader = Constants.class.getClassLoader();
-            try (InputStream defaultStream = loader.getResourceAsStream(file.SPARKLER_DEFAULT_CONF)) {
+            try (InputStream defaultStream = loader.getResourceAsStream(file.SPARKLER_DEFAULT)) {
                 assert defaultStream != null;
                 Yaml yaml = new Yaml();
                 Map<String, Object> confMap = (Map<String, Object>) yaml.load(defaultStream);
-                try (InputStream siteStream = loader.getResourceAsStream(file.SPARKLER_SITE_CONF)) {
-                    if (siteStream != null) {
-                        Map<String, Object> siteMap = (Map<String, Object>) yaml.load(siteStream);
-                        confMap = mask(confMap, siteMap);
+                try (InputStream siteStream = loader.getResourceAsStream(file.SPARKLER_SITE)) {
+                    Map<String, Object> siteMap;
+                    if (siteStream != null &&
+                            (siteMap = (Map<String, Object>) yaml.load(siteStream)) != null) {
+                            confMap = mask(confMap, siteMap);
                     }
                 }
                 return SparklerConfig.getSparklerConfig(confMap);
@@ -160,8 +161,6 @@ public interface Constants {
         String SPARKLER_DEFAULT = "sparkler-default.yaml";
         String SPARKLER_SITE = "sparkler-site.yaml";
         String CONF_DIR = "conf";
-        String SPARKLER_DEFAULT_CONF = "sparklerDefault.yaml";
-        String SPARKLER_SITE_CONF = "sparklerSite.yaml";
 
         /**
          * Apache Felix Framework Factory META file

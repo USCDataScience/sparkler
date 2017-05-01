@@ -14,77 +14,52 @@
 # limitations under the License.
 
 
-
 ##################### General Properties ################################
 
 # Crawl Database URL. Stores crawl metadata and status updates.
 # Type: String. Default: http://localhost:8983/solr/crawldb
-crawldb.uri: file://conf/solr/crawldb
+# for standalone server
+crawldb:
+  url: file://conf/solr/crawldb
 
-
-
-##################### Apache Spark Properties ###########################
+#################### Apache Spark Properties ###########################
 
 # URL on which Apache Spark is running.
-# Type: String. Default is "local" for local mode.
-spark.master: local
-
+# Type: String. Default is "local[*]" for local mode.
+spark:
+ master: local[*]
 
 ##################### Apache Kafka Properties ###########################
 # Enable Kafka Dump
 # Type: Boolean. Default is "false"
-kafka.enable: false
-# Kafka Listeners
-# Type: String. Default is "localhost:9092" for local mode.
-kafka.listeners: localhost:9092
-# Kafka topic to send dumps to
-# Type: String. Default is "sparkler/<jobid>".
-kafka.topic: sparkler_%s
+kafka:
+ enable: false
+ listeners: http://localhost:9092/
+ topic: sparkler_%s
 
 ##################### Generate Properties ###############################
-
-# Generates the top N URLs for fetching.
-# Type: Int. Default: 1000
-generate.topn: 1000
-
-# Generates URLs from top N groups for fetching.
-# Type: Int. Default: 256
-generate.top.groups: 256
-
-
+generate:
+ topN: 1000
+ topGroups: 256
 
 ##################### Fetcher Properties ################################
+fetcher:
+ serverDelay: 1000
+ headers:
+   userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version}"
+   accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+   acceptLanguage: "en-US,en"
 
-# Delay (in milliseconds) between two fetch requests for the same host.
-# Type: Long. Default: 1000
-fetcher.server.delay: 1000
-
-# list of headers to be included for each outgoing request
-fetcher.headers:
-  Custom-Header: "Custom Header Value"
-
-# rotating agents
-# The list of agents overrides the default agent set in fetcher.headers.
-# This is an unbounded list, it can take any number of agents you wish.
-# for every request the agents are used one after the other in sequence
-fetcher.user.agents: user-agents.txt
-
-##################### Plugins ###########################################
-
-# Plugins Bundle directory. Configured through Maven.
-# Discouraged to Modify unless specifically required.
-plugins.bundle.directory: ${project.parent.basedir}${file.separator}${project.bundles.directory}
-
-# All Plugins are listed under this tree
+###################### Plugins ###########################################
 plugins:
-  # Regex URL Filter - Filters outlinks from a web page based on Regex
-  # expressions.
-  urlfilter.regex:
-    # File with Regex Filter Rules
-    urlfilter.regex.file: regex-urlfilter.txt
-  # Regex URL Filter - Filters outlinks from a web page based on Regex
-  # expressions.
-  fetcher.jbrowser:
-    # File with Regex Filter Rules
-    socket.timeout: 3000
-    connect.timeout: 3000
+ urlFilter:
+  regexFile: regex-urlfilter.txt
+ fetcherJbrowser:
+   socketTimeout: 3000
+   connectTimeout: 3000
+
+##################### Active Plugins #####################################
+activePlugins:
+ - urlFilter
+ - fetcherJbrowser
+
