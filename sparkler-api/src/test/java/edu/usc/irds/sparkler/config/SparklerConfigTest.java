@@ -8,9 +8,11 @@ import org.junit.Test;
  * sparkler configuration files.
  */
 public class SparklerConfigTest {
+
     @Test
     public void test() throws Exception {
-        SparklerConfig sparklerConfig = Constants.defaults.newDefaultSparklerConfig();
+        SparklerConfig sparklerConfig = Constants.defaults.newDefaultConfig();
+        System.out.println(sparklerConfig.getFetcher().getUserAgents());
         sparklerConfig.validateSparklerConfig();
     }
 }
