@@ -22,7 +22,7 @@ import com.machinepublishers.jbrowserdriver.Settings;
 import com.machinepublishers.jbrowserdriver.Timezone;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerException;
-import edu.usc.irds.sparkler.config.PluginsProps;
+import edu.usc.irds.sparkler.config.PluginProps;
 import edu.usc.irds.sparkler.config.SparklerConfig;
 import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
@@ -40,7 +40,7 @@ public class FetcherJBrowser extends FetcherDefault {
 
     private static final Integer DEFAULT_TIMEOUT = 2000;
     private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
-    private PluginsProps pluginConfig;
+    private PluginProps pluginConfig;
     private JBrowserDriver driver;
 
     @Override

@@ -19,14 +19,12 @@ package edu.usc.irds.sparkler.plugin;
 
 
 import edu.usc.irds.sparkler.ConfigKey;
-import edu.usc.irds.sparkler.config.PluginsProps;
 import edu.usc.irds.sparkler.plugin.regex.RegexRule;
 import edu.usc.irds.sparkler.plugin.regex.RegexURLFilterBase;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
