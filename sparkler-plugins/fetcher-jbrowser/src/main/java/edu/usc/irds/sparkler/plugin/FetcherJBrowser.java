@@ -36,6 +36,8 @@ import java.net.URLConnection;
 
 public class FetcherJBrowser extends FetcherDefault {
 
+    public static final String PLUGIN_ID = "fetcher-jbrowser";
+
     private static final Integer DEFAULT_TIMEOUT = 2000;
     private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
     private PluginsProps pluginConfig;
