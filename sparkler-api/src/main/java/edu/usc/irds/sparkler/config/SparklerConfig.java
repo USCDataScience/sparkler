@@ -48,7 +48,7 @@ public class SparklerConfig implements BaseConfig {
     private FetcherProps fetcher;
     @NotNull(message = "plugins cannot be null")
     @Valid
-    private Map<String, PluginsProps> plugins;
+    private Map<String, PluginProps> plugins;
 
     @NotNull(message = "activePlugins list cannot be null")
     @Valid
@@ -206,11 +206,11 @@ public class SparklerConfig implements BaseConfig {
         this.fetcher = fetcher;
     }
 
-    public Map<String, PluginsProps> getPlugins() {
+    public Map<String, PluginProps> getPlugins() {
         return plugins;
     }
 
-    public void setPlugins(Map<String, PluginsProps> plugins) {
+    public void setPlugins(Map<String, PluginProps> plugins) {
         this.plugins = plugins;
     }
 
