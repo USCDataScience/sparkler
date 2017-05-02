@@ -20,9 +20,10 @@ package edu.usc.irds.sparkler.model
 import java.io.File
 
 import edu.usc.irds.sparkler.base.Loggable
+import edu.usc.irds.sparkler.config.SparklerConfig
 import edu.usc.irds.sparkler.service.SolrProxy
 import edu.usc.irds.sparkler.util.JobUtil
-import edu.usc.irds.sparkler.{Constants, JobContext, SparklerConfiguration, SparklerException}
+import edu.usc.irds.sparkler.{Constants, JobContext, SparklerException}
 import org.apache.solr.client.solrj.SolrClient
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer
 import org.apache.solr.client.solrj.impl.{CloudSolrClient, HttpSolrClient}
@@ -33,11 +34,11 @@ import org.apache.solr.core.CoreContainer
   * @since 5/31/16
   */
 class SparklerJob(val id: String,
-                  @transient var config: SparklerConfiguration,
+                  @transient var config: SparklerConfig,
                   var currentTask: String)
   extends Serializable with JobContext with Loggable {
 
-  var crawlDbUri: String = config.get(Constants.key.CRAWLDB).toString
+  var crawlDbUri: String = config.getCrawldb.getUrl.toString
 
   /**
     * Creates solr client based on the crawldburi
@@ -45,7 +46,7 @@ class SparklerJob(val id: String,
     */
   def newSolrClient(): SolrClient = {
     if (crawlDbUri.startsWith("http://") || crawlDbUri.startsWith("https://")) {
-      new HttpSolrClient(crawlDbUri)
+      new HttpSolrClient.Builder(crawlDbUri).build()
     } else if (crawlDbUri.startsWith("file://")) {
       var solrHome = crawlDbUri.replace("file://", "")
       LOG.info("Embedded Solr, Solr Core={}", solrHome)
@@ -77,7 +78,7 @@ class SparklerJob(val id: String,
     }
   }
 
-  def this(id: String, conf: SparklerConfiguration) {
+  def this(id: String, conf: SparklerConfig) {
     this(id, conf, JobUtil.newSegmentId())
   }
 
@@ -85,7 +86,7 @@ class SparklerJob(val id: String,
     new SolrProxy(newSolrClient())
   }
 
-  override def getConfiguration: SparklerConfiguration ={
+  override def getConfiguration: SparklerConfig ={
     //FIXME: config has to be serializable
     //FIXME: remove transient annotation from config and remove this reinitialization
     if (config == null) {

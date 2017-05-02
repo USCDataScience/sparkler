@@ -19,6 +19,7 @@ package edu.usc.irds.sparkler.plugin;
 
 
 import edu.usc.irds.sparkler.ConfigKey;
+import edu.usc.irds.sparkler.config.PluginsProps;
 import edu.usc.irds.sparkler.plugin.regex.RegexRule;
 import edu.usc.irds.sparkler.plugin.regex.RegexURLFilterBase;
 
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 
@@ -35,8 +37,10 @@ import java.util.regex.Pattern;
  */
 public class RegexURLFilter extends RegexURLFilterBase {
 
+    public static final String PLUGIN_ID = "urlfilter-regex";
+
     @ConfigKey
-    public static final String URLFILTER_REGEX_FILE = "urlfilter.regex.file";
+    public static final String URLFILTER_REGEX_FILE = "regexFile";
 
     public RegexURLFilter() {
         super();
@@ -50,7 +54,7 @@ public class RegexURLFilter extends RegexURLFilterBase {
      * Rules specified as a config property will override rules specified as a
      * config file.
      */
-    protected Reader getRulesReader(LinkedHashMap pluginConfig) throws IOException {
+    protected Reader getRulesReader(Map<String, Object> pluginConfig) throws IOException {
         String regexFile = pluginConfig.get(URLFILTER_REGEX_FILE).toString();
         return new InputStreamReader(jobContext.getClass().getClassLoader().getResource(regexFile).openStream());
     }

@@ -17,6 +17,8 @@
 
 package edu.usc.irds.sparkler;
 
+import edu.usc.irds.sparkler.config.SparklerConfig;
+
 /**
  * The contract for job Context
  * @since Sparkler 0.1
@@ -27,7 +29,7 @@ public interface JobContext {
      * Gets Configuration
      * @return an instance of {@link }
      */
-    SparklerConfiguration getConfiguration();
+    SparklerConfig getConfiguration();
 
     /**
      * Gets Sparkler Job Id

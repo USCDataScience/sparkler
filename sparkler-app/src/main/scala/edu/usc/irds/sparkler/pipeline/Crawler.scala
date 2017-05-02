@@ -18,10 +18,13 @@
 package edu.usc.irds.sparkler.pipeline
 
 
-import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, SparklerConfiguration}
+import java.net.URL
+
+import edu.usc.irds.sparkler.{Constants, CrawlDbRDD}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
+import edu.usc.irds.sparkler.config.SparklerConfig
 import edu.usc.irds.sparkler.model.ResourceStatus._
-import edu.usc.irds.sparkler.model.{ResourceStatus, CrawlData, Resource, SparklerJob}
+import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
 import edu.usc.irds.sparkler.util.JobUtil
 import org.apache.hadoop.conf.Configuration
@@ -43,15 +46,15 @@ class Crawler extends CliTool {
   import Crawler._
 
   // Load Sparkler Configuration
-  val sparklerConf: SparklerConfiguration = Constants.defaults.newDefaultConfig()
+  val sparklerConf: SparklerConfig = Constants.defaults.newDefaultConfig()
 
   @Option(name = "-m", aliases = Array("--master"),
     usage = "Spark Master URI. Ignore this if job is started by spark-submit")
-  var sparkMaster: String = sparklerConf.get(Constants.key.SPARK_MASTER).asInstanceOf[String]
+  var sparkMaster: String = sparklerConf.getSpark.getMaster
 
   @Option(name = "-cdb", aliases = Array("--crawldb"),
     usage = "Crawdb URI.")
-  var sparkSolr: String = sparklerConf.get(Constants.key.CRAWLDB).asInstanceOf[String]
+  var sparkSolr: String = sparklerConf.getCrawldb.getUrl.toString
 
   @Option(name = "-id", aliases = Array("--id"), required = true,
     usage = "Job id. When not sure, get the job id from injector command")
@@ -63,23 +66,23 @@ class Crawler extends CliTool {
 
   @Option(name = "-ke", aliases = Array("--kafka-enable"),
     usage = "Enable Kafka, default is false i.e. disabled")
-  var kafkaEnable: Boolean = sparklerConf.get(Constants.key.KAFKA_ENABLE).asInstanceOf[Boolean]
+  var kafkaEnable: Boolean = sparklerConf.getKafka.isEnable
 
   @Option(name = "-kls", aliases = Array("--kafka-listeners"),
     usage = "Kafka Listeners, default is localhost:9092")
-  var kafkaListeners: String = sparklerConf.get(Constants.key.KAFKA_LISTENERS).asInstanceOf[String]
+  var kafkaListeners: String = sparklerConf.getKafka.getListeners.toString
 
   @Option(name = "-ktp", aliases = Array("--kafka-topic"),
     usage = "Kafka Topic, default is sparkler")
-  var kafkaTopic: String = sparklerConf.get(Constants.key.KAFKA_TOPIC).asInstanceOf[String]
+  var kafkaTopic: String = sparklerConf.getKafka.getTopic
 
   @Option(name = "-tn", aliases = Array("--top-n"),
     usage = "Top urls per domain to be selected for a round")
-  var topN: Int = sparklerConf.get(Constants.key.GENERATE_TOPN).asInstanceOf[Int]
+  var topN: Int = sparklerConf.getGenerate.getTopN
 
   @Option(name = "-tg", aliases = Array("--top-groups"),
     usage = "Max Groups to be selected for fetch..")
-  var topG: Int = sparklerConf.get(Constants.key.GENERATE_TOP_GROUPS).asInstanceOf[Int]
+  var topG: Int = sparklerConf.getGenerate.getTopGroups
 
   @Option(name = "-i", aliases = Array("--iterations"),
     usage = "Number of iterations to run")
@@ -87,7 +90,7 @@ class Crawler extends CliTool {
 
   @Option(name = "-fd", aliases = Array("--fetch-delay"),
     usage = "Delay between two fetch requests")
-  var fetchDelay: Long = sparklerConf.get(Constants.key.FETCHER_SERVER_DELAY).asInstanceOf[Number].longValue()
+  var fetchDelay: Long = sparklerConf.getFetcher.getServerDelay
 
   @Option(name = "-aj", handler = classOf[StringArrayOptionHandler], aliases = Array("--add-jars"), usage = "Add sparkler jar to spark context")
   var jarPath : Array[String] = new Array[String](0)
@@ -104,7 +107,7 @@ class Crawler extends CliTool {
       conf.setMaster(sparkMaster)
     }
     if (!sparkSolr.isEmpty){
-      sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put("crawldb.uri", sparkSolr)
+      sparklerConf.getCrawldb.setUrl(new URL(sparkSolr))
     }
 
     sc = new SparkContext(conf)

@@ -18,13 +18,11 @@
 package edu.usc.irds.sparkler;
 
 import edu.usc.irds.sparkler.config.SparklerConfig;
-import org.apache.commons.io.IOUtils;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * A static container for all the constants
@@ -92,36 +90,13 @@ public interface Constants {
 
 
     abstract class defaults {
-        /**
-         * Create configuration instance for Sparkler
-         */
-        public static SparklerConfiguration newDefaultConfig() {
-            //FIXME: needs rework!
-            Yaml yaml = new Yaml();
-            InputStream input = null;
-            SparklerConfiguration sparklerConf = null;
-            try {
-                input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT);
-                Map<String, Object> yamlMap = (Map<String, Object>) yaml.load(input);
-                sparklerConf = new SparklerConfiguration(yamlMap);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                IOUtils.closeQuietly(input);
-            }
-
-            if (sparklerConf != null) {
-                sparklerConf.put(key.UUID_KEY, UUID.randomUUID().toString());
-            }
-            return sparklerConf;
-        }
 
         /**
          * @return SparklerConfig Object
          * @throws SparklerException if the parsing of the yaml failed
          * @apiNote This function helps in getting the SparklerConfig Object
          */
-        public static SparklerConfig newDefaultSparklerConfig() throws SparklerException {
+        public static SparklerConfig newDefaultConfig() {
             ClassLoader loader = Constants.class.getClassLoader();
             try (InputStream defaultStream = loader.getResourceAsStream(file.SPARKLER_DEFAULT)) {
                 assert defaultStream != null;
@@ -136,7 +111,7 @@ public interface Constants {
                 }
                 return SparklerConfig.getSparklerConfig(confMap);
             } catch (IOException e){
-                throw new SparklerException(e.getMessage(), e);
+                throw new RuntimeException(new SparklerException(e.getMessage(), e));
             }
         }
 

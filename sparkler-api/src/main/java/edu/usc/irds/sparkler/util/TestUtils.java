@@ -20,8 +20,8 @@ package edu.usc.irds.sparkler.util;
 import edu.usc.irds.sparkler.Constants;
 import edu.usc.irds.sparkler.ExtensionPoint;
 import edu.usc.irds.sparkler.JobContext;
-import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
+import edu.usc.irds.sparkler.config.SparklerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,14 +36,14 @@ public class TestUtils {
     /**
      * Configuration to be used by  tests
      */
-    public static final SparklerConfiguration CONFIG = Constants.defaults.newDefaultConfig();
+    public static final SparklerConfig CONFIG = Constants.defaults.newDefaultConfig();
 
     /**
      * Job context to be used by the tests
      */
     public static final JobContext JOB_CONTEXT = new JobContext() {
         @Override
-        public SparklerConfiguration getConfiguration() {
+        public SparklerConfig getConfiguration() {
             return CONFIG;
         }
 

@@ -139,8 +139,7 @@ class PluginService(job:SparklerJob) {
     val felixConfig:mutable.Map[String, String] = loadFelixConfig()
     LOG.info("Felix Configuration loaded successfully")
     // Setting configuration to Auto Deploy Felix Bundles
-    felixConfig(AutoProcessor.AUTO_DEPLOY_DIR_PROPERTY) = job.getConfiguration
-      .get(Constants.key.PLUGINS_BUNDLE_DIRECTORY).asInstanceOf[String]
+    felixConfig(AutoProcessor.AUTO_DEPLOY_DIR_PROPERTY) = job.getConfiguration.getPluginsDir
 
     // Register a Shutdown Hook with JVM to make sure Felix framework is cleanly
     // shutdown when JVM exits.
@@ -166,10 +165,8 @@ class PluginService(job:SparklerJob) {
   object BundleLoader {
 
     def load(loader: Framework): Unit = {
-      val bundlesDir = job.getConfiguration
-        .get(Constants.key.PLUGINS_BUNDLE_DIRECTORY).asInstanceOf[String]
-      val requiredBundles = job.getConfiguration
-        .get(Constants.key.ACTIVE_PLUGINS).asInstanceOf[java.util.List[String]].toSet[String]
+      val bundlesDir = job.getConfiguration.getPluginsDir
+      val requiredBundles = job.getConfiguration.getActivePlugins
 
       LOG.info(s"Activated User bundles count = ${requiredBundles.size}")
       val seenBundles = mutable.HashSet[String]() // these are the plugins seen by loader
@@ -181,7 +178,7 @@ class PluginService(job:SparklerJob) {
         val b = ctx.installBundle(bf.getAbsoluteFile.toURI.toString)
         val name = b.getSymbolicName
         if (requiredBundles.contains(name)){
-          LOG.info(s"Bundle Available ${name}")
+          LOG.info(s"Bundle Available $name")
           seenBundles += name
           bundles += b
           LOG.info("Starting the bundle name...")
