@@ -2,6 +2,7 @@ package edu.usc.irds.sparkler.config;
 
 
 import edu.usc.irds.sparkler.SparklerException;
+import edu.usc.irds.sparkler.plugin.FetcherJBrowser;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -22,6 +23,26 @@ public class FetcherJBrowserProps implements BaseConfig {
     @Min(value = 1, message = "fetcherJbrowser.connectTimeout cannot be less that 1")
     private int connectTimeout;
 
+    /*********************
+     * GETTERS AND SETTERS
+     ********************/
+    public int getSocketTimeout() {
+        return socketTimeout;
+    }
+
+    public void setSocketTimeout(int socketTimeout) {
+        this.socketTimeout = socketTimeout;
+    }
+
+    public int getConnectTimeout() {
+        return connectTimeout;
+    }
+
+    public void setConnectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
+    }
+
+    //TODO: add these functionality to PluginProps
     /****************************************************************************
      * @param sparklerConfig Object from which FetcherJBrowserProps needs to be
      *                       extracted
@@ -32,7 +53,7 @@ public class FetcherJBrowserProps implements BaseConfig {
         if (!isFetcherJBrowserActive(sparklerConfig)) {
             throw new SparklerException("fetcherJbrowser is not in the list of active plugins");
         }
-        return (FetcherJBrowserProps) sparklerConfig.getPluginProps("fetcherJbrowser", FetcherJBrowserProps.class);
+        return sparklerConfig.getPluginProps(FetcherJBrowser.PLUGIN_ID, FetcherJBrowserProps.class);
     }
 
     /******************************************************
@@ -55,26 +76,7 @@ public class FetcherJBrowserProps implements BaseConfig {
      * @return true if fetcherJbrowser is active
      ***************************************************************************/
     public static Boolean isFetcherJBrowserActive(SparklerConfig sparklerConfig) {
-        if (sparklerConfig.getActivePlugins().contains("fetcherJbrowser")) return true;
-        else return false;
+        return sparklerConfig.getActivePlugins().contains(FetcherJBrowser.PLUGIN_ID);
     }
 
-    /*********************
-     * GETTERS AND SETTERS
-     ********************/
-    public int getSocketTimeout() {
-        return socketTimeout;
-    }
-
-    public void setSocketTimeout(int socketTimeout) {
-        this.socketTimeout = socketTimeout;
-    }
-
-    public int getConnectTimeout() {
-        return connectTimeout;
-    }
-
-    public void setConnectTimeout(int connectTimeout) {
-        this.connectTimeout = connectTimeout;
-    }
 }
