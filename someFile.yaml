@@ -1,0 +1,13 @@
+!sparkler
+crawldb:
+  uri: http://localhost:8983/solr/crawldb
+
+fetcher:
+  headers:
+    Name: Value
+  serverDelay: 1000
+  userAgents:
+    - UA 1
+    - UA 2
+    - UA 3
+someFile: pom.xml

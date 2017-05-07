@@ -20,7 +20,9 @@ package edu.usc.irds.sparkler;
 import org.apache.commons.io.IOUtils;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -93,23 +95,22 @@ public interface Constants {
         /**
          * Create configuration instance for Sparkler
          */
-        public static SparklerConfiguration newDefaultConfig(){
-            //FIXME: needs rework!
+        public static SparklerConfiguration newDefaultConfig() {
             Yaml yaml = new Yaml();
-            InputStream input = null;
+            InputStream defaultConfig = null;
+            InputStream overrideConfig = null;
             SparklerConfiguration sparklerConf = null;
             try {
-                input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT);
-                Map<String,Object> yamlMap = (Map<String, Object>) yaml.load(input);
-                sparklerConf = new SparklerConfiguration(yamlMap);
-
-                //input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
-                //if(sparklerSite != null)
-                //    sparklerConf.mask(sparklerSite);
+                defaultConfig = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT);
+                overrideConfig = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
+                Map<String, Object> defaultConfigMap = (Map<String, Object>) yaml.load(defaultConfig);
+                Map<String, Object> overrideConfigMap = (Map<String, Object>) yaml.load(overrideConfig);
+                sparklerConf = new SparklerConfiguration(overrideConfigData(defaultConfigMap, overrideConfigMap));
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                IOUtils.closeQuietly(input);
+                IOUtils.closeQuietly(defaultConfig);
+                IOUtils.closeQuietly(overrideConfig);
             }
 
             if (sparklerConf != null) {
@@ -117,6 +118,31 @@ public interface Constants {
             }
 
             return sparklerConf;
+        }
+
+        /**
+         * @param defaultConfig
+         * @param overrideConfig
+         * @return Config setup for the system to run.
+         * @note This function is responsible for setting up the config for the system.
+         * If SPARKLER_SITE has some override properties defined then those need to be
+         * overridden in the default config. This function does that precisely.
+         */
+        public static Map<String, Object> overrideConfigData(Map<String, Object> defaultConfig, Map<String, Object> overrideConfig) {
+            if (overrideConfig == null) {
+                //overrideConfig was not provided going with default then.
+                return defaultConfig;
+            }
+            //Iterating over pair in map and overriding it with new config
+            Iterator iterator = defaultConfig.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry pair = (Map.Entry) iterator.next();
+                //Override the config parameter
+                if (overrideConfig.containsKey(pair.getKey().toString())) {
+                    defaultConfig.put(pair.getKey().toString(), overrideConfig.get(pair.getKey()));
+                }
+            }
+            return defaultConfig;
         }
     }
 
@@ -141,7 +167,7 @@ public interface Constants {
 
         /**
          * Apache Felix configuration properties file
-         * TODO:Should come from Sparler Config
+         * TODO:Should come from Sparkler Config
          */
         String FELIX_CONFIG = "felix-config.properties";
     }
