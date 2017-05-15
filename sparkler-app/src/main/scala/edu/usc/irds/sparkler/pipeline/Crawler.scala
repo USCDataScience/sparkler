@@ -137,7 +137,6 @@ class Crawler extends CliTool {
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
-
       val rdd = new CrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
@@ -159,6 +158,9 @@ class Crawler extends CliTool {
       val upsertFunc = new SolrUpsert(job)
       sc.runJob(outlinksRdd, upsertFunc)
 
+      //TODO Step: Scoring Resources
+      score(fetchedRdd)
+
       //Step: Store these to nutch segments
       val outputPath = this.outputPath + "/" + taskId
 
@@ -171,6 +173,14 @@ class Crawler extends CliTool {
     //PluginService.shutdown(job)
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
+  }
+
+  def score(fetchedRdd: RDD[CrawlData]): Unit = {
+    val job = this.job
+
+    val scoreUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => ScoreUpdateSolrTransformer(d))
+    val scoreUpdateFunc = new SolrStatusUpdate(job)
+    sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
   }
 }
 
