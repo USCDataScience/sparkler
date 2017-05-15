@@ -45,7 +45,7 @@ object ScoreUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) with
     //val x:java.util.Map[String, Object] = Map("ss" -> new Object).asJava
     sUpdate.setField(Constants.solr.ID, data.fetchedData.getResource.getId)
     //TODO sUpdate.setField(Constants.solr.SCORE, data.fetchedData.getResource.getScore())
-    sUpdate.setField(Constants.solr.SCORE, 1.0)
+    sUpdate.setField(Constants.solr.SCORE,  Map("set" -> 1.0).asJava)
 
     sUpdate
   }
