@@ -40,8 +40,7 @@ object ScoreFunction
       scorer match {
         case Some(scorer) =>
           val score = scorer.score(data.fetchedData.getContent)
-          //data.fetchedData.getResource().setScore(score)
-          data.fetchedData.addParentScore(scorer.getScoreKey, score)
+          data.fetchedData.addParentScore(scorer.getScoreKey(), score)
 //          data.fetchedData.addParentScore("svn_score", score)
           data
         case None =>

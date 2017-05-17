@@ -29,7 +29,7 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
 
     private final static Logger LOG = LoggerFactory.getLogger(DdSvnScorer.class);
 
-    public final static String SCORE_KEY = "svn_score";
+    private final static String SCORE_KEY = "svn_score";
 
     @ConfigKey
     public static final String SCORER_DD_SVN_URL = "scorer.dd.svn.url";
@@ -51,12 +51,14 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
         init(context);
     }
 
-    public Double score(byte[] content) throws Exception {
-        return 2.0;
-    }
-
-
+    @Override
     public String getScoreKey() {
         return SCORE_KEY;
+    }
+
+    @Override
+    public Double score(byte[] content) throws Exception {
+        //TODO
+        return 3.0;
     }
 }
