@@ -67,6 +67,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+		<version>${maven.compiler.plugin.version}</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -79,8 +80,8 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-SymbolicName>${pom.groupId}.${pom.artifactId}</Bundle-SymbolicName>
-                        <Bundle-Version>${parent.version}</Bundle-Version>
+                        <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Version>${project.parent.version}</Bundle-Version>
                         <Export-Package>edu.usc.irds.sparkler,edu.usc.irds.sparkler.util,edu.usc.irds.sparkler.model</Export-Package>
                     </instructions>
                 </configuration>

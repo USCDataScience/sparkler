@@ -73,7 +73,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>${groupId}:${artifactId}</Bundle-Name>  <!-- -->
+                        <Bundle-Name>${project.groupId}:${project.artifactId}</Bundle-Name>  <!-- -->
                         <Bundle-SymbolicName>fetcher.jbrowser</Bundle-SymbolicName>
                         <Bundle-Version>${project.parent.version}</Bundle-Version>
                         <Bundle-Activator>edu.usc.irds.sparkler.plugin.FetcherJBrowserActivator</Bundle-Activator>
