@@ -18,16 +18,15 @@
 package edu.usc.irds.sparkler.pipeline
 
 import java.util
+import java.util.Iterator
 
 import com.google.common.hash.{HashFunction, Hashing}
 import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.CrawlData
 import edu.usc.irds.sparkler.solr.schema.FieldMapper
-import edu.usc.irds.sparkler.util.URLUtil
 import org.apache.solr.common.SolrInputDocument
 
-import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
 /**
@@ -42,10 +41,14 @@ object ScoreUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) with
     val hashFunction: HashFunction = Hashing.sha256()
     val sUpdate = new SolrInputDocument()
     //FIXME: handle failure case
-    //val x:java.util.Map[String, Object] = Map("ss" -> new Object).asJava
     sUpdate.setField(Constants.solr.ID, data.fetchedData.getResource.getId)
-    //TODO sUpdate.setField(Constants.solr.SCORE, data.fetchedData.getResource.getScore())
-    sUpdate.setField(Constants.solr.SCORE,  Map("set" -> 1.0).asJava)
+    //sUpdate.setField(Constants.solr.SCORE,  Map("set" -> data.fetchedData.getResource.getScore()).asJava)
+
+    val parentScoreIterator = data.fetchedData.getParentScores();
+    while (parentScoreIterator.hasNext) {
+      val parentScore = parentScoreIterator.next()
+      sUpdate.setField(parentScore.getKey(),  Map("set" -> parentScore.getValue).asJava)
+    }
 
     sUpdate
   }
