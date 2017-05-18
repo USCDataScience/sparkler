@@ -69,7 +69,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Name>{groupId}:${artifactId}</Bundle-Name>
+                        <Bundle-Name>{project.groupId}:${project.artifactId}</Bundle-Name>
                         <Bundle-SymbolicName>urlfilter.regex</Bundle-SymbolicName>
                         <Bundle-Version>${project.parent.version}</Bundle-Version>
                         <Bundle-Activator>edu.usc.irds.sparkler.plugin.RegexURLFilterActivator</Bundle-Activator>

@@ -86,6 +86,7 @@ plugins.bundle.directory: ${project.parent.basedir}${file.separator}${project.bu
 # List of activated plugins
 plugins.active:
     - urlfilter.regex
+    - scorer.dd.svn
     # - fetcher.jbrowser
 
 # All Plugins are listed under this tree
@@ -96,6 +97,8 @@ plugins:
     #
     # File with Regex Filter Rules
     urlfilter.regex.file: regex-urlfilter.txt
+  scorer.dd.svn:
+    scorer.dd.svn.url: http://memex.wrangler.tacc.utexas.edu:5000/
   # Fetcher jBrowser - Headless browser to fetch javascript and AJAX 
   # based document/content.
   fetcher.jbrowser:

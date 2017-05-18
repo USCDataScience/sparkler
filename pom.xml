@@ -46,6 +46,7 @@
         <jbrowserdriver.version>0.16.4</jbrowserdriver.version>
 
         <!-- Maven Plugins -->
+        <maven.compiler.plugin.version>3.6.1</maven.compiler.plugin.version>
         <maven.bundle.plugin.version>2.5.0</maven.bundle.plugin.version>
         <maven.war.plugin.version>2.1.1</maven.war.plugin.version>
         <maven.clean.plugin.version>2.4.1</maven.clean.plugin.version>
@@ -68,6 +69,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+		<version>${maven.compiler.plugin.version}</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>

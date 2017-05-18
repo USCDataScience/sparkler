@@ -22,10 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.nutch.metadata.Metadata;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FetchedData implements Serializable {
 
@@ -39,6 +36,8 @@ public class FetchedData implements Serializable {
     private Metadata metadata;
     private int responseCode;
 
+    //private Double parentScore;
+    private Map<String, Double> parentScores;
 
     public FetchedData() {
     }
@@ -51,6 +50,7 @@ public class FetchedData implements Serializable {
         this.responseCode = responseCode;
         this.metadata = new Metadata();
         this.fetchedAt = new Date();
+        this.parentScores = new HashMap();
 	}
 	
 	public String getContentType() {
@@ -89,6 +89,14 @@ public class FetchedData implements Serializable {
 
     public void setResource(Resource resource) {
         this.resource = resource;
+    }
+
+    public void addParentScore(String parentKey, Double parentScore) {
+        this.parentScores.put(parentKey, parentScore);
+    }
+
+    public Iterator<Map.Entry<String,Double>> getParentScores() {
+        return this.parentScores.entrySet().iterator();
     }
 
     // TODO: Move this to Util package
