@@ -42,13 +42,8 @@ object ScoreUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) with
     val sUpdate = new SolrInputDocument()
     //FIXME: handle failure case
     sUpdate.setField(Constants.solr.ID, data.fetchedData.getResource.getId)
-    //sUpdate.setField(Constants.solr.SCORE,  Map("set" -> data.fetchedData.getResource.getScore()).asJava)
 
-    val parentScoreIterator = data.fetchedData.getParentScores();
-    while (parentScoreIterator.hasNext) {
-      val parentScore = parentScoreIterator.next()
-      sUpdate.setField(parentScore.getKey(),  Map("set" -> parentScore.getValue).asJava)
-    }
+    sUpdate.setField(Constants.solr.GENERATE_SCORE, Map("set" -> data.fetchedData.getResource.getGenerateScore()).asJava)
 
     sUpdate
   }

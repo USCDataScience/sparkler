@@ -24,13 +24,13 @@ public class Resource implements Serializable {
     //@Field private Integer numFetches = 0;
     @Field("discover_depth") private Integer discoverDepth = 0;
     @Field private Double score = 0.0;
+    @Field("generate_score") private Double generateScore = 0.0;
     @Field private String status = ResourceStatus.UNFETCHED.toString();
     @Field("last_updated_at") private Date lastUpdatedAt;
     @Field("indexed_at") private Date indexedAt;
     @Field private String hostname;
     @Field private String parent;
     @Field("dedupe_id") private String dedupeId;
-
 
     public Resource() {
     }
@@ -73,6 +73,11 @@ public class Resource implements Serializable {
         this(url, group, sparklerJob, fetchTimestamp);
         //this.numFetches = numFetches;
         this.status = status.toString();
+    }
+
+    public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status, Date fetchTimestamp, String parent, Double score) throws MalformedURLException {
+        this(url, discoverDepth, sparklerJob, status, fetchTimestamp, parent);
+        this.score = score;
     }
 
     @Override
@@ -141,5 +146,13 @@ public class Resource implements Serializable {
 
     public void setScore(Double score) {
         this.score = score;
+    }
+
+    public Double getGenerateScore() {
+        return this.generateScore;
+    }
+
+    public void setGenerateScore(Double generateScore) {
+        this.generateScore = generateScore;
     }
 }

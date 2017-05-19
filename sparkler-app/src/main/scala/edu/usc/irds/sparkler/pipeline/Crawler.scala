@@ -154,17 +154,17 @@ class Crawler extends CliTool {
       sc.runJob(statusUpdateRdd, statusUpdateFunc)
 
       //Step: Filter Outlinks and Upsert new URLs into CrawlDb
-      val outlinksRdd = OutLinkUpsert(job, fetchedRdd)
-      val upsertFunc = new SolrUpsert(job)
-      sc.runJob(outlinksRdd, upsertFunc)
+//      val outlinksRdd = OutLinkUpsert(job, fetchedRdd)
+//      val upsertFunc = new SolrUpsert(job)
+//      sc.runJob(outlinksRdd, upsertFunc)
 
-      //TODO Step: Scoring Resources
-      score(fetchedRdd)
+      val scoredRdd = score(fetchedRdd)
 
       //Step: Store these to nutch segments
       val outputPath = this.outputPath + "/" + taskId
 
-      storeContent(outputPath, fetchedRdd)
+//      storeContent(outputPath, fetchedRdd)
+      storeContent(outputPath, scoredRdd)
 
       LOG.info("Committing crawldb..")
       solrc.commitCrawlDb()
@@ -175,7 +175,7 @@ class Crawler extends CliTool {
     sc.stop()
   }
 
-  def score(fetchedRdd: RDD[CrawlData]): Unit = {
+  def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
     val job = this.job
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(job, d))
@@ -183,6 +183,17 @@ class Crawler extends CliTool {
     val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.map(d => ScoreUpdateSolrTransformer(d))
     val scoreUpdateFunc = new SolrStatusUpdate(job)
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
+
+    //TODO (was OutlinkUpsert)
+    val outlinksRdd = scoredRdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
+      .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
+      //TODO: url normalize
+      .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
+      parent.getFetchTimestamp, parent.getId, parent.getGenerateScore) })
+    val upsertFunc = new SolrUpsert(job)
+    sc.runJob(outlinksRdd, upsertFunc)
+
+    scoredRdd
   }
 }
 

@@ -158,6 +158,7 @@ public interface Constants {
         String DISCOVER_DEPTH = "discover_depth";
         String FETCH_DEPTH = "fetch_depth";
         String SCORE = "score";
+        String GENERATE_SCORE = "generate_score";
         String STATUS = "status";
         String LAST_UPDATED_AT = "last_updated_at";
         String EXTRACTED_TEXT = "extracted_text";

@@ -59,6 +59,7 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
     @Override
     public Double score(byte[] content) throws Exception {
         //TODO
-        return 3.0;
+        Double score = 1.5;
+        return score;
     }
 }
