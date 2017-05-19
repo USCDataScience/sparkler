@@ -41,7 +41,7 @@ object FetchFunction
     * @param job reference to Sparkler Job Context
     */
   def init(job: SparklerJob): Unit ={
-    fetcherDefault.init(job)
+    fetcherDefault.init(job, "")
   }
 
   override def apply(job: SparklerJob, resources: Iterator[Resource])

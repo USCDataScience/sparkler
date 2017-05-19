@@ -34,6 +34,7 @@
         <!-- List of all the plugins -->
         <module>urlfilter-regex</module>
         <module>fetcher-jbrowser</module>
+        <module>fetcher-htmlunit</module>
     </modules>
 
     <properties>
@@ -43,6 +44,14 @@
             <groupId>edu.usc.irds.sparkler</groupId>
             <artifactId>sparkler-api</artifactId>
             <version>${project.parent.version}</version>
+            <exclusions>
+                <!--
+                <exclusion>
+                    <artifactId>nutch</artifactId>
+                    <groupId>org.apache.nutch</groupId>
+                </exclusion>
+                -->
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

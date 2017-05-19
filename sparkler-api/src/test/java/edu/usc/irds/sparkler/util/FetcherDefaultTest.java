@@ -36,11 +36,11 @@ import static junit.framework.Assert.*;
  */
 public class FetcherDefaultTest {
 
-    private FetcherDefault fetcher = new FetcherDefault();
     private JobContext job = TestUtils.JOB_CONTEXT;
+    private FetcherDefault fetcher;
     {
         try {
-            fetcher.init(job);
+            fetcher = TestUtils.newInstance(FetcherDefault.class, "");
         } catch (SparklerException e) {
             throw new RuntimeException(e);
         }
