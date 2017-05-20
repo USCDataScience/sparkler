@@ -58,10 +58,10 @@
         <tika.version>1.14</tika.version>
     </properties>
     <modules>
-        <module>sparkler-tests-base</module>
         <module>sparkler-api</module>
         <module>sparkler-app</module>
         <module>sparkler-plugins</module>
+        <module>sparkler-tests-base</module>
     </modules>
 
     <dependencyManagement>

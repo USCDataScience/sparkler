@@ -21,7 +21,8 @@ import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.util.TestUtils;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
 
 public class HtmlUnitFetcherTest {
 
@@ -43,6 +44,18 @@ public class HtmlUnitFetcherTest {
 		FetchedData data = htmlUnitFetcher.fetch(resource);
 		assertEquals(200, data.getResponseCode());
 		assertEquals("text/html", data.getContentType());
+	}
 
-    }
+	@Test
+	public void testJavaScript() throws Exception {
+		HtmlUnitFetcher htmlUnitFetcher = TestUtils.newInstance(HtmlUnitFetcher.class, "fetcher.htmlunit");
+		Resource resource = new Resource(
+				"http://localhost:8080/res/jspage.html",
+				"localhost", TestUtils.JOB_CONTEXT);
+
+		FetchedData data = htmlUnitFetcher.fetch(resource);
+		assertEquals(200, data.getResponseCode());
+		assertEquals("text/html", data.getContentType());
+		//TODO: assert that JS was executed
+	}
 }

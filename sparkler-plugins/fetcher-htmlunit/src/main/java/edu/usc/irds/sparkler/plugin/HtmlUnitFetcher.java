@@ -31,7 +31,6 @@ import edu.usc.irds.sparkler.model.ResourceStatus;
 import edu.usc.irds.sparkler.util.FetcherDefault;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,6 +107,9 @@ public class HtmlUnitFetcher extends FetcherDefault  implements AutoCloseable {
                         if (contentLength > 0 && contentLength < Integer.MAX_VALUE) {
                             fetchedData.setContentLength((int) contentLength);
                             truncated = (contentLength > fetchedData.getContentLength());
+                            if (truncated) {
+                                LOG.info("Content Truncated: {}, TotalSize={}", resource.getUrl(), contentLength);
+                            }
                         }
                     }
                 }
