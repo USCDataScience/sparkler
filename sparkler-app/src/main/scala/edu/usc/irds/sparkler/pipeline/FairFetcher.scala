@@ -52,6 +52,7 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
     //STEP: Fetch
     data.fetchedData = fetchedData.next
     data.fetchedData.getResource.setFetchTimestamp(data.fetchedData.getFetchedAt)
+    data.fetchedData.setSegment(job.currentTask)
     lastHit = data.fetchedData.getResource.getUrl
     hitCounter.set(System.currentTimeMillis())
 

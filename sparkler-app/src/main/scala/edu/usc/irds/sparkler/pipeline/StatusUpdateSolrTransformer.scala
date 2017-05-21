@@ -54,6 +54,7 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     sUpdate.setField(Constants.solr.SIGNATURE, hashFunction.hashBytes(data.fetchedData.getContent).toString)
     sUpdate.setField(Constants.solr.RELATIVE_PATH, URLUtil.reverseUrl(data.fetchedData.getResource.getUrl))
     sUpdate.setField(Constants.solr.OUTLINKS, data.parsedData.outlinks.toArray)
+    sUpdate.setField(Constants.solr.SEGMENT, data.fetchedData.getSegment)
 
     val md = data.parsedData.metadata
     val mdFields = md.names().map(name => (name, if (md.isMultiValued(name)) md.getValues(name) else md.get(name))).toMap

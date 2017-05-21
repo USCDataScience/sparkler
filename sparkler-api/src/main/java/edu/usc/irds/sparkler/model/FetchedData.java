@@ -36,6 +36,8 @@ public class FetchedData implements Serializable {
     private Metadata metadata;
     private int responseCode;
 
+    private String segment;
+
     public FetchedData() {
     }
 
@@ -85,6 +87,14 @@ public class FetchedData implements Serializable {
 
     public void setResource(Resource resource) {
         this.resource = resource;
+    }
+
+    public String getSegment() {
+        return segment;
+    }
+
+    public void setSegment(String segment) {
+        this.segment = segment;
     }
 
     // TODO: Move this to Util package
