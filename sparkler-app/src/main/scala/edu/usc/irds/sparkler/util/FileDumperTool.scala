@@ -92,7 +92,7 @@ class FileDumperTool extends CliTool with Serializable{
     LOG.info(s"Starting filedumper at ${getCurrentTime()}")
     init()
     LOG.info(s"Setting input directory to $inputDir")
-    
+
     if (Files.exists(Paths.get(outputPath))) {
       LOG.error(s"$outputPath already exists, exiting file dumper")
       System.exit(1)

@@ -10,7 +10,7 @@ import java.util.Iterator;
  */
 public interface Scorer extends ExtensionPoint {
 
-    Double score(byte[] content) throws Exception;
+    Double score(String extractedText) throws Exception;
 
     String getScoreKey();
 }

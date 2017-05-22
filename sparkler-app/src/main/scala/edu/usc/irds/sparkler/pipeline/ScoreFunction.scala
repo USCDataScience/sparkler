@@ -39,7 +39,7 @@ object ScoreFunction
     try {
       scorer match {
         case Some(scorer) =>
-          val score = scorer.score(data.fetchedData.getContent)
+          val score = scorer.score(data.parsedData.extractedText)
           data.fetchedData.getResource.setGenerateScore(score)
           data
         case None =>
