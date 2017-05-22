@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.usc.irds.sparkler.model;
+package edu.usc.irds.sparkler.config;
 
-import java.io.Serializable;
 
-public enum ResourceStatus implements Serializable {
-    UNFETCHED, FETCHED, FETCHING, ERROR, IGNORED;
-}
+import java.util.Map;
+
+/**
+ * Parent class for all plugin configs
+ */
+public abstract class PluginProps implements Map<String, Object> {}

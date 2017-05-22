@@ -29,7 +29,7 @@ public class RegexURLFilterTest {
     @Test
     public void testFilter() throws Exception {
         //TODO: Get pluginId from OSGI Context
-        RegexURLFilter filter = TestUtils.newInstance(RegexURLFilter.class, "urlfilter.regex");
+        RegexURLFilter filter = TestUtils.newInstance(RegexURLFilter.class, RegexURLFilter.PLUGIN_ID);
         Map<String, Boolean> expectations = new HashMap<String, Boolean>(){{
             put("http://apache.org", true);
             put("http://irds.usc.edu", true);

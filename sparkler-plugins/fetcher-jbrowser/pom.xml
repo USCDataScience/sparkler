@@ -63,6 +63,12 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
@@ -74,7 +80,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-Name>${groupId}:${artifactId}</Bundle-Name>  <!-- -->
-                        <Bundle-SymbolicName>fetcher.jbrowser</Bundle-SymbolicName>
+                        <Bundle-SymbolicName>${artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${project.parent.version}</Bundle-Version>
                         <Bundle-Activator>edu.usc.irds.sparkler.plugin.FetcherJBrowserActivator</Bundle-Activator>
                         <Import-Package>org.osgi.framework,edu.usc.irds.sparkler,edu.usc.irds.sparkler.model, org.slf4j,

@@ -14,10 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.usc.irds.sparkler.model;
+package edu.usc.irds.sparkler.config;
 
-import java.io.Serializable;
 
-public enum ResourceStatus implements Serializable {
-    UNFETCHED, FETCHED, FETCHING, ERROR, IGNORED;
+import javax.validation.constraints.NotNull;
+import java.net.URL;
+
+public class CrawldbProps implements BaseConfig {
+
+    @NotNull(message = "crawldb.url cannot be null")
+    private URL url;
+
+    public URL getUrl() {
+        return url;
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
+    }
 }

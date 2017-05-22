@@ -4,8 +4,9 @@ import edu.usc.irds.sparkler.AbstractExtensionPoint;
 import edu.usc.irds.sparkler.Constants;
 import edu.usc.irds.sparkler.Fetcher;
 import edu.usc.irds.sparkler.JobContext;
-import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
+import edu.usc.irds.sparkler.config.FetcherProps;
+import edu.usc.irds.sparkler.config.SparklerConfig;
 import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
@@ -53,34 +54,16 @@ public class FetcherDefault extends AbstractExtensionPoint
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
         super.init(context, pluginId);
-        SparklerConfiguration conf = context.getConfiguration();
-        if (conf.containsKey(Constants.key.FETCHER_USER_AGENTS)) {
-            Object agents = conf.get(Constants.key.FETCHER_USER_AGENTS);
-            if (agents instanceof String) { // it is a file name
-                try (InputStream stream = getClass().getClassLoader()
-                        .getResourceAsStream(agents.toString())) {
-                    if (stream == null) {
-                        this.userAgents = Collections.EMPTY_LIST;
-                        LOG.warn("Could not find Rotating user agents file in class path");
-                    } else {
-                        this.userAgents = IOUtils.readLines(stream, StandardCharsets.UTF_8).stream()
-                                .map(String::trim)                               // white spaces are trimmed
-                                .filter(s -> !s.isEmpty() && s.charAt(0) != '#') //remove empty and comment lines
-                                .collect(Collectors.toList());
-                    }
-                }  catch (IOException e){
-                    throw new SparklerException("Cant read user agent file", e);
-                }
-            } else { //it is a list
-                this.userAgents = (List<String>) conf.get(Constants.key.FETCHER_USER_AGENTS);
-            }
-            //remove duplicates while preserving the order
-            this.userAgents = new ArrayList<>(new LinkedHashSet<>(this.userAgents));
+        SparklerConfig conf = context.getConfiguration();
+        FetcherProps fetcherConf = conf.getFetcher();
+        if (fetcherConf.getUserAgents() != null) {
+            this.userAgents = fetcherConf.getUserAgents();
+        } else {
+            this.userAgents = Collections.EMPTY_LIST;
         }
 
-        if (conf.containsKey(Constants.key.FETCHER_HEADERS)) {
-            this.httpHeaders = (Map<String, String>) conf.get(Constants.key.FETCHER_HEADERS);
-        }
+        this.httpHeaders = fetcherConf.getHeaders();
+
     }
 
     /**

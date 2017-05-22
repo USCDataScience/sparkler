@@ -14,10 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.usc.irds.sparkler.model;
 
-import java.io.Serializable;
+package edu.usc.irds.sparkler;
 
-public enum ResourceStatus implements Serializable {
-    UNFETCHED, FETCHED, FETCHING, ERROR, IGNORED;
+
+public class SparklerRuntimeException extends RuntimeException {
+    public SparklerRuntimeException(String message) {
+        super(message);
+    }
+
+    public SparklerRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

@@ -33,7 +33,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sparkler.conf.dir>${project.parent.basedir}${file.separator}${project.conf.dir}</sparkler.conf.dir>
-        <sparkler.resources.dir>${project.basedir}${file.separator}..${file.separator}${project.resources.dir}</sparkler.resources.dir>
+        <sparkler.resources.dir>${project.basedir}${file.separator}..${file.separator}${project.resources.dir}
+        </sparkler.resources.dir>
     </properties>
     <build>
         <resources>
@@ -81,7 +82,8 @@
                     <instructions>
                         <Bundle-SymbolicName>${pom.groupId}.${pom.artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${parent.version}</Bundle-Version>
-                        <Export-Package>edu.usc.irds.sparkler,edu.usc.irds.sparkler.util,edu.usc.irds.sparkler.model</Export-Package>
+                        <Export-Package>edu.usc.irds.sparkler,edu.usc.irds.sparkler.util,edu.usc.irds.sparkler.model,edu.usc.irds.sparkler.config
+                        </Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
@@ -137,6 +139,16 @@
             <artifactId>sparkler-tests-base</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate-validator.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>3.0.1-b08</version>
         </dependency>
     </dependencies>
 </project>

@@ -21,8 +21,9 @@ import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.machinepublishers.jbrowserdriver.Settings;
 import com.machinepublishers.jbrowserdriver.Timezone;
 import edu.usc.irds.sparkler.JobContext;
-import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
+import edu.usc.irds.sparkler.config.PluginProps;
+import edu.usc.irds.sparkler.config.SparklerConfig;
 import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
@@ -32,22 +33,23 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.LinkedHashMap;
 
 public class FetcherJBrowser extends FetcherDefault {
 
+    public static final String PLUGIN_ID = "fetcher-jbrowser";
+
     private static final Integer DEFAULT_TIMEOUT = 2000;
     private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
-    private LinkedHashMap<String, Object> pluginConfig;
+    private PluginProps pluginConfig;
     private JBrowserDriver driver;
 
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
         super.init(context, pluginId);
 
-        SparklerConfiguration config = jobContext.getConfiguration();
+        SparklerConfig config = jobContext.getConfiguration();
         //TODO should change everywhere 
-        pluginConfig = config.getPluginConfiguration(pluginId);
+        pluginConfig = config.getPlugins().get(pluginId);
         driver = createBrowserInstance();
     }
 

@@ -14,10 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.usc.irds.sparkler.model;
+package edu.usc.irds.sparkler.config;
 
-import java.io.Serializable;
 
-public enum ResourceStatus implements Serializable {
-    UNFETCHED, FETCHED, FETCHING, ERROR, IGNORED;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+public class GenerateProps implements BaseConfig {
+    @NotNull(message = "generate.topN cannot be null")
+    @Min(value = 1, message = "generate.topN value cannot be less than 1")
+    private int topN;
+    @NotNull(message = "generate.topGroups cannot be null")
+    @Min(value = 1, message = "generate.topGroups value cannot be less than 1")
+    private int topGroups;
+
+    public int getTopN() {
+        return topN;
+    }
+
+    public void setTopN(int topN) {
+        this.topN = topN;
+    }
+
+    public int getTopGroups() {
+        return topGroups;
+    }
+
+    public void setTopGroups(int topGroups) {
+        this.topGroups = topGroups;
+    }
 }

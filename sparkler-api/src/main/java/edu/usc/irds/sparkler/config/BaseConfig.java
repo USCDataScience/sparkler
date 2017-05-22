@@ -14,10 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.usc.irds.sparkler.model;
 
-import java.io.Serializable;
+package edu.usc.irds.sparkler.config;
 
-public enum ResourceStatus implements Serializable {
-    UNFETCHED, FETCHED, FETCHING, ERROR, IGNORED;
+
+/**
+ * @apiNote This interface is the base config contract for the sparkler.
+ */
+public interface BaseConfig {
+
 }

@@ -21,21 +21,18 @@ import java.io.File
 import java.nio.file.NotDirectoryException
 import java.util
 
-import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
+import edu.usc.irds.sparkler.{Constants, SparklerRuntimeException}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
+import edu.usc.irds.sparkler.config.SparklerConfig
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.util.JobUtil
+import org.apache.commons.validator.routines.UrlValidator
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable.{ArrayBuffer, Stack}
 import scala.io.Source
-import java.nio.file.NotDirectoryException
-
-import org.apache.commons.validator.routines.UrlValidator
-
-import scala.collection.mutable.Stack
-import scala.collection.mutable.ArrayBuffer
 
 /**
   *
@@ -46,7 +43,7 @@ class Injector extends CliTool {
   import Injector.LOG
 
   // Load Sparkler Configuration
-  val conf: SparklerConfiguration = Constants.defaults.newDefaultConfig()
+  val conf: SparklerConfig = Constants.defaults.newDefaultConfig()
 
   // Initialize URL Validator
   val urlValidator: UrlValidator = new UrlValidator()
@@ -65,13 +62,16 @@ class Injector extends CliTool {
 
   @Option(name = "-cdb", aliases = Array("--crawldb"),
     usage = "Crawdb URI.")
-  var sparkSolr: String = conf.get(Constants.key.CRAWLDB).asInstanceOf[String]
+  var sparkSolr: String = conf.getCrawldb.getUrl.toString
 
   override def run(): Unit = {
-    if (!sparkSolr.isEmpty) {
-      val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
-      uri.put("crawldb.uri", sparkSolr)
-    }
+    /**
+      * This code needs to be removed?
+      */
+    //    if (!sparkSolr.isEmpty) {
+    //      val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
+    //      uri.put("crawldb.uri", sparkSolr)
+    //    }
 
     if (jobId.isEmpty) {
       jobId = JobUtil.newJobId()
@@ -80,10 +80,13 @@ class Injector extends CliTool {
 
     val urls: util.Collection[String] =
       if (seedFile != null) {
+        println(seedFile.toString)
         if (seedFile.isFile) {
           Source.fromFile(seedFile).getLines().toList
-        } else {
+        } else if (seedFile.isDirectory) {
           stackListFiles(seedFile).par.flatMap((file) => Source.fromFile(file).getLines()).toList
+        } else {
+          throw new SparklerRuntimeException("The provided file does not exists or is not a valid directory/file");
         }
       } else {
         seedUrls.toList

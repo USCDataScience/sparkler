@@ -74,7 +74,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-Name>${groupId}:${artifactId}</Bundle-Name>  <!-- -->
-                        <Bundle-SymbolicName>fetcher.htmlunit</Bundle-SymbolicName>
+                        <Bundle-SymbolicName>${artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${project.parent.version}</Bundle-Version>
                         <Bundle-Activator>edu.usc.irds.sparkler.plugin.HtmlUnitJsFetcherActivator</Bundle-Activator>
                         <Import-Package>org.osgi.framework,edu.usc.irds.sparkler,edu.usc.irds.sparkler.model, org.slf4j,org.slf4j.spi,javax.net.ssl,javax.net</Import-Package>

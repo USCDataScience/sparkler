@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.usc.irds.sparkler.model;
 
 import edu.usc.irds.sparkler.JobContext;
@@ -9,27 +25,37 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 
-/**
- * Created by karanjeetsingh on 10/22/16.
- */
 public class Resource implements Serializable {
 
     //NOTE: Keep the variable names in sync with solr schema
-    @Field private String id;
-    @Field("crawl_id") private String crawlId;
-    @Field private String url;
-    @Field private String group;
-    @Field("fetch_timestamp") private Date fetchTimestamp;
+    @Field
+    private String id;
+    @Field("crawl_id")
+    private String crawlId;
+    @Field
+    private String url;
+    @Field
+    private String group;
+    @Field("fetch_timestamp")
+    private Date fetchTimestamp;
     //@Field private Integer numTries = 0;
     //@Field private Integer numFetches = 0;
-    @Field("discover_depth") private Integer discoverDepth = 0;
-    @Field private Double score = 0.0;
-    @Field private String status = ResourceStatus.UNFETCHED.toString();
-    @Field("last_updated_at") private Date lastUpdatedAt;
-    @Field("indexed_at") private Date indexedAt;
-    @Field private String hostname;
-    @Field private String parent;
-    @Field("dedupe_id") private String dedupeId;
+    @Field("discover_depth")
+    private Integer discoverDepth = 0;
+    @Field
+    private Double score = 0.0;
+    @Field
+    private String status = ResourceStatus.UNFETCHED.toString();
+    @Field("last_updated_at")
+    private Date lastUpdatedAt;
+    @Field("indexed_at")
+    private Date indexedAt;
+    @Field
+    private String hostname;
+    @Field
+    private String parent;
+    @Field("dedupe_id")
+    private String dedupeId;
 
 
     public Resource() {
@@ -79,7 +105,7 @@ public class Resource implements Serializable {
     public String toString() {
         return String.format("Resource(%s, %s, %s, %d, %f, %s)",
                 id, group, fetchTimestamp, discoverDepth, score, status);
-                //id, group, fetchTimestamp, numTries, numFetches, discoverDepth, score, status);
+        //id, group, fetchTimestamp, numTries, numFetches, discoverDepth, score, status);
     }
 
 
@@ -117,21 +143,35 @@ public class Resource implements Serializable {
         return discoverDepth;
     }
 
-    public String getStatus() { return status; }
+    public String getStatus() {
+        return status;
+    }
 
     public void setStatus(String status) {
         this.status = status;
     }
 
-    public Date getFetchTimestamp() { return fetchTimestamp; }
+    public Date getFetchTimestamp() {
+        return fetchTimestamp;
+    }
 
-    public void setFetchTimestamp(Date fetchTimestamp) { this.fetchTimestamp = fetchTimestamp; }
+    public void setFetchTimestamp(Date fetchTimestamp) {
+        this.fetchTimestamp = fetchTimestamp;
+    }
 
-    public String getCrawlId() { return crawlId; }
+    public String getCrawlId() {
+        return crawlId;
+    }
 
-    public void setCrawlId(String crawlId) { this.crawlId = crawlId; }
+    public void setCrawlId(String crawlId) {
+        this.crawlId = crawlId;
+    }
 
-    public String getDedupeId() { return dedupeId; }
+    public String getDedupeId() {
+        return dedupeId;
+    }
 
-    public void setDedupeId(String dedupeId) { this.dedupeId = dedupeId; }
+    public void setDedupeId(String dedupeId) {
+        this.dedupeId = dedupeId;
+    }
 }

@@ -14,10 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.usc.irds.sparkler.model;
+package edu.usc.irds.sparkler.config;
 
-import java.io.Serializable;
+import org.hibernate.validator.constraints.NotEmpty;
 
-public enum ResourceStatus implements Serializable {
-    UNFETCHED, FETCHED, FETCHING, ERROR, IGNORED;
+public class SparkProps implements BaseConfig {
+    @NotEmpty(message = "spark.url cannot be null")
+    private String master;
+
+    public String getMaster() {
+        return master;
+    }
+
+    public void setMaster(String master) {
+        this.master = master;
+    }
 }
