@@ -21,7 +21,7 @@ import java.io.File
 import java.nio.file.NotDirectoryException
 import java.util
 
-import edu.usc.irds.sparkler.Constants
+import edu.usc.irds.sparkler.{Constants, SparklerRuntimeException}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.config.SparklerConfig
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
@@ -65,10 +65,13 @@ class Injector extends CliTool {
   var sparkSolr: String = conf.getCrawldb.getUrl.toString
 
   override def run(): Unit = {
-    if (!sparkSolr.isEmpty) {
-      val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
-      uri.put("crawldb.uri", sparkSolr)
-    }
+    /**
+      * This code needs to be removed?
+      */
+    //    if (!sparkSolr.isEmpty) {
+    //      val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
+    //      uri.put("crawldb.uri", sparkSolr)
+    //    }
 
     if (jobId.isEmpty) {
       jobId = JobUtil.newJobId()
@@ -77,10 +80,13 @@ class Injector extends CliTool {
 
     val urls: util.Collection[String] =
       if (seedFile != null) {
+        println(seedFile.toString)
         if (seedFile.isFile) {
           Source.fromFile(seedFile).getLines().toList
-        } else {
+        } else if (seedFile.isDirectory) {
           stackListFiles(seedFile).par.flatMap((file) => Source.fromFile(file).getLines()).toList
+        } else {
+          throw new SparklerRuntimeException("The provided file does not exists or is not a valid directory/file");
         }
       } else {
         seedUrls.toList

@@ -21,7 +21,7 @@
 # Type: String. Default: http://localhost:8983/solr/crawldb
 # for standalone server
 crawldb:
- url: http://localhost:8983/solr/
+ url: http://localhost:8983/solr/crawldb
 
 #################### Apache Spark Properties ###########################
 
