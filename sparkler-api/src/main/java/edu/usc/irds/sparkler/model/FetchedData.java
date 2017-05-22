@@ -91,6 +91,30 @@ public class FetchedData implements Serializable {
         this.resource = resource;
     }
 
+    public void setContentLength(Integer contentLength) {
+        this.contentLength = contentLength;
+    }
+
+    public void setContent(byte[] content) {
+        this.content = content;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public void setFetchedAt(Date fetchedAt) {
+        this.fetchedAt = fetchedAt;
+    }
+
+    public void setMetadata(Metadata metadata) {
+        this.metadata = metadata;
+    }
+
+    public void setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
+    }
+
     // TODO: Move this to Util package
     public org.apache.nutch.protocol.Content toNutchContent(Configuration conf) {
         return new org.apache.nutch.protocol.Content(resource.getUrl(), resource.getUrl(), content, contentType, metadata, conf);

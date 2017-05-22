@@ -37,7 +37,7 @@
         <kafka.version>0.10.0.0</kafka.version>
         <hbase.version>1.2.1</hbase.version>
         <solr.version>6.4.0</solr.version>
-        <slf4j.version>1.7.12</slf4j.version>
+        <slf4j.version>1.7.25</slf4j.version>
         <osgi.version>6.0.0</osgi.version>
         <felix.version>5.4.0</felix.version>
         <snakeyaml.version>1.17</snakeyaml.version>
@@ -63,6 +63,15 @@
         <module>sparkler-tests-base</module>
     </modules>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <build>
         <plugins>
             <plugin>

@@ -33,11 +33,6 @@ public abstract class AbstractExtensionPoint implements ExtensionPoint {
     protected JobContext jobContext;
     protected String pluginId;
 
-    @Override
-    public void init(JobContext context) throws SparklerException {
-        this.jobContext = context;
-        LOG.debug("Initialize the context");
-    }
 
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
