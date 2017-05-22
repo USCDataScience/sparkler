@@ -32,8 +32,5 @@
       <directory>${project.basedir}/../conf</directory>
       <outputDirectory>conf</outputDirectory>
     </fileSet>
-    <fileSet>
-      <directory></directory>
-    </fileSet>
   </fileSets>
 </assembly>
