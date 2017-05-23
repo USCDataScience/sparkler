@@ -61,7 +61,6 @@
         <module>sparkler-app</module>
         <module>sparkler-plugins</module>
         <module>sparkler-tests-base</module>
-        <module>sparkler-release</module>
     </modules>
 
     <dependencyManagement>
