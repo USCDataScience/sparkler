@@ -36,8 +36,13 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
+            <artifactId>httpclient-osgi</artifactId>
+            <version>4.5.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore-osgi</artifactId>
+            <version>4.4.6</version>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
@@ -74,12 +79,14 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
+                        <Embed-Dependency>httpclient-osgi,httpcore-osgi</Embed-Dependency>
                         <Bundle-Name>{project.groupId}:${project.artifactId}</Bundle-Name>
                         <Bundle-SymbolicName>scorer.dd.svn</Bundle-SymbolicName>
                         <Bundle-Version>${project.parent.version}</Bundle-Version>
                         <Bundle-Activator>edu.usc.irds.sparkler.plugin.DdSvnScorerActivator</Bundle-Activator>
                         <Import-Package>org.osgi.framework,edu.usc.irds.sparkler,edu.usc.irds.sparkler.util,org.slf4j,
-                            org.apache.hadoop.conf</Import-Package>
+				    org.apache.hadoop.conf,org.apache.http.*,javax.*</Import-Package>
+                        <Export-Package>org.apache.commons.logging.*,javax.*,org.slf4j.*</Export-Package>
                     </instructions>
                     <buildDirectory>${project.parent.parent.basedir}${file.separator}${project.bundles.directory}</buildDirectory>
                 </configuration>

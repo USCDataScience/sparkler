@@ -1,13 +1,14 @@
 package edu.usc.irds.sparkler.plugin.ddsvn;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -16,6 +17,7 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -34,19 +36,6 @@ public class ApacheHttpRestClient {
     // Create a custom response handler
     private ResponseHandler<String> responseHandler;
 
-    public final static void main(String[] args) {
-
-        ApacheHttpRestClient client = new ApacheHttpRestClient();
-
-        try {
-            client.httpGetRequest("http://localhost:5000/classify/predict/car");
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            client.close();
-        }
-    }
-
     public ApacheHttpRestClient() {
 
         this.httpClient = HttpClients.createDefault();
@@ -58,7 +47,7 @@ public class ApacheHttpRestClient {
             public String handleResponse(
                     final HttpResponse response) throws IOException {
                 int status = response.getStatusLine().getStatusCode();
-                if (status >= HttpStatus.SC_OK && status < HttpStatus.SC_MULTIPLE_CHOICES) {
+                if (status >= 200 && status < 300) {
                     HttpEntity entity = response.getEntity();
                     return entity != null ? EntityUtils.toString(entity) : null;
                 }
@@ -67,7 +56,20 @@ public class ApacheHttpRestClient {
                 }
             }
 
-        };
+       };
+    }
+
+    public String httpPostRequest(String uriString, String extractedText) throws IOException {
+        URI uri = URI.create(uriString);
+
+        HttpPost httpPost = new HttpPost(uri);
+        httpPost.addHeader("Content-Type", "text/plain");
+        HttpEntity reqEntity = EntityBuilder.create().setText(URLEncoder.encode(extractedText, "UTF-8")).build();
+        httpPost.setEntity(reqEntity);
+
+        String responseBody = httpClient.execute(httpPost, this.responseHandler);
+
+        return responseBody;
     }
 
     public String httpGetRequest(String uriString) throws IOException {

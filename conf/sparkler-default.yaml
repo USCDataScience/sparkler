@@ -99,6 +99,8 @@ plugins:
     urlfilter.regex.file: regex-urlfilter.txt
   scorer.dd.svn:
     scorer.dd.svn.url: http://memex.wrangler.tacc.utexas.edu:5000/
+    scorer.dd.svn.fallback: 0
+    scorer.dd.svn.key: svn_score
   # Fetcher jBrowser - Headless browser to fetch javascript and AJAX 
   # based document/content.
   fetcher.jbrowser:

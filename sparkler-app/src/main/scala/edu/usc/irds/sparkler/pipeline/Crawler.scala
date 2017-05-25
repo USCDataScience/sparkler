@@ -50,7 +50,7 @@ class Crawler extends CliTool {
   var sparkMaster: String = sparklerConf.get(Constants.key.SPARK_MASTER).asInstanceOf[String]
 
   @Option(name = "-cdb", aliases = Array("--crawldb"),
-    usage = "Crawdb URI.")
+    usage = "Crawl DB URI.")
   var sparkSolr: String = sparklerConf.get(Constants.key.CRAWLDB).asInstanceOf[String]
 
   @Option(name = "-id", aliases = Array("--id"), required = true,
