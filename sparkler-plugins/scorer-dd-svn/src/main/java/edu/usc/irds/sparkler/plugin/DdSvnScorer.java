@@ -66,6 +66,13 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
         super.init(context);
         SparklerConfiguration config = jobContext.getConfiguration();
         this.pluginConfig = config.getPluginConfiguration(pluginId);
+        this.uriClassifier = pluginConfig.getOrDefault(SCORER_DD_SVN_URL, DEFAULT_SCORER_DD_SVN_URL).toString();
+        this.fallbackScore = pluginConfig.getOrDefault(FALLBACK_SCORE, DEFAULT_FALLBACK_SCORE).toString();
+        this.scoreKey = pluginConfig.getOrDefault(SCORE_KEY, DEFAULT_SCORE_KEY).toString();
+
+        LOG.info(SCORER_DD_SVN_URL + ": " + this.uriClassifier);
+        LOG.info(FALLBACK_SCORE + ": " + this.fallbackScore);
+        LOG.info(SCORE_KEY + ": " + this.scoreKey);
     }
 
     @Override
@@ -82,14 +89,6 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
         this.classes.put("Highly Relevant", "2");
 
         this.restClient = new ApacheHttpRestClient();
-
-        this.uriClassifier = pluginConfig.getOrDefault(SCORER_DD_SVN_URL, DEFAULT_SCORER_DD_SVN_URL).toString();
-        this.fallbackScore = pluginConfig.getOrDefault(FALLBACK_SCORE, DEFAULT_FALLBACK_SCORE).toString();
-        this.scoreKey = pluginConfig.getOrDefault(SCORE_KEY, DEFAULT_SCORE_KEY).toString();
-
-        LOG.info(SCORER_DD_SVN_URL + ": " + this.uriClassifier);
-        LOG.info(FALLBACK_SCORE + ": " + this.fallbackScore);
-        LOG.info(SCORE_KEY + ": " + this.scoreKey);
     }
 
     @Override
