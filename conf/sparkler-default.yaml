@@ -98,7 +98,7 @@ plugins:
     # File with Regex Filter Rules
     urlfilter.regex.file: regex-urlfilter.txt
   scorer.dd.svn:
-    scorer.dd.svn.url: http://0.0.0.0:5000/
+    scorer.dd.svn.url: http://domain-discovery:5000/classify/predict
     scorer.dd.svn.fallback: 0
     scorer.dd.svn.key: svn_score
   # Fetcher jBrowser - Headless browser to fetch javascript and AJAX 
