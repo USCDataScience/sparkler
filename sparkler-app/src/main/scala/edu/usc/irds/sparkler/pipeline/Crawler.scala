@@ -59,7 +59,7 @@ class Crawler extends CliTool {
 
   @Option(name = "-o", aliases = Array("--out"),
     usage = "Output path, default is job id")
-  var outputPath: String = ""
+  var outputPath: String = "crawl-segments"
 
   @Option(name = "-ke", aliases = Array("--kafka-enable"),
     usage = "Enable Kafka, default is false i.e. disabled")

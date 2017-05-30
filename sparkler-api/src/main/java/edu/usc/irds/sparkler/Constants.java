@@ -171,6 +171,8 @@ public interface Constants {
         String MD_SUFFIX = "_md";
         String HDR_SUFFIX = "_hd";
         String SEGMENT = "segment";
+        String RAW_CONTENT = "raw_content";
+        String WEBPAGE_MIMETYPE = "text/html";
     }
 
 }
