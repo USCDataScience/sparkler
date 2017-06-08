@@ -107,3 +107,6 @@ plugins:
     # Configuration Properties
     socket.timeout: 3000
     connect.timeout: 3000
+
+##################### Custom properties for MEMEX ###########################################
+memex.webpage.mimetype: "text/html"
