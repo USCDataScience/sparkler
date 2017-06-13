@@ -45,14 +45,14 @@ WORKDIR /data
 RUN git clone https://github.com/USCDataScience/sparkler /data/sparkler
 
 # Setup Solr
-RUN wget http://archive.apache.org/dist/lucene/solr/6.2.1/solr-6.2.1.tgz -O /data/solr.tgz && \
+RUN wget http://archive.apache.org/dist/lucene/solr/6.6.0/solr-6.6.0.tgz -O /data/solr.tgz && \
     cd /data/ && tar xzf /data/solr.tgz
 
 RUN mv /data/solr-* /data/solr && rm /data/solr.tgz
 RUN apt-get install lsof
-RUN /data/solr/bin/solr start && \
-    /data/solr/bin/solr create_core -c crawldb -d /data/sparkler/conf/solr/crawldb/ && \
-    /data/solr/bin/solr stop
+RUN /data/solr/bin/solr start -force && \
+    /data/solr/bin/solr create_core -force -c crawldb -d /data/sparkler/conf/solr/crawldb/ && \
+    /data/solr/bin/solr stop -force
 RUN cd /data/sparkler/sparkler-ui/banana && \
     git submodule init && \
     git submodule update && \
