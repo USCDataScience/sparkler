@@ -29,10 +29,12 @@
       ],
       "list": {
         "0": {
-          "from": "2017-01-31T05:00:00.000Z",
-          "to": "2017-02-28T04:59:59.000Z",
+          "from": "NOW/MINUTE-15MINUTE",
+          "to": "NOW/MINUTE%2B1MINUTE",
           "field": "last_updated_at",
           "type": "time",
+          "fromDateObj": "2017-06-14T23:30:55.225Z",
+          "toDateObj": "2017-06-14T23:45:55.225Z",
           "mandate": "must",
           "active": true,
           "alias": "",
@@ -82,7 +84,7 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&stats=true&stats.field=id&wt=json&rows=0\n",
+            "query": "q=*%3A*&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&wt=json&rows=0\n",
             "basic_query": "",
             "custom": ""
           },
@@ -119,7 +121,7 @@
           "type": "timepicker",
           "loadingEditor": false,
           "status": "Stable",
-          "mode": "absolute",
+          "mode": "relative",
           "time_options": [
             "5m",
             "15m",
@@ -132,15 +134,11 @@
           "timeformat": "",
           "spyable": true,
           "refresh": {
-            "enable": false,
+            "enable": true,
             "interval": 30,
             "min": 3
           },
           "filter_id": 0,
-          "time": {
-            "from": "01/31/2017 00:00:00",
-            "to": "02/27/2017 23:59:59"
-          },
           "title": "Indexed Time"
         }
       ]
@@ -163,8 +161,8 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&facet=true&facet.field=crawl_id&facet.field=status&facet.field=hostname&facet.field=discover_depth&wt=json",
-            "basic_query": "q=*%3A*&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&facet=true&facet.field=crawl_id&facet.field=status&facet.field=hostname&facet.field=discover_depth",
+            "query": "q=*%3A*&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=crawl_id&facet.field=status&facet.field=hostname&facet.field=discover_depth&wt=json",
+            "basic_query": "q=*%3A*&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=crawl_id&facet.field=status&facet.field=hostname&facet.field=discover_depth",
             "custom": ""
           },
           "group": "default",
@@ -187,7 +185,8 @@
           "show_queries": true,
           "title": "Facet Search",
           "exportSize": null,
-          "offset": 0
+          "offset": 0,
+          "field_list": true
         },
         {
           "span": 8,
@@ -200,7 +199,7 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&facet=true&facet.range=last_updated_at&facet.range.start=2017-01-31T05:00:00.000Z&facet.range.end=2017-02-28T04:59:59.000Z&facet.range.gap=%2B12HOUR\n",
+            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.range=last_updated_at&facet.range.start=NOW/MINUTE-15MINUTE&facet.range.end=NOW/MINUTE%2B1MINUTE&facet.range.gap=%2B10SECOND\n",
             "custom": ""
           },
           "max_rows": 100000,
@@ -209,7 +208,7 @@
           "sum_value": false,
           "auto_int": true,
           "resolution": 100,
-          "interval": "12h",
+          "interval": "10s",
           "intervals": [
             "auto",
             "1s",
@@ -271,7 +270,7 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&wt=json&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&facet=true&facet.field=group&facet.limit=5&facet.missing=true&f.group.facet.sort=count",
+            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=group&facet.limit=5&facet.missing=true",
             "custom": ""
           },
           "mode": "count",
@@ -372,7 +371,7 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&wt=json&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&facet=true&facet.field=discover_depth&facet.limit=5&facet.missing=true&f.discover_depth.facet.sort=index",
+            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=discover_depth&facet.limit=5&facet.missing=true",
             "custom": ""
           },
           "mode": "count",
@@ -473,7 +472,7 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&wt=json&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&fq=-title_t_md:a&fq=-title_t_md:an&fq=-title_t_md:the&fq=-title_t_md:about&fq=-title_t_md:and&fq=-title_t_md:by&fq=-title_t_md:301&fq=-title_t_md:302&facet=true&facet.field=title_t_md&facet.limit=5&facet.missing=true&f.title_t_md.facet.sort=count",
+            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&fq=-title_t_md:a&fq=-title_t_md:an&fq=-title_t_md:the&fq=-title_t_md:about&fq=-title_t_md:and&fq=-title_t_md:by&fq=-title_t_md:301&fq=-title_t_md:302&facet=true&facet.field=title_t_md&facet.limit=5&facet.missing=true",
             "custom": ""
           },
           "mode": "count",
@@ -593,8 +592,8 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]&wt=json&rows=200",
-            "basic_query": "q=*%3A*&fq=last_updated_at:[2017-01-31T05:00:00.000Z%20TO%202017-02-28T04:59:59.000Z]",
+            "query": "q=*%3A*&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&wt=json&rows=200",
+            "basic_query": "q=*%3A*&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]",
             "custom": ""
           },
           "size": 20,
