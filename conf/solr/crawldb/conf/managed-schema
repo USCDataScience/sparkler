@@ -117,7 +117,7 @@
    <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" /> 
    <field name="url" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" />
    <field name="group" type="string" indexed="true" stored="true" required="true"  multiValued="false" docValues="true" /> 
-   <field name="score" type="double" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
+   <field name="page_score" type="double" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    <field name="generate_score" type="double" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
 
    <!-- Deprecated Fields -->
