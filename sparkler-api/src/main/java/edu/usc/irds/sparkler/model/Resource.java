@@ -23,7 +23,7 @@ public class Resource implements Serializable {
     //@Field private Integer numTries = 0;
     //@Field private Integer numFetches = 0;
     @Field("discover_depth") private Integer discoverDepth = 0;
-    @Field private Double score = 0.0;
+    @Field("page_score") private Double score = 0.0;
     @Field("generate_score") private Double generateScore = 0.0;
     @Field private String status = ResourceStatus.UNFETCHED.toString();
     @Field("last_updated_at") private Date lastUpdatedAt;
@@ -57,6 +57,17 @@ public class Resource implements Serializable {
         this.id = resourceId(url, sparklerJob, this.indexedAt);
         this.discoverDepth = discoverDepth;
         this.status = status.toString();
+    }
+
+    public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status,
+        String parent, Double score) throws MalformedURLException {
+        this(url, new URL(url).getHost(), sparklerJob);
+        this.indexedAt = new Date();
+        this.id = resourceId(url, sparklerJob, this.indexedAt);
+        this.discoverDepth = discoverDepth;
+        this.status = status.toString();
+        this.parent = parent;
+        this.score = score;
     }
 
     public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status,

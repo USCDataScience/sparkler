@@ -98,8 +98,11 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
 
     @Override
     public Double score(String extractedText) throws Exception {
-        String response = this.restClient.httpPostRequest(this.uriClassifier, extractedText);
+        String response = this.restClient.httpPostRequest(this.uriClassifier, extractedText)
+            .replace("\"", "").replace("\n", "");
+
         String scoreString = this.classes.get(response);
+        LOG.info("Score string returned " + scoreString);
         Double score = Double.parseDouble(scoreString == null ? this.fallbackScore : scoreString);
 
         return score;

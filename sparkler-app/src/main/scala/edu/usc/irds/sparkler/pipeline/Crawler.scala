@@ -18,10 +18,10 @@
 package edu.usc.irds.sparkler.pipeline
 
 
-import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, SparklerConfiguration}
+import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, MemexCrawlDbRDD, SparklerConfiguration}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
-import edu.usc.irds.sparkler.model.{ResourceStatus, CrawlData, Resource, SparklerJob}
+import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
 import edu.usc.irds.sparkler.util.JobUtil
 import org.apache.hadoop.conf.Configuration
@@ -137,7 +137,7 @@ class Crawler extends CliTool {
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
-      val rdd = new CrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
+      val rdd = new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,

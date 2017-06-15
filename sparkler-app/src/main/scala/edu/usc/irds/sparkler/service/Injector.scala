@@ -93,7 +93,7 @@ class Injector extends CliTool {
     val seeds: util.Collection[Resource] =
       urls.map(_.trim)
         .filter(url => urlValidator.isValid(url))
-        .map(x => new Resource(x, 0, job, ResourceStatus.UNFETCHED))
+        .map(x => new Resource(x, 0, job, ResourceStatus.UNFETCHED, Injector.SEED_PARENT, Injector.SEED_SCORE))
 
     LOG.info("Injecting {} seeds", seeds.size())
 
@@ -141,6 +141,9 @@ class Injector extends CliTool {
 }
 
 object Injector extends Loggable {
+
+  val SEED_PARENT = "seed"
+  val SEED_SCORE = 1.0
 
   def main(args: Array[String]): Unit = {
     val injector = new Injector()
