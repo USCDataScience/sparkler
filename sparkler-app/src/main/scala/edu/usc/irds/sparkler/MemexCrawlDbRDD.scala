@@ -52,7 +52,6 @@ class MemexCrawlDbRDD(sc: SparkContext,
     val groupRes = solr.query(qry).getGroupResponse.getValues.get(0)
     val grps = groupRes.getValues
     MemexCrawlDbRDD.LOG.info(s"selecting ${grps.size()} out of ${groupRes.getNGroups}")
-    MemexCrawlDbRDD.LOG.info(s"Groups ${grps}")
     val res = new Array[Partition](grps.size())
     for (i <- 0 until grps.size()) {
       //TODO: improve partitioning : (1) club smaller domains, (2) support for multiple partitions for larger domains
