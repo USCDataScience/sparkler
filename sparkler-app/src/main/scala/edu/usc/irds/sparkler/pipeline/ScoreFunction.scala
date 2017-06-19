@@ -40,6 +40,7 @@ object ScoreFunction
       scorer match {
         case Some(scorer) =>
           val score = scorer.score(data.parsedData.extractedText)
+          LOG.info(s"Setting score of $score")
           data.fetchedData.getResource.setGenerateScore(score)
           data
         case None =>
