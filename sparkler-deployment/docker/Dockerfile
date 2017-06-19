@@ -19,6 +19,10 @@
 
 FROM ubuntu
 
+RUN groupadd --gid 1000 sparkler && \
+   useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
+   
+   
 RUN apt-get update && \
     apt-get install -y software-properties-common wget git
 
@@ -67,6 +71,6 @@ RUN cp -r /data/sparkler/sparkler-ui/sparkler-dashboard /data/solr/server/solr-w
 
 RUN apt-get update && apt-get install -y --fix-missing openjfx  # needed by the Jbrowser
 
-
+USER sparkler
 # Define default command.
 CMD ["bash"]
