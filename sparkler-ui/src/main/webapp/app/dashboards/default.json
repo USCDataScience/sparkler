@@ -29,12 +29,12 @@
       ],
       "list": {
         "0": {
-          "from": "NOW/MINUTE-15MINUTE",
-          "to": "NOW/MINUTE%2B1MINUTE",
+          "from": "2017-05-31T17:30:48.000Z/SECOND",
+          "to": "*",
           "field": "last_updated_at",
           "type": "time",
-          "fromDateObj": "2017-06-14T23:30:55.225Z",
-          "toDateObj": "2017-06-14T23:45:55.225Z",
+          "fromDateObj": "2017-05-31T17:30:48.000Z",
+          "toDateObj": "2017-06-22T18:10:49.289Z",
           "mandate": "must",
           "active": true,
           "alias": "",
@@ -84,9 +84,9 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&wt=json&rows=0\n",
+            "query": "q=*%3A*&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&wt=json&rows=0\n",
             "basic_query": "",
-            "custom": ""
+            "custom": "&fq=status:FETCHED"
           },
           "style": {
             "font-size": "32pt"
@@ -112,7 +112,7 @@
             "enable": false,
             "interval": 2
           },
-          "title": "Total Documents"
+          "title": "Total Documents Collected"
         },
         {
           "error": "",
@@ -121,7 +121,7 @@
           "type": "timepicker",
           "loadingEditor": false,
           "status": "Stable",
-          "mode": "relative",
+          "mode": "since",
           "time_options": [
             "5m",
             "15m",
@@ -139,7 +139,11 @@
             "min": 3
           },
           "filter_id": 0,
-          "title": "Indexed Time"
+          "title": "Indexed Time",
+          "time": {
+            "from": "05/31/2017 10:30:48",
+            "to": "06/22/2017 11:10:49"
+          }
         }
       ]
     },
@@ -161,8 +165,8 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=crawl_id&facet.field=status&facet.field=hostname&facet.field=discover_depth&wt=json",
-            "basic_query": "q=*%3A*&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=crawl_id&facet.field=status&facet.field=hostname&facet.field=discover_depth",
+            "query": "q=*%3A*&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&facet=true&facet.field=crawl_id&facet.field=status&facet.field=hostname&facet.field=discover_depth&wt=json",
+            "basic_query": "q=*%3A*&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&facet=true&facet.field=crawl_id&facet.field=status&facet.field=hostname&facet.field=discover_depth",
             "custom": ""
           },
           "group": "default",
@@ -199,7 +203,7 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.range=last_updated_at&facet.range.start=NOW/MINUTE-15MINUTE&facet.range.end=NOW/MINUTE%2B1MINUTE&facet.range.gap=%2B10SECOND\n",
+            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&facet=true&facet.range=last_updated_at&facet.range.start=2017-05-31T17:30:48.000Z/SECOND&facet.range.end=NOW&facet.range.gap=%2B3HOUR\n",
             "custom": ""
           },
           "max_rows": 100000,
@@ -208,7 +212,7 @@
           "sum_value": false,
           "auto_int": true,
           "resolution": 100,
-          "interval": "10s",
+          "interval": "3h",
           "intervals": [
             "auto",
             "1s",
@@ -249,7 +253,193 @@
             "enable": false,
             "interval": 2
           },
-          "title": "Crawl Time Series"
+          "title": "Crawl Time Series",
+          "show_help_message": false
+        }
+      ]
+    },
+    {
+      "title": "Metrics",
+      "height": "150px",
+      "editable": true,
+      "collapse": false,
+      "collapsable": true,
+      "panels": [
+        {
+          "span": 3,
+          "editable": true,
+          "type": "hits",
+          "loadingEditor": false,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ],
+            "query": "q=*%3A*&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&wt=json&rows=0\n",
+            "basic_query": "",
+            "custom": "&fq=status:UNFETCHED"
+          },
+          "style": {
+            "font-size": "28pt"
+          },
+          "arrangement": "horizontal",
+          "chart": "total",
+          "counter_pos": "above",
+          "donut": false,
+          "tilt": false,
+          "labels": true,
+          "spyable": true,
+          "show_queries": true,
+          "title": "Total remaining docs"
+        },
+        {
+          "span": 3,
+          "editable": true,
+          "type": "hits",
+          "loadingEditor": false,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ],
+            "query": "q=*%3A*&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&wt=json&rows=0\n",
+            "basic_query": "",
+            "custom": "&fq=content_type:text/html*&fq=status:FETCHED"
+          },
+          "style": {
+            "font-size": "32pt"
+          },
+          "arrangement": "horizontal",
+          "chart": "total",
+          "counter_pos": "above",
+          "donut": false,
+          "tilt": false,
+          "labels": true,
+          "spyable": true,
+          "show_queries": true,
+          "title": "Total Webpages"
+        },
+        {
+          "span": 2,
+          "editable": true,
+          "type": "hits",
+          "loadingEditor": false,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ],
+            "query": "q=*%3A*&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&wt=json&rows=0\n",
+            "basic_query": "",
+            "custom": "&fq=!content_type:text/html*&fq=status:FETCHED"
+          },
+          "style": {
+            "font-size": "32pt"
+          },
+          "arrangement": "horizontal",
+          "chart": "total",
+          "counter_pos": "above",
+          "donut": false,
+          "tilt": false,
+          "labels": true,
+          "spyable": true,
+          "show_queries": true,
+          "title": "Total Objects"
+        },
+        {
+          "span": 4,
+          "editable": true,
+          "type": "terms",
+          "loadingEditor": false,
+          "queries": {
+            "mode": "all",
+            "ids": [
+              0
+            ],
+            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&facet=true&facet.field=generate_score&facet.limit=10&facet.missing=true",
+            "custom": "&fq=status:FETCHED"
+          },
+          "mode": "count",
+          "field": "generate_score",
+          "stats_field": "",
+          "decimal_points": 0,
+          "exclude": [],
+          "missing": false,
+          "other": false,
+          "size": 10,
+          "order": "descending",
+          "style": {
+            "font-size": "10pt"
+          },
+          "donut": false,
+          "tilt": false,
+          "labels": true,
+          "logAxis": false,
+          "arrangement": "horizontal",
+          "chart": "pie",
+          "counter_pos": "above",
+          "lastColor": "",
+          "spyable": true,
+          "show_queries": true,
+          "chartColors": [
+            "#7EB26D",
+            "#EAB839",
+            "#6ED0E0",
+            "#EF843C",
+            "#E24D42",
+            "#1F78C1",
+            "#BA43A9",
+            "#705DA0",
+            "#508642",
+            "#CCA300",
+            "#447EBC",
+            "#C15C17",
+            "#890F02",
+            "#0A437C",
+            "#6D1F62",
+            "#584477",
+            "#B7DBAB",
+            "#F4D598",
+            "#70DBED",
+            "#F9BA8F",
+            "#F29191",
+            "#82B5D8",
+            "#E5A8E2",
+            "#AEA2E0",
+            "#629E51",
+            "#E5AC0E",
+            "#64B0C8",
+            "#E0752D",
+            "#BF1B00",
+            "#0A50A1",
+            "#962D82",
+            "#614D93",
+            "#9AC48A",
+            "#F2C96D",
+            "#65C5DB",
+            "#F9934E",
+            "#EA6460",
+            "#5195CE",
+            "#D683CE",
+            "#806EB7",
+            "#3F6833",
+            "#967302",
+            "#2F575E",
+            "#99440A",
+            "#58140C",
+            "#052B51",
+            "#511749",
+            "#3F2B5B",
+            "#E0F9D7",
+            "#FCEACA",
+            "#CFFAFF",
+            "#F9E2D2",
+            "#FCE2DE",
+            "#BADFF4",
+            "#F9D9F9",
+            "#DEDAF7"
+          ],
+          "title": "SCORES OF COLLECTED PAGES"
         }
       ]
     },
@@ -270,8 +460,8 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=group&facet.limit=5&facet.missing=true",
-            "custom": ""
+            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&facet=true&facet.field=group&facet.limit=5&facet.missing=true",
+            "custom": "&fq=status:FETCHED"
           },
           "mode": "count",
           "field": "group",
@@ -371,8 +561,8 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&facet=true&facet.field=discover_depth&facet.limit=5&facet.missing=true",
-            "custom": ""
+            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&facet=true&facet.field=discover_depth&facet.limit=5&facet.missing=true",
+            "custom": "&fq=status:FETCHED"
           },
           "mode": "count",
           "field": "discover_depth",
@@ -472,39 +662,28 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&fq=-title_t_md:a&fq=-title_t_md:an&fq=-title_t_md:the&fq=-title_t_md:about&fq=-title_t_md:and&fq=-title_t_md:by&fq=-title_t_md:301&fq=-title_t_md:302&facet=true&facet.field=title_t_md&facet.limit=5&facet.missing=true",
-            "custom": ""
+            "query": "q=*%3A*&wt=json&rows=0&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&facet=true&facet.field=page_score&facet.limit=10&facet.missing=true",
+            "custom": "&fq=status:UNFETCHED"
           },
           "mode": "count",
-          "field": "title_t_md",
+          "field": "page_score",
           "stats_field": "",
           "decimal_points": 0,
-          "exclude": [
-            "a",
-            "an",
-            "the",
-            "about",
-            "and",
-            "by",
-            "301",
-            "302"
-          ],
+          "exclude": [],
           "missing": false,
           "other": false,
-          "size": 5,
-          "sortBy": "count",
+          "size": 10,
           "order": "descending",
           "style": {
             "font-size": "10pt"
           },
           "donut": false,
           "tilt": false,
-          "labels": false,
+          "labels": true,
           "logAxis": false,
           "arrangement": "horizontal",
           "chart": "pie",
           "counter_pos": "above",
-          "exportSize": 10000,
           "lastColor": "",
           "spyable": true,
           "show_queries": true,
@@ -566,11 +745,7 @@
             "#F9D9F9",
             "#DEDAF7"
           ],
-          "refresh": {
-            "enable": false,
-            "interval": 2
-          },
-          "title": "Terms"
+          "title": "Potential Scores of Remaining Pages"
         }
       ]
     },
@@ -592,15 +767,18 @@
             "ids": [
               0
             ],
-            "query": "q=*%3A*&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]&wt=json&rows=200",
-            "basic_query": "q=*%3A*&fq=last_updated_at:[NOW/MINUTE-15MINUTE%20TO%20NOW/MINUTE%2B1MINUTE]",
-            "custom": ""
+            "query": "q=*%3A*&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&sort=generate_score desc&wt=json&rows=200",
+            "basic_query": "q=*%3A*&fq=last_updated_at:[2017-05-31T17:30:48.000Z/SECOND%20TO%20*]&sort=generate_score desc",
+            "custom": "&fq=status:FETCHED"
           },
           "size": 20,
           "pages": 10,
           "offset": 0,
-          "sort": [],
-          "sortable": false,
+          "sort": [
+            "generate_score",
+            "desc"
+          ],
+          "sortable": true,
           "group": "default",
           "style": {
             "font-size": "9pt"
@@ -610,7 +788,8 @@
             "hostname",
             "url",
             "title_t_md",
-            "fetch_timestamp"
+            "fetch_timestamp",
+            "generate_score"
           ],
           "important_fields": [
             "id",
@@ -619,7 +798,8 @@
             "url",
             "extracted_text",
             "fetch_timestamp",
-            "title_t_md"
+            "title_t_md",
+            "generate_score"
           ],
           "highlight": [],
           "header": true,
@@ -642,7 +822,10 @@
             "enable": false,
             "interval": 2
           },
-          "title": "Results"
+          "title": "Results",
+          "enableHyperlink": true,
+          "hyperlinkColumnHeader": "Open in new tab",
+          "hyperlinkColumnForURI": "url"
         }
       ]
     }
