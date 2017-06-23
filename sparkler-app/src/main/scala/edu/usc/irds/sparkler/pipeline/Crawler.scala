@@ -144,6 +144,8 @@ class Crawler extends CliTool {
     init()
 
     val solrc = this.job.newCrawlDbSolrClient()
+    LOG.info("Committing crawldb..")
+    solrc.commitCrawlDb()
     val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
 
@@ -158,7 +160,7 @@ class Crawler extends CliTool {
         deepCrawlHosts ++= deepCrawlHostnames.toSet
       }
       if (deepCrawlHosts.size > 0) {
-
+        LOG.info(s"Deep crawling hosts ${deepCrawlHosts.toString}")
         var taskId = JobUtil.newSegmentId(true)
         job.currentTask = taskId
         val deepRdd = new MemexDeepCrawlDbRDD(sc, job, maxGroups = topG, topN = topN,
