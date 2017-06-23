@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model._
+import org.apache.solr.common.SolrInputDocument
 
 /**
   * Created by thammegr on 6/7/16.
@@ -28,7 +29,8 @@ import edu.usc.irds.sparkler.model._
 class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val delay: Long,
                   val fetchFunc: ((SparklerJob, Iterator[Resource]) => Iterator[FetchedData]),
                   val parseFunc: ((CrawlData) => (ParsedData)),
-                  val outLinkFilterFunc: ((SparklerJob, CrawlData) => (Set[String])))
+                  val outLinkFilterFunc: ((SparklerJob, CrawlData)  => (Set[String])),
+                  val solrUpdateFunction: (CrawlData => SolrInputDocument ))
   extends Iterator[CrawlData] {
 
   import FairFetcher.LOG
@@ -61,6 +63,9 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
 
     //STEP: URL Filter
     data.parsedData.outlinks = outLinkFilterFunc(job, data)
+    val doc = solrUpdateFunction(data)
+    LOG.info("Adding doc to SOLR")
+    job.newCrawlDbSolrClient().addResource(doc)
     data
   }
 }

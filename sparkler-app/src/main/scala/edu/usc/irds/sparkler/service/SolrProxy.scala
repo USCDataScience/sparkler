@@ -54,6 +54,10 @@ class SolrProxy(var crawlDb: SolrClient) extends Closeable with Loggable {
     }
   }
 
+  def addResource(doc: SolrInputDocument): Unit = {
+    crawlDb.add(doc)
+  }
+
   def commitCrawlDb(): Unit = {
     crawlDb.commit()
   }

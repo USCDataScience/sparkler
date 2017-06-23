@@ -17,11 +17,14 @@
 
 package edu.usc.irds.sparkler.pipeline
 
+import java.io.File
+import java.util
 
-import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, MemexCrawlDbRDD, SparklerConfiguration}
+import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
+import edu.usc.irds.sparkler.service.SolrProxy
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
 import edu.usc.irds.sparkler.util.JobUtil
 import org.apache.hadoop.conf.Configuration
@@ -33,6 +36,10 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
+
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
+import scala.io.Source
 
 /**
   *
@@ -92,6 +99,14 @@ class Crawler extends CliTool {
   @Option(name = "-aj", handler = classOf[StringArrayOptionHandler], aliases = Array("--add-jars"), usage = "Add sparkler jar to spark context")
   var jarPath : Array[String] = new Array[String](0)
 
+  @Option(name = "-dc", handler = classOf[StringArrayOptionHandler], forbids = Array("-dcf"),
+    aliases = Array("--deep-crawl"), usage = "Deep crawl the provided hosts")
+  var deepCrawlHostnames : Array[String] = new Array[String](0)
+
+  @Option(name = "-dcf", forbids = Array("-dc"),
+    aliases = Array("--deepcrawl-file"), usage = "Deep crawl the provided hosts in the line separated file")
+  var deepCrawlHostFile : File = _
+
   var job: SparklerJob = _
   var sc: SparkContext = _
 
@@ -133,7 +148,44 @@ class Crawler extends CliTool {
     val job = this.job // local variable to bypass serialization
 
     for (_ <- 1 to iterations) {
-      val taskId = JobUtil.newSegmentId(true)
+      var deepCrawlHosts: mutable.Set[String] = new mutable.HashSet[String]()
+      if(deepCrawlHostFile != null) {
+        if(deepCrawlHostFile.isFile) {
+          deepCrawlHosts ++= Source.fromFile(deepCrawlHostFile).getLines().toSet
+        }
+      }
+      else if (deepCrawlHostnames.length > 0) {
+        deepCrawlHosts ++= deepCrawlHostnames.toSet
+      }
+      if (deepCrawlHosts.size > 0) {
+
+        var taskId = JobUtil.newSegmentId(true)
+        job.currentTask = taskId
+        val deepRdd = new MemexDeepCrawlDbRDD(sc, job, maxGroups = topG, topN = topN,
+          deepCrawlHosts = deepCrawlHostnames)
+        val fetchedRdd = deepRdd.map(r => (r.getGroup, r))
+          .groupByKey()
+          .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
+            FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer)
+          })
+          .persist()
+
+
+        if (kafkaEnable) {
+          storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
+        }
+
+        val scoredRdd = score(fetchedRdd)
+        //Step: Store these to nutch segments
+        val outputPath = this.outputPath + "/" + taskId
+
+        storeContent(outputPath, scoredRdd)
+
+        LOG.info("Committing crawldb..")
+        solrc.commitCrawlDb()
+      }
+
+      var taskId = JobUtil.newSegmentId(true)
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
@@ -141,29 +193,16 @@ class Crawler extends CliTool {
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction) })
+          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer) })
         .persist()
 
       if (kafkaEnable) {
         storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
       }
-
-      //Step: Update status of fetched resources
-      val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => StatusUpdateSolrTransformer(d))
-      val statusUpdateFunc = new SolrStatusUpdate(job)
-      sc.runJob(statusUpdateRdd, statusUpdateFunc)
-
-      //Step: Filter Outlinks and Upsert new URLs into CrawlDb
-//      val outlinksRdd = OutLinkUpsert(job, fetchedRdd)
-//      val upsertFunc = new SolrUpsert(job)
-//      sc.runJob(outlinksRdd, upsertFunc)
-
       val scoredRdd = score(fetchedRdd)
-
       //Step: Store these to nutch segments
       val outputPath = this.outputPath + "/" + taskId
 
-//      storeContent(outputPath, fetchedRdd)
       storeContent(outputPath, scoredRdd)
 
       LOG.info("Committing crawldb..")
@@ -174,6 +213,34 @@ class Crawler extends CliTool {
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
   }
+
+  def executePipeline(rdd: RDD[Resource], taskId: String, solrc: SolrProxy, localFetchDelay: Long): Unit = {
+    val fetchedRdd = rdd.map(r => (r.getGroup, r))
+      .groupByKey()
+      .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
+        FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer)
+      })
+      .persist()
+
+    if (kafkaEnable) {
+      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
+    }
+
+    //Step: Update status of fetched resources.
+    val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => StatusUpdateSolrTransformer(d))
+    val statusUpdateFunc = new SolrStatusUpdate(job)
+    sc.runJob(statusUpdateRdd, statusUpdateFunc)
+
+    val scoredRdd = score(fetchedRdd)
+    //Step: Store these to nutch segments
+    val outputPath = this.outputPath + "/" + taskId
+
+    storeContent(outputPath, scoredRdd)
+
+    LOG.info("Committing crawldb..")
+    solrc.commitCrawlDb()
+  }
+
 
   def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
     val job = this.job
