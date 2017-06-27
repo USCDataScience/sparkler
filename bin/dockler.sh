@@ -32,6 +32,7 @@ solr_port=8984
 solr_url="http://localhost:$solr_port/solr"
 spark_ui_port=4041
 spark_ui_url="http://localhost:$spark_ui_port/"
+user="root"
 
 # check for docker
 command -v docker >/dev/null 2>&1 || { echo "Error: Require 'docker' but it is unavailable." >&2; exit 2; }
@@ -79,13 +80,13 @@ if [[ -z "${container_id// }" ]]; then
         read -p "No container is running for $image_id. Do you wish to start it? [Y/N]" yn
         case $yn in
             [Yy]* ) echo "Staring container"
-                    container_id=`docker run -p "$solr_port":8983 -p "$spark_ui_port:4040" -it -d $image_id`
+                    container_id=`docker run -p "$solr_port":8983 -p "$spark_ui_port:4040" -it --user "$user" -d $image_id`
                     if [ $? -ne 0 ]; then
                         echo "Something went wrong :-( Please check error messages from docker."
                         exit 3
                      fi
                     echo "Starting solr server inside the container"
-                    docker exec "$container_id" /data/solr/bin/solr restart -force
+                    docker exec --user "$user" "$container_id" /data/solr/bin/solr restart -force
                     break;;
             [Nn]* ) exit;;
             * ) echo "Please answer yes or no.";;
@@ -119,4 +120,4 @@ Inside docker, you can do the following:
    crawl - launch a crawl job
 EOF
 
-docker exec -it "$container_id" /bin/bash
+docker exec -it --user "$user" "$container_id" /bin/bash
