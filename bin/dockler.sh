@@ -85,7 +85,7 @@ if [[ -z "${container_id// }" ]]; then
                         exit 3
                      fi
                     echo "Starting solr server inside the container"
-                    docker exec "$container_id" /data/solr/bin/solr restart
+                    docker exec "$container_id" /data/solr/bin/solr restart -force
                     break;;
             [Nn]* ) exit;;
             * ) echo "Please answer yes or no.";;
@@ -109,10 +109,10 @@ Some useful queries:
 Inside docker, you can do the following:
 
 /data/solr/bin/solr - command line tool for administering solr
-    start - start solr
-    stop - stop solr
-    status - get status of solr
-    restart - restart solr
+    start -force -> start solr
+    stop -force -> stop solr
+    status -force -> get status of solr
+    restart -force -> restart solr
 
 /data/sparkler.sh - command line interface to sparkler
    inject - inject seed urls
