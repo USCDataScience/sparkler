@@ -38,16 +38,12 @@ object OutLinkFilterFunction
     var filteredOutLinks: Set[String] = Set()
     val urlValidator: UrlValidator = new UrlValidator()
     for (url <- data.parsedData.outlinks) {
-      try {
-        val result = outLinkFilter match {
-          case Some(urLFilter) => urlValidator.isValid(url) && urLFilter.filter(url, data.fetchedData.getResource.getUrl)
-          case None => true
-        }
-        if (result) {
-          filteredOutLinks += url
-        }
-      } catch {
-        case exp: Exception => LOG.warn(s"Exception occurred for $url: ${exp.printStackTrace()}")
+      val result = outLinkFilter match {
+        case Some(urLFilter) => urlValidator.isValid(url) && urLFilter.filter(url, data.fetchedData.getResource.getUrl)
+        case None => true
+      }
+      if (result) {
+        filteredOutLinks += url
       }
     }
     filteredOutLinks
