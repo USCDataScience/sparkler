@@ -50,7 +50,7 @@ RUN git clone https://github.com/USCDataScience/sparkler /data/sparkler
 
 # Setup Solr
 RUN wget http://archive.apache.org/dist/lucene/solr/6.6.0/solr-6.6.0.tgz -O /data/solr.tgz && \
-    cd /data/ && tar xzf /data/solr.tgz
+    cd /data/ && tar xzf /data/solr.tgz 
 
 RUN mv /data/solr-* /data/solr && rm /data/solr.tgz
 RUN apt-get install lsof
@@ -70,6 +70,10 @@ RUN cp -r /data/sparkler/sparkler-ui/sparkler-dashboard /data/solr/server/solr-w
 
 
 RUN apt-get update && apt-get install -y --fix-missing openjfx  # needed by the Jbrowser
+
+RUN chown -R sparkler:sparkler /data/sparkler
+
+RUN chown -R sparkler:sparkler /data/solr
 
 USER sparkler
 # Define default command.
