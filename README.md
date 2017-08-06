@@ -29,6 +29,13 @@ Click here for quick start guide : https://github.com/uscdataScience/sparkler/wi
 
 Setup instructions https://github.com/uscdataScience/sparkler/wiki/sparkler-0.1#requirements
 
+### Running
+
+If you don't want to build by hand there are a couple of ways to run Sparkler:
+
+[Docker build](https://github.com/USCDataScience/sparkler/wiki/Build-and-Deploy)
+[Pre built Snap package](https://github.com/USCDataScience/sparkler/wiki/Install-with-snap)
+
 ### Build
  To build this project, `cd` to the root directory of the sparkler and run the following command:
 
