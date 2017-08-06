@@ -34,6 +34,7 @@ Setup instructions https://github.com/uscdataScience/sparkler/wiki/sparkler-0.1#
 If you don't want to build by hand there are a couple of ways to run Sparkler:
 
 [Docker build](https://github.com/USCDataScience/sparkler/wiki/Build-and-Deploy)
+
 [Pre built Snap package](https://github.com/USCDataScience/sparkler/wiki/Install-with-snap)
 
 ### Build
