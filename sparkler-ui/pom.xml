@@ -33,7 +33,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <banana.output.directory>${project.basedir}${file.separator}sparkler-dashboard</banana.output.directory>
+        <banana.output.directory>${project.basedir}${file.separator}target</banana.output.directory>
         <banana.source.directory>${project.basedir}${file.separator}banana/dist</banana.source.directory>
     </properties>
 
