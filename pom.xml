@@ -61,7 +61,7 @@
         <module>sparkler-app</module>
         <module>sparkler-plugins</module>
         <module>sparkler-tests-base</module>
-        <module>sparkler-ui</module>
+        <!--<module>sparkler-ui</module>-->
     </modules>
 
     <dependencyManagement>
