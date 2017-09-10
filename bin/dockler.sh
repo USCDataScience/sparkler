@@ -48,7 +48,7 @@ build_image(){
     cd "$prev_dir"
 
     echo "Building a docker image with tag '$docker_tag' ..."
-    docker build -f "$DIR/sparkler-deployment/docker/Dockerfile" -t "$docker_tag" "$DIR/sparkler-deployment/docker"
+    docker build -f "$DIR/sparkler-deployment/docker/Dockerfile" -t "$docker_tag" "$DIR"
 
     if [ $? -ne 0 ]; then
         echo "Error: Failed"
