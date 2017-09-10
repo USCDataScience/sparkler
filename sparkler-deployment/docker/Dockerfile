@@ -23,8 +23,8 @@ RUN groupadd --gid 1000 sparkler && \
    useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
    
    
-RUN apt-get update && \
-    apt-get install -y software-properties-common wget git
+RUN apt-get update &&  apt-get install -y software-properties-common wget lsof emacs-nox
+# RUN apt-get update && apt-get install -y git maven emacs-nox
 
 
 RUN \
@@ -36,44 +36,40 @@ RUN \
   rm -rf /var/lib/apt/lists/* && \
   rm -rf /var/cache/oracle-jdk8-installer
 
+# needed by the Jbrowser
+RUN apt-get update && apt-get install -y --fix-missing openjfx
+
+
 # Define commonly used JAVA_HOME variable
 ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
 
-RUN apt-get update && apt-get install -y git maven emacs-nox
 
 # Define working directory.
 WORKDIR /data
 
-# Copies sparkler
-# ADD ./ /data/sparkler
-RUN git clone https://github.com/USCDataScience/sparkler /data/sparkler
-
-# Setup Solr
+## Setup Solr
 RUN wget http://archive.apache.org/dist/lucene/solr/6.6.0/solr-6.6.0.tgz -O /data/solr.tgz && \
-    cd /data/ && tar xzf /data/solr.tgz 
+    cd /data/ && tar xzf /data/solr.tgz && \
+    mv /data/solr-* /data/solr && rm /data/solr.tgz
 
-RUN mv /data/solr-* /data/solr && rm /data/solr.tgz
-RUN apt-get install lsof
+# add sparkler contents
+ADD ./ /data/sparkler
+
+# Setup bundles - fix the new path
+RUN sed -i 's/plugins.bundle.directory:.*/plugins.bundle.directory: \/data\/sparkler\/sparkler-app\/bundles/g' /data/sparkler/resources/sparkler-default.yaml
+
+
+# create solr core
 RUN /data/solr/bin/solr start -force && \
     /data/solr/bin/solr create_core -force -c crawldb -d /data/sparkler/conf/solr/crawldb/ && \
     /data/solr/bin/solr stop -force
-RUN cd /data/sparkler/sparkler-ui/banana && \
-    git submodule init && \
-    git submodule update && \
-    cd /data/sparkler/sparkler-ui/ && mvn clean package
 
-RUN cd /data/sparkler && mvn clean install -DskipTests
-
-# Setup Sparkler Web Dashboard UI
-RUN cp -r /data/sparkler/sparkler-ui/sparkler-dashboard /data/solr/server/solr-webapp/ && \
+# sparkler  ui with banana dashboard
+RUN cp -r /data/sparkler/sparkler-ui/target/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkler && \
     cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
 
-
-RUN apt-get update && apt-get install -y --fix-missing openjfx  # needed by the Jbrowser
-
-RUN chown -R sparkler:sparkler /data/sparkler
-
-RUN chown -R sparkler:sparkler /data/solr
+# Fix permissions
+RUN chown -R sparkler:sparkler /data/
 
 USER sparkler
 # Define default command.

@@ -32,7 +32,7 @@ solr_port=8984
 solr_url="http://localhost:$solr_port/solr"
 spark_ui_port=4041
 spark_ui_url="http://localhost:$spark_ui_port/"
-user="root"
+user="sparkler"
 
 # check for docker
 command -v docker >/dev/null 2>&1 || { echo "Error: Require 'docker' but it is unavailable." >&2; exit 2; }
@@ -42,9 +42,9 @@ build_image(){
 
     prev_dir="$PWD"
     cd "$DIR"
-    echo "Cleaning workspace to minimize size ..."
-    mvn clean -q
-    echo "Cleaning done..."
+    echo "Building project..."
+    git submodule update --init --recursive
+    mvn package -DskipTests
     cd "$prev_dir"
 
     echo "Building a docker image with tag '$docker_tag' ..."
