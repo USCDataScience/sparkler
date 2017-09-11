@@ -17,7 +17,7 @@
 #
 # Pull base image.
 
-FROM ubuntu
+FROM ubuntu:16.04
 
 RUN groupadd --gid 1000 sparkler && \
    useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
