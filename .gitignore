@@ -52,3 +52,6 @@ sjob-**
 Application Files
 /resources
 felix-cache/
+
+tmp*
+workspace*
