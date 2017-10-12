@@ -34,10 +34,15 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <banana.output.directory>${project.basedir}${file.separator}target</banana.output.directory>
-        <banana.source.directory>${project.basedir}${file.separator}banana/dist</banana.source.directory>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.lucidworks</groupId>
+            <artifactId>banana</artifactId>
+            <version>1.5.1</version>
+            <type>war</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -58,14 +63,12 @@
                 <version>${maven.war.plugin.version}</version>
                 <configuration>
                     <outputDirectory>${banana.output.directory}</outputDirectory>
-                    <webResources> 
-                        <resource> 
-                            <directory>${project.build.sourceDirectory}</directory> 
-                        </resource> 
-                        <resource> 
-                            <directory>${banana.source.directory}</directory> 
-                        </resource> 
-                    </webResources>
+                    <overlays>
+                        <overlay>
+                            <groupId>com.lucidworks</groupId>
+                            <artifactId>banana</artifactId>
+                        </overlay>
+                    </overlays>
                     <webXml>WEB-INF/web.xml</webXml>
                 </configuration>
             </plugin>
