@@ -65,6 +65,12 @@ public interface Constants {
         @ConfigKey(type = int.class)
         String GENERATE_TOP_GROUPS = "generate.top.groups";
 
+        @ConfigKey
+        String GENERATE_SORTBY = "generate.sortby";
+
+        @ConfigKey
+        String GENERATE_GROUPBY = "generate.groupby";
+
         // Fetcher Properties
         @ConfigKey(type = int.class)
         String FETCHER_SERVER_DELAY = "fetcher.server.delay";

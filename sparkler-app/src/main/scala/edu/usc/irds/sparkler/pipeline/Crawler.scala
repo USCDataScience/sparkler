@@ -92,6 +92,12 @@ class Crawler extends CliTool {
   @Option(name = "-aj", handler = classOf[StringArrayOptionHandler], aliases = Array("--add-jars"), usage = "Add sparkler jar to spark context")
   var jarPath : Array[String] = new Array[String](0)
 
+  /* Generator options, currently not exposed via the CLI
+     and only accessible through the config yaml file
+   */
+  var sortBy: String = sparklerConf.get(Constants.key.GENERATE_SORTBY).asInstanceOf[String]
+  var groupBy: String = sparklerConf.get(Constants.key.GENERATE_GROUPBY).asInstanceOf[String]
+
   var job: SparklerJob = _
   var sc: SparkContext = _
 
@@ -138,7 +144,8 @@ class Crawler extends CliTool {
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
 
-      val rdd = new CrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
+      val rdd = new CrawlDbRDD(sc, job, sortBy = sortBy, maxGroups = topG,
+        topN = topN, groupBy = groupBy)
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
