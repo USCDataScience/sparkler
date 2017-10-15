@@ -38,7 +38,8 @@ class CrawlDbRDD(sc: SparkContext,
                  sortBy: String = CrawlDbRDD.DEFAULT_ORDER,
                  generateQry: String = CrawlDbRDD.DEFAULT_FILTER_QRY,
                  maxGroups: Int = CrawlDbRDD.DEFAULT_GROUPS,
-                 topN: Int = CrawlDbRDD.DEFAULT_TOPN)
+                 topN: Int = CrawlDbRDD.DEFAULT_TOPN,
+                 groupBy: String = CrawlDbRDD.DEFAULT_GROUPBY)
   extends RDD[Resource](sc, Seq.empty) {
 
 
@@ -64,7 +65,7 @@ class CrawlDbRDD(sc: SparkContext,
     qry.set("sort", sortBy)
     qry.set("group", true)
     qry.set("group.ngroups", true)
-    qry.set("group.field", Constants.solr.GROUP)
+    qry.set("group.field", groupBy)
     qry.set("group.limit", 0)
     qry.setRows(maxGroups)
     val proxy = job.newCrawlDbSolrClient()
@@ -89,4 +90,5 @@ object CrawlDbRDD extends Loggable {
   val DEFAULT_FILTER_QRY = Constants.solr.STATUS + ":" + ResourceStatus.UNFETCHED
   val DEFAULT_GROUPS = 1000
   val DEFAULT_TOPN = 1000
+  val DEFAULT_GROUPBY = "group"
 }
