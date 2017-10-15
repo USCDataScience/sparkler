@@ -10,6 +10,7 @@ import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import org.apache.commons.io.IOUtils;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
  * instead it uses URLConnection provided by JDK to fetch the resources.
  *
  */
+@Extension
 public class FetcherDefault extends AbstractExtensionPoint
         implements Fetcher, Function<Resource, FetchedData> {
 

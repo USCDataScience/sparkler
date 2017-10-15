@@ -55,6 +55,7 @@
         <args4j.version>2.0.29</args4j.version>
         <slf4j.version>1.7.12</slf4j.version>
         <tika.version>1.14</tika.version>
+        <pf4j.version>2.0.0-SNAPSHOT</pf4j.version>
     </properties>
     <modules>
         <module>sparkler-api</module>
@@ -71,6 +72,11 @@
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.pf4j</groupId>
+                <artifactId>pf4j</artifactId>
+                <version>${pf4j.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>
@@ -85,4 +91,16 @@
             </plugin>
         </plugins>
     </build>
+    <repositories>
+        <repository>
+            <id>sonatype-nexus-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
