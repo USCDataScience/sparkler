@@ -21,9 +21,7 @@ import edu.usc.irds.sparkler.Scorer
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model._
 import edu.usc.irds.sparkler.service.PluginService
-import edu.usc.irds.sparkler.util.FetcherDefault
 
-import scala.collection.JavaConverters._
 import scala.language.postfixOps
 
 /**
@@ -39,12 +37,13 @@ object ScoreFunction
     try {
       scorer match {
         case Some(scorer) =>
-          val score = scorer.score(data.parsedData.extractedText)
-          LOG.info(s"Setting score of $score")
-          data.fetchedData.getResource.setGenerateScore(score)
+          val score: java.util.Map[java.lang.String, java.lang.Double] = new java.util.HashMap[java.lang.String, java.lang.Double]()
+          score.put(scorer.getScoreKey, scorer.score(data.parsedData.extractedText))
+          LOG.debug(s"Setting score of $score")
+          data.fetchedData.getResource.setScore(score)
           data
         case None =>
-          LOG.info("Scoring is not performed")
+          LOG.debug("Scoring is not performed")
           data
       }
     } catch {

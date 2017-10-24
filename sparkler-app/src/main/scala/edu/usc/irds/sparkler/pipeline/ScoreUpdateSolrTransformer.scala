@@ -17,16 +17,14 @@
 
 package edu.usc.irds.sparkler.pipeline
 
-import java.util
-import java.util.Iterator
-
 import com.google.common.hash.{HashFunction, Hashing}
-import edu.usc.irds.sparkler.Constants
+import edu.usc.irds.sparkler.{Constants, Scorer}
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.CrawlData
 import edu.usc.irds.sparkler.solr.schema.FieldMapper
 import org.apache.solr.common.SolrInputDocument
 
+import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
 /**
@@ -43,7 +41,9 @@ object ScoreUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) with
     //FIXME: handle failure case
     sUpdate.setField(Constants.solr.ID, data.fetchedData.getResource.getId)
 
-    sUpdate.setField(Constants.solr.GENERATE_SCORE, Map("set" -> data.fetchedData.getResource.getGenerateScore()).asJava)
+    val score: java.util.Map[java.lang.String, java.lang.Double] = data.fetchedData.getResource.getScore()
+
+    score.foreach(pair => sUpdate.setField(pair._1, Map("set" -> pair._2).asJava))
 
     sUpdate
   }

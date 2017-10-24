@@ -179,7 +179,7 @@ class Crawler extends CliTool {
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
-      parent.getFetchTimestamp, parent.getId, parent.getGenerateScore) })
+      parent.getFetchTimestamp, parent.getId, parent.getScore) })
     val upsertFunc = new SolrUpsert(job)
     sc.runJob(outlinksRdd, upsertFunc)
 
