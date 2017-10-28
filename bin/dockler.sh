@@ -100,7 +100,7 @@ Inside docker, you can do the following:
     status -force -> get status of solr
     restart -force -> restart solr
 
-/data/sparkler.sh - command line interface to sparkler
+/data/sparkler/bin/sparkler.sh - command line interface to sparkler
    inject - inject seed urls
    crawl - launch a crawl job
 EOF
