@@ -33,17 +33,19 @@
     <modules>
         <!-- List of all the plugins -->
         <module>urlfilter-regex</module>
-        <module>fetcher-jbrowser</module>
+        <!-- <module>fetcher-jbrowser</module>
         <module>fetcher-htmlunit</module>
+        -->
     </modules>
 
-    <properties>
-    </properties>
+    <properties> </properties>
+
     <dependencies>
         <dependency>
             <groupId>edu.usc.irds.sparkler</groupId>
             <artifactId>sparkler-api</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <!--
                 <exclusion>
@@ -53,5 +55,48 @@
                 -->
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.pf4j</groupId>
+            <artifactId>pf4j</artifactId>
+            <version>${pf4j.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>edu.usc.irds.sparkler</groupId>
+            <artifactId>sparkler-tests-base</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
+    <build>
+        <resources>
+            <resource> <!-- This will update variable with its values in resources
+                        e.g.: refer how plugin id and version are set in plugin.properties -->
+                <directory>src${file.separator}main${file.separator}resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <configuration>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>make-assembly</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
