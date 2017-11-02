@@ -43,7 +43,7 @@ build_image(){
     prev_dir="$PWD"
     cd "$DIR"
     echo "Building project..."
-    git submodule update --init --recursive
+      git submodule update --init --recursive
     mvn package -DskipTests
     cd "$prev_dir"
 
