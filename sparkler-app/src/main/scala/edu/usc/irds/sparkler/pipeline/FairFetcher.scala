@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicLong
 
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model._
-import org.apache.solr.common.SolrInputDocument
 
 /**
   * Created by thammegr on 6/7/16.

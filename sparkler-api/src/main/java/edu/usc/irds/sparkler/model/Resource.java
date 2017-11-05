@@ -8,7 +8,6 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
-import java.util.Map;
 
 /**
  * Created by karanjeetsingh on 10/22/16.
@@ -21,14 +20,17 @@ public class Resource implements Serializable {
     @Field private String url;
     @Field private String group;
     @Field("fetch_timestamp") private Date fetchTimestamp;
+    //@Field private Integer numTries = 0;
+    //@Field private Integer numFetches = 0;
     @Field("discover_depth") private Integer discoverDepth = 0;
-    @Field("*_score") private Map<String, Double> score;
+    @Field private Double score = 0.0;
     @Field private String status = ResourceStatus.UNFETCHED.toString();
     @Field("last_updated_at") private Date lastUpdatedAt;
     @Field("indexed_at") private Date indexedAt;
     @Field private String hostname;
     @Field private String parent;
     @Field("dedupe_id") private String dedupeId;
+
 
     public Resource() {
     }
@@ -58,17 +60,6 @@ public class Resource implements Serializable {
     }
 
     public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status,
-        String parent, Map<String, Double> score) throws MalformedURLException {
-        this(url, new URL(url).getHost(), sparklerJob);
-        this.indexedAt = new Date();
-        this.id = resourceId(url, sparklerJob, this.indexedAt);
-        this.discoverDepth = discoverDepth;
-        this.status = status.toString();
-        this.parent = parent;
-        this.score = score;
-    }
-
-    public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status,
                     Date fetchTimestamp, String parent) throws MalformedURLException {
         this(url, new URL(url).getHost(), sparklerJob);
         this.id = resourceId(url, sparklerJob, fetchTimestamp);
@@ -84,17 +75,13 @@ public class Resource implements Serializable {
         this.status = status.toString();
     }
 
-    public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status, Date fetchTimestamp, String parent, Map<String, Double> score) throws MalformedURLException {
-        this(url, discoverDepth, sparklerJob, status, fetchTimestamp, parent);
-        this.score = score;
-    }
-
     @Override
     public String toString() {
-        return String.format("Resource(%s, $s, %s, %s, %s, %s, %s, %s)",
+        return String.format("Resource(%s, %s, %s, %d, %f, %s)",
                 id, group, fetchTimestamp, discoverDepth, score, status);
                 //id, group, fetchTimestamp, numTries, numFetches, discoverDepth, score, status);
     }
+
 
     public static String resourceId(String url, JobContext job) {
         return String.format("%s-%s", job.getId(), url);
@@ -103,6 +90,7 @@ public class Resource implements Serializable {
     public static String resourceId(String url, JobContext job, Date timestamp) {
         return StringUtil.sha256hash(String.format("%s-%s-%s", job.getId(), url, timestamp.getTime()));
     }
+
 
     // Getters & Setters
     public String getId() {
@@ -146,13 +134,4 @@ public class Resource implements Serializable {
     public String getDedupeId() { return dedupeId; }
 
     public void setDedupeId(String dedupeId) { this.dedupeId = dedupeId; }
-
-    public Map<String, Double> getScore()
-    {
-        return this.score;
-    }
-
-    public void setScore(Map<String, Double> score) {
-        this.score = score;
-    }
 }
