@@ -64,7 +64,7 @@ class Crawler extends CliTool {
 
   @Option(name = "-o", aliases = Array("--out"),
     usage = "Output path, default is job id")
-  var outputPath: String = "crawl-segments"
+  var outputPath: String = ""
 
   @Option(name = "-ke", aliases = Array("--kafka-enable"),
     usage = "Enable Kafka, default is false i.e. disabled")
@@ -139,13 +139,12 @@ class Crawler extends CliTool {
     init()
 
     val solrc = this.job.newCrawlDbSolrClient()
-    LOG.info("Committing crawldb..")
-    solrc.commitCrawlDb()
+
     val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
 
     for (_ <- 1 to iterations) {
-      var taskId = JobUtil.newSegmentId(true)
+      val taskId = JobUtil.newSegmentId(true)
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
@@ -183,33 +182,6 @@ class Crawler extends CliTool {
     sc.stop()
   }
 
-  def executePipeline(rdd: RDD[Resource], taskId: String, solrc: SolrProxy, localFetchDelay: Long): Unit = {
-    val fetchedRdd = rdd.map(r => (r.getGroup, r))
-      .groupByKey()
-      .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-        FetchFunction, ParseFunction, OutLinkFilterFunction)
-      })
-      .persist()
-
-    if (kafkaEnable) {
-      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
-    }
-
-    //Step: Update status of fetched resources.
-    val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => StatusUpdateSolrTransformer(d))
-    val statusUpdateFunc = new SolrStatusUpdate(job)
-    sc.runJob(statusUpdateRdd, statusUpdateFunc)
-
-    val scoredRdd = score(fetchedRdd)
-    //Step: Store these to nutch segments
-    val outputPath = this.outputPath + "/" + taskId
-
-    storeContent(outputPath, scoredRdd)
-
-    LOG.info("Committing crawldb..")
-    solrc.commitCrawlDb()
-  }
-
   def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
     val job = this.job
 
@@ -219,12 +191,8 @@ class Crawler extends CliTool {
     val scoreUpdateFunc = new SolrStatusUpdate(job)
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
 
-    //TODO (was OutlinkUpsert)
-    val outlinksRdd = scoredRdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
-      .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
-      //TODO: url normalize
-      .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
-      parent.getFetchTimestamp, parent.getId, parent.getScore) })
+    val outlinksRdd = OutLinkUpsert(job, scoredRdd)
+
     val upsertFunc = new SolrUpsert(job)
     sc.runJob(outlinksRdd, upsertFunc)
 
@@ -241,7 +209,7 @@ object OutLinkUpsert extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) wi
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
-      parent.getFetchTimestamp, parent.getId) }) //create a new resource
+      parent.getFetchTimestamp, parent.getId, parent.getScore) }) //create a new resource
   }
 }
 
