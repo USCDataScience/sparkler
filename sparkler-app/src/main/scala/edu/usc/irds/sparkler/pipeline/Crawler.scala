@@ -50,7 +50,7 @@ class Crawler extends CliTool {
   var sparkMaster: String = sparklerConf.get(Constants.key.SPARK_MASTER).asInstanceOf[String]
 
   @Option(name = "-cdb", aliases = Array("--crawldb"),
-    usage = "Crawdb URI.")
+    usage = "Craw DB URI.")
   var sparkSolr: String = sparklerConf.get(Constants.key.CRAWLDB).asInstanceOf[String]
 
   @Option(name = "-id", aliases = Array("--id"), required = true,
@@ -126,7 +126,7 @@ class Crawler extends CliTool {
     FetchFunction.init(job)
 
   }
-  //TODO: URL nor malizers
+  //TODO: URL normalizers
   //TODO: Robots.txt
 
   override def run(): Unit = {
@@ -143,7 +143,6 @@ class Crawler extends CliTool {
       val taskId = JobUtil.newSegmentId(true)
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
-
 
       val rdd = new CrawlDbRDD(sc, job, sortBy = sortBy, maxGroups = topG,
         topN = topN, groupBy = groupBy)
@@ -163,14 +162,12 @@ class Crawler extends CliTool {
       sc.runJob(statusUpdateRdd, statusUpdateFunc)
 
       //Step: Filter Outlinks and Upsert new URLs into CrawlDb
-      val outlinksRdd = OutLinkUpsert(job, fetchedRdd)
-      val upsertFunc = new SolrUpsert(job)
-      sc.runJob(outlinksRdd, upsertFunc)
+      val scoredRdd = score(fetchedRdd)
 
       //Step: Store these to nutch segments
       val outputPath = this.outputPath + "/" + taskId
 
-      storeContent(outputPath, fetchedRdd)
+      storeContent(outputPath, scoredRdd)
 
       LOG.info("Committing crawldb..")
       solrc.commitCrawlDb()
