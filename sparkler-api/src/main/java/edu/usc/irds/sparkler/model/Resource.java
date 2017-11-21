@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -24,7 +25,7 @@ public class Resource implements Serializable {
     //@Field private Integer numTries = 0;
     //@Field private Integer numFetches = 0;
     @Field("discover_depth") private Integer discoverDepth = 0;
-    @Field("*_score") private Map<String, Double> score;
+    @Field("*_score") private Map<String, Double> score = new HashMap<>();
     @Field private String status = ResourceStatus.UNFETCHED.toString();
     @Field("last_updated_at") private Date lastUpdatedAt;
     @Field("indexed_at") private Date indexedAt;
@@ -157,4 +158,13 @@ public class Resource implements Serializable {
     public void setScore(Map<String, Double> score) {
         this.score = score;
     }
+
+    public Double getScore(String scoreKey) {
+        return this.score.get(scoreKey);
+    }
+
+    public void setScore(String scoreKey, Double value) {
+        this.score.put(scoreKey, value);
+    }
+
 }

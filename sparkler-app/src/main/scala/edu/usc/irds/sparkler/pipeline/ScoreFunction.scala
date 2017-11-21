@@ -21,37 +21,35 @@ import edu.usc.irds.sparkler.Scorer
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model._
 import edu.usc.irds.sparkler.service.PluginService
-import edu.usc.irds.sparkler.util.FetcherDefault
-
-import scala.collection.JavaConverters._
-import scala.language.postfixOps
 
 /**
   * Fetcher Function transforms stream of resources to fetched content.
   */
-object ScoreFunction
-  extends ((SparklerJob, CrawlData) => CrawlData)
-    with Serializable with Loggable {
 
-  override def apply(job: SparklerJob, data: CrawlData)
-  : CrawlData = {
-    val scorer:scala.Option[Scorer] = PluginService.getExtension(classOf[Scorer], job)
+class ScoreFunction(job:SparklerJob) extends (CrawlData => CrawlData) with Serializable with Loggable {
+
+  var scorer:scala.Option[Scorer] = None
+
+  def getScorer: Option[Scorer] = {
+    //lazy initialization
+    if (this.scorer.isEmpty){
+      this.scorer = PluginService.getExtension(classOf[Scorer], job)
+    }
+    scorer
+  }
+
+  override def apply(data: CrawlData): CrawlData = {
     try {
-      scorer match {
-        case Some(scorer) =>
-          val score: java.util.Map[java.lang.String, java.lang.Double] = new java.util.HashMap[java.lang.String, java.lang.Double]()
-          score.put(scorer.getScoreKey, scorer.score(data.parsedData.extractedText))
-          LOG.debug(s"Setting score of $score")
-          data.fetchedData.getResource.setScore(score)
-          data
+      getScorer match {
+        case Some(s) =>
+          data.fetchedData.getResource.setScore(s.getScoreKey, s.score(data.parsedData.extractedText))
         case None =>
           LOG.info("Scoring is not performed")
-          data
       }
     } catch {
       case e: Exception =>
         LOG.error(e.getMessage, e)
-        data
     }
+    data
   }
 }

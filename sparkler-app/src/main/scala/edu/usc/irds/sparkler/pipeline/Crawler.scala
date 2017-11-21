@@ -150,24 +150,11 @@ class Crawler extends CliTool {
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
           FetchFunction, ParseFunction, OutLinkFilterFunction) })
-        .persist()
 
-      if (kafkaEnable) {
-        storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
-      }
+      // Step: Score the fetched content
+      val scoredRdd = fetchedRdd.map(new ScoreFunction(job)).cache()
 
-      //Step: Update status of fetched resources
-      val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => StatusUpdateSolrTransformer(d))
-      val statusUpdateFunc = new SolrStatusUpdate(job)
-      sc.runJob(statusUpdateRdd, statusUpdateFunc)
-
-      //Step: Filter Outlinks and Upsert new URLs into CrawlDb
-      val scoredRdd = score(fetchedRdd)
-
-      //Step: Store these to nutch segments
-      val outputPath = this.outputPath + "/" + taskId
-
-      storeContent(outputPath, scoredRdd)
+      processFetched(scoredRdd)
 
       LOG.info("Committing crawldb..")
       solrc.commitCrawlDb()
@@ -178,21 +165,25 @@ class Crawler extends CliTool {
     sc.stop()
   }
 
-  def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
+  def processFetched(rdd: RDD[CrawlData]): RDD[CrawlData] = {
+    if (kafkaEnable) {
+      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), rdd)
+    }
+
     val job = this.job
+    //Step: Index all new URLS
+    sc.runJob(OutLinkUpsert(job, rdd), new SolrUpsert(job))
 
-    val scoredRdd = fetchedRdd.map(d => ScoreFunction(job, d))
+    //Step: Update status+score of fetched resources
+    val statusUpdateRdd: RDD[SolrInputDocument] = rdd.map(d => StatusUpdateSolrTransformer(d))
+    sc.runJob(statusUpdateRdd, new SolrStatusUpdate(job))
 
-    val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.map(d => ScoreUpdateSolrTransformer(d))
-    val scoreUpdateFunc = new SolrStatusUpdate(job)
-    sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
+    //Step: Store these to nutch segments
+    val outputPath = this.outputPath + "/" + job.currentTask
+    //Step : write to FS
+    storeContent(outputPath, rdd)
 
-    val outlinksRdd = OutLinkUpsert(job, scoredRdd)
-
-    val upsertFunc = new SolrUpsert(job)
-    sc.runJob(outlinksRdd, upsertFunc)
-
-    scoredRdd
+    rdd
   }
 }
 
