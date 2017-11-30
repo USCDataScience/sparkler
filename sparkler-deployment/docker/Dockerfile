@@ -48,7 +48,7 @@ ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
 WORKDIR /data
 
 ## Setup Solr
-RUN wget http://archive.apache.org/dist/lucene/solr/6.6.0/solr-6.6.0.tgz -O /data/solr.tgz && \
+RUN wget http://archive.apache.org/dist/lucene/solr/7.1.0/solr-7.1.0.tgz -O /data/solr.tgz && \
     cd /data/ && tar xzf /data/solr.tgz && \
     mv /data/solr-* /data/solr && rm /data/solr.tgz
 
