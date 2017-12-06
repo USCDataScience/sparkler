@@ -33,6 +33,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <htmlunit.version>2.26</htmlunit.version>
+        <plugin.id>${artifactId}</plugin.id>
+        <plugin.class>edu.usc.irds.sparkler.plugin.HtmlUnitJsFetcherActivator</plugin.class>
     </properties>
     <dependencies>
         <dependency>
@@ -44,22 +46,11 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>${maven.bundle.plugin.version}</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Bundle-Name>${groupId}:${artifactId}</Bundle-Name>  <!-- -->
-                        <Bundle-SymbolicName>fetcher.htmlunit</Bundle-SymbolicName>
-                        <Bundle-Version>${project.parent.version}</Bundle-Version>
-                        <Bundle-Activator>edu.usc.irds.sparkler.plugin.HtmlUnitJsFetcherActivator</Bundle-Activator>
-                        <Import-Package>org.osgi.framework,edu.usc.irds.sparkler,edu.usc.irds.sparkler.model, org.slf4j,org.slf4j.spi,javax.net.ssl,javax.net</Import-Package>
-                        <Embed-Dependency>*;scope=!provided|test;artifactId=!icu4j|slf4j-api|slf4j-log4j12|nutch |snakeyaml|json-simple</Embed-Dependency>
-                        <Embed-Transitive>true</Embed-Transitive>
-                    </instructions>
-                    <buildDirectory>${project.parent.parent.basedir}${file.separator}${project.bundles.directory}</buildDirectory>
-                </configuration>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <!-- Config is same as defined in the parent POM -->
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

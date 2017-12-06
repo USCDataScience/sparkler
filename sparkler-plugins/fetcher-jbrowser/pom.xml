@@ -33,6 +33,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jbrowserdriver.version>0.16.4</jbrowserdriver.version>
+        <plugin.id>${artifactId}</plugin.id>
+        <plugin.class>edu.usc.irds.sparkler.plugin.FetcherJBrowserActivator</plugin.class>
     </properties>
     <dependencies>
         <dependency>
@@ -43,9 +45,11 @@
     </dependencies>
     <build>
         <plugins>
-            <plugin>
+            <plugin><!-- Config is same as defined in the parent POM -->
                 <artifactId>maven-assembly-plugin</artifactId>
-                <!-- Config is same as defined in the parent POM -->
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

@@ -18,39 +18,39 @@
 package edu.usc.irds.sparkler.plugin;
 
 
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+import org.pf4j.Plugin;
+import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.usc.irds.sparkler.Fetcher;
-
-import java.util.Dictionary;
-import java.util.Hashtable;
 
 /**
  * Loads web page on a browser and returns HTML once page is loaded.
  * Properties can be configured
  */
-public class HtmlUnitJsFetcherActivator implements BundleActivator {
+public class HtmlUnitJsFetcherActivator extends Plugin {
 
     private static final Logger LOG = LoggerFactory.getLogger(HtmlUnitJsFetcherActivator.class);
-    private HtmlUnitFetcher fetcher;
+
+    /**
+     * Constructor to be used by plugin manager for plugin instantiation.
+     * Your plugins have to provide constructor with this exact signature to
+     * be successfully loaded by manager.
+     *
+     * @param wrapper
+     */
+    public HtmlUnitJsFetcherActivator(PluginWrapper wrapper) {
+        super(wrapper);
+    }
+
+
 
     @Override
-    public void start(BundleContext bundleContext) throws Exception {
+    public void start()  {
         LOG.info("Activating HtmlUnitFetcher Plugin");
-        Dictionary<String, String> prop = new Hashtable<>();
-        prop.put("Fetcher", "HtmlUnitFetcher");
-        fetcher = new HtmlUnitFetcher();
-        bundleContext.registerService(Fetcher.class.getName(), fetcher, prop);
     }
 
     @Override
-    public void stop(BundleContext bundleContext) throws Exception {
+    public void stop() {
         LOG.info("Stopping HtmlUnitFetcher Plugin");
-        if (fetcher != null) {
-            fetcher.close();
-        }
     }
 }
