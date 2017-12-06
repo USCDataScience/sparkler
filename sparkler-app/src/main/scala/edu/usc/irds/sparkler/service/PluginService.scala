@@ -75,6 +75,7 @@ class PluginService(job:SparklerJob) {
           throw new Exception("Multiple extensions enabled, but that feature isn't implemented yet: " + extensions)
         } else {
           val instance = extensions.get(0)
+          instance.init(job)
           registry.put(point, instance)
           Some(instance)
         }
