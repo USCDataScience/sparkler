@@ -34,7 +34,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jbrowserdriver.version>0.16.4</jbrowserdriver.version>
         <plugin.id>${artifactId}</plugin.id>
-        <plugin.class>edu.usc.irds.sparkler.plugin.FetcherJBrowserActivator</plugin.class>
+        <plugin.class>edu.usc.irds.sparkler.plugin.FetcherJBrowser</plugin.class>
     </properties>
     <dependencies>
         <dependency>

@@ -22,6 +22,7 @@ import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
 import edu.usc.irds.sparkler.URLFilter;
 import edu.usc.irds.sparkler.util.URLUtil;
+import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,36 +65,19 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
     private List<RegexRule> rules;
 
     /**
-     * Constructs a new empty RegexURLFilterBase
-     */
-    public RegexURLFilterBase() {
-    }
-
-    /**
-     * Constructs a new RegexURLFilter and init it with a file of rules.
+     * Constructor to be used by plugin manager for plugin instantiation.
+     * Your plugins have to provide constructor with this exact signature to
+     * be successfully loaded by manager.
      *
-     * @param filename
-     *          is the name of rules file.
+     * @param wrapper
      */
-    public RegexURLFilterBase(File filename) throws IOException,
-            IllegalArgumentException {
-        this(new FileReader(filename));
-    }
-
-    /**
-     * Constructs a new RegexURLFilter and init it with a Reader of rules.
-     *
-     * @param reader
-     *          is a reader of rules.
-     */
-    public RegexURLFilterBase(Reader reader) throws IOException,
-            IllegalArgumentException {
-        rules = readRules(reader);
+    public RegexURLFilterBase(PluginWrapper wrapper) {
+        super(wrapper);
     }
 
     @Override
-    public void init(JobContext context, String pluginId) throws SparklerException {
-        super.init(context, pluginId);
+    public void init(JobContext context) throws SparklerException {
+        super.init(context);
         try {
             SparklerConfiguration config = jobContext.getConfiguration();
             LinkedHashMap pluginConfig = config.getPluginConfiguration(pluginId);

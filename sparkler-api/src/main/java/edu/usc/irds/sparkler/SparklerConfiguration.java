@@ -38,6 +38,16 @@ public class SparklerConfiguration extends JSONObject {
             if (plugins.containsKey(pluginId)) {
                 return (LinkedHashMap<String, Object>) plugins.get(pluginId);
             } else {
+                String[] parts = pluginId.split(":");
+                if (parts.length == 3){ // groupId:artifactId:version
+                    //first check without version
+                    String newId = parts[0] + ":" + parts[1];
+                    if (plugins.containsKey(newId)) {
+                        return (LinkedHashMap<String, Object>) plugins.get(newId);
+                    } else if (plugins.containsKey(parts[1])){ // just the id, no groupId or version
+                        return (LinkedHashMap<String, Object>) plugins.get(parts[1]);
+                    }
+                }
                 throw new SparklerException("No configuration found for Plugin: " + pluginId);
             }
         } else {

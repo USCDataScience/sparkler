@@ -33,6 +33,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.pf4j.Extension;
+import org.pf4j.PluginException;
+import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,9 +60,20 @@ public class HtmlUnitFetcher extends FetcherDefault  implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(HtmlUnitFetcher.class);
     private WebClient driver;
 
+    /**
+     * Constructor to be used by plugin manager for plugin instantiation.
+     * Your plugins have to provide constructor with this exact signature to
+     * be successfully loaded by manager.
+     *
+     * @param wrapper
+     */
+    public HtmlUnitFetcher(PluginWrapper wrapper) {
+        super(wrapper);
+    }
+
     @Override
-    public void init(JobContext context, String pluginId) throws SparklerException {
-        super.init(context, pluginId);
+    public void init(JobContext context) throws SparklerException {
+        super.init(context);
         //TODO: get timeouts from configurations
         driver = new WebClient(BrowserVersion.BEST_SUPPORTED);
         driver.setJavaScriptTimeout(DEFAULT_JS_TIMEOUT);
@@ -147,5 +160,12 @@ public class HtmlUnitFetcher extends FetcherDefault  implements AutoCloseable {
             driver.close();
             driver = null;
         }
+    }
+
+    @Override
+    public void stop() throws PluginException {
+        close();
+        super.stop();
+
     }
 }

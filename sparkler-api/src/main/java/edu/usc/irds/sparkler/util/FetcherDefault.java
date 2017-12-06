@@ -11,6 +11,7 @@ import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import org.apache.commons.io.IOUtils;
 import org.pf4j.Extension;
+import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,9 +53,20 @@ public class FetcherDefault extends AbstractExtensionPoint
     protected int userAgentIndex = 0; // index for rotating the agents
     protected Map<String, String> httpHeaders;
 
+    /**
+     * Constructor to be used by plugin manager for plugin instantiation.
+     * Your plugins have to provide constructor with this exact signature to
+     * be successfully loaded by manager.
+     *
+     * @param wrapper
+     */
+    public FetcherDefault(PluginWrapper wrapper) {
+        super(wrapper);
+    }
+
     @Override
-    public void init(JobContext context, String pluginId) throws SparklerException {
-        super.init(context, pluginId);
+    public void init(JobContext context) throws SparklerException {
+        super.init(context);
         SparklerConfiguration conf = context.getConfiguration();
         if (conf.containsKey(Constants.key.FETCHER_USER_AGENTS)) {
             Object agents = conf.get(Constants.key.FETCHER_USER_AGENTS);

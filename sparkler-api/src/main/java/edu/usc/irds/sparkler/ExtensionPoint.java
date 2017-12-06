@@ -26,9 +26,8 @@ public interface ExtensionPoint extends org.pf4j.ExtensionPoint {
     /**
      * Initialize the extension
      * @param context job context
-     * @param pluginId osgi bundle symbolic name
      * @throws SparklerException when an error occurs
      */
-    void init(JobContext context, String pluginId) throws SparklerException;
+    void init(JobContext context) throws SparklerException;
 
 }

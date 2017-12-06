@@ -123,7 +123,7 @@ class Crawler extends CliTool {
     }
 
     job = new SparklerJob(jobId, sparklerConf, "")
-    FetchFunction.init(job)
+    //FetchFunction.init(job)
 
   }
   //TODO: URL nor malizers

@@ -22,8 +22,15 @@ import edu.usc.irds.sparkler.ExtensionPoint;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
+import org.pf4j.DefaultPluginManager;
+import org.pf4j.PluginDescriptor;
+import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * This class contains some utils to help plugin developers write unit tests easily
@@ -63,10 +70,23 @@ public class TestUtils {
      */
     public static <T extends ExtensionPoint> T newInstance(Class<T> clazz, String pluginId) throws SparklerException {
         try {
-            T instance = clazz.newInstance();
-            instance.init(JOB_CONTEXT, pluginId);
+            //T instance = clazz.newInstance();
+            Constructor<T> constructor = clazz.getConstructor(PluginWrapper.class);
+            //TODO: this is kind of Hacky for test cases, fix it with pf4j's development mode
+            // How do I get plugin Id correctly?
+            PluginDescriptor descriptor = new PluginDescriptor(){
+                @Override
+                public String getPluginId() {
+                    return pluginId;
+                }
+            };
+            PluginWrapper wrapper = new PluginWrapper(new DefaultPluginManager(),
+                    descriptor, new File(".").toPath(), TestUtils.class.getClassLoader());
+
+            T instance = constructor.newInstance(wrapper);
+            instance.init(JOB_CONTEXT);
             return instance;
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException |NoSuchMethodException | InvocationTargetException e) {
             throw new SparklerException("Could not create instance of " + clazz.getName(), e);
         }
     }
