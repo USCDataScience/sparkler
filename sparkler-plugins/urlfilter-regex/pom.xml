@@ -32,10 +32,10 @@
     <url>http://maven.apache.org</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <plugin.id>${artifactId}</plugin.id>
-        <plugin.version>${version}</plugin.version>
-        <plugin.provider>${groupId}</plugin.provider>
-        <plugin.class>edu.usc.irds.sparkler.plugin.RegexURLFilter</plugin.class>
+        <plugin.id>${project.artifactId}</plugin.id>
+        <plugin.version>${project.version}</plugin.version>
+        <plugin.provider>${project.groupId}</plugin.provider>
+        <plugin.class>edu.usc.irds.sparkler.plugin.RegexURLFilterActivator</plugin.class>
     </properties>
 
     <build>

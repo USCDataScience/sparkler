@@ -38,8 +38,8 @@
     </modules>
 
     <properties>
-        <plugin.version>${version}</plugin.version>
-        <plugin.provider>${groupId}</plugin.provider>
+        <plugin.version>${project.version}</plugin.version>
+        <plugin.provider>${project.groupId}</plugin.provider>
         <plugin.id/>
         <plugin.class/>
         <plugin.dependencies/>

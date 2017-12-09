@@ -11,7 +11,6 @@ import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import org.apache.commons.io.IOUtils;
 import org.pf4j.Extension;
-import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,10 +36,8 @@ import java.util.stream.Collectors;
  * instead it uses URLConnection provided by JDK to fetch the resources.
  *
  */
-@Extension
-public class FetcherDefault extends AbstractExtensionPoint
-        implements Fetcher, Function<Resource, FetchedData> {
-
+public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, Function<Resource, FetchedData> {
+    //TODO: move this to a plugin named fetcher-default
     public static final Logger LOG = LoggerFactory.getLogger(FetcherDefault.class);
     public static final Integer CONNECT_TIMEOUT = 5000;
     public static final Integer READ_TIMEOUT = 10000;
@@ -53,20 +50,11 @@ public class FetcherDefault extends AbstractExtensionPoint
     protected int userAgentIndex = 0; // index for rotating the agents
     protected Map<String, String> httpHeaders;
 
-    /**
-     * Constructor to be used by plugin manager for plugin instantiation.
-     * Your plugins have to provide constructor with this exact signature to
-     * be successfully loaded by manager.
-     *
-     * @param wrapper
-     */
-    public FetcherDefault(PluginWrapper wrapper) {
-        super(wrapper);
-    }
+    public FetcherDefault(){}
 
     @Override
-    public void init(JobContext context) throws SparklerException {
-        super.init(context);
+    public void init(JobContext context, String pluginId) throws SparklerException {
+        super.init(context, pluginId);
         SparklerConfiguration conf = context.getConfiguration();
         if (conf.containsKey(Constants.key.FETCHER_USER_AGENTS)) {
             Object agents = conf.get(Constants.key.FETCHER_USER_AGENTS);
@@ -170,5 +158,4 @@ public class FetcherDefault extends AbstractExtensionPoint
             return fetchedData;
         }
     }
-
 }

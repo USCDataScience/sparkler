@@ -28,7 +28,6 @@ import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import edu.usc.irds.sparkler.util.FetcherDefault;
 import org.pf4j.Extension;
-import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,20 +43,10 @@ public class FetcherJBrowser extends FetcherDefault {
     private LinkedHashMap<String, Object> pluginConfig;
     private JBrowserDriver driver;
 
-    /**
-     * Constructor to be used by plugin manager for plugin instantiation.
-     * Your plugins have to provide constructor with this exact signature to
-     * be successfully loaded by manager.
-     *
-     * @param wrapper
-     */
-    public FetcherJBrowser(PluginWrapper wrapper) {
-        super(wrapper);
-    }
 
     @Override
-    public void init(JobContext context) throws SparklerException {
-        super.init(context);
+    public void init(JobContext context, String pluginId) throws SparklerException {
+        super.init(context, pluginId);
 
         SparklerConfiguration config = jobContext.getConfiguration();
         //TODO should change everywhere 

@@ -59,12 +59,8 @@
     </properties>
     <modules>
         <module>sparkler-api</module>
-        <module>sparkler-app</module>
-        <module>sparkler-plugins</module>
         <module>sparkler-tests-base</module>
-        <module>sparkler-ui</module>
     </modules>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -99,4 +95,32 @@
             </plugins>
         </pluginManagement>
     </build>
+    <profiles>
+        <profile>
+            <id>all</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>sparkler-api</module>
+                <module>sparkler-app</module>
+                <module>sparkler-plugins</module>
+                <module>sparkler-tests-base</module>
+                <module>sparkler-ui</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>core</id>
+            <modules>
+                <module>sparkler-app</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>plugins</id>
+            <modules>
+                <module>sparkler-plugins</module>
+            </modules>
+        </profile>
+
+    </profiles>
 </project>

@@ -21,9 +21,10 @@ import edu.usc.irds.sparkler.Fetcher
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model._
 import edu.usc.irds.sparkler.service.PluginService
+import edu.usc.irds.sparkler.util.FetcherDefault
 
 import scala.language.postfixOps
-import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 
 /**
   * Fetcher Function transforms stream of resources to fetched content.
@@ -31,20 +32,18 @@ import scala.collection.JavaConverters._
 object FetchFunction
   extends ((SparklerJob, Iterator[Resource]) => Iterator[FetchedData])
     with Serializable with Loggable {
-
   val FETCH_TIMEOUT = 1000
+  val defaultFetcher = new FetcherDefault
+
+  def init(job:SparklerJob): Unit ={
+    defaultFetcher.init(job,"")
+  }
 
   override def apply(job: SparklerJob, resources: Iterator[Resource])
   : Iterator[FetchedData] = {
     val fetcher:scala.Option[Fetcher] = PluginService.getExtension(classOf[Fetcher], job)
     try {
-      fetcher match {
-        case Some(f) =>
-          f.fetch(resources.asJava).asScala
-        case None =>
-          throw new Exception("No fetcher is available. Please enable a plugin")
-          // this shouldn't happen because the default fetcher is inside the same maven project, so it should exist
-      }
+     (fetcher match {case Some(f) => f; case None => defaultFetcher}).fetch(resources)
     } catch {
       case e: Exception =>
         LOG.error(e.getMessage, e)

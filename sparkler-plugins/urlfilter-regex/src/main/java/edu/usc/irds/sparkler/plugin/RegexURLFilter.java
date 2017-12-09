@@ -22,7 +22,6 @@ import edu.usc.irds.sparkler.ConfigKey;
 import edu.usc.irds.sparkler.plugin.regex.RegexRule;
 import edu.usc.irds.sparkler.plugin.regex.RegexURLFilterBase;
 import org.pf4j.Extension;
-import org.pf4j.PluginWrapper;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -40,18 +39,6 @@ public class RegexURLFilter extends RegexURLFilterBase {
 
     @ConfigKey
     public static final String URLFILTER_REGEX_FILE = "urlfilter.regex.file";
-
-    /**
-     * Constructor to be used by plugin manager for plugin instantiation.
-     * Your plugins have to provide constructor with this exact signature to
-     * be successfully loaded by manager.
-     *
-     * @param wrapper
-     */
-    public RegexURLFilter(PluginWrapper wrapper) {
-        super(wrapper);
-    }
-
 
     /**
      * Rules specified as a config property will override rules specified as a

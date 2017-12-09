@@ -33,14 +33,20 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jbrowserdriver.version>0.16.4</jbrowserdriver.version>
-        <plugin.id>${artifactId}</plugin.id>
-        <plugin.class>edu.usc.irds.sparkler.plugin.FetcherJBrowser</plugin.class>
+        <plugin.id>${project.artifactId}</plugin.id>
+        <plugin.class>edu.usc.irds.sparkler.plugin.FetcherJBrowserActivator</plugin.class>
     </properties>
     <dependencies>
         <dependency>
 			<groupId>com.machinepublishers</groupId>
 			<artifactId>jbrowserdriver</artifactId>
 			<version>${jbrowserdriver.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
 		</dependency>
     </dependencies>
     <build>

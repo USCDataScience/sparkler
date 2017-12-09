@@ -137,6 +137,7 @@ class Crawler extends CliTool {
     val solrc = this.job.newCrawlDbSolrClient()
     val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
+    FetchFunction.init(job)
 
     for (_ <- 1 to iterations) {
       val taskId = JobUtil.newSegmentId(true)

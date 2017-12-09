@@ -247,13 +247,13 @@
                     <descriptor>src/assembly/dep.xml</descriptor>
                 </configuration>
                 <executions>
-                    <execution>
+                    <!--<execution>
                         <id>create-archive</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
-                    </execution>
+                    </execution>-->
                 </executions>
             </plugin>
         </plugins>

@@ -70,23 +70,10 @@ public class TestUtils {
      */
     public static <T extends ExtensionPoint> T newInstance(Class<T> clazz, String pluginId) throws SparklerException {
         try {
-            //T instance = clazz.newInstance();
-            Constructor<T> constructor = clazz.getConstructor(PluginWrapper.class);
-            //TODO: this is kind of Hacky for test cases, fix it with pf4j's development mode
-            // How do I get plugin Id correctly?
-            PluginDescriptor descriptor = new PluginDescriptor(){
-                @Override
-                public String getPluginId() {
-                    return pluginId;
-                }
-            };
-            PluginWrapper wrapper = new PluginWrapper(new DefaultPluginManager(),
-                    descriptor, new File(".").toPath(), TestUtils.class.getClassLoader());
-
-            T instance = constructor.newInstance(wrapper);
-            instance.init(JOB_CONTEXT);
+            T instance = clazz.newInstance();
+            instance.init(JOB_CONTEXT, pluginId);
             return instance;
-        } catch (InstantiationException | IllegalAccessException |NoSuchMethodException | InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             throw new SparklerException("Could not create instance of " + clazz.getName(), e);
         }
     }

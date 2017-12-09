@@ -57,7 +57,7 @@ class URLFilters(var extensions:util.List[URLFilter])
     * @param context job context
     * @throws SparklerException when an error occurs
     */
-  override def init(context: JobContext): Unit = {
+  override def init(context: JobContext, pluginId:String): Unit = {
     this.context = context
   }
 

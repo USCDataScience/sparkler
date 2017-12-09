@@ -17,10 +17,6 @@
 
 package edu.usc.irds.sparkler;
 
-import org.pf4j.Plugin;
-import org.pf4j.PluginDescriptor;
-import org.pf4j.PluginException;
-import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,57 +26,19 @@ import java.io.InputStream;
 /**
  * Abstract implementation of extension point
  */
-public abstract class AbstractExtensionPoint extends Plugin implements ExtensionPoint  {
+public abstract class AbstractExtensionPoint implements ExtensionPoint {
 
     public static final Logger LOG = LoggerFactory.getLogger(AbstractExtensionPoint.class);
 
     protected JobContext jobContext;
     protected String pluginId;
 
-    /**
-     * Constructor to be used by plugin manager for plugin instantiation.
-     * Your plugins have to provide constructor with this exact signature to
-     * be successfully loaded by manager.
-     *
-     * @param wrapper
-     */
-    public AbstractExtensionPoint(PluginWrapper wrapper) {
-        super(wrapper);
-        PluginDescriptor desciptor = getWrapper().getDescriptor();
-        pluginId = String.join(":", desciptor.getProvider(), desciptor.getPluginId(), desciptor.getVersion());
-    }
-
-    /**
-     * Gets Plugin ID
-     * @return plugin unique identifier that includes provider:id:version
-     */
-    public String getPluginId(){
-        return pluginId;
-    }
 
     @Override
-    public void start() throws PluginException {
-        super.start();
-        LOG.info("Started plugin {} from ", getWrapper().getPluginId(), getWrapper().getPluginPath());
-    }
-
-    @Override
-    public void stop() throws PluginException {
-        if (this instanceof AutoCloseable){
-            try {
-                ((AutoCloseable) this).close();
-            } catch (Exception e) {
-                throw new PluginException(e);
-            }
-        }
-        LOG.info("Stopped Plugin {}", getWrapper().getPluginId());
-        super.stop();
-    }
-
-    @Override
-    public void init(JobContext context) throws SparklerException {
+    public void init(JobContext context, String pluginId) throws SparklerException {
         this.jobContext = context;
-        LOG.debug("Initialize the context");
+        this.pluginId = pluginId;
+        LOG.debug("Initialize the context & Plugin Id");
     }
 
     /**

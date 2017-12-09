@@ -95,9 +95,9 @@ plugins.bundle.directory: ${project.parent.basedir}${file.separator}${project.bu
 
 # List of activated plugins
 plugins.active:
-    - urlfilter.regex
-#    - fetcher.jbrowser
-#    - fetcher.htmlunit
+    - urlfilter-regex
+#    - fetcher-jbrowser
+#    - fetcher-htmlunit
 
 # All Plugins are listed under this tree
 plugins:

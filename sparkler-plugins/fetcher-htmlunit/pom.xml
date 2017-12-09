@@ -33,8 +33,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <htmlunit.version>2.26</htmlunit.version>
-        <plugin.id>${artifactId}</plugin.id>
-        <plugin.class>edu.usc.irds.sparkler.plugin.HtmlUnitJsFetcher</plugin.class>
+        <plugin.id>${project.artifactId}</plugin.id>
+        <plugin.class>edu.usc.irds.sparkler.plugin.HtmlUnitFetcherActivator</plugin.class>
     </properties>
     <dependencies>
         <dependency>
