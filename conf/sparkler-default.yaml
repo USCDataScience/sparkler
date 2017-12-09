@@ -91,7 +91,9 @@ fetcher.headers:
 
 # Plugins Bundle directory. Configured through Maven.
 # Discouraged to Modify unless specifically required.
-plugins.bundle.directory: ${project.parent.basedir}${file.separator}${project.bundles.directory}
+# To set plugins directory, use system property -Dpf4j.pluginsDir=$DIR/plugins
+# by default it looks up 'plugins' directory from current working directory
+
 
 # List of activated plugins
 plugins.active:

@@ -87,6 +87,8 @@
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <configuration>
+                        <appendAssemblyId>false</appendAssemblyId>
+                        <outputDirectory>${project.parent.parent.basedir}${file.separator}build${file.separator}plugins</outputDirectory>
                         <descriptorRefs>
                             <descriptorRef>jar-with-dependencies</descriptorRef>
                         </descriptorRefs>

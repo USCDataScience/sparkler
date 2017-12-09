@@ -32,8 +32,6 @@
     <url>http://maven.apache.org</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sparkler.conf.dir>${project.parent.basedir}${file.separator}${project.conf.dir}</sparkler.conf.dir>
-        <sparkler.resources.dir>${project.basedir}${file.separator}..${file.separator}${project.resources.dir}</sparkler.resources.dir>
     </properties>
     <build>
         <resources>
@@ -43,34 +41,7 @@
         </resources>
         <plugins>
             <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.6</version>
-                <executions>
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${sparkler.resources.dir}</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${sparkler.conf.dir}</directory>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
             </plugin>
 
             <plugin>

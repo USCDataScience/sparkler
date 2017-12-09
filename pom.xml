@@ -28,8 +28,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.conf.dir>conf</project.conf.dir>
-        <project.resources.dir>resources</project.resources.dir>
-        <project.bundles.directory>sparkler-app${file.separator}bundles</project.bundles.directory>
+        <project.resources.dir>build${file.separator}conf</project.resources.dir>
+        <project.bins.dir>build${file.separator}bin</project.bins.dir>
         <spark.version>1.6.1</spark.version>
         <scala.version>2.11</scala.version>
         <scala.library.version>${scala.version}.8</scala.library.version>
@@ -38,8 +38,6 @@
         <hbase.version>1.2.1</hbase.version>
         <solr.version>6.4.0</solr.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <osgi.version>6.0.0</osgi.version>
-        <felix.version>5.4.0</felix.version>
         <snakeyaml.version>1.17</snakeyaml.version>
         <json.simple.version>1.1.1</json.simple.version>
         <commons.validator.version>1.5.1</commons.validator.version>
@@ -92,6 +90,11 @@
                         <target>1.8</target>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>3.2.1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -121,6 +124,5 @@
                 <module>sparkler-plugins</module>
             </modules>
         </profile>
-
     </profiles>
 </project>
