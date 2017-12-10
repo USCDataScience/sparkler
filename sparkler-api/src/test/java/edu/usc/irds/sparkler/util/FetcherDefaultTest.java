@@ -17,7 +17,6 @@
 
 package edu.usc.irds.sparkler.util;
 
-import com.google.common.collect.Iterators;
 import edu.usc.irds.sparkler.Constants;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerException;
@@ -31,7 +30,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 /**
  * @since 12/28/16
  */
@@ -90,7 +89,7 @@ public class FetcherDefaultTest {
     public void fetch1() throws Exception {
         Iterator<FetchedData> stream = fetcher.fetch(resources.iterator());
         List<FetchedData> list = new ArrayList<>();
-        Iterators.addAll(list, stream);
+        stream.forEachRemaining(list::add);
         assertEquals(list.size(), resources.size());
 
         for (FetchedData data : list) {

@@ -33,7 +33,7 @@
         <spark.version>1.6.1</spark.version>
         <scala.version>2.11</scala.version>
         <scala.library.version>${scala.version}.8</scala.library.version>
-        <nutch.version>1.11</nutch.version>
+        <nutch.version>1.13</nutch.version>
         <kafka.version>0.10.0.0</kafka.version>
         <hbase.version>1.2.1</hbase.version>
         <solr.version>6.4.0</solr.version>

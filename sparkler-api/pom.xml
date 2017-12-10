@@ -71,10 +71,16 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
-        <dependency>
+       <dependency>
             <groupId>org.apache.nutch</groupId>
             <artifactId>nutch</artifactId>
             <version>${nutch.version}</version>
+           <exclusions>
+               <exclusion>
+                   <groupId>*</groupId> <!-- Maven 3 or above feature.-->
+                   <artifactId>*</artifactId>
+               </exclusion>
+           </exclusions>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
