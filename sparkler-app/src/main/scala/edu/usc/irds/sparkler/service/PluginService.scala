@@ -104,7 +104,7 @@ class PluginService(job:SparklerJob) {
         if (extensions.size() > 1){
           val extIds = extensions.map(x => x.getClass.getName).map(x => class2Id.getOrElse(x, x)).toList
           throw new Exception(s"Conflict between extensions: $extIds. Only one is supported in this version." +
-            s" Please conflict all but one in sparkler-default.yaml:plugins.active")
+            s" Please comment all but one in sparkler-default.yaml:plugins.active")
         } else {
           val instance = extensions.get(0)
           val pluginId = class2Id.getOrElse(instance.getClass.getName, "")

@@ -36,7 +36,7 @@
     <build>
         <resources>
             <resource>
-                <directory>${sparkler.resources.dir}</directory>
+                <directory>..${file.separator}${project.conf.dir}</directory>
             </resource>
         </resources>
         <plugins>

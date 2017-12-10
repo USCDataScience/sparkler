@@ -75,13 +75,6 @@
     </dependencies>
 
     <build>
-        <resources>
-            <resource> <!-- This will update variable with its values in resources
-                        e.g.: refer how plugin id and version are set in plugin.properties -->
-                <directory>src${file.separator}main${file.separator}resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
         <pluginManagement>
             <plugins>
                 <plugin>
