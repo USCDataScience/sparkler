@@ -258,6 +258,7 @@
                 <version>2.5.3</version>
                 <configuration>
                     <descriptor>src/assembly/dep.xml</descriptor>
+                    <tarLongFileMode>posix</tarLongFileMode>
                 </configuration>
                 <executions>
                     <execution>
