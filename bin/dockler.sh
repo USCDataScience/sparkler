@@ -28,6 +28,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR="$DIR/.."
 
 docker_tag="sparkler-local"
+remote_image="uscdatascience/sparkler:0.1"
 solr_port=8983
 solr_url="http://localhost:$solr_port/solr"
 spark_ui_port=4041
@@ -55,13 +56,20 @@ build_image(){
         exit 2
     fi
 }
+
+fetch_image() {
+    echo "Fetching $remote_image and tagging as $docker_tag"
+    docker pull $remote_image
+    docker tag $remote_image $docker_tag
+}
 ####################
 
 ####################
 image_id=`docker images -q "$docker_tag" | head -1`
 if [[ -z "${image_id// }" ]]; then
-     echo "Cant find docker image $docker_tag. Going to build it"
-     build_image;
+     echo "Cant find docker image $docker_tag. Going to Fetch it"
+     # build_image;
+     fetch_image
      image_id=`docker images -q "$docker_tag" | head -1`
 fi
 echo "Found image: $image_id"
