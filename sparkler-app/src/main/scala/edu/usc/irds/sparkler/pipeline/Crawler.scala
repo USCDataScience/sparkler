@@ -50,7 +50,7 @@ class Crawler extends CliTool {
   var sparkMaster: String = sparklerConf.get(Constants.key.SPARK_MASTER).asInstanceOf[String]
 
   @Option(name = "-cdb", aliases = Array("--crawldb"),
-    usage = "Crawdb URI.")
+    usage = "Craw DB URI.")
   var sparkSolr: String = sparklerConf.get(Constants.key.CRAWLDB).asInstanceOf[String]
 
   @Option(name = "-id", aliases = Array("--id"), required = true,
@@ -126,7 +126,7 @@ class Crawler extends CliTool {
     //FetchFunction.init(job)
 
   }
-  //TODO: URL nor malizers
+  //TODO: URL normalizers
   //TODO: Robots.txt
 
   override def run(): Unit = {
@@ -135,6 +135,7 @@ class Crawler extends CliTool {
     init()
 
     val solrc = this.job.newCrawlDbSolrClient()
+
     val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
     FetchFunction.init(job)
@@ -144,33 +145,17 @@ class Crawler extends CliTool {
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
-
       val rdd = new CrawlDbRDD(sc, job, sortBy = sortBy, maxGroups = topG,
         topN = topN, groupBy = groupBy)
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
           FetchFunction, ParseFunction, OutLinkFilterFunction) })
-        .persist()
 
-      if (kafkaEnable) {
-        storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
-      }
+      // Step: Score the fetched content
+      val scoredRdd = fetchedRdd.map(new ScoreFunction(job)).cache()
 
-      //Step: Update status of fetched resources
-      val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => StatusUpdateSolrTransformer(d))
-      val statusUpdateFunc = new SolrStatusUpdate(job)
-      sc.runJob(statusUpdateRdd, statusUpdateFunc)
-
-      //Step: Filter Outlinks and Upsert new URLs into CrawlDb
-      val outlinksRdd = OutLinkUpsert(job, fetchedRdd)
-      val upsertFunc = new SolrUpsert(job)
-      sc.runJob(outlinksRdd, upsertFunc)
-
-      //Step: Store these to nutch segments
-      val outputPath = this.outputPath + "/" + taskId
-
-      storeContent(outputPath, fetchedRdd)
+      processFetched(scoredRdd)
 
       LOG.info("Committing crawldb..")
       solrc.commitCrawlDb()
@@ -179,6 +164,27 @@ class Crawler extends CliTool {
     //PluginService.shutdown(job)
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
+  }
+
+  def processFetched(rdd: RDD[CrawlData]): RDD[CrawlData] = {
+    if (kafkaEnable) {
+      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), rdd)
+    }
+
+    val job = this.job
+    //Step: Index all new URLS
+    sc.runJob(OutLinkUpsert(job, rdd), new SolrUpsert(job))
+
+    //Step: Update status+score of fetched resources
+    val statusUpdateRdd: RDD[SolrInputDocument] = rdd.map(d => StatusUpdateSolrTransformer(d))
+    sc.runJob(statusUpdateRdd, new SolrStatusUpdate(job))
+
+    //Step: Store these to nutch segments
+    val outputPath = this.outputPath + "/" + job.currentTask
+    //Step : write to FS
+    storeContent(outputPath, rdd)
+
+    rdd
   }
 }
 
@@ -191,7 +197,7 @@ object OutLinkUpsert extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) wi
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
-      parent.getFetchTimestamp, parent.getId) }) //create a new resource
+      parent.getFetchTimestamp, parent.getId, parent.getScore) }) //create a new resource
   }
 }
 

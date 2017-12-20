@@ -31,11 +31,11 @@ import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
 /**
-  * Created by thammegr on 6/7/16.
+  * Created by Thamme Gowda on 6/7/16.
   * Modified by karanjeets
   */
 object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) with Serializable with Loggable {
-
+  LOG.debug("Solr Update Transformer Created")
   val fieldMapper: FieldMapper = FieldMapper.initialize()
 
   override def apply(data: CrawlData): SolrInputDocument = {
@@ -54,6 +54,9 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     sUpdate.setField(Constants.solr.SIGNATURE, hashFunction.hashBytes(data.fetchedData.getContent).toString)
     sUpdate.setField(Constants.solr.RELATIVE_PATH, URLUtil.reverseUrl(data.fetchedData.getResource.getUrl))
     sUpdate.setField(Constants.solr.OUTLINKS, data.parsedData.outlinks.toArray)
+    for ((scoreKey, score) <- data.fetchedData.getResource.getScore) {
+      sUpdate.setField(scoreKey, Map("set" -> score).asJava)
+    }
 
     val md = data.parsedData.metadata
     val mdFields = md.names().map(name => (name, if (md.isMultiValued(name)) md.getValues(name) else md.get(name))).toMap
