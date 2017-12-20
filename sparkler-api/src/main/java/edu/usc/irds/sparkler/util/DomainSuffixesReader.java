@@ -19,7 +19,7 @@ package edu.usc.irds.sparkler.util;
 
 import edu.usc.irds.sparkler.util.DomainSuffix.Status;
 import edu.usc.irds.sparkler.util.TopLevelDomain.Type;
-import org.apache.hadoop.util.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -74,10 +74,10 @@ class DomainSuffixesReader {
                 throw new IOException("xml file is not valid");
             }
         } catch (ParserConfigurationException ex) {
-            LOG.warn(StringUtils.stringifyException(ex));
+            LOG.warn(ex.getMessage(), ex);
             throw new IOException(ex.getMessage());
         } catch (SAXException ex) {
-            LOG.warn(StringUtils.stringifyException(ex));
+            LOG.warn(ex.getMessage(), ex);
             throw new IOException(ex.getMessage());
         }
     }

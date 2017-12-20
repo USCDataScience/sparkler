@@ -21,7 +21,7 @@ package edu.usc.irds.sparkler;
  * The marker interface for all extensions
  * @since Sparkler 0.1
  */
-public interface ExtensionPoint {
+public interface ExtensionPoint extends org.pf4j.ExtensionPoint {
 
     /**
      * Initialize the extension

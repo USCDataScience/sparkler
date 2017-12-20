@@ -17,7 +17,7 @@
 
 package edu.usc.irds.sparkler.util;
 
-import com.google.common.collect.Iterators;
+import edu.usc.irds.sparkler.Constants;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerException;
 import edu.usc.irds.sparkler.model.FetchedData;
@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 /**
  * @since 12/28/16
  */
@@ -50,6 +50,15 @@ public class FetcherDefaultTest {
     private Resource notFound = new Resource("http://localhost:8080/res/vacduyc_NOT_FOUND.html", "localhost", job);
 
     private List<Resource> resources = Arrays.asList(indexPage, jsPage, notFound);
+
+    /**
+     * Tests if a classpath is setup correctly
+     */
+    @Test
+    public void testClasspath() {
+        assertNotNull(getClass().getClassLoader().getResource("domain-suffixes.xml"));
+        assertNotNull(getClass().getClassLoader().getResource(Constants.file.SPARKLER_DEFAULT));
+    }
 
     @Test
     public void testUserAgentRotation(){
@@ -80,7 +89,7 @@ public class FetcherDefaultTest {
     public void fetch1() throws Exception {
         Iterator<FetchedData> stream = fetcher.fetch(resources.iterator());
         List<FetchedData> list = new ArrayList<>();
-        Iterators.addAll(list, stream);
+        stream.forEachRemaining(list::add);
         assertEquals(list.size(), resources.size());
 
         for (FetchedData data : list) {

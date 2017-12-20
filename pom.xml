@@ -28,22 +28,20 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.conf.dir>conf</project.conf.dir>
-        <project.resources.dir>resources</project.resources.dir>
-        <project.bundles.directory>sparkler-app${file.separator}bundles</project.bundles.directory>
+        <project.resources.dir>build${file.separator}conf</project.resources.dir>
+        <project.bins.dir>build${file.separator}bin</project.bins.dir>
         <spark.version>1.6.1</spark.version>
         <scala.version>2.11</scala.version>
         <scala.library.version>${scala.version}.8</scala.library.version>
-        <nutch.version>1.11</nutch.version>
+        <nutch.version>1.13</nutch.version>
         <kafka.version>0.10.0.0</kafka.version>
         <hbase.version>1.2.1</hbase.version>
         <solr.version>6.4.0</solr.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <osgi.version>6.0.0</osgi.version>
-        <felix.version>5.4.0</felix.version>
         <snakeyaml.version>1.17</snakeyaml.version>
         <json.simple.version>1.1.1</json.simple.version>
         <commons.validator.version>1.5.1</commons.validator.version>
-        <jbrowserdriver.version>0.16.4</jbrowserdriver.version>
+
 
         <!-- Maven Plugins -->
         <maven.bundle.plugin.version>2.5.0</maven.bundle.plugin.version>
@@ -55,15 +53,12 @@
         <args4j.version>2.0.29</args4j.version>
         <slf4j.version>1.7.12</slf4j.version>
         <tika.version>1.14</tika.version>
+        <pf4j.version>2.0.0</pf4j.version>
     </properties>
     <modules>
         <module>sparkler-api</module>
-        <module>sparkler-app</module>
-        <module>sparkler-plugins</module>
         <module>sparkler-tests-base</module>
-        <module>sparkler-ui</module>
     </modules>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -71,18 +66,63 @@
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.pf4j</groupId>
+                <artifactId>pf4j</artifactId>
+                <version>${pf4j.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.6.1</version>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>3.2.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
+    <profiles>
+        <profile>
+            <id>all</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>sparkler-api</module>
+                <module>sparkler-app</module>
+                <module>sparkler-plugins</module>
+                <module>sparkler-tests-base</module>
+                <module>sparkler-ui</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>core</id>
+            <modules>
+                <module>sparkler-app</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>plugins</id>
+            <modules>
+                <module>sparkler-plugins</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

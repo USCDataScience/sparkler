@@ -6,9 +6,9 @@ import org.pf4j.PluginWrapper;
 /**
  * Plugin Activator for start and stop call back
  */
-public class FetcherJBrowserActivator extends Plugin {
+public class HtmlUnitFetcherActivator extends Plugin {
 
-    public FetcherJBrowserActivator(PluginWrapper wrapper) {
+    public HtmlUnitFetcherActivator(PluginWrapper wrapper) {
         super(wrapper);
     }
 }

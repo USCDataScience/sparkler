@@ -10,6 +10,7 @@ import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import org.apache.commons.io.IOUtils;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,9 +36,8 @@ import java.util.stream.Collectors;
  * instead it uses URLConnection provided by JDK to fetch the resources.
  *
  */
-public class FetcherDefault extends AbstractExtensionPoint
-        implements Fetcher, Function<Resource, FetchedData> {
-
+public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, Function<Resource, FetchedData> {
+    //TODO: move this to a plugin named fetcher-default
     public static final Logger LOG = LoggerFactory.getLogger(FetcherDefault.class);
     public static final Integer CONNECT_TIMEOUT = 5000;
     public static final Integer READ_TIMEOUT = 10000;
@@ -49,6 +49,8 @@ public class FetcherDefault extends AbstractExtensionPoint
     protected List<String> userAgents;
     protected int userAgentIndex = 0; // index for rotating the agents
     protected Map<String, String> httpHeaders;
+
+    public FetcherDefault(){}
 
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
@@ -156,5 +158,4 @@ public class FetcherDefault extends AbstractExtensionPoint
             return fetchedData;
         }
     }
-
 }

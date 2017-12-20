@@ -32,6 +32,7 @@ import edu.usc.irds.sparkler.util.FetcherDefault;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +50,7 @@ import java.util.Map;
  * <a href="http://htmlunit.sourceforge.net/"> HTMLUnit</a>.
  *
  */
+@Extension
 public class HtmlUnitFetcher extends FetcherDefault  implements AutoCloseable {
 
     private static final Integer DEFAULT_TIMEOUT = 2000;

@@ -21,9 +21,9 @@ package edu.usc.irds.sparkler.pipeline
 import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, SparklerConfiguration}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
-import edu.usc.irds.sparkler.model.{ResourceStatus, CrawlData, Resource, SparklerJob}
+import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
-import edu.usc.irds.sparkler.util.JobUtil
+import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.SequenceFileOutputFormat
@@ -123,7 +123,7 @@ class Crawler extends CliTool {
     }
 
     job = new SparklerJob(jobId, sparklerConf, "")
-    FetchFunction.init(job)
+    //FetchFunction.init(job)
 
   }
   //TODO: URL normalizers
@@ -138,6 +138,7 @@ class Crawler extends CliTool {
 
     val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
+    FetchFunction.init(job)
 
     for (_ <- 1 to iterations) {
       val taskId = JobUtil.newSegmentId(true)
@@ -204,8 +205,14 @@ object Crawler extends Loggable with Serializable{
 
   def storeContent(outputPath:String, rdd:RDD[CrawlData]): Unit = {
     LOG.info(s"Storing output at $outputPath")
-    rdd.filter(_.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
-      .map(d => (new Text(d.fetchedData.getResource.getUrl), d.fetchedData.toNutchContent(new Configuration())))
+
+    object ConfigHolder extends Serializable {
+      var config:Configuration = new Configuration()
+    }
+
+    rdd.filter(r => r.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
+      .map(d => (new Text(d.fetchedData.getResource.getUrl),
+        NutchBridge.toNutchContent(d.fetchedData, ConfigHolder.config)))
       .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
   }
 

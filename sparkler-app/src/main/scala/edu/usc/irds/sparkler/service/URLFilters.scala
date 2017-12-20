@@ -20,17 +20,16 @@ package edu.usc.irds.sparkler.service
 import java.util
 
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.{AbstractExtensionPoint, ExtensionChain, URLFilter}
+import edu.usc.irds.sparkler.{ExtensionChain, JobContext, SparklerException, URLFilter}
 
 /**
   * If one of the URL filter rejects, then the url will be rejected
   */
-class URLFilters extends AbstractExtensionPoint
-    with ExtensionChain[URLFilter]
+class URLFilters(var extensions:util.List[URLFilter])
+    extends ExtensionChain[URLFilter]
     with URLFilter
     with Loggable {
-
-  var extensions:util.List[URLFilter] = _
+  var context: JobContext = _
 
   override def filter(url: String, parent: String): Boolean ={
     var status = true
@@ -46,13 +45,28 @@ class URLFilters extends AbstractExtensionPoint
     status
   }
 
-  override def setExtensions(extensions: util.List[URLFilter]): Unit = this.extensions = extensions
-
   override def getExtensions: util.List[URLFilter] = this.extensions
 
   override def getMinimumRequired: Int = 0
 
   override def getMaximumAllowed: Int = Byte.MaxValue
+
+  /**
+    * Initialize the extension
+    *
+    * @param context job context
+    * @throws SparklerException when an error occurs
+    */
+  override def init(context: JobContext, pluginId:String): Unit = {
+    this.context = context
+  }
+
+  /**
+    * Setter for extensions
+    *
+    * @param extensions list of extensions
+    */
+  override def setExtensions(extensions: util.List[URLFilter]): Unit = this.extensions = extensions
 }
 
 

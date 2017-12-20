@@ -38,12 +38,19 @@
     </modules>
 
     <properties>
+        <plugin.version>${project.version}</plugin.version>
+        <plugin.provider>${project.groupId}</plugin.provider>
+        <plugin.id/>
+        <plugin.class/>
+        <plugin.dependencies/>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>edu.usc.irds.sparkler</groupId>
             <artifactId>sparkler-api</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <!--
                 <exclusion>
@@ -53,5 +60,68 @@
                 -->
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.pf4j</groupId>
+            <artifactId>pf4j</artifactId>
+            <version>${pf4j.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>edu.usc.irds.sparkler</groupId>
+            <artifactId>sparkler-tests-base</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <configuration>
+                        <appendAssemblyId>false</appendAssemblyId>
+                        <outputDirectory>${project.parent.parent.basedir}${file.separator}build${file.separator}plugins</outputDirectory>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                        <archive>
+                            <manifestEntries>
+                                <Plugin-Id>${plugin.id}</Plugin-Id>
+                                <Plugin-Class>${plugin.class}</Plugin-Class>
+                                <Plugin-Version>${plugin.version}</Plugin-Version>
+                                <Plugin-Provider>${plugin.provider}</Plugin-Provider>
+                                <Plugin-Dependencies>${plugin.dependencies}</Plugin-Dependencies>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>make-assembly</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.4</version>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Plugin-Id>${plugin.id}</Plugin-Id>
+                                <Plugin-Class>${plugin.class}</Plugin-Class>
+                                <Plugin-Version>${plugin.version}</Plugin-Version>
+                                <Plugin-Provider>${plugin.provider}</Plugin-Provider>
+                                <Plugin-Dependencies>${plugin.dependencies}</Plugin-Dependencies>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

@@ -18,9 +18,6 @@
 package edu.usc.irds.sparkler.model;
 
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.nutch.metadata.Metadata;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
@@ -36,7 +33,7 @@ public class FetchedData implements Serializable {
     private Integer contentLength;
     private Map<String, List<String>> headers = Collections.emptyMap();
     private Date fetchedAt;
-    private Metadata metadata;
+    private MultiMap<String, String> metadata = new MultiMap<>();
     private int responseCode;
 
 
@@ -49,7 +46,6 @@ public class FetchedData implements Serializable {
         this.contentLength = content.length;
         this.contentType = contentType;
         this.responseCode = responseCode;
-        this.metadata = new Metadata();
         this.fetchedAt = new Date();
 	}
 	
@@ -83,7 +79,7 @@ public class FetchedData implements Serializable {
         return fetchedAt;
     }
 
-    public Metadata getMetadata() {
+    public MultiMap<String, String> getMetadata() {
         return metadata;
     }
 
@@ -107,17 +103,12 @@ public class FetchedData implements Serializable {
         this.fetchedAt = fetchedAt;
     }
 
-    public void setMetadata(Metadata metadata) {
+    public void setMetadata(MultiMap<String, String> metadata) {
         this.metadata = metadata;
     }
 
     public void setResponseCode(int responseCode) {
         this.responseCode = responseCode;
-    }
-
-    // TODO: Move this to Util package
-    public org.apache.nutch.protocol.Content toNutchContent(Configuration conf) {
-        return new org.apache.nutch.protocol.Content(resource.getUrl(), resource.getUrl(), content, contentType, metadata, conf);
     }
 
 }

@@ -2,13 +2,14 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR="$DIR/.."
-JAR=`ls $DIR/sparkler-app/target/sparkler-app-*-SNAPSHOT.jar`
+
+JAR=`echo $DIR/sparkler-app-*-SNAPSHOT.jar`
 if [ ! -f "$JAR" ]
  then
-    echo "Cant find Jar. Perhaps the sources are not built to produce a jar?"
+    echo "ERROR: Can't find Sparkler Jar at $JAR.
+    Looks like the jar is not built. Please refer to build instructions"
     exit 2
 fi
 
 # run
-java -Xms1g -cp $DIR/resources:$JAR \
-    edu.usc.irds.sparkler.Main $@
+java -Xms1g -cp $DIR/conf:$JAR -Dpf4j.pluginsDir=$DIR/plugins edu.usc.irds.sparkler.Main $@
