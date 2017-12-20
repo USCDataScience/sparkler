@@ -17,15 +17,16 @@
 #
 # Pull base image.
 
+# NOTE: always run docker build command from root of sparkler project
+# Build command:
+#    docker build -t sparkler-local -f sparkler-deployment/docker/Dockerfile .
+
 FROM ubuntu:16.04
 
 RUN groupadd --gid 1000 sparkler && \
    useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
-   
-   
-RUN apt-get update &&  apt-get install -y software-properties-common wget lsof emacs-nox
-# RUN apt-get update && apt-get install -y git maven emacs-nox
 
+RUN apt-get update &&  apt-get install -y software-properties-common wget lsof emacs-nox
 
 RUN \
   echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
@@ -53,11 +54,7 @@ RUN wget http://archive.apache.org/dist/lucene/solr/7.1.0/solr-7.1.0.tgz -O /dat
     mv /data/solr-* /data/solr && rm /data/solr.tgz
 
 # add sparkler contents
-ADD ./ /data/sparkler
-
-# Setup bundles - fix the new path
-RUN sed -i 's/plugins.bundle.directory:.*/plugins.bundle.directory: \/data\/sparkler\/sparkler-app\/bundles/g' /data/sparkler/resources/sparkler-default.yaml
-
+ADD ./build /data/sparkler
 
 # create solr core
 RUN /data/solr/bin/solr start -force && \
@@ -65,8 +62,8 @@ RUN /data/solr/bin/solr start -force && \
     /data/solr/bin/solr stop -force
 
 # sparkler  ui with banana dashboard
-RUN cp -r /data/sparkler/sparkler-ui/target/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkler && \
-    cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
+COPY ./sparkler-ui/target/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkler
+RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
 
 # Fix permissions
 RUN chown -R sparkler:sparkler /data/

@@ -20,9 +20,5 @@
 *
 
 # except these
-!bin
-!conf
-!resources
-!sparkler-app/bundles
-!sparkler-app/target/sparkler-app-*.jar
+!build
 !sparkler-ui/target/*.war
