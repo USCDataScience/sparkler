@@ -277,7 +277,7 @@
           "field": "group",
           "stats_field": "",
           "decimal_points": 0,
-          "exclude": [],
+          "excludeTerm": [],
           "missing": false,
           "other": false,
           "size": 5,
@@ -378,7 +378,7 @@
           "field": "discover_depth",
           "stats_field": "",
           "decimal_points": 0,
-          "exclude": [],
+          "excludeTerm": [],
           "missing": false,
           "other": false,
           "size": 5,
@@ -479,7 +479,7 @@
           "field": "title_t_md",
           "stats_field": "",
           "decimal_points": 0,
-          "exclude": [
+          "excludeTerm": [
             "a",
             "an",
             "the",
