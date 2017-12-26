@@ -20,13 +20,15 @@ package edu.usc.irds.sparkler.model
 import java.io.File
 
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.service.SolrProxy
+import edu.usc.irds.sparkler.service.{RejectingURLFilterChain, SolrProxy}
 import edu.usc.irds.sparkler.util.JobUtil
-import edu.usc.irds.sparkler.{Constants, JobContext, SparklerConfiguration, SparklerException}
+import edu.usc.irds.sparkler._
 import org.apache.solr.client.solrj.SolrClient
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer
 import org.apache.solr.client.solrj.impl.{CloudSolrClient, HttpSolrClient}
 import org.apache.solr.core.CoreContainer
+
+import scala.collection.mutable
 
 /**
   *
@@ -38,6 +40,15 @@ class SparklerJob(val id: String,
   extends Serializable with JobContext with Loggable {
 
   var crawlDbUri: String = config.get(Constants.key.CRAWLDB).toString
+
+  /*
+   * mappings from extension point to extension chain
+   */
+  //TODO: we should be able to overwrite these from config file
+  val extChain: collection.mutable.HashMap[Class[_<:ExtensionPoint], Class[_<:ExtensionChain[_]]] =
+    mutable.HashMap(
+      (classOf[URLFilter], classOf[RejectingURLFilterChain])
+    )
 
   /**
     * Creates solr client based on the crawldburi
@@ -62,7 +73,7 @@ class SparklerJob(val id: String,
       val coreName = solrHomeFile.getName
       LOG.info(s"Loading Embedded Solr, Home=$solrHome, Core=$coreName")
       val coreContainer: CoreContainer = new CoreContainer(solrHome)
-      coreContainer.load
+      coreContainer.load()
       new EmbeddedSolrServer(coreContainer, coreName)
     } else if (crawlDbUri.contains("::")){
       //Expected format = collection::zkhost1:port1,zkhost2:port2

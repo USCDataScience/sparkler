@@ -101,10 +101,24 @@ class PluginService(job:SparklerJob) {
       if (extensions.isEmpty) {
         None
       } else {
-        if (extensions.size() > 1){
-          val extIds = extensions.map(x => x.getClass.getName).map(x => class2Id.getOrElse(x, x)).toList
-          throw new Exception(s"Conflict between extensions: $extIds. Only one is supported in this version." +
-            s" Please comment all but one in sparkler-default.yaml:plugins.active")
+        if (extensions.size() >  1){
+          if (job.extChain.isDefinedAt(point)) { // we know how to chain these extensions
+            LOG.info(s"Chaining $extensions using ${job.extChain(point)}")
+            val chainedExt = job.extChain(point).newInstance().asInstanceOf[ExtensionChain[X]]
+            for (instance <- extensions){
+              val pluginId = class2Id.getOrElse(instance.getClass.getName, "")
+              LOG.info(s"Initialize ${instance.getClass} as $pluginId")
+              instance.init(job, pluginId)
+            }
+            chainedExt.setExtensions(extensions)
+            chainedExt.init(job, "")
+            registry.put(point, chainedExt)
+            Some(chainedExt.asInstanceOf[X])
+          } else {
+            val extIds = extensions.map(x => x.getClass.getName).map(x => class2Id.getOrElse(x, x)).toList
+            throw new Exception(s"Conflict between extensions: $extIds. Only one is supported in this version." +
+              s" Please comment all but one in sparkler-default.yaml:plugins.active")
+          }
         } else {
           val instance = extensions.get(0)
           val pluginId = class2Id.getOrElse(instance.getClass.getName, "")
