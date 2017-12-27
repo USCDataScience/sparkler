@@ -78,6 +78,9 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -94,6 +97,11 @@
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
                     <version>3.2.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.5.3</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -125,4 +133,20 @@
             </modules>
         </profile>
     </profiles>
+    <url>http://irds.usc.edu/sparkler/</url>
+    <scm>
+        <connection>scm:git:https://github.com/USCDataScience/sparkler.git</connection>
+        <developerConnection>scm:git:git@github.com:USCDataScience/sparkler.git</developerConnection>
+        <url>https://github.com/USCDataScience/sparkler</url>
+        <tag>HEAD</tag>
+    </scm>
+    <developers>
+        <developer>
+            <name>Thamme Gowda</name>
+            <organization>University of Southern California</organization>
+            <organizationUrl>http://irds.usc.edu/</organizationUrl>
+            <url>http://github.com/thammegowda/</url>
+        </developer>
+    </developers>
+
 </project>

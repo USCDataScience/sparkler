@@ -29,7 +29,7 @@
     <packaging>war</packaging>
 
     <name>sparkler-ui</name>
-    <url>http://maven.apache.org</url>
+    <url>http://irds.usc.edu/sparkler/</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

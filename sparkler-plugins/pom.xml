@@ -30,6 +30,7 @@
     <artifactId>sparkler-plugins</artifactId>
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
+    <url>http://irds.usc.edu/sparkler/</url>
     <modules>
         <!-- List of all the plugins -->
         <module>urlfilter-regex</module>

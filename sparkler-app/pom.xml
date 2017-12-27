@@ -30,7 +30,7 @@
     <packaging>jar</packaging>
 
     <name>sparkler</name>
-    <url>http://irds.usc.edu</url>
+    <url>http://irds.usc.edu/sparkler/</url>
 
     <properties>
         <sparkler.conf.dir>${project.parent.basedir}${file.separator}${project.conf.dir}</sparkler.conf.dir>
