@@ -107,6 +107,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
 
     public FetchedData fetch(Resource resource) throws Exception {
         LOG.info("DEFAULT FETCHER {}", resource.getUrl());
+        long startTime = System.currentTimeMillis();
         URLConnection urlConn = new URL(resource.getUrl()).openConnection();
         if (httpHeaders != null){
             httpHeaders.entrySet().forEach(e -> urlConn.setRequestProperty(e.getKey(), e.getValue()));
@@ -133,7 +134,8 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             } else {
                 rawData = new byte[0]; //no content received
             }
-            FetchedData fetchedData = new FetchedData(rawData, urlConn.getContentType(), responseCode);
+
+            FetchedData fetchedData = new FetchedData(rawData, urlConn.getContentType(), responseCode, System.currentTimeMillis() - startTime);
             resource.setStatus(ResourceStatus.FETCHED.toString());
             fetchedData.setResource(resource);
             fetchedData.setHeaders(urlConn.getHeaderFields());
@@ -152,7 +154,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             }
             LOG.warn("FETCH-ERROR {}", resource.getUrl());
             LOG.debug(e.getMessage(), e);
-            FetchedData fetchedData = new FetchedData(new byte[0], "", statusCode);
+            FetchedData fetchedData = new FetchedData(new byte[0], "", statusCode, 0);
             resource.setStatus(ResourceStatus.ERROR.toString());
             fetchedData.setResource(resource);
             return fetchedData;

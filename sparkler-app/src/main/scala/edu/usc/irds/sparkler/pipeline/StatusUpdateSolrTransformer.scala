@@ -54,6 +54,7 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     sUpdate.setField(Constants.solr.SIGNATURE, hashFunction.hashBytes(data.fetchedData.getContent).toString)
     sUpdate.setField(Constants.solr.RELATIVE_PATH, URLUtil.reverseUrl(data.fetchedData.getResource.getUrl))
     sUpdate.setField(Constants.solr.OUTLINKS, data.parsedData.outlinks.toArray)
+    sUpdate.setField(Constants.solr.RESPONSE_TIME, data.fetchedData.getResponseTime)
     for ((scoreKey, score) <- data.fetchedData.getResource.getScore) {
       sUpdate.setField(scoreKey, Map("set" -> score).asJava)
     }

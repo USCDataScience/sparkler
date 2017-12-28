@@ -35,18 +35,20 @@ public class FetchedData implements Serializable {
     private Date fetchedAt;
     private MultiMap<String, String> metadata = new MultiMap<>();
     private int responseCode;
+    private long responseTime;
 
 
     public FetchedData() {
     }
 
-    public FetchedData(byte[] content, String contentType, int responseCode) {
+    public FetchedData(byte[] content, String contentType, int responseCode, long responseTime) {
         super();
         this.content = content;
         this.contentLength = content.length;
         this.contentType = contentType;
         this.responseCode = responseCode;
         this.fetchedAt = new Date();
+        this.responseTime = responseTime;
 	}
 	
 	public String getContentType() {
@@ -110,5 +112,7 @@ public class FetchedData implements Serializable {
     public void setResponseCode(int responseCode) {
         this.responseCode = responseCode;
     }
+
+    public Long getResponseTime(){return this.responseTime;}
 
 }

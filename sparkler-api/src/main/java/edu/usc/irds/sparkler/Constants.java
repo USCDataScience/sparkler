@@ -140,6 +140,7 @@ public interface Constants {
         String DEDUPE_ID = "dedupe_id";
         String MD_SUFFIX = "_md";
         String HDR_SUFFIX = "_hd";
+        String RESPONSE_TIME = "response_time";
     }
 
 }

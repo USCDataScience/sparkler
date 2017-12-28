@@ -94,7 +94,7 @@ public class FetcherJBrowser extends FetcherDefault {
             LOG.info("{} Failed to fetch the page. Falling back to default fetcher.", resource.getUrl());
             return super.fetch(resource);
         }
-        fetchedData = new FetchedData(html.getBytes(), "application/html", status);
+        fetchedData = new FetchedData(html.getBytes(), "application/html", status, System.currentTimeMillis() - start);
         resource.setStatus(ResourceStatus.FETCHED.toString());
         fetchedData.setResource(resource);
         return fetchedData;

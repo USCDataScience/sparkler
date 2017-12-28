@@ -150,6 +150,8 @@
    <field name="modified_time" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
    <field name="retries_since_fetch" type="int" indexed="true" stored="true" default="-1" multiValued="false" docValues="true" />
 
+   <field name="response_time" type="long" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
+
   <!-- Admin -->
   <field name="indexed_at" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
   <field name="last_updated_at" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
