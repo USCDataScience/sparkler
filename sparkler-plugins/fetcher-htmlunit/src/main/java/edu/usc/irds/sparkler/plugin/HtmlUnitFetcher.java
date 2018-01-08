@@ -90,7 +90,6 @@ public class HtmlUnitFetcher extends FetcherDefault  implements AutoCloseable {
     public FetchedData fetch(Resource resource) throws Exception {
         LOG.info("HtmlUnit FETCHER {}", resource.getUrl());
         FetchedData fetchedData;
-        long startTime = System.currentTimeMillis();
         try {
             String userAgent = getUserAgent();
             if (StringUtils.isNotBlank(userAgent)) {
@@ -105,7 +104,7 @@ public class HtmlUnitFetcher extends FetcherDefault  implements AutoCloseable {
                 try (BoundedInputStream boundedStream = new BoundedInputStream(stream, CONTENT_LIMIT)) {
                     try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                         IOUtils.copy(boundedStream, out);
-                        fetchedData = new FetchedData(out.toByteArray(), response.getContentType(), response.getStatusCode(), System.currentTimeMillis() - startTime);
+                        fetchedData = new FetchedData(out.toByteArray(), response.getContentType(), response.getStatusCode());
                         long contentLength = page.getWebResponse().getContentLength();
                         if (contentLength > 0 && contentLength < Integer.MAX_VALUE) {
                             fetchedData.setContentLength((int) contentLength);
@@ -135,7 +134,7 @@ public class HtmlUnitFetcher extends FetcherDefault  implements AutoCloseable {
             }
         } catch (Exception e){
             LOG.warn(e.getMessage(), e);
-            fetchedData = new FetchedData(new byte[0], "unknown/unknown", 0, 0); // fixme: use proper status code
+            fetchedData = new FetchedData(new byte[0], "unknown/unknown", 0); // fixme: use proper status code
             resource.setStatus(ResourceStatus.ERROR.toString());
         }
         fetchedData.setResource(resource);

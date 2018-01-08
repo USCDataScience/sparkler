@@ -44,7 +44,7 @@ class ScoreFunction(job:SparklerJob) extends (CrawlData => CrawlData) with Seria
         case Some(s) =>
           data.fetchedData.getResource.setScore(s.getScoreKey, s.score(data.parsedData.extractedText))
         case None =>
-          LOG.info("Scoring is not performed")
+          LOG.debug("Scoring is not performed")
       }
     } catch {
       case e: Exception =>
