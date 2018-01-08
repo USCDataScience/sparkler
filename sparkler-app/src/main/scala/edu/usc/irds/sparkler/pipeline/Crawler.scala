@@ -82,7 +82,7 @@ class Crawler extends CliTool {
   var topG: Int = sparklerConf.get(Constants.key.GENERATE_TOP_GROUPS).asInstanceOf[Int]
 
   @Option(name = "-i", aliases = Array("--iterations"),
-    usage = "Number of iterations to run")
+    usage = "Number of iterations to run. Special Feature: Set any number <= 0, eg: -1, to crawl all URLs")
   var iterations: Int = 1
 
   @Option(name = "-fd", aliases = Array("--fetch-delay"),
@@ -133,14 +133,18 @@ class Crawler extends CliTool {
 
     //STEP : Initialize environment
     init()
-
+    // 0 is infinite crawl
+    if (iterations <= 0){
+      LOG.info("Going tp crawl until the end of all URLs. This is gonna take long time")
+      iterations = Int.MaxValue
+    }
     val solrc = this.job.newCrawlDbSolrClient()
 
     val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
     FetchFunction.init(job)
 
-    for (_ <- 1 to iterations) {
+    for (itr <- 1 to iterations) {
       val taskId = JobUtil.newSegmentId(true)
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
@@ -157,9 +161,10 @@ class Crawler extends CliTool {
 
       processFetched(scoredRdd)
 
-      LOG.info("Committing crawldb..")
+      LOG.info(s"===End of iteration $itr Committing crawldb..===")
       solrc.commitCrawlDb()
     }
+
     solrc.close()
     //PluginService.shutdown(job)
     LOG.info("Shutting down Spark CTX..")
