@@ -32,7 +32,7 @@ bash dockler.sh
 # Step 3. Start the crawl job
 /data/sparkler/bin/sparkler.sh crawl -id 1 -tn 100 -i 2     # id=1, top 100 URLs, do -i=2 iterations
 ```
-Keep the crawl running for long time with `/data/sparkler/bin/sparkler.sh crawl -id 1 -i 1000000`
+To crawl until the end of all new URLS, use `-i -1`, Example: `/data/sparkler/bin/sparkler.sh crawl -id 1 -i -1`
 
 Access the dashboard http://localhost:8983/banana/  (forwarded from docker image). 
 The dashboard should look like the one in the below:
