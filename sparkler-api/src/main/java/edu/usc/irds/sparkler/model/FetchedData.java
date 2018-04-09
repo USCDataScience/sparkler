@@ -37,6 +37,7 @@ public class FetchedData implements Serializable {
     private int responseCode;
     private long responseTime = -1;
 
+    private String segment;
 
     public FetchedData() {
     }
@@ -91,6 +92,15 @@ public class FetchedData implements Serializable {
     public void setContentLength(Integer contentLength) {
         this.contentLength = contentLength;
     }
+
+    public String getSegment() {
+        return segment;
+    }
+
+    public void setSegment(String segment) {
+        this.segment = segment;
+    }
+
 
     public void setContent(byte[] content) {
         this.content = content;

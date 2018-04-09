@@ -146,6 +146,7 @@
    <field name="fetch_depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    <field name="relative_path" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
    <field name="parent" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
+   <field name="segment" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
 
    <field name="modified_time" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
    <field name="retries_since_fetch" type="int" indexed="true" stored="true" default="-1" multiValued="false" docValues="true" />
