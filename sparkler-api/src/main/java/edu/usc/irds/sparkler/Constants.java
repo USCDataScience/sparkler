@@ -141,6 +141,7 @@ public interface Constants {
         String MD_SUFFIX = "_md";
         String HDR_SUFFIX = "_hd";
         String RESPONSE_TIME = "response_time";
+        String SEGMENT = "segment";
     }
 
 }
