@@ -92,7 +92,9 @@ class Dumper extends CliTool with Loggable {
   def urlToPath(url:URL, baseDir:String): String = {
     val hash = Hex.encodeHexString(digest.digest(url.toString.getBytes()))
     assert(hash.length >= 6, "longer hash expected")
-    Paths.get(baseDir, url.getHost, hash.substring(0, 2), hash.substring(2, 4), hash.substring(4, 6), hash).toString
+    val (idx0, idx2, idx4, idx6) = (0, 2, 4, 6)
+    Paths.get(baseDir, url.getHost, hash.substring(idx0, idx2),
+      hash.substring(idx2, idx4), hash.substring(idx4, idx6), hash).toString
   }
 
   /***
