@@ -1,0 +1,80 @@
+#!/usr/bin/python3
+
+
+from charmhelpers.core.hookenv import relation_ids, relation_id, related_units, relation_get, action_get, config
+from subprocess import check_output
+
+## TODO implement solr cloud support
+## TODO clean up file name
+## TODO implement custom solr db over relation
+
+jobid = action_get('jobid')
+iterations = action_get('iterations')
+sparkmaster = action_get('sparkmaster')
+output = action_get('output')
+topgroups = action_get('topgroups')
+topn = action_get('topn')
+
+sparkurl = 'local[*]'
+
+for rid in relation_ids('spark'):
+    for u in related_units(rid):
+        sparkip = relation_get('private-address', unit=u, rid=rid)
+        sparkurl = "spark://"+sparkip+":7077"
+        break
+
+if config('spark-master'):
+    sparkurl = config('spark-master')
+
+configopts = ""
+
+for rid in relation_ids('kafka'):
+    for u in related_units(rid):
+        kafkaip = relation_get('private-address', unit=u, rid=rid)
+        kafkaurl = kafkaip+":9092"
+        break
+
+
+if config('kafka-enable'):
+    configopts += " -ke " + config('kafka-enable')
+
+if config('kafka-listeners'):
+    configopts += " -kls " + config('kafka-listeners')
+elif kafkaurl:
+    configopts += " -kls " + kafkaurl
+
+if config('kafka-topic'):
+    configopts += " -ktp " + config('kafka-topic')
+
+if topn:
+    config += " -tn " + topn
+elif config('generate-topn'):
+    config += " -tn " + config('generate-topn')
+
+if topgroups:
+    config += " -tg " + topgroups
+elif config('generate-top-groups'):
+    config += " -tg " + config('generate-top-groups')
+
+if config('fetcher-server-delay'):
+    config += " -fd " + config('fetcher-server-delay')
+
+
+ip = ""
+#run command with generated uri
+for rid in relation_ids('solr'):
+    for u in related_units(rid):
+        ip = relation_get('private-address', unit=u, rid=rid)
+        break
+
+cdb = action_get('crawldb-uri')
+
+if not cdb:
+    cdb = config('crawldb-uri')
+
+if not cdb:
+    cdb = 'http://'+ip+':8983/solr/crawldb'
+
+
+
+check_output(['java', '-jar', '/opt/sparkler/sparkler.jar', 'crawl', '-cdb', cdb, '-id',  jobid, '-m', sparkurl, '-i', iterations or 1, '-aj', 'true', '-o', output or '/tmp/crawl', configopts])

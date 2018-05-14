@@ -1,0 +1,5 @@
+resources:
+  sparkler:
+    url: https://dl.dropboxusercontent.com/u/8503756/sparkler.txt
+    hash: 8db23bd893e2321b6de8738d2074455a2de78e640a02c0d0582655857dc1d5f3d07d9384c698ddfab7e579c8bd667156117637a4597791684265d6f36442657d
+    hash_type: sha512

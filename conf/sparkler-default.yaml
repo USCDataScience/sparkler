@@ -1,0 +1,118 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+
+##################### General Properties ################################
+
+# Crawl Database URL. Stores crawl metadata and status updates.
+# Type: String. Default: http://localhost:8983/solr/crawldb
+# for standalone server
+crawldb.uri: http://localhost:8983/solr/crawldb
+
+# for quick test crawls using embedded solr
+#crawldb.uri: file://conf/solr/crawldb
+
+# for cloudmode with zookeepers; Format = collectionName::zkhost1:port1,zkhost2:port2,zkhost3:port3
+# crawldb.uri: crawldb::localhost:9983
+
+
+##################### Apache Spark Properties ###########################
+
+# URL on which Apache Spark is running.
+# Type: String. Default is "local[*]" for local mode.
+spark.master: local[*]
+
+
+##################### Apache Kafka Properties ###########################
+# Enable Kafka Dump
+# Type: Boolean. Default is "false"
+kafka.enable: false
+# Kafka Listeners
+# Type: String. Default is "localhost:9092" for local mode.
+kafka.listeners: localhost:9092
+# Kafka topic to send dumps to
+# Type: String. Default is "sparkler/<jobid>".
+kafka.topic: sparkler_%s
+
+##################### Generate Properties ###############################
+
+# Generates the top N URLs for fetching.
+# Type: Int. Default: 1000
+generate.topn: 1000
+
+# Generates URLs from top N groups for fetching.
+# Type: Int. Default: 256
+generate.top.groups: 256
+
+# Define criteria for sorting the top N urls
+# Note: The name of the field to sort by should exactly match the one used in the SOLR schema
+# Type: String. Default: discover_depth asc, score asc
+generate.sortby: "discover_depth asc, score asc"
+
+
+# Specify field to use for grouping partitions in RDD
+# Default is the "group" field which represent the hostnames of the URLs being fethced
+# Note: This field should match exactly the one specified in the SOLR schema
+# Type: String. Default: group
+generate.groupby: "group"
+
+##################### Fetcher Properties ################################
+
+# Delay (in milliseconds) between two fetch requests for the same host.
+# Type: Long. Default: 1000
+fetcher.server.delay: 1000
+
+# list of headers to be included for each outgoing request
+fetcher.headers:
+  User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version}"
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+  Accept-Language: "en-US,en"
+
+# Rotating agents file.
+# File should contain a list of agents which will be used to override the default agent string
+# This is an unbounded list, it can take any number of agents you wish.
+# for every request the agents are used one after the other in sequence
+#fetcher.user.agents: user-agents.txt
+
+##################### Plugins ###########################################
+
+# Plugins Bundle directory. Configured through Maven.
+# Discouraged to Modify unless specifically required.
+# To set plugins directory, use system property -Dpf4j.pluginsDir=$DIR/plugins
+# by default it looks up 'plugins' directory from current working directory
+
+
+# List of activated plugins
+plugins.active:
+    - urlfilter-regex
+    - urlfilter-samehost
+#    - fetcher-jbrowser
+#    - fetcher-htmlunit
+
+# All Plugins are listed under this tree
+plugins:
+  # Regex URL Filter - Filters outlinks from a web page based on Regex
+  # expressions.
+  urlfilter.regex:
+    #
+    # File with Regex Filter Rules
+    urlfilter.regex.file: regex-urlfilter.txt
+  # Fetcher jBrowser - Headless browser to fetch javascript and AJAX 
+  # based document/content.
+  fetcher.jbrowser:
+    # Configuration Properties
+    socket.timeout: 3000
+    connect.timeout: 3000

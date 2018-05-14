@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -ex
+
+
+URLS=`action-get urls`
+
+
+IFS=',' read -ra SPLITURLS <<< "$URLS"
+for i in "${SPLITURLS[@]}"; do
+    echo "$i" >> /opt/sparkler/seed.txt
+done
+
+action-set outcome="success"

@@ -1,0 +1,55 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+options:
+  crawldb-uri:
+    type: string
+    default: ""
+    description: "Override the auto detected crawldb uri"
+  spark-master:
+    type: string
+    default: ""
+    description: "Override the auto detected spark uri"
+  kafka-enable:
+    type: boolean
+    default: False
+    description: "Enable Kafka dump"
+  kafka-listeners:
+    type: string
+    default: ""
+    description: "Override the Kafka listeners"
+  kafka-topic:
+    type: string
+    default: "sparkler_%s"
+    description: "The Kafka topic"
+  generate-topn:
+    type: string
+    default: "1000"
+    description: "Generates the top N URLs for fetching."
+  generate-top-groups:
+    type: string
+    default: "256"
+    description: "Generates the Top Groups"
+  fetcher-server-delay:
+    type: string
+    default: "1000"
+    description: "Delay (in milliseconds) between two fetch requests for the same host."
+  plugins-bundle-directory:
+    type: string
+    description: "Plugins Bundle directory. Configured through Maven."
+    default: "${project.parent.basedir}${file.separator}${project.bundles.directory}"
+  
+

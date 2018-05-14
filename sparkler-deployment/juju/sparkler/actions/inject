@@ -1,0 +1,37 @@
+#!/usr/bin/python3
+
+from charmhelpers.core.hookenv import relation_ids, related_units, relation_get, action_get, config
+from subprocess import check_output
+
+
+jobid = action_get('jobid')
+
+if jobid:
+    jobid += " -id "+jobid
+
+ip = ""
+for rid in relation_ids('solr'):
+    for u in related_units(rid):
+        ip = relation_get('private-address', unit=u, rid=rid)
+        break
+
+
+cdb = action_get('crawldb-uri')
+
+if not cdb:
+    cdb = config('crawldb-uri')
+
+if not cdb:
+    cdb = 'http://'+ip+':8983/solr/crawldb'
+
+
+
+check_output(['java', '-jar', '/opt/sparkler/sparkler.jar', 'inject', '-cdb', cdb, '-sf', '/opt/sparkler/seed.txt', jobid])
+
+
+
+
+
+
+
+
