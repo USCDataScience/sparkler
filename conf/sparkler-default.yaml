@@ -101,6 +101,7 @@ plugins.active:
     - urlfilter-samehost
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
+    - parser-html
 
 # All Plugins are listed under this tree
 plugins:

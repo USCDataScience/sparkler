@@ -39,6 +39,7 @@
         <module>urlfilter-samehost</module>
         <!-- Copy template plugin to create a new plugin-->
         <module>template-plugin</module>
+        <module>parser-html</module>
     </modules>
 
     <properties>

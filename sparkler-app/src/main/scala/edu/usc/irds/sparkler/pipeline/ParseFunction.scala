@@ -23,7 +23,7 @@ import java.util
 import java.util.Date
 
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.model.{CrawlData, ParsedData}
+import edu.usc.irds.sparkler.model.{SparklerJob, CrawlData, ParsedData}
 import org.apache.commons.io.IOUtils
 import org.apache.tika.metadata.Metadata
 import org.apache.tika.parser.AutoDetectParser
@@ -32,13 +32,15 @@ import org.apache.tika.sax.{BodyContentHandler, LinkContentHandler, WriteOutCont
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import edu.usc.irds.sparkler.Parser
+import edu.usc.irds.sparkler.service.PluginService
 
 /**
   * This is a transformation function for transforming raw data from crawler to parsed data
   */
-object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable with Loggable {
+object ParseFunction extends ((SparklerJob, CrawlData) => (ParsedData)) with Serializable with Loggable {
 
-  override def apply(data: CrawlData): (ParsedData) = {
+  override def apply(job: SparklerJob, data: CrawlData): (ParsedData) = {
     val parseData = new ParsedData()
     var stream = new ByteArrayInputStream(data.fetchedData.getContent)
     val linkHandler = new LinkContentHandler()
@@ -68,6 +70,21 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
       stream = new ByteArrayInputStream(data.fetchedData.getContent)
       parser.parse(stream, contentHandler, meta)
       parseData.extractedText = outHandler.toString
+
+      val parserPlugin:scala.Option[Parser] = PluginService.getExtension(classOf[Parser], job)
+      try {
+        parserPlugin match {
+          case Some(p) => meta = p.parse(stream, meta)
+          case None => LOG.debug("No ParseMetaData Plugin ")
+        } 
+      }
+      catch {
+          case e: Exception =>
+            LOG.error(e.getMessage, e)
+            Iterator()
+        }
+      
+      
       parseData.metadata = meta
     } catch {
       case e: Throwable =>
@@ -75,7 +92,7 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
         LOG.warn(e.getMessage, e)
         parseData
     } finally { IOUtils.closeQuietly(stream) }
-
+    
     // parse headers
     val headers = data.fetchedData.getHeaders
     if (headers.containsKey("Location")) {   // redirect
