@@ -32,6 +32,18 @@ bash dockler.sh
 # Step 3. Start the crawl job
 /data/sparkler/bin/sparkler.sh crawl -id 1 -tn 100 -i 2     # id=1, top 100 URLs, do -i=2 iterations
 ```
+### Running Sparkler with seed urls file: 
+```bash
+1. Follow Steps 0-1
+2. Create a file name seed-urls.txt using Emacs editor as follows:     
+       a. emacs sparkler/bin/seed-urls.txt 
+       b. copy paste your urls 
+       c. Ctrl+x Ctrl+s to save  
+       d. Ctrl+x Ctrl+c to quit the editor [Reference: http://mally.stanford.edu/~sr/computing/emacs.html]
+3. Inject seed urls using the following command 
+/sparkler/bin/sparkler.sh inject -id 1 -sf seed-urls.txt
+4. Start the crawl job.
+```
 To crawl until the end of all new URLS, use `-i -1`, Example: `/data/sparkler/bin/sparkler.sh crawl -id 1 -i -1`
 
 Access the dashboard http://localhost:8983/banana/  (forwarded from docker image). 
