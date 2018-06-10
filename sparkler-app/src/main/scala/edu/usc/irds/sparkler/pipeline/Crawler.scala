@@ -21,9 +21,9 @@ package edu.usc.irds.sparkler.pipeline
 import edu.usc.irds.sparkler.{Constants, CrawlDbRDD, SparklerConfiguration}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
-import edu.usc.irds.sparkler.model.{ResourceStatus, CrawlData, Resource, SparklerJob}
+import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
-import edu.usc.irds.sparkler.util.JobUtil
+import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.SequenceFileOutputFormat
@@ -33,7 +33,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
-
 
 /**
   *
@@ -51,7 +50,7 @@ class Crawler extends CliTool {
   var sparkMaster: String = sparklerConf.get(Constants.key.SPARK_MASTER).asInstanceOf[String]
 
   @Option(name = "-cdb", aliases = Array("--crawldb"),
-    usage = "Crawdb URI.")
+    usage = "Craw DB URI.")
   var sparkSolr: String = sparklerConf.get(Constants.key.CRAWLDB).asInstanceOf[String]
 
   @Option(name = "-id", aliases = Array("--id"), required = true,
@@ -83,7 +82,7 @@ class Crawler extends CliTool {
   var topG: Int = sparklerConf.get(Constants.key.GENERATE_TOP_GROUPS).asInstanceOf[Int]
 
   @Option(name = "-i", aliases = Array("--iterations"),
-    usage = "Number of iterations to run")
+    usage = "Number of iterations to run. Special Feature: Set any number <= 0, eg: -1, to crawl all URLs")
   var iterations: Int = 1
 
   @Option(name = "-fd", aliases = Array("--fetch-delay"),
@@ -92,6 +91,12 @@ class Crawler extends CliTool {
 
   @Option(name = "-aj", handler = classOf[StringArrayOptionHandler], aliases = Array("--add-jars"), usage = "Add sparkler jar to spark context")
   var jarPath : Array[String] = new Array[String](0)
+
+  /* Generator options, currently not exposed via the CLI
+     and only accessible through the config yaml file
+   */
+  var sortBy: String = sparklerConf.get(Constants.key.GENERATE_SORTBY).asInstanceOf[String]
+  var groupBy: String = sparklerConf.get(Constants.key.GENERATE_GROUPBY).asInstanceOf[String]
 
   var job: SparklerJob = _
   var sc: SparkContext = _
@@ -118,60 +123,73 @@ class Crawler extends CliTool {
     }
 
     job = new SparklerJob(jobId, sparklerConf, "")
+    //FetchFunction.init(job)
+
   }
   //TODO: URL normalizers
   //TODO: Robots.txt
-  //TODO: Fetcher + User Agent
-  //TODO: Job Id
 
   override def run(): Unit = {
 
     //STEP : Initialize environment
     init()
-
+    // 0 is infinite crawl
+    if (iterations <= 0){
+      LOG.info("Going tp crawl until the end of all URLs. This is gonna take long time")
+      iterations = Int.MaxValue
+    }
     val solrc = this.job.newCrawlDbSolrClient()
+
     val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
+    FetchFunction.init(job)
 
-    for (_ <- 1 to iterations) {
+    for (itr <- 1 to iterations) {
       val taskId = JobUtil.newSegmentId(true)
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
-
-      val rdd = new CrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
+      val rdd = new CrawlDbRDD(sc, job, sortBy = sortBy, maxGroups = topG,
+        topN = topN, groupBy = groupBy)
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
           FetchFunction, ParseFunction, OutLinkFilterFunction) })
-        .persist()
 
-      if (kafkaEnable) {
-        storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
-      }
+      // Step: Score the fetched content
+      val scoredRdd = fetchedRdd.map(new ScoreFunction(job)).cache()
 
-      //Step: Update status of fetched resources
-      val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => StatusUpdateSolrTransformer(d))
-      val statusUpdateFunc = new SolrStatusUpdate(job)
-      sc.runJob(statusUpdateRdd, statusUpdateFunc)
+      processFetched(scoredRdd)
 
-      //Step: Filter Outlinks and Upsert new URLs into CrawlDb
-      val outlinksRdd = OutLinkUpsert(job, fetchedRdd)
-      val upsertFunc = new SolrUpsert(job)
-      sc.runJob(outlinksRdd, upsertFunc)
-
-      //Step: Store these to nutch segments
-      val outputPath = this.outputPath + "/" + taskId
-
-      storeContent(outputPath, fetchedRdd)
-
-      LOG.info("Committing crawldb..")
+      LOG.info(s"===End of iteration $itr Committing crawldb..===")
       solrc.commitCrawlDb()
     }
+
     solrc.close()
     //PluginService.shutdown(job)
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
+  }
+
+  def processFetched(rdd: RDD[CrawlData]): RDD[CrawlData] = {
+    if (kafkaEnable) {
+      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), rdd)
+    }
+
+    val job = this.job
+    //Step: Index all new URLS
+    sc.runJob(OutLinkUpsert(job, rdd), new SolrUpsert(job))
+
+    //Step: Update status+score of fetched resources
+    val statusUpdateRdd: RDD[SolrInputDocument] = rdd.map(d => StatusUpdateSolrTransformer(d))
+    sc.runJob(statusUpdateRdd, new SolrStatusUpdate(job))
+
+    //Step: Store these to nutch segments
+    val outputPath = this.outputPath + "/" + job.currentTask
+    //Step : write to FS
+    storeContent(outputPath, rdd)
+
+    rdd
   }
 }
 
@@ -184,7 +202,7 @@ object OutLinkUpsert extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) wi
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
-      parent.getFetchTimestamp, parent.getId) }) //create a new resource
+      parent.getFetchTimestamp, parent.getId, parent.getScore) }) //create a new resource
   }
 }
 
@@ -192,8 +210,14 @@ object Crawler extends Loggable with Serializable{
 
   def storeContent(outputPath:String, rdd:RDD[CrawlData]): Unit = {
     LOG.info(s"Storing output at $outputPath")
-    rdd.filter(_.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
-      .map(d => (new Text(d.fetchedData.getResource.getUrl), d.fetchedData.toNutchContent(new Configuration())))
+
+    object ConfigHolder extends Serializable {
+      var config:Configuration = new Configuration()
+    }
+
+    rdd.filter(r => r.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
+      .map(d => (new Text(d.fetchedData.getResource.getUrl),
+        NutchBridge.toNutchContent(d.fetchedData, ConfigHolder.config)))
       .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
   }
 

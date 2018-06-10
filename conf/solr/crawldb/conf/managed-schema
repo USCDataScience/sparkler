@@ -116,8 +116,8 @@
    <!-- Crawl DB Static Fields -->
    <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" /> 
    <field name="url" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" />
-   <field name="group" type="string" indexed="true" stored="true" required="true"  multiValued="false" docValues="true" /> 
-   <field name="score" type="double" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
+   <field name="group" type="string" indexed="true" stored="true" required="true"  multiValued="false" docValues="true" />
+   <field name="page_score" type="double" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
 
    <!-- Deprecated Fields -->
    <!-- <field name="jobId" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" /> -->
@@ -146,9 +146,12 @@
    <field name="fetch_depth" type="int" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    <field name="relative_path" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
    <field name="parent" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
+   <field name="segment" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
 
    <field name="modified_time" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
    <field name="retries_since_fetch" type="int" indexed="true" stored="true" default="-1" multiValued="false" docValues="true" />
+
+   <field name="response_time" type="long" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
 
   <!-- Admin -->
   <field name="indexed_at" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
@@ -181,9 +184,26 @@
    <dynamicField name="*_ls_md" type="long" indexed="true" stored="true" multiValued="true"/>
    <dynamicField name="*_d_md" type="double" indexed="true" stored="true"/>
    <dynamicField name="*_ds_md" type="double" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_dt_md" type="date" indexed="true" stored="true"/>
+   <dynamicField name="*_dts_md" type="date" indexed="true" stored="true" multiValued="true"/>
    <dynamicField name="*_b_md" type="boolean" indexed="true" stored="true"/>
    <dynamicField name="*_bs_md" type="boolean" indexed="true" stored="true" multiValued="true"/>
 
+   <!-- Header Fields -->
+   <dynamicField name="*_s_hd" type="string" indexed="true" stored="true"/>
+   <dynamicField name="*_ss_hd" type="string" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_t_hd" type="text_general" indexed="true" stored="true"/>
+   <dynamicField name="*_ts_hd" type="text_general" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_i_hd" type="int" indexed="true" stored="true"/>
+   <dynamicField name="*_is_hd" type="int" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_l_hd" type="long" indexed="true" stored="true"/>
+   <dynamicField name="*_ls_hd" type="long" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_d_hd" type="double" indexed="true" stored="true"/>
+   <dynamicField name="*_ds_hd" type="double" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_dt_hd" type="date" indexed="true" stored="true"/>
+   <dynamicField name="*_dts_hd" type="date" indexed="true" stored="true" multiValued="true"/>
+   <dynamicField name="*_b_hd" type="boolean" indexed="true" stored="true"/>
+   <dynamicField name="*_bs_hd" type="boolean" indexed="true" stored="true" multiValued="true"/>
    
    <dynamicField name="*_i"  type="int"    indexed="true"  stored="true"/>
    <dynamicField name="*_is" type="int"    indexed="true"  stored="true"  multiValued="true"/>
@@ -222,6 +242,8 @@
 
    <dynamicField name="random_*" type="random" />
 
+   <dynamicField name="*_score" type="double" indexed="true" stored="true" multiValued="false" docValues="true" />
+
    <!-- uncomment the following to ignore any fields that don't already match an existing 
         field name or dynamic field, rather than reporting them as an error. 
         alternately, change the type="ignored" to some other type e.g. "text" if you want 
@@ -232,7 +254,6 @@
       Unless this field is marked with required="false", it will be a required field
    -->
  <uniqueKey>id</uniqueKey>
- <defaultSearchField>text</defaultSearchField>
 
   <!-- copyField commands copy one field to another at the time a document
         is added to the index.  It's used either to index the same field differently,
@@ -248,7 +269,21 @@
   <copyField source="*_ls_md" dest="text"/>
   <copyField source="*_d_md" dest="text"/>
   <copyField source="*_ds_md" dest="text"/>
+  <copyField source="*_dt_md" dest="text"/>
+  <copyField source="*_dts_md" dest="text"/>
 
+  <copyField source="*_s_hd" dest="text"/>
+  <copyField source="*_ss_hd" dest="text"/>
+  <copyField source="*_t_hd" dest="text"/>
+  <copyField source="*_ts_hd" dest="text"/>
+  <copyField source="*_i_hd" dest="text"/>
+  <copyField source="*_is_hd" dest="text"/>
+  <copyField source="*_l_hd" dest="text"/>
+  <copyField source="*_ls_hd" dest="text"/>
+  <copyField source="*_d_hd" dest="text"/>
+  <copyField source="*_ds_hd" dest="text"/>
+  <copyField source="*_dt_hd" dest="text"/>
+  <copyField source="*_dts_hd" dest="text"/>
 
    <!-- <copyField source="title" dest="text"/> -->
    <!-- <copyField source="plainText" dest="text"/> -->

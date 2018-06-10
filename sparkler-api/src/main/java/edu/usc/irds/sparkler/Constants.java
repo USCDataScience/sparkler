@@ -55,7 +55,6 @@ public interface Constants {
         String KAFKA_TOPIC = "kafka.topic";
 
         // HTTP Properties
-
         // Database Properties
 
         // Generator Properties
@@ -65,21 +64,27 @@ public interface Constants {
         @ConfigKey(type = int.class)
         String GENERATE_TOP_GROUPS = "generate.top.groups";
 
+        @ConfigKey
+        String GENERATE_SORTBY = "generate.sortby";
+
+        @ConfigKey
+        String GENERATE_GROUPBY = "generate.groupby";
+
         // Fetcher Properties
         @ConfigKey(type = int.class)
         String FETCHER_SERVER_DELAY = "fetcher.server.delay";
-
-        // Parser Properties
-
-        // Plugin Properties
-        @ConfigKey
-        String PLUGINS_BUNDLE_DIRECTORY = "plugins.bundle.directory";
 
         @ConfigKey
         String PLUGINS = "plugins";
 
         @ConfigKey
         String ACTIVE_PLUGINS = "plugins.active";
+
+        @ConfigKey
+        String FETCHER_HEADERS = "fetcher.headers";
+
+        @ConfigKey
+        String FETCHER_USER_AGENTS = "fetcher.user.agents";
     }
 
 
@@ -96,10 +101,6 @@ public interface Constants {
                 input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT);
                 Map<String,Object> yamlMap = (Map<String, Object>) yaml.load(input);
                 sparklerConf = new SparklerConfiguration(yamlMap);
-
-                //input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_SITE);
-                //if(sparklerSite != null)
-                //    sparklerConf.mask(sparklerSite);
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -109,38 +110,13 @@ public interface Constants {
             if (sparklerConf != null) {
                 sparklerConf.put(key.UUID_KEY, UUID.randomUUID().toString());
             }
-
             return sparklerConf;
         }
     }
 
-
     interface file {
         String SPARKLER_DEFAULT = "sparkler-default.yaml";
-        String SPARKLER_SITE = "sparkler-site.yaml";
-        String CONF_DIR = "conf";
-
-        /**
-         * Apache Felix Framework Factory META file
-         */
-        String FELIX_FRAMEWORK_FACTORY = "META-INF/services/org.osgi.framework.launch.FrameworkFactory";
-        /**
-         * Specifying Apache Felix bundle directory.
-         * TODO:Should come from Sparkler Config
-         **/
-        //String FELIX_BUNDLE_DIR = key.PLUGINS_BUNDLE_DIRECTORY;
-        //String FELIX_BUNDLE_DIR = "../bundles";
-        //String FELIX_BUNDLE_DIR = "/Users/karanjeetsingh/git_workspace/madhav-sparkler/sparkler-app/bundles";
-
-
-        /**
-         * Apache Felix configuration properties file
-         * TODO:Should come from Sparler Config
-         */
-        String FELIX_CONFIG = "felix-config.properties";
-
     }
-
 
     interface solr { // Solr Fields
         String ID = "id";
@@ -152,7 +128,7 @@ public interface Constants {
         String NUM_FETCHES = "numFetches";
         String DISCOVER_DEPTH = "discover_depth";
         String FETCH_DEPTH = "fetch_depth";
-        String SCORE = "score";
+        String SCORE = "page_score";
         String STATUS = "status";
         String LAST_UPDATED_AT = "last_updated_at";
         String EXTRACTED_TEXT = "extracted_text";
@@ -163,6 +139,9 @@ public interface Constants {
         String RELATIVE_PATH = "relative_path";
         String DEDUPE_ID = "dedupe_id";
         String MD_SUFFIX = "_md";
+        String HDR_SUFFIX = "_hd";
+        String RESPONSE_TIME = "response_time";
+        String SEGMENT = "segment";
     }
 
 }

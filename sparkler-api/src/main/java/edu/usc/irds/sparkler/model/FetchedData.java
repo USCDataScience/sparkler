@@ -18,11 +18,11 @@
 package edu.usc.irds.sparkler.model;
 
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.nutch.metadata.Metadata;
-
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class FetchedData implements Serializable {
 
@@ -31,11 +31,13 @@ public class FetchedData implements Serializable {
     private byte[] content;
     private String contentType;
     private Integer contentLength;
-    private String[] headers;
+    private Map<String, List<String>> headers = Collections.emptyMap();
     private Date fetchedAt;
-    private Metadata metadata;
+    private MultiMap<String, String> metadata = new MultiMap<>();
     private int responseCode;
+    private long responseTime = -1;
 
+    private String segment;
 
     public FetchedData() {
     }
@@ -46,7 +48,6 @@ public class FetchedData implements Serializable {
         this.contentLength = content.length;
         this.contentType = contentType;
         this.responseCode = responseCode;
-        this.metadata = new Metadata();
         this.fetchedAt = new Date();
 	}
 	
@@ -68,15 +69,19 @@ public class FetchedData implements Serializable {
         return contentLength;
     }
 
-    public String[] getHeaders() {
+    public Map<String, List<String>> getHeaders() {
         return headers;
+    }
+
+    public void setHeaders(Map<String, List<String>> headers) {
+        this.headers = headers;
     }
 
     public Date getFetchedAt() {
         return fetchedAt;
     }
 
-    public Metadata getMetadata() {
+    public MultiMap<String, String> getMetadata() {
         return metadata;
     }
 
@@ -84,9 +89,42 @@ public class FetchedData implements Serializable {
         this.resource = resource;
     }
 
-    // TODO: Move this to Util package
-    public org.apache.nutch.protocol.Content toNutchContent(Configuration conf) {
-        return new org.apache.nutch.protocol.Content(resource.getUrl(), resource.getUrl(), content, contentType, metadata, conf);
+    public void setContentLength(Integer contentLength) {
+        this.contentLength = contentLength;
     }
 
+    public String getSegment() {
+        return segment;
+    }
+
+    public void setSegment(String segment) {
+        this.segment = segment;
+    }
+
+
+    public void setContent(byte[] content) {
+        this.content = content;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public void setFetchedAt(Date fetchedAt) {
+        this.fetchedAt = fetchedAt;
+    }
+
+    public void setMetadata(MultiMap<String, String> metadata) {
+        this.metadata = metadata;
+    }
+
+    public void setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
+    }
+
+    public Long getResponseTime(){return this.responseTime;}
+
+    public void setResponseTime(long responseTime) {
+        this.responseTime = responseTime;
+    }
 }

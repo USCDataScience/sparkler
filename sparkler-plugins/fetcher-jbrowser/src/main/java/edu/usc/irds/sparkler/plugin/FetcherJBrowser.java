@@ -27,6 +27,7 @@ import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import edu.usc.irds.sparkler.util.FetcherDefault;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.LinkedHashMap;
 
+@Extension
 public class FetcherJBrowser extends FetcherDefault {
 
     private static final Integer DEFAULT_TIMEOUT = 2000;
@@ -41,20 +43,15 @@ public class FetcherJBrowser extends FetcherDefault {
     private LinkedHashMap<String, Object> pluginConfig;
     private JBrowserDriver driver;
 
+
     @Override
-    public void init(JobContext context) throws SparklerException {
-        super.init(context);
+    public void init(JobContext context, String pluginId) throws SparklerException {
+        super.init(context, pluginId);
 
         SparklerConfiguration config = jobContext.getConfiguration();
         //TODO should change everywhere 
         pluginConfig = config.getPluginConfiguration(pluginId);
         driver = createBrowserInstance();
-    }
-
-    @Override
-    public void init(JobContext context, String pluginId) throws SparklerException {
-        this.pluginId = pluginId;
-        init(context);
     }
 
     @Override

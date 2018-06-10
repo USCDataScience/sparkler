@@ -13,21 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-##################### General Properties ################################
-
-
-##################### Apache Spark Properties ###########################
-
-
-
-##################### Generate Properties ###############################
-
-
-
-##################### Fetcher Properties ################################
-
-
-
-##################### Plugins ###########################################
+# User agents to be used
+# Each line contains an agent
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client1
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client2
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client3
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version} client4

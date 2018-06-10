@@ -1,0 +1,86 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+
+##################### General Properties ################################
+
+# Crawl Database URL. Stores crawl metadata and status updates.
+# Type: String. Default: http://localhost:8983/solr/crawldb
+crawldb.uri: file://conf/solr/crawldb
+
+
+
+##################### Apache Spark Properties ###########################
+
+# URL on which Apache Spark is running.
+# Type: String. Default is "local" for local mode.
+spark.master: local
+
+
+##################### Apache Kafka Properties ###########################
+# Enable Kafka Dump
+# Type: Boolean. Default is "false"
+kafka.enable: false
+# Kafka Listeners
+# Type: String. Default is "localhost:9092" for local mode.
+kafka.listeners: localhost:9092
+# Kafka topic to send dumps to
+# Type: String. Default is "sparkler/<jobid>".
+kafka.topic: sparkler_%s
+
+##################### Generate Properties ###############################
+
+# Generates the top N URLs for fetching.
+# Type: Int. Default: 1000
+generate.topn: 1000
+
+# Generates URLs from top N groups for fetching.
+# Type: Int. Default: 256
+generate.top.groups: 256
+
+
+
+##################### Fetcher Properties ################################
+
+# Delay (in milliseconds) between two fetch requests for the same host.
+# Type: Long. Default: 1000
+fetcher.server.delay: 1000
+
+# list of headers to be included for each outgoing request
+fetcher.headers:
+  Custom-Header: "Custom Header Value"
+
+# rotating agents
+# The list of agents overrides the default agent set in fetcher.headers.
+# This is an unbounded list, it can take any number of agents you wish.
+# for every request the agents are used one after the other in sequence
+fetcher.user.agents: user-agents.txt
+
+##################### Plugins ###########################################
+
+# All Plugins are listed under this tree
+plugins:
+  # Regex URL Filter - Filters outlinks from a web page based on Regex
+  # expressions.
+  urlfilter.regex:
+    # File with Regex Filter Rules
+    urlfilter.regex.file: regex-urlfilter.txt
+  # Regex URL Filter - Filters outlinks from a web page based on Regex
+  # expressions.
+  fetcher.jbrowser:
+    # File with Regex Filter Rules
+    socket.timeout: 3000
+    connect.timeout: 3000

@@ -57,7 +57,17 @@ generate.topn: 1000
 # Type: Int. Default: 256
 generate.top.groups: 256
 
+# Define criteria for sorting the top N urls
+# Note: The name of the field to sort by should exactly match the one used in the SOLR schema
+# Type: String. Default: discover_depth asc, score asc
+generate.sortby: "discover_depth asc, score asc"
 
+
+# Specify field to use for grouping partitions in RDD
+# Default is the "group" field which represent the hostnames of the URLs being fethced
+# Note: This field should match exactly the one specified in the SOLR schema
+# Type: String. Default: group
+generate.groupby: "group"
 
 ##################### Fetcher Properties ################################
 
@@ -65,18 +75,32 @@ generate.top.groups: 256
 # Type: Long. Default: 1000
 fetcher.server.delay: 1000
 
+# list of headers to be included for each outgoing request
+fetcher.headers:
+  User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version}"
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+  Accept-Language: "en-US,en"
 
+# Rotating agents file.
+# File should contain a list of agents which will be used to override the default agent string
+# This is an unbounded list, it can take any number of agents you wish.
+# for every request the agents are used one after the other in sequence
+#fetcher.user.agents: user-agents.txt
 
 ##################### Plugins ###########################################
 
 # Plugins Bundle directory. Configured through Maven.
 # Discouraged to Modify unless specifically required.
-plugins.bundle.directory: ${project.parent.basedir}${file.separator}${project.bundles.directory}
+# To set plugins directory, use system property -Dpf4j.pluginsDir=$DIR/plugins
+# by default it looks up 'plugins' directory from current working directory
+
 
 # List of activated plugins
 plugins.active:
-    - urlfilter.regex
-    # - fetcher.jbrowser
+    - urlfilter-regex
+    - urlfilter-samehost
+#    - fetcher-jbrowser
+#    - fetcher-htmlunit
 
 # All Plugins are listed under this tree
 plugins:

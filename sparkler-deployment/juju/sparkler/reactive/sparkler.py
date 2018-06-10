@@ -18,6 +18,7 @@ from charmhelpers.core.hookenv import status_set, log
 from charmhelpers.core import hookenv, unitdata
 import jujuresources
 from charmhelpers.core.host import adduser, chownr, mkdir
+import urllib.request
 
 
 hook_data = unitdata.HookData()
@@ -30,23 +31,24 @@ resources = {
 
 @when_not('sparkler.installed')
 def install_sparkler():
-    resource_key="sparkler-0.1"
-    resource = resources[resource_key]
     mkdir('/opt/sparkler/')
-    jujuresources.install(resource,
-                          destination="/opt/sparkler/sparkler.jar")
+
+    urllib.request.urlretrieve("http://build.meteorite.bi/job/sparkler/lastSuccessfulBuild/artifact/sparkler-app/target/sparkler-app-0.1-SNAPSHOT.jar", "/opt/sparkler/sparkler.jar")
+
+    #jujuresources.install('sparkler',
+    #                      destination="/opt/sparkler/")
     set_state('sparkler.installed')
 
 @when_not('java.ready')
 def no_java():
     status_set('waiting', 'Waiting for Java to become available')
 
-@when_not('solr-interface.connected')
-@when_not('solr-interface.available')
+@when_not('solr.connected')
+@when_not('solr.available')
 def no_solr():
     status_set('waiting', 'Waiting for Solr to become available')
 
-@when('solr-interface.available')
+@when('solr.available')
 @when('java.ready')
 def configure_sparkler(j, s):
     set_state('sparkler.configured')
