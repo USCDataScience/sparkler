@@ -40,6 +40,9 @@ bash dockler.sh
        b. copy paste your urls 
        c. Ctrl+x Ctrl+s to save  
        d. Ctrl+x Ctrl+c to quit the editor [Reference: http://mally.stanford.edu/~sr/computing/emacs.html]
+
+* Note: You can use Vim and Nano editors also.
+
 3. Inject seed urls using the following command, 
 /sparkler/bin/sparkler.sh inject -id 1 -sf seed-urls.txt
 4. Start the crawl job.

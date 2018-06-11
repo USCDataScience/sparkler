@@ -28,6 +28,10 @@ RUN groupadd --gid 1000 sparkler && \
 
 RUN apt-get update &&  apt-get install -y software-properties-common wget lsof emacs-nox
 
+RUN apt-get install -y vim
+
+RUN apt-get install -y nano
+
 RUN \
   echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
   apt-add-repository universe && \
@@ -66,6 +70,7 @@ COPY ./sparkler-ui/target/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkl
 RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
 
 # Fix permissions
+RUN chmod -R 777 /data/
 RUN chown -R sparkler:sparkler /data/
 
 USER sparkler
