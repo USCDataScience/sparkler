@@ -142,6 +142,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             }
             bufferOutStream.flush();
             byte[] rawData = bufferOutStream.toByteArray();
+            IOUtils.closeQuietly(bufferOutStream);
             FetchedData fetchedData = new FetchedData(rawData, urlConn.getContentType(), responseCode);
             resource.setStatus(ResourceStatus.FETCHED.toString());
             fetchedData.setResource(resource);
