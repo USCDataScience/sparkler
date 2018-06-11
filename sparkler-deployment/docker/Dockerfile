@@ -70,7 +70,6 @@ COPY ./sparkler-ui/target/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkl
 RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
 
 # Fix permissions
-RUN chmod -R 777 /data/
 RUN chown -R sparkler:sparkler /data/
 
 USER sparkler
