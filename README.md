@@ -41,7 +41,7 @@ bash dockler.sh
        c. Ctrl+x Ctrl+s to save  
        d. Ctrl+x Ctrl+c to quit the editor [Reference: http://mally.stanford.edu/~sr/computing/emacs.html]
 
-* Note: You can use Vim and Nano editors also.
+* Note: You can use Vim and Nano editors also or use: echo -e "http://example1.com\nhttp://example2.com" >> seedfile.txt command.
 
 3. Inject seed urls using the following command, 
 /sparkler/bin/sparkler.sh inject -id 1 -sf seed-urls.txt
