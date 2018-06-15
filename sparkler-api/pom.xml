@@ -98,6 +98,11 @@
             <version>${solr.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>1.12</version>
+        </dependency>
+        <dependency>
             <groupId>edu.usc.irds.sparkler</groupId>
             <artifactId>sparkler-tests-base</artifactId>
             <version>${project.version}</version>
