@@ -40,6 +40,7 @@
         <!-- Copy template plugin to create a new plugin-->
         <module>template-plugin</module>
         <module>parser-html</module>
+        <module>fetcher-firefox</module>
     </modules>
 
     <properties>
@@ -129,4 +130,5 @@
             </plugins>
         </pluginManagement>
     </build>
+    <name>sparkler-plugins</name>
 </project>

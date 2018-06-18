@@ -1,32 +1,32 @@
 package edu.usc.irds.sparkler.plugin;
 
-import edu.usc.irds.sparkler.AbstractExtensionPoint;
-import edu.usc.irds.sparkler.Parser;
 import java.io.InputStream;
 import org.apache.tika.metadata.Metadata;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.pf4j.Extension;
+import edu.usc.irds.sparkler.AbstractExtensionPoint;
+import edu.usc.irds.sparkler.MetadataParser;
 
-/**
- * Created by tg on 12/19/17. A plugin Template
- */
 @Extension
-public class HtmlParser extends AbstractExtensionPoint implements Parser {
+public class HtmlParser extends AbstractExtensionPoint implements MetadataParser {
 
     public int add(int op1, int op2) {
+
         ////Dummy plugin method
         return op1 + op2;
     }
 
-    @Override
-    public Metadata parse(InputStream content, Metadata meta) throws Exception {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        
-        meta.add("html", "html parse test");
-        return meta;
-    }
+    public Metadata parseMetadata(InputStream content, Metadata meta) throws Exception {
 
-    @Override
-    public Metadata parse(String content, Metadata meta) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String url = meta.get("resourceName");
+        String charsetName = meta.get("Content-Encoding");
+        Document doc = Jsoup.parse(content, charsetName, url);
+        String body = doc.body().html();
+
+        meta.add("body", body);
+        meta.add("html", doc.outerHtml());
+
+        return meta;
     }
 }

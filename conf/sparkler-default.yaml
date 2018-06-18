@@ -100,7 +100,8 @@ plugins.active:
     - urlfilter-regex
     - urlfilter-samehost
 #    - fetcher-jbrowser
-#    - fetcher-htmlunit
+    - fetcher-firefox
+#   - fetcher-htmlunit
     - parser-html
 
 # All Plugins are listed under this tree
@@ -117,3 +118,5 @@ plugins:
     # Configuration Properties
     socket.timeout: 3000
     connect.timeout: 3000
+  fetcher.firefox:
+    geckodriver: conf/geckodriver

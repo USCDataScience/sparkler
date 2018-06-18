@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html amp xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <script async src="https://cdn.ampproject.org/v0.js"></script>
+        <title>Articles</title>
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <b>TODO write content</b>
+        <div>TODO write content</div>
+        <div th:each="page: ${pages}">
+        <!--<div th:text="${test}">t</div>-->
+        <div th:utext="${page.url}">t</div>
+        </div>
+    </body>
+</html>

@@ -56,3 +56,4 @@ felix-cache/
 
 tmp*
 workspace*
+/sparkler-plugins/fetcher-firefox/nbproject/

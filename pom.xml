@@ -81,6 +81,30 @@
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
             </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <tasks> 
+                                <!--<copy file="${basedir}/geckodriver" tofile="${project.build.directory}/conf/geckodriver" />-->
+                               
+                                <apply executable="cp">
+                                    <srcfile/>
+                                    <targetfile/>
+                                    <fileset dir="${basedir}" includes="geckodriver"/>
+                                    <globmapper from="geckodriver" to="${basedir}/build/conf/geckodriver"/>
+                                </apply>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -150,5 +174,5 @@
             <url>http://github.com/thammegowda/</url>
         </developer>
     </developers>
-
+    <name>sparkler-parent</name>
 </project>

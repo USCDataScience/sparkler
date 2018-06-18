@@ -17,6 +17,5 @@ import org.apache.tika.metadata.Metadata;
 public interface Parser extends ExtensionPoint {
     
     Metadata parse(InputStream content, Metadata meta) throws Exception;
-    Metadata parse(String content, Metadata meta) throws Exception;
     
 }

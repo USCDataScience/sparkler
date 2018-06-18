@@ -1,0 +1,20 @@
+{
+    "elements": {},
+    "attributes": {
+        "th:text": {
+            "context": "title"
+        },
+        "amp": {
+            "context": "html"
+        },
+        "th:utext": {
+            "context": "div"
+        },
+        "th:each": {
+            "context": "div"
+        },
+        "th:attr": {
+            "context": "link"
+        }
+    }
+}

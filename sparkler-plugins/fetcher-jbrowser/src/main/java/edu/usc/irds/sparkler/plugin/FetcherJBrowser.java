@@ -38,7 +38,7 @@ import java.util.LinkedHashMap;
 @Extension
 public class FetcherJBrowser extends FetcherDefault {
 
-    private static final Integer DEFAULT_TIMEOUT = 2000;
+    private static final Integer DEFAULT_TIMEOUT = 7000;
     private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
     private LinkedHashMap<String, Object> pluginConfig;
     private JBrowserDriver driver;

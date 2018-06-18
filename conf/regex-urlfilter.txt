@@ -37,6 +37,7 @@
 
 # accept any HTTP URL
 +^https?://
+#+^https://www.hydroone.com/about/corporate-information/our-stories/
 
 # reject the rest
 -.
