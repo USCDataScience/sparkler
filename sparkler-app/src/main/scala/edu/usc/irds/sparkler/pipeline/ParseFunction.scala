@@ -18,106 +18,134 @@
 package edu.usc.irds.sparkler.pipeline
 
 import java.io.ByteArrayInputStream
-import java.text.{ParseException, SimpleDateFormat}
+import java.text.{ ParseException, SimpleDateFormat }
 import java.util
 import java.util.Date
 
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.model.{CrawlData, ParsedData}
+import edu.usc.irds.sparkler.model.{ SparklerJob, CrawlData, ParsedData }
 import org.apache.commons.io.IOUtils
 import org.apache.tika.metadata.Metadata
 import org.apache.tika.parser.AutoDetectParser
-import org.apache.tika.sax.{BodyContentHandler, LinkContentHandler, WriteOutContentHandler}
+import org.apache.tika.sax.{ BodyContentHandler, LinkContentHandler, WriteOutContentHandler }
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-/**
-  * This is a transformation function for transforming raw data from crawler to parsed data
-  */
-object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable with Loggable {
+import edu.usc.irds.sparkler.{ OutlinkParser, MetadataParser, HeaderParser, TextExtractParser }
+import edu.usc.irds.sparkler.util.ParserDefault
+import edu.usc.irds.sparkler.service.PluginService
 
-  override def apply(data: CrawlData): (ParsedData) = {
+/**
+ * This is a transformation function for transforming raw data from crawler to parsed data
+ */
+object ParseFunction extends ((SparklerJob, CrawlData) => (ParsedData)) with Serializable with Loggable {
+
+  override def apply(job: SparklerJob, data: CrawlData): (ParsedData) = {
     val parseData = new ParsedData()
     var stream = new ByteArrayInputStream(data.fetchedData.getContent)
-    val linkHandler = new LinkContentHandler()
-    val parser = new AutoDetectParser()
-    var meta = new Metadata()
-    val outHandler = new WriteOutContentHandler()
-    val contentHandler = new BodyContentHandler(outHandler)
     LOG.info("PARSING  {}", data.fetchedData.getResource.getUrl)
+    var defaultParser = new ParserDefault()
 
     // parse outlinks
+    parseData.outlinks = parseOutlink(data, job, defaultParser)
+
+    // Parse Text
+    //parse main text content
+    parseData.extractedText = parseExtractText(data, job, defaultParser)
+
+    // Parse Metadata
+    parseData.metadata = parseMetadata(data, job, defaultParser)
+
+    // parse headers
+
+    val headerData = data.fetchedData.getHeaders
+    if (headerData.containsKey("Location")) { // redirect
+      val redirectUrls = headerData.get("Location")
+      parseData.outlinks ++= redirectUrls.asScala.filter(u => u != null && !u.isEmpty)
+    }
+
+    parseData.headers = parseHeader(data, job, defaultParser, headerData.asScala.toMap)
+    parseData
+  }
+
+  def parseOutlink(data: CrawlData, job: SparklerJob, defaultParser: ParserDefault): (Set[String]) = {
+
+    var stream = new ByteArrayInputStream(data.fetchedData.getContent)
+    val outlinkParser: scala.Option[OutlinkParser] = PluginService.getExtension(classOf[OutlinkParser], job)
+    var outlinks: Set[String] = Set.empty[String]
     try {
       // Parse OutLinks
-      meta.set("resourceName", data.fetchedData.getResource.getUrl)
-      parser.parse(stream, linkHandler, meta)
-      parseData.outlinks = linkHandler.getLinks.asScala.map(_.getUri.trim).filter(!_.isEmpty).toSet
+      val url = data.fetchedData.getResource.getUrl
+
+      outlinkParser match {
+        case Some(p) => outlinks = p.parseOutlink(stream, url).asScala.map(_.getUri.trim).filter(!_.isEmpty).toSet
+        case None => outlinks = defaultParser.parseOutlink(stream, url).asScala.map(_.getUri.trim).filter(!_.isEmpty).toSet
+      }
     } catch {
       case e: Throwable =>
         LOG.warn("PARSING-OUTLINKS-ERROR {}", data.fetchedData.getResource.getUrl)
         LOG.warn(e.getMessage, e)
     } finally { IOUtils.closeQuietly(stream) }
+    outlinks
+  }
 
-    //parse main text content
+  def parseExtractText(data: CrawlData, job: SparklerJob, defaultParser: ParserDefault): (String) = {
+    val textExtractParser: scala.Option[TextExtractParser] = PluginService.getExtension(classOf[TextExtractParser], job)
+    var extractedText: String = ""
+    var metadata: Metadata = new Metadata()
+    var stream = new ByteArrayInputStream(data.fetchedData.getContent)
     try {
-      meta = new Metadata
-      meta.set("resourceName", data.fetchedData.getResource.getUrl)
-      // Parse Text
-      stream = new ByteArrayInputStream(data.fetchedData.getContent)
-      parser.parse(stream, contentHandler, meta)
-      parseData.extractedText = outHandler.toString
-      parseData.metadata = meta
+      metadata.set("resourceName", data.fetchedData.getResource.getUrl)
+
+      textExtractParser match {
+        case Some(tE) => extractedText = tE.parseText(stream, metadata)
+        case None => extractedText = defaultParser.parseText(stream, metadata)
+      }
     } catch {
       case e: Throwable =>
         LOG.warn("PARSING-CONTENT-ERROR {}", data.fetchedData.getResource.getUrl)
         LOG.warn(e.getMessage, e)
-        parseData
+
+    } finally { IOUtils.closeQuietly(stream) }
+    extractedText
+  }
+
+  def parseMetadata(data: CrawlData, job: SparklerJob, defaultParser: ParserDefault): (Metadata) = {
+    val metadataParser: scala.Option[MetadataParser] = PluginService.getExtension(classOf[MetadataParser], job)
+    var stream = new ByteArrayInputStream(data.fetchedData.getContent)
+    var metadata = new Metadata()
+
+    try {
+      val url = data.fetchedData.getResource.getUrl
+
+      metadataParser match {
+        case Some(m) => metadata = m.parseMetadata(stream, metadata)
+        case None => metadata = defaultParser.parseMetadata(stream, metadata)
+      }
+    } catch {
+      case e: Throwable =>
+        LOG.warn("PARSING-CONTENT-ERROR {}", data.fetchedData.getResource.getUrl)
+        LOG.warn(e.getMessage, e)
     } finally { IOUtils.closeQuietly(stream) }
 
-    // parse headers
-    val headers = data.fetchedData.getHeaders
-    if (headers.containsKey("Location")) {   // redirect
-      val redirectUrls = headers.get("Location")
-      parseData.outlinks ++= redirectUrls.asScala.filter(u => u != null && !u.isEmpty)
-    }
-    parseData.headers = parseHeaders(headers)
-    parseData
+    metadata
   }
 
-  def parseHeaders(headers: util.Map[String, util.List[String]]): Map[String, AnyRef] = {
-    val dateHeaders = Set("Date", "Last-Modified", "Expires")
-    val intHeaders = Set("ContentLength")
-    val dateFmt = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz")
+  def parseHeader(data: CrawlData, job: SparklerJob, default: ParserDefault, hData: Map[String, util.List[String]]): (Map[String, AnyRef]) = {
 
-    val result = mutable.Map[String, AnyRef]()
-    for (name <- headers.keySet()) {
-      val values = headers.get(name)
-      var parsed: AnyRef = values
-      if (values.size() == 1){
-        val value = values.get(0)
-        parsed = value
-        try {
-          if (dateHeaders contains name) {
-            parsed = parseDate(value)
-          } else if (intHeaders contains name) {
-            parsed = new java.lang.Long(value.toLong)
-          }
-        } catch {
-          case e: Exception => LOG.debug(e.getMessage, e)
-        } finally {
-          result(name) = parsed
-        }
+    val headerParser: scala.Option[HeaderParser] = PluginService.getExtension(classOf[HeaderParser], job)
+    var headers: scala.collection.immutable.Map[String, AnyRef] = Map.empty
+    try {
+      headerParser match {
+        case Some(h) => headers = h.parseHeader(hData).asScala.mapValues(_.asInstanceOf[AnyRef]).toMap
+        case None => headers = default.parseHeader(hData).asScala.mapValues(_.asInstanceOf[AnyRef]).toMap
       }
-    }
-    result.toMap
-  }
+    } catch {
+      case e: Exception => LOG.debug(e.getMessage, e)
+    } finally { headers }
 
-  /**
-    * Parse date string as per RFC7231 https://tools.ietf.org/html/rfc7231#section-7.1.1.1
-    */
-  val httpDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz")
-  @throws[ParseException] //but be aware of errors
-  def parseDate(dateStr:String): Date = httpDateFormat.parse(dateStr.trim)
+    headers
+  }
 }
