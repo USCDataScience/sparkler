@@ -11,11 +11,7 @@ import edu.usc.irds.sparkler.MetadataParser;
 @Extension
 public class HtmlParser extends AbstractExtensionPoint implements MetadataParser {
 
-    public int add(int op1, int op2) {
-
-        ////Dummy plugin method
-        return op1 + op2;
-    }
+ 
 
     public Metadata parseMetadata(InputStream content, Metadata meta) throws Exception {
 

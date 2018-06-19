@@ -19,7 +19,7 @@ public class MyPluginTest {
         // Dummy Test case for plugin method
         HtmlParser plugin = TestUtils.newInstance(HtmlParser.class, "pluginId");
 
-        String url = "https://www.hydroone.com/newsroom/articles/valentines-day-energy-saving-tips";
+        String url = "https://en.wikipedia.org/wiki/Main_Page";
         String charsetName = "UTF-8";
         InputStream content = new URL(url).openStream();
         Metadata metadata = new Metadata();
@@ -27,8 +27,5 @@ public class MyPluginTest {
         metadata.set("resourceName", url);
         metadata.set("Content-Encoding", charsetName);
         plugin.parseMetadata(content, metadata);
-
-        assertEquals(3, plugin.add(1, 2));
-        assertEquals(-1, plugin.add(1, -2));
     }
 }

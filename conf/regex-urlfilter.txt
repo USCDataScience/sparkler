@@ -36,8 +36,7 @@
 -.*(/[^/]+)/[^/]+\1/[^/]+\1/
 
 # accept any HTTP URL
-#+^https?://
-+^https://www.hydroone.com
++^https?://
 
 # reject the rest
 -.
