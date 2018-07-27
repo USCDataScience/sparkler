@@ -44,6 +44,9 @@ sparkler-job-**
 .cache-main
 .settings/
 
+# Netbeans-IDE specific
+*nbactions.xml
+
 . auto generated files
 sjob-**
 
