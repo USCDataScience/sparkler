@@ -30,7 +30,7 @@ RUN groupadd --gid 1000 sparkler && \
 
 #RUN apt-get install -y vim
 
-RUN apt-get install -y nano
+RUN apt-get update && apt-get install -y nano
 
 #RUN \
 #  echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
