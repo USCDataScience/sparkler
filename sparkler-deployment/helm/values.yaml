@@ -1,0 +1,54 @@
+# Default values for sparkler.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+solrCluster:
+  port: 32080
+  solr:
+    storage:
+      className: manual
+      capacity: 5Gi
+      path: /data/solr
+  configset:
+    storage:
+      className: manual
+      capacity: 1Gi
+      path: /data/solr-configset
+  image:
+    name: solr
+    dockerTag: latest
+  settings:
+    replicaCount: 1
+
+zookeeperCluster:
+  id: 1
+  port: 32181
+  storage:
+    className: manual
+    capacity: 5Gi
+    path: /data/zookeeper
+  image:
+    name: zookeeper
+    dockerTag: latest
+
+sparklerCluster:
+  image:
+    name: buggtb/sparkler-standalone
+    dockerTag: latest
+  settings:
+    replicaCount: 3
+
+sparklerInit:
+  image:
+    name: buggtb/sparkler-init
+    dockerTag: latest
+
+
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
