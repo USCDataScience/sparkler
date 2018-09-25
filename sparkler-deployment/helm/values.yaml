@@ -33,14 +33,14 @@ zookeeperCluster:
 
 sparklerCluster:
   image:
-    name: buggtb/sparkler-standalone
+    name: uscdatascience/sparkler-standalone
     dockerTag: latest
   settings:
     replicaCount: 3
 
 sparklerInit:
   image:
-    name: buggtb/sparkler-init
+    name: uscdatascience/sparkler-init
     dockerTag: latest
 
 
