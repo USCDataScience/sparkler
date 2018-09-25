@@ -13,3 +13,7 @@ after_script:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker build . -t uscdatascience/sparkler-standalone -f sparkler-deployment/docker-k8s/Dockerfile
   - docker push uscdatascience/sparkler-standalone
+  - docker build . -t uscdatascience/sparkler -f sparkler-deployment/docker/Dockerfile
+  - docker push uscdatascience/sparkler
+  - docker build . -t uscdatascience/sparkler-init -f sparkler-deployment/sparkler-init/Dockerfile
+  - docker push uscdatascience/sparkler-init
