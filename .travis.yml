@@ -11,5 +11,5 @@ before_install:
 
 after_script:  
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker build . -t buggtb/sparkler-standalone -f sparkler-deployment/docker-k8s/Dockerfile
-  - docker push buggtb/sparkler-standalone
+  - docker build . -t uscdatascience/sparkler-standalone -f sparkler-deployment/docker-k8s/Dockerfile
+  - docker push uscdatascience/sparkler-standalone
