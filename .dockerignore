@@ -22,3 +22,4 @@
 # except these
 !build
 !sparkler-ui/target/*.war
+!conf
