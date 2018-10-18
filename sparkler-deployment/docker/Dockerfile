@@ -21,39 +21,21 @@
 # Build command:
 #    docker build -t sparkler-local -f sparkler-deployment/docker/Dockerfile .
 
-FROM ubuntu:16.04
+FROM openjdk:8
 
 RUN groupadd --gid 1000 sparkler && \
    useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
 
-RUN apt-get update &&  apt-get install -y software-properties-common wget lsof emacs-nox
+RUN apt-get update && \
+    apt-get install -qq -y --fix-missing software-properties-common wget lsof emacs-nox vim nano openjfx
 
-RUN apt-get install -y vim
-
-RUN apt-get install -y nano
-
-RUN \
-  echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-  apt-add-repository universe && \
-  add-apt-repository -y ppa:webupd8team/java && \
-  apt-get update && \
-  apt-get install -y oracle-java8-installer && \
-  rm -rf /var/lib/apt/lists/* && \
-  rm -rf /var/cache/oracle-jdk8-installer
-
-# needed by the Jbrowser
-RUN apt-get update && apt-get install -y --fix-missing openjfx
-
-
-# Define commonly used JAVA_HOME variable
-ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
 
 
 # Define working directory.
 WORKDIR /data
 
 ## Setup Solr
-RUN wget http://archive.apache.org/dist/lucene/solr/7.1.0/solr-7.1.0.tgz -O /data/solr.tgz && \
+RUN wget -nv http://archive.apache.org/dist/lucene/solr/7.1.0/solr-7.1.0.tgz -O /data/solr.tgz && \
     cd /data/ && tar xzf /data/solr.tgz && \
     mv /data/solr-* /data/solr && rm /data/solr.tgz
 
