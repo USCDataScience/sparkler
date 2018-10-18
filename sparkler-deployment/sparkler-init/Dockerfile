@@ -15,11 +15,16 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+# Pull base image.
 
-# ignore everything
-*
+# NOTE: always run docker build command from root of sparkler project
+# Build command:
+#    docker build -t sparkler-local -f sparkler-deployment/docker/Dockerfile .
 
-# except these
-!build
-!sparkler-ui/target/*.war
-!conf
+FROM ubuntu:bionic
+
+COPY ./conf/solr/crawldb /crawldb
+
+RUN ["mkdir","/solr"]
+ 
+CMD ["cp", "-r", "/crawldb", "/solr"]
