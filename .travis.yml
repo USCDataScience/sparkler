@@ -9,6 +9,10 @@ before_install:
   - export M2_HOME=/usr/local/maven
   - export MAVEN_OPTS="-Dmaven.repo.local=$HOME/.m2/repository -Xms1024m -Xmx3072m -XX:PermSize=512m"
 
+cache:
+  directories:
+  - $HOME/.m2
+
 after_script:  
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker build . -t uscdatascience/sparkler-standalone -f sparkler-deployment/docker-k8s/Dockerfile
