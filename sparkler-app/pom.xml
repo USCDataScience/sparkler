@@ -306,4 +306,77 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>sbt</id>
+
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>net.alchim31.maven</groupId>
+                                <artifactId>scala-maven-plugin</artifactId>
+                                <executions>
+                                    <execution>
+                                        <id>scala-compile-first</id>
+                                        <phase>none</phase>
+                                        <goals>
+                                            <goal>add-source</goal>
+                                            <goal>compile</goal>
+                                        </goals>
+                                    </execution>
+                                    <execution>
+                                        <id>scala-test-compile</id>
+                                        <phase>none</phase>
+                                        <goals>
+                                            <goal>testCompile</goal>
+                                        </goals>
+                                    </execution>
+                                </executions>
+                            </plugin>
+                            <plugin>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>exec-maven-plugin</artifactId>
+                                <version>1.6.0</version>
+                                <executions>
+                                    <execution>
+                                        <phase>process-resources</phase>
+                                        <goals>
+                                            <goal>exec</goal>
+                                        </goals>
+                                    </execution>
+                                </executions>
+                                <configuration>
+                                    <executable>sbt</executable>
+                                    <!-- optional -->
+                                    <workingDirectory>.</workingDirectory>
+                                    <arguments>
+                                        <argument>package</argument>
+                                    </arguments>
+                                </configuration>
+                            </plugin>
+                            <plugin>
+                                <artifactId>maven-antrun-plugin</artifactId>
+                                <executions>
+                                    <execution>
+                                        <phase>process-resources</phase>
+                                        <configuration>
+                                            <tasks>
+
+                                                <copy todir="target/classes">
+                                                    <fileset dir="target/scala-2.11/classes/"/>
+                                                </copy>
+
+                                            </tasks>
+                                        </configuration>
+                                        <goals>
+                                            <goal>run</goal>
+                                        </goals>
+                                    </execution>
+                                </executions>
+                            </plugin>
+                        </plugins>
+                    </build>
+        </profile>
+
+    </profiles>
 </project>
