@@ -36,6 +36,7 @@
         <module>urlfilter-regex</module>
         <module>fetcher-jbrowser</module>
         <module>fetcher-htmlunit</module>
+        <module>fetcher-chrome</module>
         <module>urlfilter-samehost</module>
         <!-- Copy template plugin to create a new plugin-->
         <module>template-plugin</module>

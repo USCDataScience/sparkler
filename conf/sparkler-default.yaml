@@ -101,6 +101,7 @@ plugins.active:
     - urlfilter-samehost
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
+#    - fetcher-webdriver
 
 # All Plugins are listed under this tree
 plugins:
@@ -116,3 +117,5 @@ plugins:
     # Configuration Properties
     socket.timeout: 3000
     connect.timeout: 3000
+  # fetcher.chrome:
+  #  chrome.dns: "http://browserless:3000/webdriver"
