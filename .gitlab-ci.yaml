@@ -1,0 +1,12 @@
+stages:
+  - build
+
+build-java8:
+  stage: build
+  image: maven:3-jdk-8
+  script: "mvn install -B"
+
+build-java10:
+  stage: build
+  image: maven:3-jdk-11
+  script: "mvn install -B -P sbt"
