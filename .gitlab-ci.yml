@@ -9,4 +9,4 @@ build-java8:
 build-java10:
   stage: build
   image: maven:3-jdk-11
-  script: "mvn install -B -P sbt"
+  script: "mvn install -B -P sbt -DskipTests"
