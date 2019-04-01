@@ -4,12 +4,15 @@ stages:
 build-java8:
   stage: build
   image: maven:3-jdk-8-alpine
-  script: "mvn install -B"
+  script: "mvn install -B && tar cvfz sparkler-jdk8.tgz ./build/"
+  artifacts:
+    paths:
+    - ./sparkler-jdk8.tgz
 
 build-java10:
   stage: build
   image: maven:3-jdk-11
-  script: "apt update && apt install -y apt-transport-https && echo 'deb https://dl.bintray.com/sbt/debian /' | tee -a /etc/apt/sources.list.d/sbt.list && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 && apt update && apt install -y sbt && mvn install -B -P sbt -DskipTests && tar cvfz sparkler.tgz ./build/"
+  script: "apt update && apt install -y apt-transport-https && echo 'deb https://dl.bintray.com/sbt/debian /' | tee -a /etc/apt/sources.list.d/sbt.list && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 && apt update && apt install -y sbt && mvn install -B -P sbt -DskipTests && tar cvfz sparkler-jdk10.tgz ./build/"
   artifacts:
     paths:
-    - ./sparkler.tgz
+    - ./sparkler-jdk10.tgz
