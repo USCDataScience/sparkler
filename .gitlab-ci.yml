@@ -9,7 +9,7 @@ services:
 build-java8:
   stage: build
   image: maven:3-jdk-8-alpine
-  script: "mvn install -B && tar cvfz sparkler-jdk8.tgz ./build/"
+  script: "mvn install -B && tar cvfz sparkler-jdk8.tgz ./sparkler-app/target ./resources ./bin ./conf"
   artifacts:
     paths:
     - ./sparkler-jdk8.tgz
