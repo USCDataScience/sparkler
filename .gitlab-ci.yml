@@ -24,7 +24,8 @@ build-master:
   dependencies:
     - build-java8
   script:
-    - tar xvfz sparkler-jdk8.tgz
+    - mkdir ./build
+    - tar xvfz sparkler-jdk8.tgz -C ./build
     - docker build --pull -t "$CI_REGISTRY_IMAGE" -f sparkler-deployment/docker/Dockerfile .
     - docker push "$CI_REGISTRY_IMAGE"
   only:
@@ -38,7 +39,8 @@ build:
   dependencies:
     - build-java8
   script:
-    - tar xvfz sparkler-jdk8.tgz
+    - mkdir ./build
+    - tar xvfz sparkler-jdk8.tgz -C ./build
     - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" -f sparkler-deployment/docker/Dockerfile .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
   except:
