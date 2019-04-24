@@ -35,7 +35,7 @@ RUN apt-get update && \
 WORKDIR /data
 
 ## Setup Solr
-RUN wget -nv http://archive.apache.org/dist/lucene/solr/7.1.0/solr-7.1.0.tgz -O /data/solr.tgz && \
+RUN wget -nv http://archive.apache.org/dist/lucene/solr/6.2.1/solr-6.2.1.tgz -O /data/solr.tgz && \
     cd /data/ && tar xzf /data/solr.tgz && \
     mv /data/solr-* /data/solr && rm /data/solr.tgz
 
