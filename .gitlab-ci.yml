@@ -1,6 +1,6 @@
 stages:
   - build
-
+  - package
 build-java8:
   stage: build
   image: maven:3-jdk-8-alpine
@@ -16,3 +16,35 @@ build-java10:
   artifacts:
     paths:
     - ./sparkler-jdk10.tgz
+
+image: docker:latest
+
+services:
+  - docker:dind
+
+build-master:
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  stage: package
+  dependencies: 
+    - build
+  script:
+    - tar xvfz sparkler-jdk8.tgz
+    - docker build --pull -t "$CI_REGISTRY_IMAGE" -f sparkler-deployment/docker/Dockerfile .
+    - docker push "$CI_REGISTRY_IMAGE"
+  only:
+    - master
+
+build:
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  stage: package
+  dependencies: 
+    - build
+  script:
+    - tar xvfz sparkler-jdk8.tgz
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" -f sparkler-deployment/docker/Dockerfile .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  except:
+    - master
+
