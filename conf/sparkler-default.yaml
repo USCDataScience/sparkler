@@ -86,7 +86,7 @@ plugins.bundle.directory: ${project.parent.basedir}${file.separator}${project.bu
 # List of activated plugins
 plugins.active:
     - urlfilter.regex
-    #- scorer.dd.svn
+    - scorer.dd.svn
     # - fetcher.jbrowser
 
 # All Plugins are listed under this tree

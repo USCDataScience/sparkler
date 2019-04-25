@@ -32,7 +32,7 @@ WORKDIR /data
 # add sparkler contents
 ADD ./build /data/sparkler
 ADD sparkler-deployment/docker/conf/sparkler-default.yaml /data/sparkler/conf/sparkler-default.yaml
-
+ADD sparkler-deployment/docker/conf/sparkler-default.yaml /data/sparkler/resources/sparkler-default.yaml
 # Fix permissions
 RUN chown -R sparkler:sparkler /data/
 
