@@ -23,26 +23,20 @@
 
 FROM openjdk:8
 
+WORKDIR /data
+
 RUN groupadd --gid 1000 sparkler && \
    useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
 
-RUN apt-get update && \
-    apt-get install -qq -y --fix-missing software-properties-common wget lsof emacs-nox vim nano openjfx
+RUN mkdir -p /data/sparkler/conf/solr
 
-
-
-# Define working directory.
-WORKDIR /data
-
-ADD ./build /data/sparkler
+ADD ./build/conf/solr /data/sparkler/conf/solr
 
 ## Setup Solr
 RUN wget -nv http://archive.apache.org/dist/lucene/solr/6.2.1/solr-6.2.1.tgz -O /data/solr.tgz && \
     cd /data/ && tar xzf /data/solr.tgz && \
-    mv /data/solr-* /data/solr && rm /data/solr.tgz
-
-# create solr core
-RUN /data/solr/bin/solr start && \
+    mv /data/solr-* /data/solr && rm /data/solr.tgz \
+    && /data/solr/bin/solr start && \
     /data/solr/bin/solr create_core -c crawldb -d /data/sparkler/conf/solr/crawldb/ && \
     /data/solr/bin/solr stop && chown -R sparkler:sparkler /data
 
