@@ -81,7 +81,7 @@ fetcher.headers:
 
 # Plugins Bundle directory. Configured through Maven.
 # Discouraged to Modify unless specifically required.
-plugins.bundle.directory: ${project.parent.basedir}${file.separator}${project.bundles.directory}
+plugins.bundle.directory: /data/sparkler/sparkler-app/bundles
 
 # List of activated plugins
 plugins.active:
