@@ -44,7 +44,7 @@ RUN wget -nv http://archive.apache.org/dist/lucene/solr/6.2.1/solr-6.2.1.tgz -O 
 # create solr core
 RUN /data/solr/bin/solr start && \
     /data/solr/bin/solr create_core -c crawldb -d /data/sparkler/conf/solr/crawldb/ && \
-    /data/solr/bin/solr stop
+    /data/solr/bin/solr stop && chown -R sparkler:sparkler /data
 
 # sparkler  ui with banana dashboard
 #COPY ./sparkler-ui/target/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkler
