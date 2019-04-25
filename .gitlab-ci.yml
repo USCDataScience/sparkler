@@ -26,8 +26,10 @@ build-master:
   script:
     - mkdir ./build
     - tar xvfz sparkler-jdk8.tgz -C ./build
-    - docker build --pull -t "$CI_REGISTRY_IMAGE" -f sparkler-deployment/docker/Dockerfile .
-    - docker push "$CI_REGISTRY_IMAGE"
+    - docker build --pull -t "$CI_REGISTRY_IMAGE/sparkler" -f sparkler-deployment/docker/Dockerfile .
+    - docker push "$CI_REGISTRY_IMAGE/sparkler"
+    - docker build --pull -t "$CI_REGISTRY_IMAGE/solr" -f sparkler-deployment/docker/Dockerfile.solr .
+    - docker push "$CI_REGISTRY_IMAGE/solr"
   only:
     - master
 
@@ -41,8 +43,10 @@ build:
   script:
     - mkdir ./build
     - tar xvfz sparkler-jdk8.tgz -C ./build
-    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" -f sparkler-deployment/docker/Dockerfile .
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - docker build --pull -t "$CI_REGISTRY_IMAGE/sparkler:$CI_COMMIT_REF_SLUG" -f sparkler-deployment/docker/Dockerfile .
+    - docker push "$CI_REGISTRY_IMAGE/sparkler:$CI_COMMIT_REF_SLUG"
+    - docker build --pull -t "$CI_REGISTRY_IMAGE/solr:$CI_COMMIT_REF_SLUG" -f sparkler-deployment/docker/Dockerfile.solr .
+    - docker push "$CI_REGISTRY_IMAGE/solr:$CI_COMMIT_REF_SLUG"
   except:
     - master
 
