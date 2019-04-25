@@ -34,6 +34,8 @@ RUN apt-get update && \
 # Define working directory.
 WORKDIR /data
 
+ADD ./build /data/sparkler
+
 ## Setup Solr
 RUN wget -nv http://archive.apache.org/dist/lucene/solr/6.2.1/solr-6.2.1.tgz -O /data/solr.tgz && \
     cd /data/ && tar xzf /data/solr.tgz && \
