@@ -41,7 +41,7 @@ RUN wget -nv http://archive.apache.org/dist/lucene/solr/6.2.1/solr-6.2.1.tgz -O 
     /data/solr/bin/solr stop && chown -R sparkler:sparkler /data
 
 # sparkler  ui with banana dashboard
-COPY ./build/sparkler-ui/target/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkler
+COPY ./build/sparkler-ui/sparkler-dashboard/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkler
 RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
 
 USER sparkler
