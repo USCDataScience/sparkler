@@ -20,6 +20,8 @@ package edu.usc.irds.sparkler.plugin;
 
 import edu.usc.irds.sparkler.*;
 import edu.usc.irds.sparkler.plugin.ddsvn.ApacheHttpRestClient;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +102,14 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
     public Double score(String extractedText) throws Exception {
         LOG.info(this.uriClassifier);
         LOG.info(extractedText.replace("\"", "").replace("\n", ""));
-        String response = this.restClient.httpPostRequest(this.uriClassifier, extractedText)
+        JSONObject json = new JSONObject();
+        JSONArray array = new JSONArray();
+        JSONObject item = new JSONObject();
+        item.put("model", jobContext.getId());
+        item.put("content", extractedText);
+        array.add(item);
+        json.put("score", array);
+        String response = this.restClient.httpPostRequest(this.uriClassifier, json.toJSONString())
             .replace("\"", "").replace("\n", "");
 
         String scoreString = this.classes.get(response);
