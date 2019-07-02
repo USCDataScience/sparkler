@@ -85,7 +85,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Embed-Dependency>httpclient-osgi,httpcore-osgi</Embed-Dependency>
+                        <Embed-Dependency>httpclient-osgi,httpcore-osgi,json-simple</Embed-Dependency>
                         <Bundle-Name>{project.groupId}:${project.artifactId}</Bundle-Name>
                         <Bundle-SymbolicName>scorer.dd.svn</Bundle-SymbolicName>
                         <Bundle-Version>${project.parent.version}</Bundle-Version>
