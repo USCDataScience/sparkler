@@ -108,7 +108,6 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
         item.put("content", extractedText);
         array.add(item);
         json.put("score", array);
-        LOG.info(json.toJSONString());
         String response = this.restClient.httpPostJSONRequest(this.uriClassifier, json.toJSONString())
             .replace("\"", "").replace("\n", "");
 
