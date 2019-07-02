@@ -91,8 +91,8 @@
                         <Bundle-Version>${project.parent.version}</Bundle-Version>
                         <Bundle-Activator>edu.usc.irds.sparkler.plugin.DdSvnScorerActivator</Bundle-Activator>
                         <Import-Package>org.osgi.framework,edu.usc.irds.sparkler,edu.usc.irds.sparkler.util,org.slf4j,
-				    org.apache.hadoop.conf,org.apache.http.*,javax.*</Import-Package>
-                        <Export-Package>org.apache.commons.logging.*,javax.*,org.slf4j.*</Export-Package>
+				    org.apache.hadoop.conf,org.apache.http.*,javax.*,org.json.*</Import-Package>
+                        <Export-Package>org.apache.commons.logging.*,javax.*,org.slf4j.*,org.json.*</Export-Package>
                     </instructions>
                     <buildDirectory>${project.parent.parent.basedir}${file.separator}${project.bundles.directory}</buildDirectory>
                 </configuration>
