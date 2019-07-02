@@ -101,7 +101,6 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
     @Override
     public Double score(String extractedText) throws Exception {
         LOG.info(this.uriClassifier);
-        LOG.info(extractedText.replace("\"", "").replace("\n", ""));
         JSONObject json = new JSONObject();
         JSONArray array = new JSONArray();
         JSONObject item = new JSONObject();
@@ -109,6 +108,7 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
         item.put("content", extractedText);
         array.add(item);
         json.put("score", array);
+        LOG.info(json.toJSONString());
         String response = this.restClient.httpPostRequest(this.uriClassifier, json.toJSONString())
             .replace("\"", "").replace("\n", "");
 
