@@ -10,6 +10,7 @@ import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -65,6 +66,19 @@ public class ApacheHttpRestClient {
         HttpPost httpPost = new HttpPost(uri);
         httpPost.addHeader("Content-Type", "text/plain");
         HttpEntity reqEntity = EntityBuilder.create().setText(URLEncoder.encode(extractedText, "UTF-8")).build();
+        httpPost.setEntity(reqEntity);
+
+        String responseBody = httpClient.execute(httpPost, this.responseHandler);
+
+        return responseBody;
+    }
+
+    public String httpPostJSONRequest(String uriString, String extractedText) throws IOException {
+        URI uri = URI.create(uriString);
+
+        HttpPost httpPost = new HttpPost(uri);
+        httpPost.addHeader("Content-Type", "application/json");
+        StringEntity reqEntity = new StringEntity(extractedText);
         httpPost.setEntity(reqEntity);
 
         String responseBody = httpClient.execute(httpPost, this.responseHandler);
