@@ -28,7 +28,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR="$DIR/.."
 
 docker_tag="sparkler-local"
-remote_image="uscdatascience/sparkler:0.1"
+remote_image="uscdatascience/sparkler:latest"
 solr_port=8983
 solr_url="http://localhost:$solr_port/solr"
 spark_ui_port=4041
