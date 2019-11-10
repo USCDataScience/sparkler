@@ -26,7 +26,7 @@ FROM openjdk:8
 RUN groupadd --gid 1000 sparkler && \
    useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
 
-RUN apt-get update && apt-get install -y -qq --fix-missing openjfx nano
+RUN apt-get update && apt-get install -y -qq --fix-missing software-properties-common openjfx nano
 
 
 # Define working directory.

@@ -1,207 +1,61 @@
----
 apiVersion: v1
 data:
   solrHome: /store/data
   solrHost: solr-service
   solrLogsDir: /store/logs
   solrPort: "32080"
-  zkHost: zookeeper-service:32181
 kind: ConfigMap
 metadata:
   name: solr-config
 ---
-apiVersion: v1
-data:
-  zooDataDir: /store/data
-  zooDataLogDir: /store/datalog
-  zooLogDir: /store/logs
-  zooMyId: "1"
-  zooPort: "32181"
-kind: ConfigMap
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: zookeeper-config
----
- apiVersion: extensions/v1beta1
- kind: Deployment
- metadata:
-   name: sparkler
- spec:
-   replicas: 3
-   template:
-     metadata:
-       labels:
-         app: sparkler
-     spec:
-       containers:
-         - name: sparkler
-           image: buggtb/sparkler-standalone
-           command: ["tail", "-f", "/dev/null"]
----
- apiVersion: v1
- kind: PersistentVolume
- metadata:
-   name: zookeeper-volume
- spec:
-   storageClassName: manual
-   accessModes:
-     - ReadWriteOnce
-   capacity:
-     storage: 5Gi
-   hostPath:
-     path: /data/zookeeper/
----
- apiVersion: v1
- kind: PersistentVolume
- metadata:
-   name: solr-volume
- spec:
-   storageClassName: manual
-   accessModes:
-     - ReadWriteOnce
-   capacity:
-     storage: 5Gi
-   hostPath:
-     path: /data/solr
----
- apiVersion: v1
- kind: PersistentVolume
- metadata:
-   name: solr-configset-volume
- spec:
-   storageClassName: manual
-   accessModes:
-     - ReadWriteOnce
-   capacity:
-     storage: 1Gi
-   hostPath:
-     path: /data/solr-configset
----
- kind: PersistentVolumeClaim
- apiVersion: v1
- metadata:
-   name: task-solr-configset-pv-claim
- spec:
-   storageClassName: manual
-   accessModes:
-     - ReadWriteOnce
-   resources:
-     requests:
-       storage: 1Gi
----
- kind: PersistentVolumeClaim
- apiVersion: v1
- metadata:
-   name: task-zookeeper-pv-claim
- spec:
-   storageClassName: manual
-   accessModes:
-     - ReadWriteOnce
-   resources:
-     requests:
-       storage: 1Gi
----
- kind: PersistentVolumeClaim
- apiVersion: v1
- metadata:
-   name: task-solr-pv-claim
- spec:
-   storageClassName: manual
-   accessModes:
-     - ReadWriteOnce
-   resources:
-     requests:
-       storage: 1Gi
----
-apiVersion: apps/v1beta2
-kind: StatefulSet
-metadata:
-  name: zookeeper-ss
+  name: sparkler
 spec:
+  replicas: 3
   selector:
     matchLabels:
-      app: zookeeper-app # has to match .spec.template.metadata.labels
-  serviceName: "zookeeper-service"
-  replicas: 1 # by default is 1
+      app: sparkler
   template:
     metadata:
       labels:
-        app: zookeeper-app # has to match .spec.selector.matchLabels
+        app: sparkler
     spec:
-      terminationGracePeriodSeconds: 10
-      volumes:
-      - name: volzookeeper
-        persistentVolumeClaim:
-          claimName: task-zookeeper-pv-claim
       containers:
-      - name: zookeeper
-        image: zookeeper:latest
-        volumeMounts:
-        - name: volzookeeper
-          mountPath: /store
-        ports:
-        - name: zookeeper-port
-          containerPort: 2181
-        env:
-          - name: ZOO_MY_ID
-            valueFrom:
-              configMapKeyRef:
-                name: zookeeper-config
-                key: zooMyId
-          - name: ZOO_LOG_DIR
-            valueFrom:
-              configMapKeyRef:
-                name: zookeeper-config
-                key: zooLogDir
-          - name: ZOO_DATA_DIR
-            valueFrom:
-              configMapKeyRef:
-                name: zookeeper-config
-                key: zooDataDir
-          - name: ZOO_DATA_LOG_DIR
-            valueFrom:
-              configMapKeyRef:
-                name: zookeeper-config
-                key: zooDataLogDir
-          - name: ZOO_PORT
-            valueFrom:
-              configMapKeyRef:
-                name: zookeeper-config
-                key: zooPort
-      initContainers:
-      - name: init-zookeeper-data
-        image: busybox
-        command: ['sh', '-c', 'mkdir -p /store/data && chown 1000:1000 /store/data']
-        volumeMounts:
-        - name: volzookeeper
-          mountPath: /store
-      - name: init-zookeeper-logs
-        image: busybox
-        command: ['sh', '-c', 'mkdir -p /store/logs && chown 1000:1000 /store/logs']
-        volumeMounts:
-        - name: volzookeeper
-          mountPath: /store
-      - name: init-zookeeper-datalog
-        image: busybox
-        command: ['sh', '-c', 'mkdir -p /store/datalog && chown 1000:1000 /store/datalog']
-        volumeMounts:
-        - name: volzookeeper
-          mountPath: /store
+        - name: sparkler
+          image: brake4stones/sparkler-standalone
+          command: ["/bin/bash", "-c"]
+          args:
+          - sed -i 's/localhost:8983/solr-service:32080/g' /data/sparkler/conf/sparkler-default.yaml;
+            tail -f /dev/null;
 ---
 apiVersion: v1
-kind: Service
+kind: PersistentVolume
 metadata:
-  name: zookeeper-service
+  name: solr-volume
 spec:
-  ports:
-  - port: 32181
-    targetPort: 32181
-    nodePort: 32181
-    protocol: TCP
-  selector:
-    app: zookeeper-app
-  type: NodePort
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 5Gi
+  hostPath:
+    path: /data/solr
 ---
-apiVersion: apps/v1beta2
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: task-solr-pv-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: solr-ss
@@ -218,73 +72,67 @@ spec:
     spec:
       terminationGracePeriodSeconds: 10
       volumes:
-      - name: volsolr
-        persistentVolumeClaim:
-          claimName: task-solr-pv-claim
-      - name: volconfigset
-        persistentVolumeClaim:
-          claimName: task-solr-configset-pv-claim
+        - name: volsolr
+          persistentVolumeClaim:
+            claimName: task-solr-pv-claim
       containers:
-      - name: solr
-        image: solr:latest
-        volumeMounts:
-        - name: volsolr
-          mountPath: /store
-        - name: volconfigset
-          mountPath: /opt/solr/server/solr/configsets/
-        ports:
-        - name: solr-port
-          containerPort: 2181
-        env:
-          - name: SOLR_HOME
-            valueFrom:
-              configMapKeyRef:
-                name: solr-config
-                key: solrHome
-          - name: SOLR_PORT
-            valueFrom:
-              configMapKeyRef:
-                name: solr-config
-                key: solrPort
-          - name: ZK_HOST
-            valueFrom:
-              configMapKeyRef:
-                name: solr-config
-                key: zkHost
-          - name: SOLR_HOST
-            valueFrom:
-              configMapKeyRef:
-                name: solr-config
-                key: solrHost
-          - name: SOLR_LOGS_DIR
-            valueFrom:
-              configMapKeyRef:
-                name: solr-config
-                key: solrLogsDir
+        - name: solr
+          image: solr:latest
+          volumeMounts:
+            - name: volsolr
+              mountPath: /store
+          ports:
+          - name: solr-port
+            containerPort: 2181
+          env:
+            - name: SOLR_HOME
+              valueFrom:
+                configMapKeyRef:
+                  name: solr-config
+                  key: solrHome
+            - name: SOLR_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: solr-config
+                  key: solrPort
+            - name: SOLR_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: solr-config
+                  key: solrHost
+            - name: SOLR_LOGS_DIR
+              valueFrom:
+                configMapKeyRef:
+                  name: solr-config
+                  key: solrLogsDir
       initContainers:
-      - name: init-solr-data
-        image: busybox
-        command: ['sh', '-c', 'mkdir -p /store/data && chown 8983:8983 /store/data']
-        volumeMounts:
-        - name: volsolr
-          mountPath: /store
-      - name: init-solr-logs
-        image: busybox
-        command: ['sh', '-c', 'mkdir -p /store/logs && chown 8983:8983 /store/logs']
-        volumeMounts:
-        - name: volsolr
-          mountPath: /store
-      - name: init-solr-xml
-        image: solr:latest
-        command: ['sh', '-c', '[ ! -f /store/data/solr.xml ] && cp /opt/solr/server/solr/solr.xml /store/data/solr.xml || true']
-        volumeMounts:
-        - name: volsolr
-          mountPath: /store
-      - name: init-solr-configset
-        image: buggtb/sparkler-init
-        volumeMounts:
-        - name: volconfigset
-          mountPath: /solr
+        - name: init-solr-data
+          image: busybox
+          command: ['sh', '-c']
+          args:
+            - mkdir -p /store/data && chown 8983:8983 /store/data;
+              mkdir -p /store/logs && chown 8983:8983 /store/logs;
+          volumeMounts:
+            - name: volsolr
+              mountPath: /store
+        - name: init-solr-xml
+          image: solr:latest
+          command: ['sh', '-c']
+          args:
+            - cp /opt/solr/server/solr/solr.xml /store/data/solr.xml;
+              cp /opt/solr/server/solr/zoo.cfg /store/data/zoo.cfg;
+          volumeMounts:
+            - name: volsolr
+              mountPath: /store
+        - name: init-solr-configset
+          image: brake4stones/crawldb-init
+          command: ['bash', '-c']
+          args:
+            - chown -R 8983:8983 /solr/;
+              cp -r /solr/crawldb /store/data/;
+          volumeMounts:
+            - name: volsolr
+              mountPath: /store
 ---
 apiVersion: v1
 kind: Service
@@ -292,11 +140,10 @@ metadata:
   name: solr-service
 spec:
   ports:
-  - port: 32080
-    targetPort: 32080
-    nodePort: 32080
-    protocol: TCP
+    - port: 32080
+      targetPort: 32080
+      nodePort: 32080
+      protocol: TCP
   selector:
     app: solr-app
   type: NodePort
-
