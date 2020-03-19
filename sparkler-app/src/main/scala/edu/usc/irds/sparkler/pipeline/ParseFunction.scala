@@ -44,7 +44,7 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
     val linkHandler = new LinkContentHandler()
     val parser = new AutoDetectParser()
     var meta = new Metadata()
-    val outHandler = new WriteOutContentHandler()
+    val outHandler = new WriteOutContentHandler(-1)
     val contentHandler = new BodyContentHandler(outHandler)
     LOG.info("PARSING  {}", data.fetchedData.getResource.getUrl)
 
