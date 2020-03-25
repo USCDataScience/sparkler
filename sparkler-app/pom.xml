@@ -37,6 +37,19 @@
         <sparkler.resources.dir>${project.parent.basedir}${file.separator}${project.resources.dir}</sparkler.resources.dir>
         <!-- Main Class -->
         <exec.mainClass>edu.usc.irds.sparkler.Main</exec.mainClass>
+        <!-- Scala epoch. -->
+        <version.scala.epoch>2.11</version.scala.epoch>
+        <version.scala.release>2.11.12</version.scala.release>
+
+        <!-- Scala.js epoch. -->
+        <version.scalajs.epoch>0.6</version.scalajs.epoch>
+        <version.scalajs.release>0.6.27</version.scalajs.release>
+        <version.scalajs.library>sjs${version.scalajs.epoch}_${version.scala.epoch}</version.scalajs.library>
+
+        <!-- Scala compiler. -->
+        <version.scala.zinc>1.2.5</version.scala.zinc>
+        <version.scala.plugin.macro>2.1.1</version.scala.plugin.macro>
+
     </properties>
 
     <dependencies>
@@ -190,7 +203,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
+<!--            <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
                 <executions>
@@ -208,6 +221,68 @@
                         <goals>
                             <goal>testCompile</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>-->
+            <plugin>
+                <groupId>com.carrotgarden.maven</groupId>
+                <artifactId>scalor-maven-plugin_2.12</artifactId>
+                <configuration>
+
+                    <!-- Compiler bridge. -->
+                    <defineBridge>
+                        <dependency>
+                            <groupId>org.scala-sbt</groupId>
+                            <artifactId>compiler-bridge_${version.scala.epoch}</artifactId>
+                            <version>${version.scala.zinc}</version>
+                        </dependency>
+                    </defineBridge>
+
+                    <!-- Scala compiler. -->
+                    <defineCompiler>
+                        <dependency>
+                            <groupId>org.scala-lang</groupId>
+                            <artifactId>scala-compiler</artifactId>
+                            <version>${version.scala.release}</version>
+                        </dependency>
+                    </defineCompiler>
+
+                    <!-- Compiler plugins. -->
+                    <definePluginList>
+                        <dependency>
+                            <groupId>org.scalamacros</groupId>
+                            <artifactId>paradise_${version.scala.release}</artifactId>
+                            <version>${version.scala.plugin.macro}</version>
+                        </dependency>
+                        <!--<dependency>
+                            <groupId>org.scala-js</groupId>
+                            <artifactId>scalajs-compiler_${version.scala.release}</artifactId>
+                            <version>${version.scalajs.release}</version>
+                        </dependency>-->
+                    </definePluginList>
+
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+
+                            <goal>setup-cross</goal>
+                            <goal>eclipse-config</goal>
+
+                            <goal>register-macro</goal>
+                            <goal>register-main</goal>
+                            <goal>register-test</goal>
+
+                            <goal>compile-macro</goal>
+                            <goal>compile-main</goal>
+                            <goal>compile-test</goal>
+
+                            <goal>scala-js-link-main</goal>
+                            <goal>scala-js-link-test</goal>
+
+
+                        </goals>
+
                     </execution>
                 </executions>
             </plugin>
