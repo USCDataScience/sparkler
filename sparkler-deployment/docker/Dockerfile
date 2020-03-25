@@ -52,7 +52,7 @@ COPY ./sparkler-ui/target/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkl
 RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
 
 # Fix permissions
-RUN chown -R sparkler:sparkler /data/
+RUN chown -R sparkler:sparkler /data/ && mkdir /home/sparkler/.pdfbox.cache && chown -R sparkler:sparkler /home/sparkler
 
 USER sparkler
 # Define default command.
