@@ -32,7 +32,7 @@
         <project.bins.dir>build${file.separator}bin</project.bins.dir>
         <spark.version>1.6.1</spark.version>
         <scala.version>2.11</scala.version>
-        <scala.library.version>${scala.version}.8</scala.library.version>
+        <scala.library.version>${scala.version}.12</scala.library.version>
         <nutch.version>1.13</nutch.version>
         <kafka.version>0.10.0.0</kafka.version>
         <hbase.version>1.2.1</hbase.version>
@@ -96,7 +96,7 @@
                 <plugin>
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
-                    <version>3.2.1</version>
+                    <version>4.3.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
