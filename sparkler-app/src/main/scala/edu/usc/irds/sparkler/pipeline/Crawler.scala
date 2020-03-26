@@ -135,7 +135,7 @@ class Crawler extends CliTool {
     init()
     // 0 is infinite crawl
     if (iterations <= 0){
-      LOG.info("Going tp crawl until the end of all URLs. This is gonna take long time")
+      LOG.info("Going to crawl until the end of all URLs. This is gonna take long time")
       iterations = Int.MaxValue
     }
     val solrc = this.job.newCrawlDbSolrClient()

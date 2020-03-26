@@ -23,8 +23,13 @@
 
 FROM ubuntu:bionic
 
-COPY ./conf/solr/crawldb /crawldb
+COPY ./conf/solr /solr
 
-RUN ["mkdir","/solr"]
- 
-CMD ["cp", "-r", "/crawldb", "/solr"]
+RUN groupadd --gid 8983 solr && \
+    useradd -M --uid 8983 --gid 8983 solr
+
+USER root
+
+RUN ["chown", "-R", "8983:8983", "/solr/"]
+
+USER solr
