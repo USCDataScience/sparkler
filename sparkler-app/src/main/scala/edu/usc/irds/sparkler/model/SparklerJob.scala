@@ -25,10 +25,11 @@ import edu.usc.irds.sparkler.util.JobUtil
 import edu.usc.irds.sparkler._
 import org.apache.solr.client.solrj.SolrClient
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer
-import org.apache.solr.client.solrj.impl.{CloudSolrClient, HttpSolrClient}
+import org.apache.solr.client.solrj.impl.{CloudSolrClient}
 import org.apache.solr.core.CoreContainer
 
 import scala.collection.mutable
+import org.apache.solr.client.solrj.impl.HttpSolrClient
 
 /**
   *
@@ -56,7 +57,7 @@ class SparklerJob(val id: String,
     */
   def newSolrClient(): SolrClient = {
     if (crawlDbUri.startsWith("http://") || crawlDbUri.startsWith("https://")) {
-      new HttpSolrClient(crawlDbUri)
+      new HttpSolrClient.Builder(crawlDbUri).build
     } else if (crawlDbUri.startsWith("file://")) {
       var solrHome = crawlDbUri.replace("file://", "")
       LOG.info("Embedded Solr, Solr Core={}", solrHome)
