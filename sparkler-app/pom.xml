@@ -37,18 +37,7 @@
         <sparkler.resources.dir>${project.parent.basedir}${file.separator}${project.resources.dir}</sparkler.resources.dir>
         <!-- Main Class -->
         <exec.mainClass>edu.usc.irds.sparkler.Main</exec.mainClass>
-        <!-- Scala epoch. -->
-        <version.scala.epoch>2.11</version.scala.epoch>
-        <version.scala.release>2.11.12</version.scala.release>
 
-        <!-- Scala.js epoch. -->
-        <version.scalajs.epoch>0.6</version.scalajs.epoch>
-        <version.scalajs.release>0.6.27</version.scalajs.release>
-        <version.scalajs.library>sjs${version.scalajs.epoch}_${version.scala.epoch}</version.scalajs.library>
-
-        <!-- Scala compiler. -->
-        <version.scala.zinc>1.2.5</version.scala.zinc>
-        <version.scala.plugin.macro>2.1.1</version.scala.plugin.macro>
 
     </properties>
 
@@ -67,7 +56,7 @@
 
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_${scala.version}</artifactId>
+            <artifactId>spark-core_${version.scala.epoch}</artifactId>
             <version>${spark.version}</version>
         </dependency>
 
@@ -88,11 +77,7 @@
            <artifactId>kafka-clients</artifactId>
            <version>${kafka.version}</version>
          </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.library.version}</version>
-        </dependency>
+
 
         <dependency>
             <groupId>org.apache.solr</groupId>
@@ -203,27 +188,6 @@
                     </execution>
                 </executions>
             </plugin>
-<!--            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>scala-compile-first</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>scala-test-compile</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
             <plugin>
                 <groupId>com.carrotgarden.maven</groupId>
                 <artifactId>scalor-maven-plugin_2.12</artifactId>

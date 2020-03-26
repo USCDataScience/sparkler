@@ -31,14 +31,21 @@
         <project.resources.dir>build${file.separator}conf</project.resources.dir>
         <project.bins.dir>build${file.separator}bin</project.bins.dir>
         <spark.version>1.6.1</spark.version>
-        <scala.version>2.11</scala.version>
-        <scala.library.version>${scala.version}.12</scala.library.version>
-        <nutch.version>1.13</nutch.version>
+        <version.scala.epoch>2.11</version.scala.epoch>
+        <version.scala.release>${version.scala.epoch}.12</version.scala.release>
+        <version.scalajs.epoch>0.6</version.scalajs.epoch>
+        <version.scalajs.release>0.6.27</version.scalajs.release>
+        <version.scalajs.library>sjs${version.scalajs.epoch}_${version.scala.epoch}</version.scalajs.library>
+
+        <!-- Scala compiler. -->
+        <version.scala.zinc>1.2.5</version.scala.zinc>
+        <version.scala.plugin.macro>2.1.1</version.scala.plugin.macro>
+        <nutch.version>1.16</nutch.version>
         <kafka.version>0.10.0.0</kafka.version>
         <hbase.version>1.2.1</hbase.version>
         <solr.version>6.4.0</solr.version>
-        <slf4j.version>1.7.25</slf4j.version>
-        <snakeyaml.version>1.17</snakeyaml.version>
+        <slf4j.version>1.7.30</slf4j.version>
+        <snakeyaml.version>1.26</snakeyaml.version>
         <json.simple.version>1.1.1</json.simple.version>
         <commons.validator.version>1.5.1</commons.validator.version>
 
