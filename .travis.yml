@@ -22,3 +22,4 @@ after_script:
   - docker push uscdatascience/sparkler
   - docker build . -t uscdatascience/sparkler-init -f sparkler-deployment/sparkler-init/Dockerfile
   - docker push uscdatascience/sparkler-init
+  - docker build --pull -t "uscdatascience/sparkler-solr" -f sparkler-deployment/docker/Dockerfile.solr .
