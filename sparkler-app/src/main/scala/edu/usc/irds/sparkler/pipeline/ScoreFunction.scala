@@ -21,14 +21,13 @@ import edu.usc.irds.sparkler.Scorer
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model._
 import edu.usc.irds.sparkler.service.PluginService
-import edu.usc.irds.sparkler.util.FetcherDefault
 
-import scala.collection.JavaConverters._
 import scala.language.postfixOps
 
 /**
   * Fetcher Function transforms stream of resources to fetched content.
   */
+
 object ScoreFunction
   extends ((SparklerJob, CrawlData) => CrawlData)
     with Serializable with Loggable {

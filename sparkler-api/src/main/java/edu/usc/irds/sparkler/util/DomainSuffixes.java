@@ -17,7 +17,6 @@
 
 package edu.usc.irds.sparkler.util;
 
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +46,7 @@ public class DomainSuffixes {
         try {
             new DomainSuffixesReader().read(this, input);
         } catch (Exception ex) {
-            LOG.warn(StringUtils.stringifyException(ex));
+            LOG.warn(ex.getMessage(), ex);
         }
     }
 

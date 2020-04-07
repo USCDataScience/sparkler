@@ -21,6 +21,7 @@ package edu.usc.irds.sparkler.plugin;
 import edu.usc.irds.sparkler.ConfigKey;
 import edu.usc.irds.sparkler.plugin.regex.RegexRule;
 import edu.usc.irds.sparkler.plugin.regex.RegexURLFilterBase;
+import org.pf4j.Extension;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,18 +34,11 @@ import java.util.regex.Pattern;
  * Filters URLs based on a file of regular expressions using the
  * {@link java.util.regex Java Regex implementation}.
  */
+@Extension
 public class RegexURLFilter extends RegexURLFilterBase {
 
     @ConfigKey
     public static final String URLFILTER_REGEX_FILE = "urlfilter.regex.file";
-
-    public RegexURLFilter() {
-        super();
-    }
-
-    public RegexURLFilter(Reader reader) throws IOException, IllegalArgumentException {
-        super(reader);
-    }
 
     /**
      * Rules specified as a config property will override rules specified as a

@@ -20,39 +20,55 @@ package edu.usc.irds.sparkler.service
 import java.util
 
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.{AbstractExtensionPoint, ExtensionChain, URLFilter}
+import edu.usc.irds.sparkler.{ExtensionChain, JobContext, SparklerException, URLFilter}
 
+import scala.collection.JavaConversions._
 /**
-  * If one of the URL filter rejects, then the url will be rejected
+  * This class chains a list of URLFilters.
+  *  How: If one of the URL filter rejects an url, then that url will be rejected.
   */
-class URLFilters extends AbstractExtensionPoint
-    with ExtensionChain[URLFilter]
-    with URLFilter
-    with Loggable {
-
+class RejectingURLFilterChain extends ExtensionChain[URLFilter]
+    with URLFilter with Loggable {
+  var context: JobContext = _
   var extensions:util.List[URLFilter] = _
 
   override def filter(url: String, parent: String): Boolean ={
-    var status = true
-    val iterator = extensions.iterator
-    while (status && iterator.hasNext){
-      try {
-        status = iterator.next().filter(url, parent)
-      } catch {
-        case e: Exception =>
+    val res = !extensions.exists(ext => {
+      try !ext.filter(url, parent)
+      catch {
+        case e:Exception =>
           LOG.warn(e.getMessage, e)
+          false // exceptions are considered non rejections
       }
-    }
-    status
+    })
+    LOG.debug(s"$res : $url <-- $parent")
+    res
   }
 
+  override def getExtensions: util.List[URLFilter] = this.extensions
+  /**
+    * Setter for extensions
+    *
+    * @param extensions list of extensions
+    */
   override def setExtensions(extensions: util.List[URLFilter]): Unit = this.extensions = extensions
 
-  override def getExtensions: util.List[URLFilter] = this.extensions
 
   override def getMinimumRequired: Int = 0
 
   override def getMaximumAllowed: Int = Byte.MaxValue
+
+  /**
+    * Initialize the extension
+    *
+    * @param context job context
+    * @throws SparklerException when an error occurs
+    */
+  override def init(context: JobContext, pluginId:String): Unit = {
+    this.context = context
+    LOG.info(s"Initializing ${this.getClass.getName} with ${size()} extensions: $getExtensions")
+  }
+
 }
 
 

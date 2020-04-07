@@ -28,10 +28,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR="$DIR/.."
 
 docker_tag="sparkler-local"
-solr_port=8984
+remote_image="uscdatascience/sparkler:latest"
+solr_port=8983
 solr_url="http://localhost:$solr_port/solr"
 spark_ui_port=4041
 spark_ui_url="http://localhost:$spark_ui_port/"
+user="sparkler"
 
 # check for docker
 command -v docker >/dev/null 2>&1 || { echo "Error: Require 'docker' but it is unavailable." >&2; exit 2; }
@@ -41,56 +43,48 @@ build_image(){
 
     prev_dir="$PWD"
     cd "$DIR"
-    echo "Cleaning workspace to minimize size ..."
-    mvn clean -q
-    echo "Cleaning done..."
+    echo "Building project..."
+      git submodule update --init --recursive
+    mvn package -DskipTests
     cd "$prev_dir"
 
     echo "Building a docker image with tag '$docker_tag' ..."
-    docker build -f "$DIR/sparkler-deployment/docker/Dockerfile" -t "$docker_tag" "$DIR/sparkler-deployment/docker"
+    docker build -f "$DIR/sparkler-deployment/docker/Dockerfile" -t "$docker_tag" "$DIR"
 
     if [ $? -ne 0 ]; then
         echo "Error: Failed"
         exit 2
     fi
 }
+
+fetch_image() {
+    echo "Fetching $remote_image and tagging as $docker_tag"
+    docker pull $remote_image
+    docker tag $remote_image $docker_tag
+}
 ####################
 
 ####################
 image_id=`docker images -q "$docker_tag" | head -1`
 if [[ -z "${image_id// }" ]]; then
-    while true; do
-        read -p "Cant find docker image $docker_tag. Do you wish to build docker image? [Y/N]" yn
-        case $yn in
-            [Yy]* ) build_image;
-                    image_id=`docker images -q "$docker_tag" | head -1`
-                    break;;
-            [Nn]* ) exit;;
-            * ) echo "Please answer yes or no.";;
-        esac
-    done
+     echo "Cant find docker image $docker_tag. Going to Fetch it"
+     # build_image;
+     fetch_image
+     image_id=`docker images -q "$docker_tag" | head -1`
 fi
 echo "Found image: $image_id"
 ####################
 
 container_id=`docker ps -q --filter="ancestor=$image_id"`
 if [[ -z "${container_id// }" ]]; then
-    while true; do
-        read -p "No container is running for $image_id. Do you wish to start it? [Y/N]" yn
-        case $yn in
-            [Yy]* ) echo "Staring container"
-                    container_id=`docker run -p "$solr_port":8983 -p "$spark_ui_port:4040" -it -d $image_id`
-                    if [ $? -ne 0 ]; then
-                        echo "Something went wrong :-( Please check error messages from docker."
-                        exit 3
-                     fi
-                    echo "Starting solr server inside the container"
-                    docker exec "$container_id" /data/solr/bin/solr restart
-                    break;;
-            [Nn]* ) exit;;
-            * ) echo "Please answer yes or no.";;
-        esac
-    done
+    echo "No container is running for $image_id. Starting it..."
+    container_id=`docker run -p "$solr_port":8983 -p "$spark_ui_port:4040" -it --user "$user" -d $image_id`
+    if [ $? -ne 0 ]; then
+        echo "Something went wrong :-( Please check error messages from docker."
+        exit 3
+     fi
+    echo "Starting solr server inside the container"
+    docker exec --user "$user" "$container_id" /data/solr/bin/solr restart -force
 fi
 ####################
 
@@ -109,14 +103,14 @@ Some useful queries:
 Inside docker, you can do the following:
 
 /data/solr/bin/solr - command line tool for administering solr
-    start - start solr
-    stop - stop solr
-    status - get status of solr
-    restart - restart solr
+    start -force -> start solr
+    stop -force -> stop solr
+    status -force -> get status of solr
+    restart -force -> restart solr
 
-/data/sparkler.sh - command line interface to sparkler
+/data/sparkler/bin/sparkler.sh - command line interface to sparkler
    inject - inject seed urls
    crawl - launch a crawl job
 EOF
 
-docker exec -it "$container_id" /bin/bash
+docker exec -it --user "$user" "$container_id" /bin/bash

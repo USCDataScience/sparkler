@@ -16,7 +16,7 @@
  */
 
 package edu.usc.irds.sparkler.service
-
+import scala.collection.JavaConversions._
 import java.io.File
 import java.nio.file.NotDirectoryException
 import java.util
@@ -94,7 +94,6 @@ class Injector extends CliTool {
       urls.map(_.trim)
         .filter(url => urlValidator.isValid(url))
         .map(x => new Resource(x, 0, job, ResourceStatus.UNFETCHED, Injector.SEED_PARENT, Injector.SEED_SCORE))
-
     LOG.info("Injecting {} seeds", seeds.size())
 
     val solrClient = job.newCrawlDbSolrClient()
@@ -143,8 +142,10 @@ class Injector extends CliTool {
 object Injector extends Loggable {
 
   val SEED_PARENT = "seed"
-  val SEED_SCORE = 1.0
+  //val SEED_SCORE = 1.0
+  val SMAP:Map[String,java.lang.Double] = Map("seed" -> 1.0.toDouble)
 
+  val SEED_SCORE = new java.util.HashMap[String,java.lang.Double](SMAP)
   def main(args: Array[String]): Unit = {
     val injector = new Injector()
     injector.run(args)

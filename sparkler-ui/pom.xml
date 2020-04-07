@@ -20,7 +20,7 @@
     <parent>
         <artifactId>sparkler-parent</artifactId>
         <groupId>edu.usc.irds.sparkler</groupId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.2.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -29,7 +29,7 @@
     <packaging>war</packaging>
 
     <name>sparkler-ui</name>
-    <url>http://maven.apache.org</url>
+    <url>http://irds.usc.edu/sparkler/</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

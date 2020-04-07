@@ -1,0 +1,149 @@
+apiVersion: v1
+data:
+  solrHome: /store/data
+  solrHost: solr-service
+  solrLogsDir: /store/logs
+  solrPort: "32080"
+kind: ConfigMap
+metadata:
+  name: solr-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sparkler
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sparkler
+  template:
+    metadata:
+      labels:
+        app: sparkler
+    spec:
+      containers:
+        - name: sparkler
+          image: brake4stones/sparkler-standalone
+          command: ["/bin/bash", "-c"]
+          args:
+          - sed -i 's/localhost:8983/solr-service:32080/g' /data/sparkler/conf/sparkler-default.yaml;
+            tail -f /dev/null;
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: solr-volume
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 5Gi
+  hostPath:
+    path: /data/solr
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: task-solr-pv-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: solr-ss
+spec:
+  selector:
+    matchLabels:
+      app: solr-app # has to match .spec.template.metadata.labels
+  serviceName: "solr-service"
+  replicas: 1 # by default is 1
+  template:
+    metadata:
+      labels:
+        app: solr-app # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: volsolr
+          persistentVolumeClaim:
+            claimName: task-solr-pv-claim
+      containers:
+        - name: solr
+          image: solr:latest
+          volumeMounts:
+            - name: volsolr
+              mountPath: /store
+          ports:
+          - name: solr-port
+            containerPort: 2181
+          env:
+            - name: SOLR_HOME
+              valueFrom:
+                configMapKeyRef:
+                  name: solr-config
+                  key: solrHome
+            - name: SOLR_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: solr-config
+                  key: solrPort
+            - name: SOLR_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: solr-config
+                  key: solrHost
+            - name: SOLR_LOGS_DIR
+              valueFrom:
+                configMapKeyRef:
+                  name: solr-config
+                  key: solrLogsDir
+      initContainers:
+        - name: init-solr-data
+          image: busybox
+          command: ['sh', '-c']
+          args:
+            - mkdir -p /store/data && chown 8983:8983 /store/data;
+              mkdir -p /store/logs && chown 8983:8983 /store/logs;
+          volumeMounts:
+            - name: volsolr
+              mountPath: /store
+        - name: init-solr-xml
+          image: solr:latest
+          command: ['sh', '-c']
+          args:
+            - cp /opt/solr/server/solr/solr.xml /store/data/solr.xml;
+              cp /opt/solr/server/solr/zoo.cfg /store/data/zoo.cfg;
+          volumeMounts:
+            - name: volsolr
+              mountPath: /store
+        - name: init-solr-configset
+          image: brake4stones/crawldb-init
+          command: ['bash', '-c']
+          args:
+            - chown -R 8983:8983 /solr/;
+              cp -r /solr/crawldb /store/data/;
+          volumeMounts:
+            - name: volsolr
+              mountPath: /store
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: solr-service
+spec:
+  ports:
+    - port: 32080
+      targetPort: 32080
+      nodePort: 32080
+      protocol: TCP
+  selector:
+    app: solr-app
+  type: NodePort

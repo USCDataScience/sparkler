@@ -20,72 +20,42 @@
     <parent>
         <artifactId>sparkler-plugins</artifactId>
         <groupId>edu.usc.irds.sparkler.plugin</groupId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.2.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>fetcher-jbrowser</artifactId>
-    <packaging>bundle</packaging>
+    <packaging>jar</packaging>
 
     <name>fetcher-jbrowser</name>
     <url>http://maven.apache.org</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jbrowserdriver.version>0.16.4</jbrowserdriver.version>
+        <plugin.id>${project.artifactId}</plugin.id>
+        <plugin.class>edu.usc.irds.sparkler.plugin.FetcherJBrowserActivator</plugin.class>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.framework</artifactId>
-            <version>${felix.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
 			<groupId>com.machinepublishers</groupId>
 			<artifactId>jbrowserdriver</artifactId>
 			<version>${jbrowserdriver.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
 		</dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
+            <plugin><!-- Config is same as defined in the parent POM -->
+                <artifactId>maven-assembly-plugin</artifactId>
+            </plugin>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>${maven.bundle.plugin.version}</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Bundle-Name>${project.groupId}:${project.artifactId}</Bundle-Name>  <!-- -->
-                        <Bundle-SymbolicName>fetcher.jbrowser</Bundle-SymbolicName>
-                        <Bundle-Version>${project.parent.version}</Bundle-Version>
-                        <Bundle-Activator>edu.usc.irds.sparkler.plugin.FetcherJBrowserActivator</Bundle-Activator>
-                        <Import-Package>org.osgi.framework,edu.usc.irds.sparkler,edu.usc.irds.sparkler.model, org.slf4j,
-                            javax.net.ssl
-                        </Import-Package>
-                        <Embed-Dependency>*;scope=!provided|test;artifactId=!icu4j|slf4j-api|slf4j-log4j12|nutch 
-                            |snakeyaml|json-simple</Embed-Dependency>
-                        <Embed-Transitive>true</Embed-Transitive>
-                    </instructions>
-                    <buildDirectory>${project.parent.parent.basedir}${file.separator}${project.bundles.directory}</buildDirectory>
-                </configuration>
+                <artifactId>maven-jar-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

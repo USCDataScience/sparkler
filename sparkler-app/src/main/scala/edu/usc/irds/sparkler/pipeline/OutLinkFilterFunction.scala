@@ -39,7 +39,16 @@ object OutLinkFilterFunction
     val urlValidator: UrlValidator = new UrlValidator()
     for (url <- data.parsedData.outlinks) {
       val result = outLinkFilter match {
-        case Some(urLFilter) => urlValidator.isValid(url) && urLFilter.filter(url, data.fetchedData.getResource.getUrl)
+        case Some(urLFilter) => {
+          try {
+            urlValidator.isValid(url) && urLFilter.filter(url, data.fetchedData.getResource.getUrl)
+          } catch {
+            case e: Exception => {
+              LOG.debug("Exception while filtering the Outlink: " + url, e)
+              false
+            }
+          }
+        }
         case None => true
       }
       if (result) {

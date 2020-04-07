@@ -21,7 +21,7 @@
     <parent>
         <artifactId>sparkler-parent</artifactId>
         <groupId>edu.usc.irds.sparkler</groupId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.2.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -30,13 +30,15 @@
     <packaging>jar</packaging>
 
     <name>sparkler</name>
-    <url>http://irds.usc.edu</url>
+    <url>http://irds.usc.edu/sparkler/</url>
 
     <properties>
         <sparkler.conf.dir>${project.parent.basedir}${file.separator}${project.conf.dir}</sparkler.conf.dir>
         <sparkler.resources.dir>${project.parent.basedir}${file.separator}${project.resources.dir}</sparkler.resources.dir>
         <!-- Main Class -->
         <exec.mainClass>edu.usc.irds.sparkler.Main</exec.mainClass>
+
+
     </properties>
 
     <dependencies>
@@ -47,8 +49,14 @@
         </dependency>
 
         <dependency>
+            <groupId>org.pf4j</groupId>
+            <artifactId>pf4j</artifactId>
+            <version>${pf4j.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_${scala.version}</artifactId>
+            <artifactId>spark-core_${version.scala.epoch}</artifactId>
             <version>${spark.version}</version>
         </dependency>
 
@@ -56,6 +64,12 @@
             <groupId>org.apache.nutch</groupId>
             <artifactId>nutch</artifactId>
             <version>${nutch.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.tika</groupId>
+                    <artifactId>tika-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -63,11 +77,7 @@
            <artifactId>kafka-clients</artifactId>
            <version>${kafka.version}</version>
          </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.library.version}</version>
-        </dependency>
+
 
         <dependency>
             <groupId>org.apache.solr</groupId>
@@ -86,6 +96,18 @@
         </dependency>
 
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.6.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.6.5</version>
+        </dependency>
+
+        <dependency>
             <groupId>args4j</groupId>
             <artifactId>args4j</artifactId>
             <version>${args4j.version}</version>
@@ -101,21 +123,6 @@
             <version>${slf4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.framework</artifactId>
-            <version>${felix.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.main</artifactId>
-            <version>${felix.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>${osgi.version}</version>
-        </dependency>
-        <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
             <version>${commons.validator.version}</version>
@@ -127,13 +134,6 @@
             <version>1.1.1</version>
         </dependency>
 
-        <!-- JBrowser Plugin -->
-        <dependency>
-            <groupId>com.machinepublishers</groupId>
-            <artifactId>jbrowserdriver</artifactId>
-            <version>${jbrowserdriver.version}</version>
-        </dependency>
-
 
         <!-- TESTING -->
         <!-- http://mvnrepository.com/artifact/junit/junit -->
@@ -143,7 +143,7 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-
+        <!-- -->
     </dependencies>
 
     <build>
@@ -152,20 +152,11 @@
                 <directory>${sparkler.resources.dir}</directory>
             </resource>
         </resources>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>net.alchim31.maven</groupId>
-                    <artifactId>scala-maven-plugin</artifactId>
-                    <version>3.2.1</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.2.2</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -173,6 +164,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <outputFile>${project.parent.basedir}${file.separator}build/${project.artifactId}-${project.version}.jar</outputFile>
                             <minimizeJar>false</minimizeJar>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <artifactSet>
@@ -214,23 +206,64 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
+                <groupId>com.carrotgarden.maven</groupId>
+                <artifactId>scalor-maven-plugin_2.12</artifactId>
+                <configuration>
+
+                    <!-- Compiler bridge. -->
+                    <defineBridge>
+                        <dependency>
+                            <groupId>org.scala-sbt</groupId>
+                            <artifactId>compiler-bridge_${version.scala.epoch}</artifactId>
+                            <version>${version.scala.zinc}</version>
+                        </dependency>
+                    </defineBridge>
+
+                    <!-- Scala compiler. -->
+                    <defineCompiler>
+                        <dependency>
+                            <groupId>org.scala-lang</groupId>
+                            <artifactId>scala-compiler</artifactId>
+                            <version>${version.scala.release}</version>
+                        </dependency>
+                    </defineCompiler>
+
+                    <!-- Compiler plugins. -->
+                    <definePluginList>
+                        <dependency>
+                            <groupId>org.scalamacros</groupId>
+                            <artifactId>paradise_${version.scala.release}</artifactId>
+                            <version>${version.scala.plugin.macro}</version>
+                        </dependency>
+                        <!--<dependency>
+                            <groupId>org.scala-js</groupId>
+                            <artifactId>scalajs-compiler_${version.scala.release}</artifactId>
+                            <version>${version.scalajs.release}</version>
+                        </dependency>-->
+                    </definePluginList>
+
+                </configuration>
                 <executions>
                     <execution>
-                        <id>scala-compile-first</id>
-                        <phase>process-resources</phase>
                         <goals>
-                            <goal>add-source</goal>
-                            <goal>compile</goal>
+
+                            <goal>setup-cross</goal>
+                            <goal>eclipse-config</goal>
+
+                            <goal>register-macro</goal>
+                            <goal>register-main</goal>
+                            <goal>register-test</goal>
+
+                            <goal>compile-macro</goal>
+                            <goal>compile-main</goal>
+                            <goal>compile-test</goal>
+
+                            <goal>scala-js-link-main</goal>
+                            <goal>scala-js-link-test</goal>
+
+
                         </goals>
-                    </execution>
-                    <execution>
-                        <id>scala-test-compile</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
+
                     </execution>
                 </executions>
             </plugin>
@@ -258,7 +291,154 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <descriptor>src/assembly/dep.xml</descriptor>
+                    <tarLongFileMode>posix</tarLongFileMode>
+                </configuration>
+                <executions>
+                    <!--<execution>
+                        <id>create-archive</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>-->
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-bins</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.parent.basedir}${file.separator}${project.bins.dir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.parent.basedir}${file.separator}bin</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.parent.basedir}${file.separator}${project.resources.dir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.parent.basedir}${file.separator}conf</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Fix permissions -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>fix-perms</id>
+                        <phase>validate</phase>
+                        <configuration>
+                            <target>
+                                <chmod file="../build/bin/*.sh" perm="755"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>sbt</id>
 
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>net.alchim31.maven</groupId>
+                                <artifactId>scala-maven-plugin</artifactId>
+                                <executions>
+                                    <execution>
+                                        <id>scala-compile-first</id>
+                                        <phase>none</phase>
+                                        <goals>
+                                            <goal>add-source</goal>
+                                            <goal>compile</goal>
+                                        </goals>
+                                    </execution>
+                                    <execution>
+                                        <id>scala-test-compile</id>
+                                        <phase>none</phase>
+                                        <goals>
+                                            <goal>testCompile</goal>
+                                        </goals>
+                                    </execution>
+                                </executions>
+                            </plugin>
+                            <plugin>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>exec-maven-plugin</artifactId>
+                                <version>1.6.0</version>
+                                <executions>
+                                    <execution>
+                                        <phase>process-resources</phase>
+                                        <goals>
+                                            <goal>exec</goal>
+                                        </goals>
+                                    </execution>
+                                </executions>
+                                <configuration>
+                                    <executable>sbt</executable>
+                                    <!-- optional -->
+                                    <workingDirectory>.</workingDirectory>
+                                    <arguments>
+                                        <argument>package</argument>
+                                    </arguments>
+                                </configuration>
+                            </plugin>
+                            <plugin>
+                                <artifactId>maven-antrun-plugin</artifactId>
+                                <executions>
+                                    <execution>
+                                        <phase>process-resources</phase>
+                                        <configuration>
+                                            <tasks>
+
+                                                <copy todir="target/classes">
+                                                    <fileset dir="target/scala-2.11/classes/"/>
+                                                </copy>
+
+                                            </tasks>
+                                        </configuration>
+                                        <goals>
+                                            <goal>run</goal>
+                                        </goals>
+                                    </execution>
+                                </executions>
+                            </plugin>
+                        </plugins>
+                    </build>
+        </profile>
+
+    </profiles>
 </project>

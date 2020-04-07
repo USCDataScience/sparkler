@@ -13,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,22 +36,25 @@ import java.util.stream.Collectors;
  * instead it uses URLConnection provided by JDK to fetch the resources.
  *
  */
-public class FetcherDefault extends AbstractExtensionPoint
-        implements Fetcher, Function<Resource, FetchedData> {
-
+public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, Function<Resource, FetchedData> {
+    //TODO: move this to a plugin named fetcher-default
     public static final Logger LOG = LoggerFactory.getLogger(FetcherDefault.class);
-    public static final Integer CONNECT_TIMEOUT = 5000;
-    public static final Integer READ_TIMEOUT = 10000;
+    public static final Integer CONNECT_TIMEOUT = 5000; // Milliseconds. FIXME: Get from Configuration
+    public static final Integer READ_TIMEOUT = 10000; // Milliseconds. FIXME: Get from Configuration
+    public static final Integer CONTENT_LIMIT = 100 * 1024 * 1024; // Bytes. FIXME: Get from Configuration
     public static final Integer DEFAULT_ERROR_CODE = 400;
     public static final String USER_AGENT = "User-Agent";
+    public static final String TRUNCATED = "X-Content-Truncated";
 
     protected List<String> userAgents;
     protected int userAgentIndex = 0; // index for rotating the agents
     protected Map<String, String> httpHeaders;
 
+    public FetcherDefault(){}
+
     @Override
-    public void init(JobContext context) throws SparklerException {
-        super.init(context);
+    public void init(JobContext context, String pluginId) throws SparklerException {
+        super.init(context, pluginId);
         SparklerConfiguration conf = context.getConfiguration();
         if (conf.containsKey(Constants.key.FETCHER_USER_AGENTS)) {
             Object agents = conf.get(Constants.key.FETCHER_USER_AGENTS);
@@ -105,7 +109,7 @@ public class FetcherDefault extends AbstractExtensionPoint
         LOG.info("DEFAULT FETCHER {}", resource.getUrl());
         URLConnection urlConn = new URL(resource.getUrl()).openConnection();
         if (httpHeaders != null){
-            httpHeaders.entrySet().forEach(e -> urlConn.setRequestProperty(e.getKey(), e.getValue()));
+            httpHeaders.forEach(urlConn::setRequestProperty);
             LOG.debug("Adding headers:{}", httpHeaders.keySet());
         } else {
             LOG.debug("No headers are available");
@@ -122,17 +126,30 @@ public class FetcherDefault extends AbstractExtensionPoint
         urlConn.setReadTimeout(READ_TIMEOUT);
         int responseCode = ((HttpURLConnection)urlConn).getResponseCode();
         LOG.debug("STATUS CODE : " + responseCode + " " + resource.getUrl());
+        boolean truncated = false;
         try (InputStream inStream = urlConn.getInputStream()) {
-            byte[] rawData;
-            if (inStream != null) {
-                rawData = IOUtils.toByteArray(inStream);
-            } else {
-                rawData = new byte[0]; //no content received
+            ByteArrayOutputStream bufferOutStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096]; // 4kb buffer
+            int read;
+            while((read = inStream.read(buffer, 0, buffer.length)) != -1) {
+                bufferOutStream.write(buffer, 0, read);
+                if (bufferOutStream.size() >= CONTENT_LIMIT) {
+                    truncated = true;
+                    LOG.info("Content Truncated: {}, TotalSize={}, TruncatedSize={}", resource.getUrl(),
+                            urlConn.getContentLength(), bufferOutStream.size());
+                    break;
+                }
             }
+            bufferOutStream.flush();
+            byte[] rawData = bufferOutStream.toByteArray();
+            IOUtils.closeQuietly(bufferOutStream);
             FetchedData fetchedData = new FetchedData(rawData, urlConn.getContentType(), responseCode);
             resource.setStatus(ResourceStatus.FETCHED.toString());
             fetchedData.setResource(resource);
             fetchedData.setHeaders(urlConn.getHeaderFields());
+            if (truncated) {
+                fetchedData.getHeaders().put(TRUNCATED, Collections.singletonList(Boolean.TRUE.toString()));
+            }
             return fetchedData;
         }
     }
@@ -154,5 +171,4 @@ public class FetcherDefault extends AbstractExtensionPoint
             return fetchedData;
         }
     }
-
 }

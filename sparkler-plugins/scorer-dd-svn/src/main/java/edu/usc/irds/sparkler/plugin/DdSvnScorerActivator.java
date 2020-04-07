@@ -17,30 +17,11 @@
 
 package edu.usc.irds.sparkler.plugin;
 
-import edu.usc.irds.sparkler.Scorer;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.pf4j.Plugin;
+import org.pf4j.PluginWrapper;
+public class DdSvnScorerActivator extends Plugin {
 
-import java.util.Dictionary;
-import java.util.Hashtable;
-
-public class DdSvnScorerActivator implements BundleActivator {
-
-    // Logger for the class
-    private static final Logger LOG = LoggerFactory.getLogger(DdSvnScorer.class);
-
-    @Override
-    public void start(BundleContext bundleContext) throws Exception {
-        LOG.info("Activating DdSvnScorer Plugin");
-        Dictionary<String, String> prop = new Hashtable<>();
-        prop.put("Scorer", "DdSvnScorer");
-        bundleContext.registerService(Scorer.class.getName(), new DdSvnScorer(), prop);
-    }
-
-    @Override
-    public void stop(BundleContext bundleContext) throws Exception {
-        LOG.info("Stopping DdSvnScorer Plugin");
+    public DdSvnScorerActivator(PluginWrapper wrapper) {
+        super(wrapper);
     }
 }

@@ -71,10 +71,6 @@ fetcher.user.agents: user-agents.txt
 
 ##################### Plugins ###########################################
 
-# Plugins Bundle directory. Configured through Maven.
-# Discouraged to Modify unless specifically required.
-plugins.bundle.directory: ${project.parent.basedir}${file.separator}${project.bundles.directory}
-
 # All Plugins are listed under this tree
 plugins:
   # Regex URL Filter - Filters outlinks from a web page based on Regex

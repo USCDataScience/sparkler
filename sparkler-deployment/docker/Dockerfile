@@ -26,15 +26,33 @@ FROM openjdk:8
 RUN groupadd --gid 1000 sparkler && \
    useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
 
+
+RUN apt-get update && \
+    apt-get install -qq -y --fix-missing software-properties-common wget lsof emacs-nox vim nano openjfx
+
+
 # Define working directory.
 WORKDIR /data
 
+## Setup Solr
+RUN wget -nv http://archive.apache.org/dist/lucene/solr/8.5.0/solr-8.5.0.tgz -O /data/solr.tgz && \
+    cd /data/ && tar xzf /data/solr.tgz && \
+    mv /data/solr-* /data/solr && rm /data/solr.tgz
+
 # add sparkler contents
 ADD ./build /data/sparkler
-ADD sparkler-deployment/docker/conf/sparkler-default.yaml /data/sparkler/conf/sparkler-default.yaml
-ADD sparkler-deployment/docker/conf/sparkler-default.yaml /data/sparkler/resources/sparkler-default.yaml
+
+# create solr core
+RUN /data/solr/bin/solr start -force && \
+    /data/solr/bin/solr create_core -force -c crawldb -d /data/sparkler/conf/solr/crawldb/ && \
+    /data/solr/bin/solr stop -force
+
+# sparkler  ui with banana dashboard
+COPY ./sparkler-ui/target/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkler
+RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
+
 # Fix permissions
-RUN chown -R sparkler:sparkler /data/
+RUN chown -R sparkler:sparkler /data/ && mkdir -p /home/sparkler/.pdfbox.cache && chown -R sparkler:sparkler /home/sparkler
 
 USER sparkler
 # Define default command.

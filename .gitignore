@@ -17,6 +17,7 @@
 *.log
 *.jar
 *.war
+build/**
 
 # sbt specific
 .cache
@@ -52,3 +53,6 @@ sjob-**
 Application Files
 /resources
 felix-cache/
+
+tmp*
+workspace*

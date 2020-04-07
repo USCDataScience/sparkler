@@ -21,14 +21,7 @@ package edu.usc.irds.sparkler;
  * The marker interface for all extensions
  * @since Sparkler 0.1
  */
-public interface ExtensionPoint {
-
-    /**
-     * Initialize the extension
-     * @param context job context
-     * @throws SparklerException when an error occurs
-     */
-    void init(JobContext context) throws SparklerException;
+public interface ExtensionPoint extends org.pf4j.ExtensionPoint {
 
     /**
      * Initialize the extension

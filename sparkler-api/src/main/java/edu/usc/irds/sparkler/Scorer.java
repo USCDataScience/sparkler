@@ -6,11 +6,13 @@ import edu.usc.irds.sparkler.model.Resource;
 import java.util.Iterator;
 
 /**
- * Created by gtotaro on 5/15/17.
+ * A contract for any {@link ExtensionPoint} that offers functionality to
+ * determine a score for urls.
  */
 public interface Scorer extends ExtensionPoint {
 
     Double score(String extractedText) throws Exception;
 
     String getScoreKey();
+
 }

@@ -18,9 +18,6 @@
 package edu.usc.irds.sparkler.model;
 
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.nutch.metadata.Metadata;
-
 import java.io.Serializable;
 import java.util.*;
 
@@ -33,8 +30,9 @@ public class FetchedData implements Serializable {
     private Integer contentLength;
     private Map<String, List<String>> headers = Collections.emptyMap();
     private Date fetchedAt;
-    private Metadata metadata;
+    private MultiMap<String, String> metadata = new MultiMap<>();
     private int responseCode;
+    private long responseTime = -1;
 
     private String segment;
 
@@ -47,7 +45,6 @@ public class FetchedData implements Serializable {
         this.contentLength = content.length;
         this.contentType = contentType;
         this.responseCode = responseCode;
-        this.metadata = new Metadata();
         this.fetchedAt = new Date();
 	}
 	
@@ -81,12 +78,17 @@ public class FetchedData implements Serializable {
         return fetchedAt;
     }
 
-    public Metadata getMetadata() {
+    public MultiMap<String, String> getMetadata() {
         return metadata;
     }
 
     public void setResource(Resource resource) {
         this.resource = resource;
+    }
+
+
+    public void setContentLength(Integer contentLength) {
+        this.contentLength = contentLength;
     }
 
     public String getSegment() {
@@ -97,9 +99,30 @@ public class FetchedData implements Serializable {
         this.segment = segment;
     }
 
-    // TODO: Move this to Util package
-    public org.apache.nutch.protocol.Content toNutchContent(Configuration conf) {
-        return new org.apache.nutch.protocol.Content(resource.getUrl(), resource.getUrl(), content, contentType, metadata, conf);
+
+    public void setContent(byte[] content) {
+        this.content = content;
     }
 
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public void setFetchedAt(Date fetchedAt) {
+        this.fetchedAt = fetchedAt;
+    }
+
+    public void setMetadata(MultiMap<String, String> metadata) {
+        this.metadata = metadata;
+    }
+
+    public void setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
+    }
+
+    public Long getResponseTime(){return this.responseTime;}
+
+    public void setResponseTime(long responseTime) {
+        this.responseTime = responseTime;
+    }
 }

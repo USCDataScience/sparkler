@@ -25,8 +25,6 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -64,26 +62,13 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
     public static final String DEFAULT_SCORE_KEY = "svn_score";
 
     @Override
-    public void init(JobContext context) throws SparklerException {
-        super.init(context);
+    public void init(JobContext context, String pluginId) throws SparklerException {
+        super.init(context, pluginId);
         SparklerConfiguration config = jobContext.getConfiguration();
         this.pluginConfig = config.getPluginConfiguration(pluginId);
         this.uriClassifier = pluginConfig.getOrDefault(SCORER_DD_SVN_URL, DEFAULT_SCORER_DD_SVN_URL).toString();
         this.fallbackScore = pluginConfig.getOrDefault(FALLBACK_SCORE, DEFAULT_FALLBACK_SCORE).toString();
         this.scoreKey = pluginConfig.getOrDefault(SCORE_KEY, DEFAULT_SCORE_KEY).toString();
-
-        LOG.info(SCORER_DD_SVN_URL + ": " + this.uriClassifier);
-        LOG.info(FALLBACK_SCORE + ": " + this.fallbackScore);
-        LOG.info(SCORE_KEY + ": " + this.scoreKey);
-    }
-
-    @Override
-    public void init(JobContext context, String pluginId) throws SparklerException {
-        this.pluginId = pluginId;
-        init(context);
-    }
-
-    public DdSvnScorer() {
         this.classes = new HashMap<String,String>();
         this.classes.put("Model doesn't exist", "-1");
         this.classes.put("Not Relevant", "0");
@@ -91,6 +76,9 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
         this.classes.put("Highly Relevant", "2");
 
         this.restClient = new ApacheHttpRestClient();
+        LOG.info(SCORER_DD_SVN_URL + ": " + this.uriClassifier);
+        LOG.info(FALLBACK_SCORE + ": " + this.fallbackScore);
+        LOG.info(SCORE_KEY + ": " + this.scoreKey);
     }
 
     @Override

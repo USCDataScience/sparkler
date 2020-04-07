@@ -1,3 +1,25 @@
 language: java
+dist: trusty
+sudo: required
+services:
+  - docker
 jdk:
   - oraclejdk8
+before_install: 
+  - export MAVEN_SKIP_RC=true
+  - export M2_HOME=/usr/local/maven
+  - export MAVEN_OPTS="-Dmaven.repo.local=$HOME/.m2/repository -Xms1024m -Xmx3072m -XX:PermSize=512m -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN"
+
+cache:
+  directories:
+  - $HOME/.m2
+
+after_script:  
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker build . -t uscdatascience/sparkler-standalone -f sparkler-deployment/docker-k8s/Dockerfile
+  - docker push uscdatascience/sparkler-standalone
+  - docker build . -t uscdatascience/sparkler -f sparkler-deployment/docker/Dockerfile
+  - docker push uscdatascience/sparkler
+  - docker build . -t uscdatascience/sparkler-init -f sparkler-deployment/sparkler-init/Dockerfile
+  - docker push uscdatascience/sparkler-init
+  - docker build --pull -t "uscdatascience/sparkler-solr" -f sparkler-deployment/docker/Dockerfile.solr .

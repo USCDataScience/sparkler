@@ -25,8 +25,9 @@ import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.service.SolrProxy
+
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
-import edu.usc.irds.sparkler.util.JobUtil
+import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.SequenceFileOutputFormat
@@ -89,7 +90,7 @@ class Crawler extends CliTool {
   var topG: Int = sparklerConf.get(Constants.key.GENERATE_TOP_GROUPS).asInstanceOf[Int]
 
   @Option(name = "-i", aliases = Array("--iterations"),
-    usage = "Number of iterations to run")
+    usage = "Number of iterations to run. Special Feature: Set any number <= 0, eg: -1, to crawl all URLs")
   var iterations: Int = 1
 
   @Option(name = "-fd", aliases = Array("--fetch-delay"),
@@ -106,6 +107,11 @@ class Crawler extends CliTool {
   @Option(name = "-dcf", forbids = Array("-dc"),
     aliases = Array("--deepcrawl-file"), usage = "Deep crawl the provided hosts in the line separated file")
   var deepCrawlHostFile : File = _
+  /* Generator options, currently not exposed via the CLI
+     and only accessible through the config yaml file
+   */
+  var sortBy: String = sparklerConf.get(Constants.key.GENERATE_SORTBY).asInstanceOf[String]
+  var groupBy: String = sparklerConf.get(Constants.key.GENERATE_GROUPBY).asInstanceOf[String]
 
   var job: SparklerJob = _
   var sc: SparkContext = _
@@ -132,10 +138,10 @@ class Crawler extends CliTool {
     }
 
     job = new SparklerJob(jobId, sparklerConf, "")
-    FetchFunction.init(job)
+    //FetchFunction.init(job)
 
   }
-  //TODO: URL nor malizers
+  //TODO: URL normalizers
   //TODO: Robots.txt
 
   override def run(): Unit = {
@@ -216,36 +222,9 @@ class Crawler extends CliTool {
     sc.stop()
   }
 
-  def executePipeline(rdd: RDD[Resource], taskId: String, solrc: SolrProxy, localFetchDelay: Long): Unit = {
-    val fetchedRdd = rdd.map(r => (r.getGroup, r))
-      .groupByKey()
-      .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-        FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer)
-      })
-      .persist()
-
-    if (kafkaEnable) {
-      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
-    }
-
-    //Step: Update status of fetched resources.
-    val statusUpdateRdd: RDD[SolrInputDocument] = fetchedRdd.map(d => StatusUpdateSolrTransformer(d))
-    val statusUpdateFunc = new SolrStatusUpdate(job)
-    sc.runJob(statusUpdateRdd, statusUpdateFunc)
-
-    val scoredRdd = score(fetchedRdd)
-    //Step: Store these to nutch segments
-    val outputPath = this.outputPath + "/" + taskId
-
-    storeContent(outputPath, scoredRdd)
-
-    LOG.info("Committing crawldb..")
-    solrc.commitCrawlDb()
-  }
-
 
   def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
-    val job = this.job
+    val job = this.job.asInstanceOf[SparklerJob]
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(job, d))
 
@@ -258,11 +237,33 @@ class Crawler extends CliTool {
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
-      parent.getFetchTimestamp, parent.getId, parent.getGenerateScore) })
+        parent.getFetchTimestamp, parent.getId, parent.getScoreAsMap) })
     val upsertFunc = new SolrUpsert(job)
     sc.runJob(outlinksRdd, upsertFunc)
 
     scoredRdd
+  }
+
+
+  def processFetched(rdd: RDD[CrawlData]): RDD[CrawlData] = {
+    if (kafkaEnable) {
+      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), rdd)
+    }
+
+    val job = this.job
+    //Step: Index all new URLS
+    sc.runJob(OutLinkUpsert(job, rdd), new SolrUpsert(job))
+
+    //Step: Update status+score of fetched resources
+    val statusUpdateRdd: RDD[SolrInputDocument] = rdd.map(d => StatusUpdateSolrTransformer(d))
+    sc.runJob(statusUpdateRdd, new SolrStatusUpdate(job))
+
+    //Step: Store these to nutch segments
+    val outputPath = this.outputPath + "/" + job.currentTask
+    //Step : write to FS
+    storeContent(outputPath, rdd)
+
+    rdd
   }
 }
 
@@ -275,7 +276,7 @@ object OutLinkUpsert extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) wi
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
-      parent.getFetchTimestamp, parent.getId) }) //create a new resource
+      parent.getFetchTimestamp, parent.getId, parent.getScore) }) //create a new resource
   }
 }
 
@@ -283,8 +284,14 @@ object Crawler extends Loggable with Serializable{
 
   def storeContent(outputPath:String, rdd:RDD[CrawlData]): Unit = {
     LOG.info(s"Storing output at $outputPath")
-    rdd.filter(_.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
-      .map(d => (new Text(d.fetchedData.getResource.getUrl), d.fetchedData.toNutchContent(new Configuration())))
+
+    object ConfigHolder extends Serializable {
+      var config:Configuration = new Configuration()
+    }
+
+    rdd.filter(r => r.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
+      .map(d => (new Text(d.fetchedData.getResource.getUrl),
+        NutchBridge.toNutchContent(d.fetchedData, ConfigHolder.config)))
       .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
   }
 

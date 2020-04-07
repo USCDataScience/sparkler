@@ -1,0 +1,5 @@
+apiVersion: v1
+appVersion: "1.0"
+description: A Helm chart for Sparker. Sparkler is a distributed web crawler based on Spark and Scala
+name: sparkler
+version: 0.1.0

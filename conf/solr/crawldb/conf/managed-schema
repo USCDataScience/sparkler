@@ -116,7 +116,7 @@
    <!-- Crawl DB Static Fields -->
    <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" /> 
    <field name="url" type="string" indexed="true" stored="true" required="true" multiValued="false" docValues="true" />
-   <field name="group" type="string" indexed="true" stored="true" required="true"  multiValued="false" docValues="true" /> 
+   <field name="group" type="string" indexed="true" stored="true" required="true"  multiValued="false" docValues="true" />
    <field name="page_score" type="double" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
    <field name="generate_score" type="double" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
 
@@ -148,9 +148,11 @@
    <field name="relative_path" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
    <field name="parent" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
    <field name="segment" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
-
+   <field name="seed" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
    <field name="modified_time" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
    <field name="retries_since_fetch" type="int" indexed="true" stored="true" default="-1" multiValued="false" docValues="true" />
+
+   <field name="response_time" type="long" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
 
   <!-- Admin -->
   <field name="indexed_at" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
@@ -253,7 +255,6 @@
       Unless this field is marked with required="false", it will be a required field
    -->
  <uniqueKey>id</uniqueKey>
- <defaultSearchField>text</defaultSearchField>
 
   <!-- copyField commands copy one field to another at the time a document
         is added to the index.  It's used either to index the same field differently,

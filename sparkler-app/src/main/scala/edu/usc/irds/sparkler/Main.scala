@@ -21,9 +21,10 @@ import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.pipeline.Crawler
 import edu.usc.irds.sparkler.service.Injector
 import edu.usc.irds.sparkler.util.FileDumperTool
+import edu.usc.irds.sparkler.service.{Dumper, Injector}
 
 /**
-  * Created by thammegr on 6/7/16.
+  * Command Line Interface to Sparkler
   */
 object Main extends Loggable {
 
@@ -32,7 +33,7 @@ object Main extends Loggable {
   val subCommands = Map[String, (Class[_], String)](
     "inject" -> (classOf[Injector], "Inject (seed) URLS to crawldb"),
     "crawl" -> (classOf[Crawler], "Run crawl pipeline for several iterations"),
-    "dump" -> (classOf[FileDumperTool], "Dump files in a particular segment dir")
+    "dump" -> (classOf[Dumper], "Tool to create raw files from hadoop sequence files")
   )
 
   def main(args: Array[String]): Unit ={

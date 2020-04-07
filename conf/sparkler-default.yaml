@@ -57,7 +57,17 @@ generate.topn: 1000
 # Type: Int. Default: 256
 generate.top.groups: 256
 
+# Define criteria for sorting the top N urls
+# Note: The name of the field to sort by should exactly match the one used in the SOLR schema
+# Type: String. Default: discover_depth asc, score asc
+generate.sortby: "discover_depth asc, score asc"
 
+
+# Specify field to use for grouping partitions in RDD
+# Default is the "group" field which represent the hostnames of the URLs being fethced
+# Note: This field should match exactly the one specified in the SOLR schema
+# Type: String. Default: group
+generate.groupby: "group"
 
 ##################### Fetcher Properties ################################
 
@@ -81,13 +91,19 @@ fetcher.headers:
 
 # Plugins Bundle directory. Configured through Maven.
 # Discouraged to Modify unless specifically required.
-plugins.bundle.directory: ${project.parent.basedir}${file.separator}${project.bundles.directory}
+# To set plugins directory, use system property -Dpf4j.pluginsDir=$DIR/plugins
+# by default it looks up 'plugins' directory from current working directory
+
 
 # List of activated plugins
 plugins.active:
-    - urlfilter.regex
-    - scorer.dd.svn
-    # - fetcher.jbrowser
+
+    - urlfilter-regex
+    - urlfilter-samehost
+    - scorer-dd-svn
+#    - fetcher-jbrowser
+#    - fetcher-htmlunit
+#    - fetcher-webdriver
 
 # All Plugins are listed under this tree
 plugins:
@@ -107,6 +123,8 @@ plugins:
     # Configuration Properties
     socket.timeout: 3000
     connect.timeout: 3000
-
+  # fetcher.chrome:
+  #  chrome.dns: "http://browserless:3000/webdriver"
 ##################### Custom properties for MEMEX ###########################################
-memex.webpage.mimetype: "text/html"
+  memex.webpage.mimetype: "text/html"
+
