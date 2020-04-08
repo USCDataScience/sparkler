@@ -100,7 +100,7 @@ plugins.active:
 
     - urlfilter-regex
     - urlfilter-samehost
-    - scorer-dd-svn
+#    - scorer-dd-svn
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
 #    - fetcher-webdriver

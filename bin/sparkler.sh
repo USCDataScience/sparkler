@@ -12,4 +12,5 @@ if [ ! -f "$JAR" ]
 fi
 
 # run
-java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 -Xms1g -cp $DIR/conf:$JAR -Dpf4j.pluginsDir=$DIR/plugins edu.usc.irds.sparkler.Main $@
+# -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005
+java -Xms1g -cp $DIR/conf:$JAR -Dpf4j.pluginsDir=$DIR/plugins edu.usc.irds.sparkler.Main $@
