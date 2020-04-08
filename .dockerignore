@@ -21,5 +21,6 @@
 
 # except these
 !build
+!sparkler-ui/sparkler-dashboard
 !sparkler-ui/target/*.war
 !conf
