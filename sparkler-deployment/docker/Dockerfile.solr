@@ -38,12 +38,11 @@ RUN wget -nv http://archive.apache.org/dist/lucene/solr/6.2.1/solr-6.2.1.tgz -O 
     mv /data/solr-* /data/solr && rm /data/solr.tgz \
     && /data/solr/bin/solr start && \
     /data/solr/bin/solr create_core -c crawldb -d /data/sparkler/conf/solr/crawldb/ && \
-    /data/solr/bin/solr stop && chown -R sparkler:sparkler /data
+    /data/solr/bin/solr stop
 
 # sparkler  ui with banana dashboard
 COPY sparkler-ui/sparkler-dashboard/ /data/solr/server/solr-webapp/sparkler-dashboard
-RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
-
+RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/ && chown -R sparkler:sparkler /data
 USER sparkler
 # Define default command.
 CMD ["bash"]
