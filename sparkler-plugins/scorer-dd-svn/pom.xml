@@ -38,6 +38,15 @@
         <plugin.class>edu.usc.irds.sparkler.plugin.DdSvnScorerActivator</plugin.class>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.3.6</version>
+        </dependency>
+
+    </dependencies>
+
     <build>
         <plugins>
             <!-- Config is same as defined in the parent POM -->

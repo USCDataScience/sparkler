@@ -22,6 +22,7 @@ import edu.usc.irds.sparkler.*;
 import edu.usc.irds.sparkler.plugin.ddsvn.ApacheHttpRestClient;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,13 +34,14 @@ import java.util.Map;
  * This class implements the @{@link Scorer} interface providing a method to determine the score of the extracted text
  * on the basis of the result obtained by using a RESTful SVN-based classifier.
  */
+@Extension
 public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
 
     private final static Logger LOG = LoggerFactory.getLogger(DdSvnScorer.class);
 
-    private Map<String, String> classes;
+    //private Map<String, String> classes;
 
-    private ApacheHttpRestClient restClient;
+    private ApacheHttpRestClient restClient= new ApacheHttpRestClient();
 
     private LinkedHashMap<String, Object> pluginConfig;
 
@@ -49,6 +51,12 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
 
     private String scoreKey;
 
+    private Map<String,String> classes = new HashMap() {{
+        put("Model doesn't exist", "-1");
+        put("Not Relevant", "0");
+        put("Relevant", "1");
+        put("Highly Relevant", "2");
+    }};
     @ConfigKey
     public static final String SCORER_DD_SVN_URL = "scorer.dd.svn.url";
     public static final String DEFAULT_SCORER_DD_SVN_URL = "http://localhost:5000/classify/predict";
@@ -62,32 +70,20 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
     public static final String DEFAULT_SCORE_KEY = "svn_score";
 
     @Override
-    public void init(JobContext context, String pluginId) throws SparklerException {
-        super.init(context, pluginId);
-        SparklerConfiguration config = jobContext.getConfiguration();
-        this.pluginConfig = config.getPluginConfiguration(pluginId);
-        this.uriClassifier = pluginConfig.getOrDefault(SCORER_DD_SVN_URL, DEFAULT_SCORER_DD_SVN_URL).toString();
-        this.fallbackScore = pluginConfig.getOrDefault(FALLBACK_SCORE, DEFAULT_FALLBACK_SCORE).toString();
-        this.scoreKey = pluginConfig.getOrDefault(SCORE_KEY, DEFAULT_SCORE_KEY).toString();
-        this.classes = new HashMap<String,String>();
-        this.classes.put("Model doesn't exist", "-1");
-        this.classes.put("Not Relevant", "0");
-        this.classes.put("Relevant", "1");
-        this.classes.put("Highly Relevant", "2");
-
-        this.restClient = new ApacheHttpRestClient();
-        LOG.info(SCORER_DD_SVN_URL + ": " + this.uriClassifier);
-        LOG.info(FALLBACK_SCORE + ": " + this.fallbackScore);
-        LOG.info(SCORE_KEY + ": " + this.scoreKey);
-    }
-
-    @Override
     public String getScoreKey() {
         return this.scoreKey;
     }
 
     @Override
     public Double score(String extractedText) throws Exception {
+        LinkedHashMap<String, Object> cfg = jobContext.getConfiguration().getPluginConfiguration(pluginId);
+        this.uriClassifier = cfg.getOrDefault(SCORER_DD_SVN_URL, DEFAULT_SCORER_DD_SVN_URL).toString();
+        this.fallbackScore = cfg.getOrDefault(FALLBACK_SCORE, DEFAULT_FALLBACK_SCORE).toString();
+        this.scoreKey = cfg.getOrDefault(SCORE_KEY, DEFAULT_SCORE_KEY).toString();
+        LOG.info(SCORER_DD_SVN_URL + ": " + this.uriClassifier);
+        LOG.info(FALLBACK_SCORE + ": " + this.fallbackScore);
+        LOG.info(SCORE_KEY + ": " + this.scoreKey);
+
         LOG.info(this.uriClassifier);
         JSONObject json = new JSONObject();
         JSONArray array = new JSONArray();
