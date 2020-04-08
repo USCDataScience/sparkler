@@ -16,11 +16,11 @@ cache:
 
 after_script:  
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker build . -t uscdatascience/sparkler-standalone -f sparkler-deployment/docker-k8s/Dockerfile
-  - docker push uscdatascience/sparkler-standalone
-  - docker build . -t uscdatascience/sparkler -f sparkler-deployment/docker/Dockerfile
-  - docker push uscdatascience/sparkler
-  - docker build . -t uscdatascience/sparkler-init -f sparkler-deployment/sparkler-init/Dockerfile
-  - docker push uscdatascience/sparkler-init
-  - docker build --pull -t "uscdatascience/sparkler-solr" -f sparkler-deployment/docker/Dockerfile.solr .
-  - docker push uscdatascience/sparkler-solr
+  - docker build . -t uscdatascience/sparkler-standalone:latest -f sparkler-deployment/docker-k8s/Dockerfile
+  - docker push uscdatascience/sparkler-standalone:latest
+  - docker build . -t uscdatascience/sparkler:latest -f sparkler-deployment/docker/Dockerfile
+  - docker push uscdatascience/sparkler:latest
+  - docker build . -t uscdatascience/sparkler-init:latest -f sparkler-deployment/sparkler-init/Dockerfile
+  - docker push uscdatascience/sparkler-init:latest
+  - docker build --pull -t "uscdatascience/sparkler-solr:latest" -f sparkler-deployment/docker/Dockerfile.solr .
+  - docker push uscdatascience/sparkler-solr:latest
