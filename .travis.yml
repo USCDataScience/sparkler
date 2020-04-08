@@ -17,6 +17,8 @@ cache:
 script:  
   - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
   - mvn test -B
+  - ls -al
+  - pwd
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker build . -t uscdatascience/sparkler-standalone:latest -f sparkler-deployment/docker-k8s/Dockerfile
   - docker push uscdatascience/sparkler-standalone:latest
