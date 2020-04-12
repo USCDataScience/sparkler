@@ -179,7 +179,7 @@ public class Resource implements Serializable {
 
     public Map<String, Double> getScoreAsMap(){
         HashMap<String, Double> hm = new HashMap<>();
-        hm.put("generated_score", this.generateScore);
+        hm.put("generate_score", this.generateScore);
         return hm;
     }
 
