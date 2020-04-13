@@ -48,7 +48,7 @@ RUN /data/solr/bin/solr start -force && \
     /data/solr/bin/solr stop -force
 
 # sparkler  ui with banana dashboard
-COPY ./sparkler-ui/target/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkler
+COPY ./sparkler-ui/sparkler-dashboard/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkler
 RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
 
 # Fix permissions
