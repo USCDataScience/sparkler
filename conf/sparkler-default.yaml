@@ -103,7 +103,7 @@ plugins.active:
 #    - scorer-dd-svn
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
-#    - fetcher-webdriver
+#    - fetcher-chrome
 
 # All Plugins are listed under this tree
 plugins:
