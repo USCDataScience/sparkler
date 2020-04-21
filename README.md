@@ -43,8 +43,8 @@ bash dockler.sh
 
 * Note: You can use Vim and Nano editors also or use: echo -e "http://example1.com\nhttp://example2.com" >> seedfile.txt command.
 
-3. Inject seed urls using the following command, 
-/sparkler/bin/sparkler.sh inject -id 1 -sf seed-urls.txt
+3. Inject seed urls using the following command, (assuming you are in sparkler/bin directory) 
+$bash sparkler.sh inject -id 1 -sf seed-urls.txt
 4. Start the crawl job.
 ```
 To crawl until the end of all new URLS, use `-i -1`, Example: `/data/sparkler/bin/sparkler.sh crawl -id 1 -i -1`
