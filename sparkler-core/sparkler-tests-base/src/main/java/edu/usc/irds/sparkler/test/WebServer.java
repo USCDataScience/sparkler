@@ -32,8 +32,9 @@ import org.slf4j.LoggerFactory;
 public class WebServer extends Server {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebServer.class);
-
     public static final int DEFAULT_PORT = 8080;
+
+    private int port;
 
     public static String getDefaultPath(){
         return WebServer.class.getClassLoader().getResource("webapp").toExternalForm();
@@ -45,6 +46,7 @@ public class WebServer extends Server {
 
     public WebServer(int port, String resRoot){
         super(port);
+        this.port = port;
         LOG.info("Port:{}, Resources Root:{}", port, resRoot);
         ResourceHandler rh0 = new ResourceHandler();
         ContextHandler context0 = new ContextHandler();
@@ -67,6 +69,9 @@ public class WebServer extends Server {
         this.setHandler(contexts);
     }
 
+    public int getPort() {
+        return port;
+    }
 
     public static void main(String[] args) throws Exception {
         WebServer server = new WebServer();
