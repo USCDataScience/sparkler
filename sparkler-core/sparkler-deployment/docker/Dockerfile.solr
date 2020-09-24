@@ -32,7 +32,7 @@ RUN mkdir -p /data/sparkler/conf/solr
 
 ADD ./build/conf/solr /data/sparkler/conf/solr
 
-RUN yum -y update && yum -y install wget
+RUN yum -y update && yum -y install wget procps lsof
 
 ## Setup Solr
 RUN wget -nv http://archive.apache.org/dist/lucene/solr/6.2.1/solr-6.2.1.tgz -O /data/solr.tgz && \

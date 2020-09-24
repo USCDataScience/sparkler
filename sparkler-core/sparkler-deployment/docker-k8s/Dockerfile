@@ -28,7 +28,7 @@ RUN groupadd --gid 1000 sparkler && \
 
 #RUN apt-get update && apt-get install -y -qq --fix-missing software-properties-common openjfx nano
 
-RUN yum -y update && yum -y install wget
+RUN yum -y update && yum -y install wget procps lsof
 
 # Define working directory.
 WORKDIR /data
