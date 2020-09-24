@@ -27,7 +27,7 @@ RUN groupadd --gid 1000 sparkler && \
    useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
 
 
-RUN yum update && yum install wget
+RUN yum -y update && yum -y install wget
 
 
 

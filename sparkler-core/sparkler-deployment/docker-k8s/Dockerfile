@@ -21,13 +21,14 @@
 # Build command:
 #    docker build -t sparkler-local -f sparkler-deployment/docker/Dockerfile .
 
-FROM openjdk:8
+FROM openjdk:13
 
 RUN groupadd --gid 1000 sparkler && \
    useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
 
-RUN apt-get update && apt-get install -y -qq --fix-missing software-properties-common openjfx nano
+#RUN apt-get update && apt-get install -y -qq --fix-missing software-properties-common openjfx nano
 
+RUN yum -y update && yum -y install wget
 
 # Define working directory.
 WORKDIR /data

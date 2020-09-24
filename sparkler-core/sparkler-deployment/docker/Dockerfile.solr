@@ -21,7 +21,7 @@
 # Build command:
 #    docker build -t sparkler-local -f sparkler-deployment/docker/Dockerfile .
 
-FROM openjdk:8
+FROM openjdk:13
 
 WORKDIR /data
 
@@ -31,6 +31,8 @@ RUN groupadd --gid 1000 sparkler && \
 RUN mkdir -p /data/sparkler/conf/solr
 
 ADD ./build/conf/solr /data/sparkler/conf/solr
+
+RUN yum -y update && yum -y install wget
 
 ## Setup Solr
 RUN wget -nv http://archive.apache.org/dist/lucene/solr/6.2.1/solr-6.2.1.tgz -O /data/solr.tgz && \
