@@ -24,11 +24,11 @@ jobs:
         uses: actions/checkout@v2
       - name: Push to Docker Hub
         uses: docker/build-push-action@v@
-        working-directory: ./sparkler-core
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: uscdatascience/sparkler:latest
           tag_with_ref: true
-          file: sparkler-deployment/docker/Dockerfile
+          file: sparkler-core/sparkler-deployment/docker/Dockerfile
           push: true
+          context: ./sparkler-core
