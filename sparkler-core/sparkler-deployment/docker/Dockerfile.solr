@@ -35,16 +35,19 @@ ADD ./build/conf/solr /data/sparkler/conf/solr
 RUN yum -y update && yum -y install wget procps lsof
 
 ## Setup Solr
-RUN wget -nv http://archive.apache.org/dist/lucene/solr/6.2.1/solr-6.2.1.tgz -O /data/solr.tgz && \
+RUN wget http://archive.apache.org/dist/lucene/solr/8.5.0/solr-8.5.0.tgz -O /data/solr.tgz && \
     cd /data/ && tar xzf /data/solr.tgz && \
-    mv /data/solr-* /data/solr && rm /data/solr.tgz \
-    && /data/solr/bin/solr start && \
-    /data/solr/bin/solr create_core -c crawldb -d /data/sparkler/conf/solr/crawldb/ && \
-    /data/solr/bin/solr stop
+    mv /data/solr-* /data/solr && rm /data/solr.tgz
+
+ADD ./build /data/sparkler
+
+RUN /data/solr/bin/solr start -force && \
+    /data/solr/bin/solr create_core -force -c crawldb -d /data/sparkler/conf/solr/crawldb/ && \
+    /data/solr/bin/solr stop -force
+
 
 # sparkler  ui with banana dashboard
-COPY sparkler-ui/sparkler-dashboard /data/solr/server/solr-webapp/
-RUN unzip /data/solr/server/solr-webapp/*.war -d /data/solr/server/solr-webapp/sparkler
+COPY ./sparkler-ui/sparkler-dashboard/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkler
 RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/ && chown -R sparkler:sparkler /data
 USER sparkler
 # Define default command.
