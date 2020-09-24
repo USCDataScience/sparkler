@@ -30,16 +30,18 @@ jobs:
           tags: uscdatascience/sparkler:latest
           file: sparkler-core/sparkler-deployment/docker/Dockerfile
           context: ./sparkler-core
+          push: true
       - name: Build Sparkler Standalone Container
         uses: docker/build-push-action@v2
         with:
           tags: uscdatascience/sparkler-standalone:latest
           file: sparkler-core/sparkler-deployment/docker-k8s/Dockerfile
           context: ./sparkler-core
+          push: true
       - name: Build Sparkler Solr Container
         uses: docker/build-push-action@v2
         with:
           tags: uscdatascience/sparkler-solr:latest
           file: sparkler-core/sparkler-deployment/docker/Dockerfile.solr
           context: ./sparkler-core
-
+          push: true
