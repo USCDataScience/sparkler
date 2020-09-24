@@ -42,6 +42,7 @@ RUN wget -nv http://archive.apache.org/dist/lucene/solr/6.2.1/solr-6.2.1.tgz -O 
 
 # sparkler  ui with banana dashboard
 COPY sparkler-ui/sparkler-dashboard /data/solr/server/solr-webapp/
+RUN unzip /data/solr/server/solr-webapp/*.war -d /data/solr/server/solr-webapp/sparkler
 RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/ && chown -R sparkler:sparkler /data
 USER sparkler
 # Define default command.
