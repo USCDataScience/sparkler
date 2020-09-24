@@ -1,0 +1,46 @@
+version: '2'
+services:
+  single-server-int:
+    image: arangodb:3.4.6
+    ports:
+      - 8529:8529
+    environment:
+        - ARANGO_NO_AUTH=1
+    volumes:
+      - db:/var/lib/arangodb3
+  sce-solr:
+    image: uscdatascience/sparkler-solr:latest
+    ports:
+     - "8983:8983"
+    volumes:
+      - data:/opt/solr/server/solr/mycores
+    command: ['/data/solr/bin/solr','start','-f']
+
+  sce-splash:
+    image: scrapinghub/splash
+    ports:
+      - 8050:8050
+
+  sce-api:
+    image: nasajplmemex/sce-domain-discovery:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - WEBDRIVER_URL=http://sce-chrome:3000/webdriver
+      - ARANGO_URL=http://single-server-int:8529
+      - RUNNING_KUBERNETES=false
+    command: ["./wait-for-it.sh", "single-server-int:8529", "--", "python", "waitress_server.py"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - models:/models
+  sce-ui:
+    image: uscdatascience/sparkler-ui:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - models:/models
+volumes:
+ data:
+ db:
+ models:

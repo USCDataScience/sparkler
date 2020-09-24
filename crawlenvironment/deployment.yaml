@@ -1,0 +1,278 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sce-solr
+  labels:
+    app: sce-solr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sce-solr
+  template:
+    metadata:
+      labels:
+        app: sce-solr
+    spec:
+      containers:
+      - name: sce-solr
+        image: registry.gitlab.com/sparkler-crawl-environment/sparkler/solr:memex-dd
+        command: ['/data/solr/bin/solr','start','-f']
+        ports:
+        - name: http
+          containerPort: 8983
+        imagePullPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sce-firefox
+  labels:
+    app: sce-firefox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sce-firefox
+  template:
+    metadata:
+      labels:
+        app: sce-firefox
+    spec:
+      containers:
+      - name: sce-firefox
+        image: selenium/standalone-firefox-debug:3.141.59
+        ports:
+        - name: http
+          containerPort: 4444
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "2G"
+          limits:
+            memory: "4G"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sce-splash
+  labels:
+    app: sce-splash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sce-splash
+  template:
+    metadata:
+      labels:
+        app: sce-splash
+    spec:
+      containers:
+      - name: sce-splash
+        image: scrapinghub/splash
+        ports:
+        - name: http
+          containerPort: 8050
+        imagePullPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sce-chrome
+  labels:
+    app: sce-chrome
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sce-chrome
+  template:
+    metadata:
+      labels:
+        app: sce-chrome
+    spec:
+      containers:
+      - name: sce-chrome
+        image: browserless/chrome
+        ports:
+        - name: http
+          containerPort: 3000
+        imagePullPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sce-chrome-screenshot
+  labels:
+    app: sce-chrome-screenshot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sce-chrome-screenshots
+  template:
+    metadata:
+      labels:
+        app: sce-chrome-screenshots
+    spec:
+      containers:
+      - name: sce-chrome-screenshots
+        image: browserless/chrome
+        ports:
+        - name: http
+          containerPort: 3000
+        imagePullPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sce-api
+  labels:
+    app: sce-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sce-api
+  template:
+    metadata:
+      labels:
+        app: sce-api
+    spec:
+      containers:
+      - name: sce-api
+        image: registry.gitlab.com/sparkler-crawl-environment/memex-dd:memex-dd
+        env:
+        - name: WEBDRIVER_URL
+          value: "http://sce-chrome:3000/webdriver"
+        ports:
+        - name: http
+          containerPort: 5000
+        imagePullPolicy: Always
+      imagePullSecrets:
+      - name: gitlab-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: sce-api
+spec:
+  ports:
+  - name: http
+    port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: sce-api
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: sce-firefox
+spec:
+  ports:
+  - name: http
+    port: 4444
+    protocol: TCP
+    targetPort: 4444
+  selector:
+    app: sce-firefox
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: sce-solr
+spec:
+  ports:
+  - name: http
+    port: 8983
+    protocol: TCP
+    targetPort: 8983
+  selector:
+    app: sce-solr
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: sce-chrome
+spec:
+  ports:
+  - name: http
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: sce-chrome
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: sce-chrome-screenshots
+spec:
+  ports:
+  - name: http
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: sce-chrome-screenshots
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: sce-splash
+spec:
+  ports:
+  - name: http
+    port: 8050
+    protocol: TCP
+    targetPort: 8050
+  selector:
+    app: sce-splash
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sce-ui
+  labels:
+    app: sce-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sce-ui
+  template:
+    metadata:
+      labels:
+        app: sce-ui
+    spec:
+      containers:
+      - name: sce-ui
+        image: registry.gitlab.com/sparkler-crawl-environment/sce-ui:latest
+        ports:
+        - name: http
+          containerPort: 80
+        imagePullPolicy: Always
+      imagePullSecrets:
+      - name: gitlab-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: sce-ui
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: sce-ui
+  type: NodePort
