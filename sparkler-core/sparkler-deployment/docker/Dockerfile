@@ -27,8 +27,8 @@ RUN groupadd --gid 1000 sparkler && \
    useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
 
 
-RUN apt-get update && \
-    apt-get install -qq -y --fix-missing software-properties-common wget lsof emacs-nox vim nano openjfx
+RUN yup update
+
 
 
 # Define working directory.
