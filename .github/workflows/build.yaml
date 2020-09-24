@@ -15,8 +15,6 @@ jobs:
       - name: Build with Maven
         working-directory: ./sparkler-core
         run: mvn -B package --file pom.xml
-      - name: Check out the repo
-        uses: actions/checkout@v2
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
