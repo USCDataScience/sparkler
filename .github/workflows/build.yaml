@@ -32,5 +32,4 @@ jobs:
         with:
           tags: uscdatascience/sparkler:latest
           file: sparkler-core/sparkler-deployment/docker/Dockerfile
-          push: true
           context: ./sparkler-core
