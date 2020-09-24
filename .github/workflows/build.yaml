@@ -15,3 +15,20 @@ jobs:
       - name: Build with Maven
         working-directory: ./sparkler-core
         run: mvn -B package --file pom.xml
+
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@v@
+        working-directory: ./sparkler-core
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: uscdatascience/sparkler:latest
+          tag_with_ref: true
+          file: sparkler-deployment/docker/Dockerfile
+          push: true
