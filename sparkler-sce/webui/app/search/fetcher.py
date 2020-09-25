@@ -2,6 +2,8 @@
 import logging
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
+from flask import current_app as app
 
 logging.getLogger('urllib3').setLevel(logging.WARNING)
 logging.getLogger('chardet').setLevel(logging.WARNING)
@@ -67,18 +69,27 @@ class Fetcher:
         # res = urlopen(url)
         # data = res.read()
         data = None
-
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        app.logger.debug('Fetching Content: ' +current_time)
         try:
-            data = requests.get(url).content
+            data = requests.get(url, timeout=5).content
         except requests.exceptions.ConnectionError:
-            print('Connection Failed')
+            app.logger.debug('Connection Failed')
 
         if data is not None:
+            imag = None
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            app.logger.debug('Fetching Soup: '+ current_time)
             print('Fetched %s from %s' % (len(data), url))
             # if res.headers.getparam('charset').lower() != 'utf-8':
             #    data = data.encode('utf-8')
             soup = BeautifulSoup(data, 'html.parser')
             print('Parsed %s from %s' % (len(data), url))
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            app.logger.debug('Cleaning Soup: '+ current_time)
             clean_url = Fetcher.clean_string(url)
             clean_data = Fetcher.clean_string(soup.prettify())
 
@@ -87,6 +98,9 @@ class Fetcher:
                 title = soup.title.string
 
             clean_text = Fetcher.cleantext(soup)
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            app.logger.debug('Returning Soup: '+ current_time)
             return ([clean_url, clean_data, title, clean_text])
 
         return None

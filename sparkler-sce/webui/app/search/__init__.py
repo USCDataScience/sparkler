@@ -8,7 +8,7 @@ import os
 import uuid
 import requests
 
-
+from datetime import datetime
 from bs4 import BeautifulSoup
 from flask import current_app as app
 from pyArango.theExceptions import DocumentNotFoundError
@@ -47,7 +47,7 @@ def get_url_window(query, top_n, page):
                  '3D1%26kt%3Da%26kao%3D-1%26kap%3D-1%26kak%3D-1%26kk%3D-1%26ko%3Ds%26' \
                  'kv%3D-1%26kav%3D1%26t%3Dhk%26ia%3Dnews&wait=5'
     try:
-        output = requests.get(search_url).content
+        output = requests.get(search_url, timeout=20).content
     except requests.exceptions.RequestException as exception:
         app.logger.info('An error occurred while searching query: ' + query)
         app.logger.info(exception)
@@ -80,23 +80,34 @@ def parse_details(model, fetched_data):
     details['label'] = int(predict(model, fetched_data[3]))
 
     imag = None
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    app.logger.info('Fetching image: '+ current_time)
     try:
         imag = requests.get(SCEHOST+'/render.png?url='
                             + fetched_data[0] +
-                            '&wait=5&width=320&height=240')
+                            '&wait=1&width=320&height=240&timeout=5')
     except requests.exceptions.ConnectionError:
-        print('Connection error to SCE')
+        app.logger.info('Connection error to SCE')
 
     if imag is not None and imag.status_code == 200:
         generatedid = str(uuid.uuid4())
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        app.logger.info('Writing image: '+ current_time)
         with open(STORAGE_LOCATION+'/images/' + generatedid + '.png', 'wb') as file:
             file.write(imag.content)
         details['image'] = STORAGE_LOCATION+'/images/' + generatedid + '.png'
 
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        app.logger.info('Decoding image: '+ current_time)
         with open(details['image'], 'rb') as image_file:
             encoded_string = base64.b64encode(image_file.read())
             details['image'] = encoded_string.decode()
-
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        app.logger.info('Image stuff done: '+ current_time)
 
     return details
 
@@ -137,7 +148,10 @@ def query_and_fetch(query, model, top_n=12, page=1):
     if not bad_request:
         urls = []
         for element in results:
+            app.logger.debug(element['href'])
             urls.append(element['href'])
+
+        app.logger.debug('Fetching multiple')
 
         fetched_result = Fetcher.fetch_multiple(urls, None)
         for fetched_data in fetched_result:
