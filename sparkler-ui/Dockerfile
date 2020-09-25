@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 
 RUN apt update && apt-get install -y sudo python3 python3-dev python3-pip docker.io apache2 libapache2-mod-wsgi-py3 curl && curl -sL https://deb.nodesource.com/setup_10.x | bash - && apt update && apt install -y nodejs
 
-RUN adduser --disabled-password --gecos '' docker
+#RUN adduser --disabled-password --gecos '' docker
 RUN adduser www-data sudo
 
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
