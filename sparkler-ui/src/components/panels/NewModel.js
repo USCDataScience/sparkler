@@ -12,21 +12,21 @@ class NewModel extends Component {
         super(props);
         this.state = {};
         this.state['intent'] = INTENT_PRIMARY;
-        this.state['model']  = '';
+        this.state['model'] = '';
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-    handleSubmit = function(e){
+    handleSubmit = function (e) {
 
         this.props.createNewModel(this.state.model)
 
 
     };
 
-    handleChange = function(e){
-        this.setState({model:e.target.value})
+    handleChange = function (e) {
+        this.setState({model: e.target.value})
     };
 
     render() {

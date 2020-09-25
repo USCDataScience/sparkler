@@ -9,7 +9,7 @@ class GenerateModel extends Component {
 
     constructor(props, context) {
         super(props, context);
-        this.state= {}
+        this.state = {}
         this.state['intent'] = INTENT_PRIMARY;
         this.state['searchterm'] = ""
         this.handleChange = this.handleChange.bind(this);
@@ -22,12 +22,12 @@ class GenerateModel extends Component {
             alert("Model Updated")
         }
 
-        if(prevProps.current_model !== this.props.current_model){
+        if (prevProps.current_model !== this.props.current_model) {
             this.props.modelStats(this.props.current_model)
         }
     }
 
-    generateUpdateModel(){
+    generateUpdateModel() {
         this.props.updateModel(this.props.current_model, this.props.annotations)
     }
 
@@ -35,18 +35,17 @@ class GenerateModel extends Component {
         this.setState({searchterm: event.target.value});
     }
 
-    handleSearch(event){
-        if(this.props.current_model) {
+    handleSearch(event) {
+        if (this.props.current_model) {
             this.props.searchTriggered();
             this.props.searchWebsites(this.props.current_model, this.state.searchterm);
-        }
-        else{
+        } else {
             alert("Please Select a Model")
         }
     }
 
-    render(){
-        return(
+    render() {
+        return (
             <div>
                 <H5>Generate a Model</H5>
 
@@ -56,7 +55,7 @@ class GenerateModel extends Component {
                            label={"Search terms"}
                            labelFor={"text-input"}>
                     <InputGroup id={"searchterms"} type="search" value={this.state.searchterm}
-                                onChange={this.handleChange}  onKeyPress={event => {
+                                onChange={this.handleChange} onKeyPress={event => {
                         if (event.key === 'Enter') {
                             this.handleSearch()
                         }
@@ -67,22 +66,34 @@ class GenerateModel extends Component {
 
                 <div>
                     <H6>Minimum 10 Each</H6>
-                    <table style={{textAlign:"center"}}>
+                    <table style={{textAlign: "center"}}>
                         <tr>
                             <td>{(this.props.model_stats && this.props.model_stats["2"]) || 0}</td>
                             <td>{(this.props.model_stats && this.props.model_stats["1"]) || 0}</td>
                             <td>{(this.props.model_stats && this.props.model_stats["0"]) || 0}</td>
                         </tr>
                         <tr>
-                            <td><button className={"btn-circle btn-padding green"}><Icon icon={"heart"} iconSize={Icon.SIZE_LARGE}/></button></td>
-                            <td><button className={"btn-circle btn-padding amber"}><Icon icon={"tick"} iconSize={Icon.SIZE_LARGE}/></button></td>
-                            <td> <button className={"btn-circle btn-padding red"} onClick={this.props.updateTime}><Icon icon={"minus"} iconSize={Icon.SIZE_LARGE}/></button></td>
+                            <td>
+                                <button className={"btn-circle btn-padding green"}><Icon icon={"heart"}
+                                                                                         iconSize={Icon.SIZE_LARGE}/>
+                                </button>
+                            </td>
+                            <td>
+                                <button className={"btn-circle btn-padding amber"}><Icon icon={"tick"}
+                                                                                         iconSize={Icon.SIZE_LARGE}/>
+                                </button>
+                            </td>
+                            <td>
+                                <button className={"btn-circle btn-padding red"} onClick={this.props.updateTime}><Icon
+                                    icon={"minus"} iconSize={Icon.SIZE_LARGE}/></button>
+                            </td>
                         </tr>
                     </table>
 
                 </div>
                 <div>
-                    <span><Button onClick={this.generateUpdateModel} disabled={!this.props.current_model} icon={"export"}>Update Model</Button></span>
+                    <span><Button onClick={this.generateUpdateModel} disabled={!this.props.current_model}
+                                  icon={"export"}>Update Model</Button></span>
                 </div>
             </div>
         )
@@ -91,9 +102,9 @@ class GenerateModel extends Component {
 
 const mapDispatchToProps = dispatch => ({
     updateTime: () => dispatch(fetchNewTime()),
-    searchWebsites: (m,s) => dispatch(searchWebsites(m,s)),
+    searchWebsites: (m, s) => dispatch(searchWebsites(m, s)),
     searchTriggered: () => dispatch(searchFired(true)),
-    updateModel: (m ,a) => dispatch(updateModel(m, a)),
+    updateModel: (m, a) => dispatch(updateModel(m, a)),
     modelStats: (m) => dispatch(modelStats(m))
 })
 

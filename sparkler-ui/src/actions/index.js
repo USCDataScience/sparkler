@@ -1,53 +1,68 @@
 import * as types from '../reducers/types';
 import * as env from '../utils/constants'
 import axios from 'axios';
-//var Database = require('arangojs').Database;
+import fileDownload from "js-file-download";
 
-//var db = new Database('http://127.0.0.1:8529');
-/*
-db.createDatabase('sce').then(
-    () => console.log('Database created'),
-    err => console.error('Failed to create database:', err)
-);*/
+export const fetchModel = (model) =>{
+    window.open(env.API_URL+'/explorer-api/classify/download/'+model, '_blank');
+    return (dispatch) => {
+                let r = {
+                    type: types.DOWNLOADED,
+                    payload: ""
+                }
+                dispatch(r)
+    }
+}
+export const fetchSeeds = (model) => {
+    return (dispatch) => {
+        axios.get(env.API_URL+"/explorer-api/cmd/seed/fetch/"+model).then(
+            response => {
+                let r = {
+                    type: types.SEED_URLS_LIST,
+                    payload: response.data
+                }
+                dispatch(r)
+            }
+        )
+    }
+}
+export const fetchConfig = (model) => {
+    return (dispatch) => {
+        axios.get(env.API_URL+"/explorer-api/cmd/crawler/settings/"+model).then(
+            response => {
+                let r = {
+                    type: types.NEW_CONFIG,
+                    payload: response.data
+                }
+                dispatch(r)
+            }
+        )
+    }
+}
 
-//db.useDatabase('sce');
-
-//let collection = db.collection('models');
-
-/*
-
-collection.create().then(
-    () => console.log('Collection created'),
-    err => console.error('Failed to create collection:', err)
-);
-*/
-
-
-/*let doc = {
-    _key: 'firstDocument',
-    a: 'foo',
-    b: 'bar',
-    c: Date()
-};
-
-
-collection.save(doc).then(
-    meta => console.log('Document saved:', meta._rev),
-    err => console.error('Failed to save document:', err)
-);
-
-
-collection.update('firstDocument', {d: 'qux'}).then(
-    meta => console.log('Document updated:', meta._rev),
-    err => console.error('Failed to update document:', err)
-);
-
-
-collection.document('firstDocument').then(
-    doc => console.log('Document:', JSON.stringify(doc, null, 2)),
-    err => console.error('Failed to fetch document:', err)
-);*/
-
+export const updateCrawlConfig = (model, config) => {
+    return (dispatch) => {
+        axios.post(env.API_URL+"/explorer-api/cmd/crawler/settings/"+model, config).then(
+            response => {
+                let r = {
+                    type: types.NEW_CONFIG,
+                    payload: response.data
+                }
+                dispatch(r)
+            }
+        )
+    }
+}
+export const exportData = (model) => {
+    return (dispatch) => {
+        axios.get("/solr/crawldb/select?indent=on&q=crawl_id:"+model+"&wt=json").then((
+            response => {
+                fileDownload(JSON.stringify(response.data, null, 2), 'export.json');
+                dispatch({type: types.DATA_EXPORTED, payload: "OK"})
+            }
+        ))
+    }
+}
 export const createNewModel = (name) => {
     return (dispatch) => {
         axios.get(env.API_URL+"/explorer-api/classify/createnew/"+name)
@@ -82,7 +97,6 @@ export const updateModel = (name, annotations) => {
                     type: types.MODEL_STATS,
                     payload: response.data
                 }
-                debugger;
                 dispatch(response)
             })
     }
@@ -129,10 +143,10 @@ export const searchFired = (b) => ({
 
 export const searchWebsites = (model, search_term) => {
     return (dispatch) => {
-        axios.get(env.API_URL+"/search/"+model+"/" + search_term)
+        axios.get(env.API_URL+"/explorer-api/search/"+model+"/" + search_term)
             .then(response => {
                 let jdata = response.data;
-
+                console.log(jdata)
                 response = {
                     type: types.SEARCH_RESULTS,
                     payload: jdata
@@ -154,8 +168,8 @@ export const saveSeedURLs = (model,urls) => {
         axios.post(env.API_URL+'/explorer-api/cmd/seed/upload/'+model, urls)
             .then(response => {
                 response = {
-                    type: types.UPDATE_SEED_URLS,
-                    payload: urls
+                    type: types.SEED_URLS_LIST,
+                    payload: response.data
 
                 }
                 dispatch(response)
@@ -195,11 +209,10 @@ export const setRelevancy = (frame, val) => {
 }
 
 
-export const startCrawl = (model) => {
+export const startCrawl = (model, obj) => {
     return (dispatch) => {
-        axios.post(env.API_URL+'/explorer-api/cmd/crawler/crawl/'+model)
+        axios.post(env.API_URL+'/explorer-api/cmd/crawler/crawl/'+model, obj)
             .then( response => {
-                debugger;
                 let r = {
                     type: types.CRAWL_STATUS,
                     payload: types.CRAWL_STARTING
@@ -215,7 +228,6 @@ export const killCrawl = (model) => {
     return (dispatch) => {
         axios.delete(env.API_URL+'/explorer-api/cmd/crawler/crawl/'+model)
             .then( response => {
-                    debugger;
                     let r = {
                         type: types.CRAWL_STATUS,
                         payload: types.CRAWL_FINISHED
@@ -293,7 +305,6 @@ export const crawlStatus =  (model) => {
 }
 
 function getStatus(data, model) {
-    debugger;
 
     for (let key in data.items) {
         if (data.items.hasOwnProperty(key)) {

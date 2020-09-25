@@ -4,6 +4,7 @@ import {fetchNewTime} from "../actions";
 import ModelDialog from "./dialogs/ModelDialog";
 import {RouterButton} from "./RouterButton";
 import {Link, withRouter} from "react-router-dom";
+import {Button} from "@blueprintjs/core";
 
 
 class Navbar extends Component {
@@ -17,19 +18,32 @@ class Navbar extends Component {
 
     handle_models = () => this.modalElement.current.handleOpen();
 
-    render(){
-        const { history } = this.props;
+    open_solr = () => {
+        const win = window.open("/solr", '_blank');
+        win.focus();
 
-        return(
+    }
+
+    render() {
+        const {history} = this.props;
+
+        return (
             <nav className="bp3-navbar bp3-dark">
                 <div style={{margin: "0 auto", width: "600px"}}>
                     <div className="bp3-navbar-group bp3-align-left">
-                        <div className="bp3-navbar-heading">Domain Discovery - Seed Generation{/* - Current time: {this.props.currentTime}*/}</div>
+                        <div className="bp3-navbar-heading">Domain Discovery - Seed
+                            Generation{/* - Current time: {this.props.currentTime}*/}</div>
                     </div>
                     <div className="bp3-navbar-group bp3-align-right">
-                        <RouterButton label="Explorer" activeOnlyWhenExact={false} history={history} to={"/"} className="bp3-button bp3-minimal bp3-icon-home">Explorer</RouterButton>
-                        <button className="bp3-button bp3-minimal bp3-icon-cog" onClick={this.handle_models}>Models</button>
-                        <RouterButton label="Analytics" activeOnlyWhenExact={false} history={history} to={"/analytics"} className="bp3-button bp3-minimal bp3-icon-cog" onClick={this.handle_models}>Analytics</RouterButton>
+                        <RouterButton label="Explorer" activeOnlyWhenExact={false} history={history} to={"/"}
+                                      className="bp3-button bp3-minimal bp3-icon-home">Explorer</RouterButton>
+                        <button className="bp3-button bp3-minimal bp3-icon-cog" onClick={this.handle_models}>Models
+                        </button>
+                        <RouterButton label="Analytics" activeOnlyWhenExact={false} history={history} to={"/analytics"}
+                                      className="bp3-button bp3-minimal bp3-icon-cog"
+                                      onClick={this.handle_models}>Analytics</RouterButton>
+                        <Button label="Solr" className="bp3-button bp3-minimal bp3-icon-cog"
+                                onClick={this.open_solr}>Solr</Button>
                         <ModelDialog ref={this.modalElement}/>
                     </div>
                 </div>
@@ -37,6 +51,7 @@ class Navbar extends Component {
         )
     }
 }
+
 
 const mapStateToProps = state => {
     return {

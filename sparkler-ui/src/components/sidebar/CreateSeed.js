@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {AnchorButton, H5} from "@blueprintjs/core";
 import SeedURLDialog from "../dialogs/SeedURLDialog";
 import {connect} from "react-redux";
@@ -17,12 +17,13 @@ class CreateSeed extends Component {
 
     handleOpen = () => this.modalElement.current.handleOpen();
 
-    render(){
-        return(
+    render() {
+        return (
             <div>
-            <H5>Create Seed File</H5>
-            <AnchorButton disabled={!this.props.current_model} icon={"import"} onClick={this.handleOpen} text="Paste Seed URLs" />
-            <SeedURLDialog ref={this.modalElement}/>
+                <H5>Create Seed File</H5>
+                <AnchorButton disabled={!this.props.current_model} icon={"import"} onClick={this.handleOpen}
+                              text="Paste Seed URLs"/>
+                <SeedURLDialog ref={this.modalElement}/>
             </div>
         )
     }

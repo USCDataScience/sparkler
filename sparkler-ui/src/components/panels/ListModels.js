@@ -9,26 +9,27 @@ class ListModels extends Component {
         this.props.fetchAllModels()
     }
 
-    handleSelect = function(name){
+    handleSelect = function (name) {
         this.props.enableModel(name)
     }
 
     render() {
         if (this.props.models) {
-        return (
-            <Card>
-                {
-                    this.props.models.map((item, key) => {
-                        return <li key={key}><button onClick={() => this.handleSelect(item.name)}>{item.name}</button></li>
-                    })}
-            </Card>
-        )
-    }
-    else {
-        return (
-            <Card>No Models Available Yet</Card>
-        )
-}
+            return (
+                <Card>
+                    {
+                        this.props.models.map((item, key) => {
+                            return <li key={key}>
+                                <button onClick={() => this.handleSelect(item.name)}>{item.name}</button>
+                            </li>
+                        })}
+                </Card>
+            )
+        } else {
+            return (
+                <Card>No Models Available Yet</Card>
+            )
+        }
 
     }
 }

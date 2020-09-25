@@ -4,7 +4,7 @@ import ListModels from "../panels/ListModels";
 import NewModel from "../panels/NewModel";
 import {connect} from "react-redux";
 
-class ModelDialog extends Component{
+class ModelDialog extends Component {
 
     constructor(props) {
         super(props);
@@ -17,40 +17,41 @@ class ModelDialog extends Component{
 
     componentDidUpdate(oldProps) {
         const newProps = this.props
-        if(oldProps.current_model !== newProps.current_model) {
+        if (oldProps.current_model !== newProps.current_model) {
             this.handleClose()
         }
     }
 
 
-    handleClose = () => this.setState({ isOpen: false });
-    handleOpen = () => this.setState({ isOpen: true });
+    handleClose = () => this.setState({isOpen: false});
+    handleOpen = () => this.setState({isOpen: true});
+
     handleChange(event) {
         this.setState({value: event.target.value});
     }
 
-    render(){
-        return(
-        <Dialog
-            icon="search-text"
-            onClose={this.handleClose}
-            title="Model Administration"
-            {...this.state}
-        >
-            <div className={Classes.DIALOG_BODY} style={{minHeight:"200px"}}>
+    render() {
+        return (
+            <Dialog
+                icon="search-text"
+                onClose={this.handleClose}
+                title="Model Administration"
+                {...this.state}
+            >
+                <div className={Classes.DIALOG_BODY} style={{minHeight: "200px"}}>
 
-                <Tabs id={"modeltabs"}>
-                    <Tab id={"existingmodels"} title={"Existing Models"} panel={<ListModels/>}/>
-                    <Tab id={"newmodel"} title={"New Model"} panel={<NewModel close={this.handleClose} />}/>
-                </Tabs>
-            </div>
-            <div className={Classes.DIALOG_FOOTER}>
-                <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-                    <Button onClick={this.handleClose}>Close</Button>
-
+                    <Tabs id={"modeltabs"}>
+                        <Tab id={"existingmodels"} title={"Existing Models"} panel={<ListModels/>}/>
+                        <Tab id={"newmodel"} title={"New Model"} panel={<NewModel close={this.handleClose}/>}/>
+                    </Tabs>
                 </div>
-            </div>
-        </Dialog>
+                <div className={Classes.DIALOG_FOOTER}>
+                    <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+                        <Button onClick={this.handleClose}>Close</Button>
+
+                    </div>
+                </div>
+            </Dialog>
 
         )
     }

@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import Iframe from "react-iframe";
 
-class Banana extends Component{
+class Banana extends Component {
 
     render() {
         return (
