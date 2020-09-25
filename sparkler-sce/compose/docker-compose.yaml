@@ -1,6 +1,8 @@
 version: '2'
 services:
   single-server-int:
+    networks:
+      - sparkler
     image: arangodb:3.4.6
     ports:
       - 8529:8529
@@ -10,6 +12,8 @@ services:
       - db:/var/lib/arangodb3
   sce-solr:
     image: uscdatascience/sparkler-solr:latest
+    networks:
+      - sparkler
     ports:
      - "8983:8983"
     volumes:
@@ -18,6 +22,8 @@ services:
 
   sce-splash:
     image: scrapinghub/splash
+    networks:
+      - sparkler
     ports:
       - 8050:8050
 
@@ -35,6 +41,8 @@ services:
 #      - models:/models
   sce-ui:
     image: uscdatascience/sparkler-ui:latest
+    networks:
+      - sparkler
     ports:
       - "8080:80"
     volumes:
