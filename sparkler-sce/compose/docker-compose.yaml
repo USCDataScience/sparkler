@@ -22,7 +22,7 @@ services:
       - 8050:8050
 
   sce-api:
-    image: nasajplmemex/sce-domain-discovery:latest
+    image: uscdatascience/sce-domain-discovery:latest
     ports:
       - "5000:5000"
     environment:
