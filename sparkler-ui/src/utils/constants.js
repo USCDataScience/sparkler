@@ -10,7 +10,7 @@ if(process.env.REACT_APP_API_URL) {
     a = process.env.REACT_APP_API_URL
 }
 else {
-    a = "/"
+    a = ""
 }
 
 export const API_URL = a
