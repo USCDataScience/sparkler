@@ -206,8 +206,8 @@ def start_crawl(model):
     print('Pulling latest')
     qcmd = ['sudo', 'docker', 'pull', 'uscdatascience/sparkler:latest']
     subprocess.Popen(qcmd)
-    print('Running container')
-    qcmd = ['sudo', 'docker', 'run', '--network', 'compose_default', '--name', model + 'crawl',
+    print('Running container') #'--network', 'compose_default',
+    qcmd = ['sudo', 'docker', 'run', '--name', model + 'crawl',
             'uscdatascience/sparkler:latest'] + cmd
     subprocess.Popen(qcmd)
     return 'crawl started'
