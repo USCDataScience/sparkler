@@ -126,15 +126,6 @@
           </New>
         </Arg>
       </Call>
-      <Call name="addRule">
-        <Arg>
-          <New class="org.eclipse.jetty.rewrite.handler.HeaderPatternRule">
-            <Set name="pattern">*</Set>
-            <Set name="name">Content-Security-Policy-Report-Only</Set>
-            <Set name="value">default-src 'self'; script-src 'report-sample' 'self'; style-src 'report-sample' 'self'; object-src 'none'; base-uri 'self'; connect-src 'self'; font-src 'self'; frame-src 'self'; img-src 'self'; manifest-src 'self'; media-src 'self'; report-uri https://5f6e15fda82aebac90867b90.endpoint.csper.io/; worker-src 'none';</Set>
-          </New>
-        </Arg>
-      </Call>
 
 
       <!-- redirect root to solr -->
