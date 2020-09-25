@@ -21,5 +21,6 @@ EXPOSE 80
 COPY --from=0 /projects/sce-domain-discovery /sce
 
 RUN cd /sce/webui && pip3 install -r requirements.txt && mkdir /images && mkdir /models && chown www-data:www-data /images && chown www-data:www-data /models && gpasswd -a www-data docker
-
+RUN ln -sf /dev/stdout /var/log/apache2/access.log \
+    && ln -sf /dev/stderr /var/log/apache2/error.log
 CMD [ "/run.sh" ]
