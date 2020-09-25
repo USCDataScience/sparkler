@@ -63,7 +63,7 @@ jobs:
       - name: Build Sparkler Main Container
         uses: docker/build-push-action@v2
         with:
-          tags: nasajplmemex/sce-domain-discovery:latest
+          tags: uscdatascience/sce-domain-discovery:latest
           file: sparkler-sce/deployment/Dockerfile
           context: ./sparkler-sce
           push: true
