@@ -44,3 +44,6 @@ volumes:
  data:
  db:
  models:
+
+networks:
+  sparkler:
