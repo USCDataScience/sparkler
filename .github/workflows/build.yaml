@@ -46,7 +46,7 @@ jobs:
           context: ./sparkler-core
           push: true
 
-  build:
+  build-sce:
     runs-on: ubuntu-latest
 
     steps:
