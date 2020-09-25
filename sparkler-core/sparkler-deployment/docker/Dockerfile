@@ -50,6 +50,9 @@ RUN /data/solr/bin/solr start -force && \
 COPY ./sparkler-ui/sparkler-dashboard/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkler
 RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
 
+## Patch Solr's Jetty for Banana with the CSP directive header
+COPY ./sparkler-deployment/docker/jetty-csp-patch/jetty.xml /data/solr/server/etc/jetty.xml
+
 # Fix permissions
 RUN chown -R sparkler:sparkler /data/ && mkdir -p /home/sparkler/.pdfbox.cache && chown -R sparkler:sparkler /home/sparkler
 
