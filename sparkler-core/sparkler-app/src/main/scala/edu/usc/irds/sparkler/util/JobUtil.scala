@@ -19,6 +19,7 @@ package edu.usc.irds.sparkler.util
 
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.UUID.randomUUID
 
 /**
   * This block contains a set of utilities related to Job
@@ -41,6 +42,6 @@ object JobUtil {
     * @return nutch segment Id
     */
   def newSegmentId(nutchCompatible: Boolean = true): String =
-    (if (nutchCompatible) "" else "sseg-") + DATE_FMT.format(new Date())
+    (if (nutchCompatible) "" else "sseg-") + randomUUID().toString
 
 }
