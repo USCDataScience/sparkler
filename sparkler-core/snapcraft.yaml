@@ -1,3 +1,5 @@
+name: sparkler
+base: core18
 version: '0.1'
 summary: Web crawler
 description: |
@@ -21,7 +23,10 @@ apps:
 parts:
   sparkler:
     plugin: maven
-    source: git@github.com:USCDataScience/sparkler.git   
+    source: https://github.com/USCDataScience/sparkler.git
     maven-options: [-DskipTests]
     maven-targets:
       - sparkler-app
+    override-build: |
+            cd sparkler-core
+            mvn clean install -DskipTests
