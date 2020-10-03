@@ -1,0 +1,27 @@
+version: '0.1'
+summary: Web crawler
+description: |
+  A web crawler is a bot program that fetches resources from the web for the sake of building applications like search engines, knowledge bases, etc. Sparkler (contraction of Spark-Crawler) is a new web crawler that makes use of recent advancements in distributed computing and information retrieval domains by conglomerating various Apache projects like Spark, Kafka, Lucene/Solr, Tika, and Felix. Sparkler is an extensible, highly scalable, and high-performance web crawler that is an evolution of Apache Nutch and runs on Apache Spark Cluster.
+  Notable features of Sparkler are as follows:
+    - Provides Higher performance and fault tolerance: The crawl pipeline has been redesigned to take advantage of the caching and fault tolerance capability of Apache Spark.
+    - Supports complex and near real-time analytics: The internal data-structure is an indexed store powered by Apache Lucene and has the functionality to answer complex queries in near real time. Apache Solr (Supporting standalone for a quick start and cloud mode to scale horizontally) is used to expose the crawler analytics via HTTP API. These analytics can be visualized using intuitive charts in Admin dashboard (coming soon).
+    - Streams out the content in real-time: Optionally, Apache Kafka can be configured to retrieve the output content as and when the content becomes available.
+    - Java Script Rendering Executes the javascript code in webpages to create final state of the page. The setup is easy and painless, scales by distributing the work on Spark. It preserves the sessions and cookies for the subsequent requests made to a host.
+    - Extensible plugin framework: Apache Felix, an open source community implementation of Open Service Gateway Initiative (OSGi) is embedded under the hood of Sparkler to make it extensible with the plugins.
+    - Universal Parser: Apache Tika, the most popular content detection, and content analysis toolkit that can deal with thousands of file formats, is used to discover links to the outgoing web resources and also to perform analysis on fetched resources.
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: devmode # use 'strict' once you have the right plugs and slots
+
+apps:
+  inject:
+    command: java -jar $SNAP/sparkler-app/sparkler-app-0.1-SNAPSHOT.jar inject "$@"
+  crawl:
+    command: java -jar $SNAP/sparkler-app/sparkler-app-0.1-SNAPSHOT.jar crawl "$@"
+
+parts:
+  sparkler:
+    plugin: maven
+    source: git@github.com:USCDataScience/sparkler.git   
+    maven-options: [-DskipTests]
+    maven-targets:
+      - sparkler-app
