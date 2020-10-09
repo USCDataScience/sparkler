@@ -54,6 +54,10 @@ public interface Constants {
         @ConfigKey
         String KAFKA_TOPIC = "kafka.topic";
 
+        // Databricks Properties
+        @ConfigKey
+        String DATABRICKS_ENABLE = "databricks.enable";
+
         // HTTP Properties
         // Database Properties
 

@@ -35,6 +35,8 @@ import org.apache.nutch.protocol
 import org.apache.solr.common.SolrInputDocument
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.SparkSession
+
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
@@ -80,6 +82,10 @@ class Crawler extends CliTool {
   @Option(name = "-ktp", aliases = Array("--kafka-topic"),
     usage = "Kafka Topic, default is sparkler")
   var kafkaTopic: String = sparklerConf.get(Constants.key.KAFKA_TOPIC).asInstanceOf[String]
+
+  @Option(name = "-de", aliases = Array("--databricks-enable"),
+    usage = "Enable Databricks, default is false i.e. disabled")
+  var databricksEnable: Boolean = sparklerConf.get(Constants.key.DATABRICKS_ENABLE).asInstanceOf[Boolean]
 
   @Option(name = "-tn", aliases = Array("--top-n"),
     usage = "Top urls per domain to be selected for a round")
@@ -128,7 +134,13 @@ class Crawler extends CliTool {
       sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put("crawldb.uri", sparkSolr)
     }
 
-    sc = new SparkContext(conf)
+    if (databricksEnable) {
+      LOG.info("Databricks spark is enabled")
+      sc = SparkSession.builder().master("local").getOrCreate().sparkContext
+    }
+    else {
+      sc = new SparkContext(conf)
+    }
 
     if(!jarPath.isEmpty && jarPath(0) == "true"){
       sc.getConf.setJars(Array[String](getClass.getProtectionDomain.getCodeSource.getLocation.getPath))
