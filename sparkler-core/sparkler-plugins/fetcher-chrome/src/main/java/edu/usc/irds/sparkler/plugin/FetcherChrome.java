@@ -25,11 +25,14 @@ import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import edu.usc.irds.sparkler.util.FetcherDefault;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +59,9 @@ public class FetcherChrome extends FetcherDefault {
         SparklerConfiguration config = jobContext.getConfiguration();
         //TODO should change everywhere 
         pluginConfig = config.getPluginConfiguration(pluginId);
+
+
+
         String loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
         if(loc.equals("")){
             driver = new ChromeDriver();
@@ -110,9 +116,29 @@ public class FetcherChrome extends FetcherDefault {
 
         // Returns the page source in its current state, including
         // any DOM updates that occurred after page load
-        String html = driver.getPageSource();
 
         //quitBrowserInstance(driver);
+
+        int waittimeout = (int) pluginConfig.getOrDefault("chrome.wait.timeout", "-1");
+        String waittype = (String) pluginConfig.getOrDefault("chrome.wait.type", "");
+        String waitelement = (String) pluginConfig.getOrDefault("chrome.wait.element", "");
+
+        if(waittimeout > -1){
+            LOG.debug("Waiting {} seconds for element {} of type {} to become visible", waittimeout, waitelement, waittype);
+            WebDriverWait wait = new WebDriverWait(driver, waittimeout);
+            if(waittype.equals("class")){
+                LOG.debug("waiting for class...");
+                wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(waitelement)));
+            } else if(waittype.equals("name")){
+                LOG.debug("waiting for name...");
+                wait.until(ExpectedConditions.visibilityOfElementLocated(By.name(waitelement)));
+            } else if(waittype.equals("id")){
+                LOG.debug("waiting for id...");
+                wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
+            }
+        }
+        
+        String html = driver.getPageSource();
 
         LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
 

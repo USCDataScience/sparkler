@@ -34,7 +34,7 @@ crawldb.uri: http://localhost:8983/solr/crawldb
 # URL on which Apache Spark is running.
 # Type: String. Default is "local[*]" for local mode.
 spark.master: local[*]
-
+databricks.enable: false
 
 ##################### Apache Kafka Properties ###########################
 # Enable Kafka Dump
@@ -121,10 +121,16 @@ plugins:
   # based document/content.
   fetcher.jbrowser:
     # Configuration Properties
-    socket.timeout: 3000
-    connect.timeout: 3000
-  # fetcher.chrome:
-  #  chrome.dns: "http://browserless:3000/webdriver"
+    #socket.timeout: 3000
+    #connect.timeout: 3000
+  fetcher.chrome:
+    #Set timeout to > -1 to enable the wait for element visibility for some ajax sites.
+    chrome.wait.timeout: -1
+    #Element name
+    chrome.wait.element: "some element"
+    #What type of element, class, name, id
+    chrome.wait.type: "class"
+    chrome.dns: "http://localhost:3000/webdriver"
 ##################### Custom properties for MEMEX ###########################################
   memex.webpage.mimetype: "text/html"
 

@@ -32,7 +32,7 @@
     <url>http://maven.apache.org</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jbrowserdriver.version>0.16.4</jbrowserdriver.version>
+        <jbrowserdriver.version>1.1.1</jbrowserdriver.version>
         <plugin.id>${project.artifactId}</plugin.id>
         <plugin.class>edu.usc.irds.sparkler.plugin.FetcherJBrowserActivator</plugin.class>
     </properties>
@@ -48,6 +48,16 @@
                 </exclusion>
             </exclusions>
 		</dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>3.141.59</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-api</artifactId>
+            <version>3.141.59</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
