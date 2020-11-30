@@ -17,7 +17,6 @@
 
 package edu.usc.irds.sparkler.plugin;
 
-
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
@@ -25,8 +24,12 @@ import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import edu.usc.irds.sparkler.util.FetcherDefault;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.eclipse.jetty.util.ArrayUtil;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -41,7 +44,10 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Extension
 public class FetcherChrome extends FetcherDefault {
@@ -50,6 +56,7 @@ public class FetcherChrome extends FetcherDefault {
     private static final Logger LOG = LoggerFactory.getLogger(FetcherChrome.class);
     private LinkedHashMap<String, Object> pluginConfig;
     private WebDriver driver;
+    private WebElement clickedEl = null;
 
 
     @Override
@@ -137,6 +144,10 @@ public class FetcherChrome extends FetcherDefault {
                 wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
             }
         }
+
+        if (pluginConfig.get("chrome.selenium.enabled").equals("true")){
+            runScript(pluginConfig.get("chrome.selenium.script"));
+        }
         
         String html = driver.getPageSource();
 
@@ -152,6 +163,73 @@ public class FetcherChrome extends FetcherDefault {
         resource.setStatus(ResourceStatus.FETCHED.toString());
         fetchedData.setResource(resource);
         return fetchedData;
+    }
+
+    private void runScript(Object orDefault) {
+        if(orDefault != null && orDefault instanceof LinkedHashMap){
+            LinkedHashMap mp = (LinkedHashMap) orDefault;
+
+            Iterator it = mp.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry)it.next();
+                System.out.println(pair.getKey() + " = " + pair.getValue());
+
+
+                LinkedHashMap submap = (LinkedHashMap) pair.getValue();
+                runSubScript(submap);
+                it.remove(); 
+            }
+        }
+        LOG.debug("");
+    }
+
+    private void runSubScript(LinkedHashMap mp){
+        Iterator it = mp.entrySet().iterator();
+        String type = null;
+        String value = null;
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            System.out.println(pair.getKey() + " = " + pair.getValue());
+            if(pair.getKey().equals("input")){
+                type = (String) pair.getValue();
+            } else if(pair.getKey().equals("value")){
+                value = (String) pair.getValue();
+            } 
+
+            it.remove(); 
+        }
+
+        if(type.equals("click")){
+            clickElement(value);
+        } else if (type.equals("keys")){
+            typeCharacters(value);
+        }
+    }
+
+    private void clickElement(String el){
+        String splits[] = el.split(":");
+        String type = splits[0];
+        Object pruned[] = ArrayUtils.remove(splits, 0);
+        String element = "";
+        for (Object obj : pruned){
+            element = element + obj + " ";
+        }
+        element = element.substring(0, element.length() - 1);
+        
+        if(type.equals("id")){
+            clickedEl = driver.findElement(By.id(element));
+        } else if(type.equals("class")){
+            clickedEl = driver.findElement(By.className(element));
+        } else if(type.equals("name")){
+            clickedEl = driver.findElement(By.name(element));
+        } else if(type.equals("xpath")){
+            clickedEl = driver.findElement(By.xpath(element));
+        }
+        clickedEl.click();
+    }
+
+    private void typeCharacters(String chars){
+        clickedEl.sendKeys(chars);
     }
 
     public void closeResources() {

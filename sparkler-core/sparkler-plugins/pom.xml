@@ -39,6 +39,7 @@
         <module>fetcher-htmlunit</module>
         <module>fetcher-chrome</module>
         <module>urlfilter-samehost</module>
+        <module>url-injector</module>
         <!-- Copy template plugin to create a new plugin-->
         <module>template-plugin</module>
     </modules>

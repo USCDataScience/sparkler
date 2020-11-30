@@ -100,6 +100,7 @@ plugins.active:
 
     - urlfilter-regex
     - urlfilter-samehost
+    - url-injector
 #    - scorer-dd-svn
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
@@ -131,6 +132,10 @@ plugins:
     #What type of element, class, name, id
     chrome.wait.type: "class"
     chrome.dns: "http://localhost:3000/webdriver"
+    chrome.selenium.enabled: "true"
+    chrome.selenium.script.click: "id:txtName"
+    chrome.selenium.script.keys: "COR"
+    chrome.selenium.script.click: "id:btnSearch" 
 ##################### Custom properties for MEMEX ###########################################
   memex.webpage.mimetype: "text/html"
 

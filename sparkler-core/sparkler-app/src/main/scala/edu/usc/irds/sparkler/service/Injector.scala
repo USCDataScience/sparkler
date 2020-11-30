@@ -24,6 +24,7 @@ import java.util
 import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
+import edu.usc.irds.sparkler.pipeline.UrlInjectorFunction
 import edu.usc.irds.sparkler.util.JobUtil
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
@@ -89,9 +90,10 @@ class Injector extends CliTool {
         seedUrls.toList
       }
 
+    val replacedUrls = UrlInjectorFunction(job, urls)
     // TODO: Add URL normalizer and filters before injecting the seeds
     val seeds: util.Collection[Resource] =
-      urls.map(_.trim)
+      replacedUrls.map(_.trim)
         .filter(url => urlValidator.isValid(url))
         .map(x => new Resource(x, 0, job, ResourceStatus.UNFETCHED, Injector.SEED_PARENT, Injector.SEED_SCORE))
     LOG.info("Injecting {} seeds", seeds.size())
