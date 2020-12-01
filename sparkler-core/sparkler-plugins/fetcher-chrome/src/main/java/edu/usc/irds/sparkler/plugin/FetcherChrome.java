@@ -115,7 +115,7 @@ public class FetcherChrome extends FetcherDefault {
 
         URL url = new URL(resource.getUrl());
         HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-        connection.setRequestMethod("GET");
+        connection.setRequestMethod(resource.getHttpMethod());
         connection.connect();
 
         int status = connection.getResponseCode();

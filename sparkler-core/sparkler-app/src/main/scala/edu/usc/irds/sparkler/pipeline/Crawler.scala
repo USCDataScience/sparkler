@@ -113,6 +113,12 @@ class Crawler extends CliTool {
   @Option(name = "-dcf", forbids = Array("-dc"),
     aliases = Array("--deepcrawl-file"), usage = "Deep crawl the provided hosts in the line separated file")
   var deepCrawlHostFile : File = _
+
+
+  @Option(name = "-co", aliases = Array("--config-override"),
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var configOverride: String = ""
+
   /* Generator options, currently not exposed via the CLI
      and only accessible through the config yaml file
    */
@@ -123,6 +129,9 @@ class Crawler extends CliTool {
   var sc: SparkContext = _
 
   def init(): Unit = {
+    if (configOverride != ""){
+      sparklerConf.overloadConfig(configOverride);
+    }
     if (this.outputPath.isEmpty) {
       this.outputPath = jobId
     }

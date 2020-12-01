@@ -188,4 +188,12 @@ public class Resource implements Serializable {
         return hm;
     }
 
+    public String getHttpMethod(){
+        if(this.httpMethod == null || this.httpMethod.equals("")){
+            return "GET";
+        } else{
+            return this.httpMethod;
+        }
+    }
+
 }

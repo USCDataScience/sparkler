@@ -68,7 +68,14 @@ class Injector extends CliTool {
     usage = "Crawdb URI.")
   var sparkSolr: String = conf.get(Constants.key.CRAWLDB).asInstanceOf[String]
 
+    @Option(name = "-co", aliases = Array("--config-override"),
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var configOverride: String = ""
+
   override def run(): Unit = {
+    if (configOverride != ""){
+      conf.overloadConfig(configOverride);
+    }
     if (!sparkSolr.isEmpty) {
       val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
       uri.put("crawldb.uri", sparkSolr)

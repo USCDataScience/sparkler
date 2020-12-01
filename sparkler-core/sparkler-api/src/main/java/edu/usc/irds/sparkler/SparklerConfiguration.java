@@ -18,6 +18,8 @@
 package edu.usc.irds.sparkler;
 
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,7 +34,7 @@ public class SparklerConfiguration extends JSONObject {
         super(map);
     }
 
-    public LinkedHashMap<String,Object> getPluginConfiguration(String pluginId) throws SparklerException {
+    public LinkedHashMap<String, Object> getPluginConfiguration(String pluginId) throws SparklerException {
         pluginId = pluginId.replace("-", ".");
         if (this.containsKey(Constants.key.PLUGINS)) {
             LinkedHashMap plugins = (LinkedHashMap) this.get(Constants.key.PLUGINS);
@@ -40,12 +42,12 @@ public class SparklerConfiguration extends JSONObject {
                 return (LinkedHashMap<String, Object>) plugins.get(pluginId);
             } else {
                 String[] parts = pluginId.split(":");
-                if (parts.length >= 3){ // groupId:artifactId:version
-                    //first check without version
+                if (parts.length >= 3) { // groupId:artifactId:version
+                    // first check without version
                     String newId = parts[0] + ":" + parts[1];
                     if (plugins.containsKey(newId)) {
                         return (LinkedHashMap<String, Object>) plugins.get(newId);
-                    } else if (plugins.containsKey(parts[1])){ // just the id, no groupId or version
+                    } else if (plugins.containsKey(parts[1])) { // just the id, no groupId or version
                         return (LinkedHashMap<String, Object>) plugins.get(parts[1]);
                     }
                 }
@@ -53,6 +55,17 @@ public class SparklerConfiguration extends JSONObject {
             }
         } else {
             throw new SparklerException("No plugin configuration found!");
+        }
+    }
+
+    public void overloadConfig(String object) {
+        JSONParser parser = new JSONParser();
+        JSONObject json;
+        try {
+            json = (JSONObject) parser.parse(object);
+            this.putAll(json);
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
     }
 }

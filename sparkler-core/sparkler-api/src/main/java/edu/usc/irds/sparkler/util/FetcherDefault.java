@@ -107,7 +107,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
 
     public FetchedData fetch(Resource resource) throws Exception {
         LOG.info("DEFAULT FETCHER {}", resource.getUrl());
-        URLConnection urlConn = new URL(resource.getUrl()).openConnection();
+        HttpURLConnection urlConn = (HttpURLConnection) new URL(resource.getUrl()).openConnection();
         if (httpHeaders != null){
             httpHeaders.forEach(urlConn::setRequestProperty);
             LOG.debug("Adding headers:{}", httpHeaders.keySet());
@@ -124,6 +124,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
 
         urlConn.setConnectTimeout(CONNECT_TIMEOUT);
         urlConn.setReadTimeout(READ_TIMEOUT);
+        urlConn.setRequestMethod(resource.getHttpMethod());
         int responseCode = ((HttpURLConnection)urlConn).getResponseCode();
         LOG.debug("STATUS CODE : " + responseCode + " " + resource.getUrl());
         boolean truncated = false;
