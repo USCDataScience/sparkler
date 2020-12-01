@@ -137,12 +137,13 @@ plugins:
     #chrome.selenium.script.keys: "COR"
     #chrome.selenium.script.click: "id:btnSearch" 
   url.injector:
-    mode: selenium
+    #mode: selenium
     #mode: replace
+    mode: json
     values:
-      - COR
-      - VEN
-      - SOM
+      - "\"COR\""
+      - "\"VEN\""
+      - "\"SOM\""
     selenium:
       1: 
         operation: click
@@ -153,6 +154,7 @@ plugins:
       3:
         operation: click
         value: "id:btnSearch" 
+    json: "{ \"name\":\"John\", \"age\":${token}, \"car\":null }"
 ##################### Custom properties for MEMEX ###########################################
   memex.webpage.mimetype: "text/html"
 

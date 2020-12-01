@@ -8,6 +8,8 @@ import edu.usc.irds.sparkler.UrlInjectorObj;
 import io.netty.handler.codec.json.JsonObjectDecoder;
 
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +50,9 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
             } else if (mode.equals("selenium")) {
                 // Function 2: Keep url but loop on selenium script
                 r = appendSelenium(urls, vals);
-            } else if (mode.equals("JSON")) {
+            } else if (mode.equals("json")) {
                 // Function 3: Keep url but create json to POST
+                r = appendJSON(urls, vals);
             }
         }
 
@@ -73,6 +76,42 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
         }
 
         return fixedUrls;
+    }
+
+    private List<UrlInjectorObj> appendJSON(Collection<String> urls, List<String> tokens) {
+        List<UrlInjectorObj> fixedUrls = new ArrayList<>();
+        String jsonStr = (String) pluginConfig.get("json");
+
+        for (Iterator<String> iterator = urls.iterator(); iterator.hasNext();) {
+            String u = iterator.next();
+            String method = getHTTPMethod(u);
+            u = trimHTTPMethod(u);
+            
+
+            if (tokens.size() > 0) {
+                for (String temp : tokens) {
+                    JSONObject root = new JSONObject();
+                    JSONParser parser = new JSONParser();
+                    JSONObject json;
+                    String parsedJsonStr = jsonStr.replace("${token}", temp);
+                    try {
+                        json = (JSONObject) parser.parse(parsedJsonStr);
+                        root.put("JSON", json);
+                    } catch (ParseException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    UrlInjectorObj o = new UrlInjectorObj(u, root.toString(), method);
+                    fixedUrls.add(o);
+                }
+            } else {
+                UrlInjectorObj o = new UrlInjectorObj(u, jsonStr, method);
+                fixedUrls.add(o);
+            }
+        }
+
+        return fixedUrls;
+
     }
 
     private List<UrlInjectorObj> appendSelenium(Collection<String> urls, List<String> tokens) {
