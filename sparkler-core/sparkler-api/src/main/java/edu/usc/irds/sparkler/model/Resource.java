@@ -34,6 +34,8 @@ public class Resource implements Serializable {
     @Field private String hostname;
     @Field private String parent;
     @Field("dedupe_id") private String dedupeId;
+    @Field("http_method") private String httpMethod;
+    @Field("metadata") private String metadata;
 
     public Resource() {
     }
@@ -63,7 +65,7 @@ public class Resource implements Serializable {
     }
 
     public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status,
-        String parent, Map<String, Double> score) throws MalformedURLException {
+        String parent, Map<String, Double> score, String metadata, String httpMethod) throws MalformedURLException {
         this(url, new URL(url).getHost(), sparklerJob);
         this.indexedAt = new Date();
         this.id = resourceId(url, sparklerJob, this.indexedAt);
@@ -71,6 +73,8 @@ public class Resource implements Serializable {
         this.status = status.toString();
         this.parent = parent;
         this.score = score;
+        this.httpMethod = httpMethod;
+        this.metadata = metadata;
     }
 
     public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status,
@@ -93,6 +97,7 @@ public class Resource implements Serializable {
 
         this(url, discoverDepth, sparklerJob, status, fetchTimestamp, parent);
         this.score = score;
+        
     }
 
     @Override

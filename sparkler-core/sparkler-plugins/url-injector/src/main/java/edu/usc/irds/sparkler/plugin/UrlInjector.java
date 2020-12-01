@@ -2,25 +2,125 @@ package edu.usc.irds.sparkler.plugin;
 
 import edu.usc.irds.sparkler.AbstractExtensionPoint;
 import edu.usc.irds.sparkler.Config;
+import edu.usc.irds.sparkler.SparklerConfiguration;
+import edu.usc.irds.sparkler.SparklerException;
+import edu.usc.irds.sparkler.UrlInjectorObj;
+import io.netty.handler.codec.json.JsonObjectDecoder;
 
+import org.json.simple.JSONObject;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 @Extension
 public class UrlInjector extends AbstractExtensionPoint implements Config {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(UrlInjector.class);
+    private LinkedHashMap<String, Object> pluginConfig;
 
     @Override
-    public List<String> processConfig() {
-        System.out.println("hello");
-        LOG.debug("HELLO WORLD");
-        ArrayList<String> s = new ArrayList<>();
+    public Collection<UrlInjectorObj> processConfig(Collection<String> urls) {
+        SparklerConfiguration config = jobContext.getConfiguration();
+        List<UrlInjectorObj> r = new ArrayList<>();
+        try {
+            pluginConfig = config.getPluginConfiguration(pluginId);
+        } catch (SparklerException e) {
+            e.printStackTrace();
+        }
 
-        return s;
+        if (pluginConfig != null) {
+            // Get replacement values from config
+            List<String> vals = (List<String>) pluginConfig.get("values");
+            LOG.debug("Found vals: {}", vals);
+
+            // Get mode type from config
+            String mode = (String) pluginConfig.get("mode");
+
+            if (mode.equals("replace")) {
+                // Function 1: Replace placeholder in url and add new url to list
+                r = replaceURLToken(urls, vals);
+            } else if (mode.equals("selenium")) {
+                // Function 2: Keep url but loop on selenium script
+                r = appendSelenium(urls, vals);
+            } else if (mode.equals("JSON")) {
+                // Function 3: Keep url but create json to POST
+            }
+        }
+
+        return r;
+    }
+
+    // Simple URL token replacement, takes a list of urls and a list of tokens and
+    // applies
+    // each token to each url.
+    private List<UrlInjectorObj> replaceURLToken(Collection<String> urls, List<String> tokens) {
+        List<UrlInjectorObj> fixedUrls = new ArrayList<>();
+        for (Iterator<String> iterator = urls.iterator(); iterator.hasNext();) {
+            String u = iterator.next();
+            for (String temp : tokens) {
+                String rep = u.replace("${token}", temp);
+                String method = getHTTPMethod(rep);
+                rep = trimHTTPMethod(rep);
+                UrlInjectorObj o = new UrlInjectorObj(rep, null, method);
+                fixedUrls.add(o);
+            }
+        }
+
+        return fixedUrls;
+    }
+
+    private List<UrlInjectorObj> appendSelenium(Collection<String> urls, List<String> tokens) {
+        List<UrlInjectorObj> fixedUrls = new ArrayList<>();
+        LinkedHashMap script = (LinkedHashMap) pluginConfig.get("selenium");
+
+        JSONObject root = new JSONObject();
+        JSONObject obj = new JSONObject(script);
+        root.put("selenium", obj);
+        for (Iterator<String> iterator = urls.iterator(); iterator.hasNext();) {
+            String u = iterator.next();
+            String method = getHTTPMethod(u);
+            u = trimHTTPMethod(u);
+            if (tokens.size() > 0) {
+                for (String temp : tokens) {
+                    String json = root.toString();
+                    json = json.replace("${token}", temp);
+                    UrlInjectorObj o = new UrlInjectorObj(u, json, method);
+                    fixedUrls.add(o);
+                }
+            } else {
+                UrlInjectorObj o = new UrlInjectorObj(u, root.toString(), method);
+                fixedUrls.add(o);
+            }
+
+        }
+        return fixedUrls;
+    }
+
+    private String getHTTPMethod(String url) {
+        if (url.startsWith("GET|")) {
+            return "GET";
+        } else if (url.startsWith("PUT|")) {
+            return "PUT";
+        } else if (url.startsWith("POST|")) {
+            return "POST";
+        }
+        return "GET";
+    }
+
+    private String trimHTTPMethod(String url) {
+        if (url.startsWith("GET|")) {
+            return url.substring(4);
+        } else if (url.startsWith("PUT|")) {
+            return url.substring(4);
+        } else if (url.startsWith("POST|")) {
+            return url.substring(5);
+        }
+        return url;
     }
 }

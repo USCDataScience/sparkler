@@ -1,7 +1,7 @@
 package edu.usc.irds.sparkler;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface Config extends ExtensionPoint {
-    public List<String> processConfig();    
+    public Collection<UrlInjectorObj> processConfig(Collection<String> urls);    
 }

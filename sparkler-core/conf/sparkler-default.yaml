@@ -136,6 +136,23 @@ plugins:
     chrome.selenium.script.click: "id:txtName"
     chrome.selenium.script.keys: "COR"
     chrome.selenium.script.click: "id:btnSearch" 
+  url.injector:
+    mode: selenium
+    #mode: replace
+    values:
+      - COR
+      - VEN
+      - SOM
+    selenium:
+      1: 
+        operation: click
+        value: "id:txtName"
+      2:
+        operation: keys
+        value: "${token}"
+      3:
+        operation: click
+        value: "id:btnSearch" 
 ##################### Custom properties for MEMEX ###########################################
   memex.webpage.mimetype: "text/html"
 

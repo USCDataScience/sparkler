@@ -7,25 +7,30 @@ import edu.usc.irds.sparkler.model._
 import scala.collection.JavaConversions._
 import java.util.ArrayList
 import java.util
-
-object UrlInjectorFunction extends ((SparklerJob, util.Collection[String]) => util.Collection[String]) with Serializable with Loggable{
+import edu.usc.irds.sparkler.UrlInjectorObj
+object UrlInjectorFunction extends ((SparklerJob, util.Collection[String]) => util.Collection[UrlInjectorObj]) with Serializable with Loggable{
 
  override def apply(job: SparklerJob, resources: util.Collection[String])
-  : util.Collection[String] = {
+  : util.Collection[UrlInjectorObj] = {
     val fetcher:scala.Option[Config] = PluginService.getExtension(classOf[Config], job)
-    val a = new ArrayList[String]
     try {
       fetcher match {
         case Some(fetcher) =>
-          val score = fetcher.processConfig()
+          val score = fetcher.processConfig(resources)
           score
         case None =>
-          resources
+          convertToUrlInjector(resources)
       }
     } catch {
       case e: Exception =>
         LOG.error(e.getMessage, e)
-        resources
+        convertToUrlInjector(resources)
     }
+  }
+
+  def convertToUrlInjector( lst:util.Collection[String]) : util.Collection[UrlInjectorObj] = {
+    var c = List()
+    lst.toList.foreach{ node =>  val uio = new UrlInjectorObj(node, null, null);  c :+ uio  }
+    c
   }
 }
