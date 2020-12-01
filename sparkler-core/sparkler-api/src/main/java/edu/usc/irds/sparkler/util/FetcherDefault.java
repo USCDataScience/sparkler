@@ -10,23 +10,31 @@ import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import org.apache.commons.io.IOUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -105,7 +113,19 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
         return new StreamTransformer<>(resources, this);
     }
 
+    private void otherInit() throws SparklerException{
+        this.httpHeaders = new HashMap<String, String>();
+
+        this.httpHeaders.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko)");
+        this.httpHeaders.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+        this.httpHeaders.put("Accept-Language", "en-US,en");
+        this.httpHeaders.put("Referer", "http://minnesota.magellanmedicaid.com/drug_search.asp");
+
+        
+    }
+
     public FetchedData fetch(Resource resource) throws Exception {
+        otherInit();
         LOG.info("DEFAULT FETCHER {}", resource.getUrl());
         HttpURLConnection urlConn = (HttpURLConnection) new URL(resource.getUrl()).openConnection();
         if (httpHeaders != null){
@@ -125,6 +145,22 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
         urlConn.setConnectTimeout(CONNECT_TIMEOUT);
         urlConn.setReadTimeout(READ_TIMEOUT);
         urlConn.setRequestMethod(resource.getHttpMethod());
+        if(resource.getMetadata()!=null && !resource.getMetadata().equals("")){
+            JSONObject json = processMetadata(resource.getMetadata());
+    
+            if (json.containsKey("form")) {
+                urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                urlConn.setRequestProperty( "charset", "utf-8");
+                byte[] postData = processForm((JSONObject) json.get("form"));
+                urlConn.setRequestProperty( "Content-Length", Integer.toString( postData.length ));    
+                urlConn.setDoOutput(true);
+                try( DataOutputStream wr = new DataOutputStream( urlConn.getOutputStream())) {
+                    wr.write( postData );
+                 }
+            } else if (json.containsKey("json")) {
+                //processJson((JSONObject) json.get("json"), connection);
+            }
+        }
         int responseCode = ((HttpURLConnection)urlConn).getResponseCode();
         LOG.debug("STATUS CODE : " + responseCode + " " + resource.getUrl());
         boolean truncated = false;
@@ -171,5 +207,43 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             fetchedData.setResource(resource);
             return fetchedData;
         }
+    }
+
+    private void processJson(JSONObject object, HttpURLConnection conn) {
+
+    }
+
+    private byte[] processForm(JSONObject object) {
+        Set keys = object.keySet();
+        Iterator keyIter = keys.iterator();
+        String content = "";
+        for (int i = 0; keyIter.hasNext(); i++) {
+            Object key = keyIter.next();
+            if (i != 0) {
+                content += "&";
+            }
+            try {
+                content += key + "=" + URLEncoder.encode((String) object.get(key), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return content.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private JSONObject processMetadata(String metadata) {
+        if(metadata != null){
+            JSONParser parser = new JSONParser();
+            JSONObject json;
+            try {
+                json = (JSONObject) parser.parse(metadata);
+                return json;
+                
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+
     }
 }

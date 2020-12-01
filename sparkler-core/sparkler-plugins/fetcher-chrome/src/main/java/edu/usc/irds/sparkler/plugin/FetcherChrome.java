@@ -154,9 +154,6 @@ public class FetcherChrome extends FetcherDefault {
         if(resource.getMetadata()!=null && !resource.getMetadata().equals("")){
         JSONObject json = processMetadata(resource.getMetadata());
 
-        //URL url = new URL(resource.getUrl());
-        //HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
         if (json.containsKey("form")) {
             //processForm((JSONObject) json.get("form"), connection);
             //connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -169,11 +166,6 @@ public class FetcherChrome extends FetcherDefault {
         // associated AJAX requests
         driver.get(resource.getUrl());
         
-        //connection.setRequestMethod(resource.getHttpMethod());
-        //connection.connect();
-
-        //int status = connection.getResponseCode();
-
         int waittimeout = (int) pluginConfig.getOrDefault("chrome.wait.timeout", "-1");
         String waittype = (String) pluginConfig.getOrDefault("chrome.wait.type", "");
         String waitelement = (String) pluginConfig.getOrDefault("chrome.wait.element", "");
