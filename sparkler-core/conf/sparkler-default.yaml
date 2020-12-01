@@ -104,7 +104,7 @@ plugins.active:
 #    - scorer-dd-svn
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
-#    - fetcher-chrome
+    - fetcher-chrome
 
 # All Plugins are listed under this tree
 plugins:
@@ -137,13 +137,18 @@ plugins:
     #chrome.selenium.script.keys: "COR"
     #chrome.selenium.script.click: "id:btnSearch" 
   url.injector:
-    #mode: selenium
+    #mode: selenium # currently only compatible with the fetcher-chrome plugin
     #mode: replace
-    mode: json
+    #mode: json
+    mode: form
+    #values: #escaped for json
+    #  - "\"COR\""
+    #  - "\"VEN\""
+    #  - "\"SOM\""
     values:
-      - "\"COR\""
-      - "\"VEN\""
-      - "\"SOM\""
+      - COR
+      - VEN
+      - SOC
     selenium:
       1: 
         operation: click
@@ -155,6 +160,14 @@ plugins:
         operation: click
         value: "id:btnSearch" 
     json: "{ \"name\":\"John\", \"age\":${token}, \"car\":null }"
+    form:
+      hdnField: "submit"
+      txtRequired: ""
+      radSearchBy: "drugname"
+      txtName: "${token}"
+      selTC: ""
+      selProgram: "MA"
+      txtDateOfService: "12/01/2020"
 ##################### Custom properties for MEMEX ###########################################
   memex.webpage.mimetype: "text/html"
 

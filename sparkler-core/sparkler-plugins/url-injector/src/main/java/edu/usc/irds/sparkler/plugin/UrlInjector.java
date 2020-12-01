@@ -53,10 +53,39 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
             } else if (mode.equals("json")) {
                 // Function 3: Keep url but create json to POST
                 r = appendJSON(urls, vals);
+            } else if (mode.equals("form")){
+                r = appendForm(urls, vals);
             }
         }
 
         return r;
+    }
+
+    private List<UrlInjectorObj> appendForm(Collection<String> urls, List<String> tokens) {
+        List<UrlInjectorObj> fixedUrls = new ArrayList<>();
+        LinkedHashMap script = (LinkedHashMap) pluginConfig.get("form");
+
+        JSONObject root = new JSONObject();
+        JSONObject obj = new JSONObject(script);
+        root.put("form", obj);
+        for (Iterator<String> iterator = urls.iterator(); iterator.hasNext();) {
+            String u = iterator.next();
+            String method = getHTTPMethod(u);
+            u = trimHTTPMethod(u);
+            if (tokens.size() > 0) {
+                for (String temp : tokens) {
+                    String json = root.toString();
+                    json = json.replace("${token}", temp);
+                    UrlInjectorObj o = new UrlInjectorObj(u, json, method);
+                    fixedUrls.add(o);
+                }
+            } else {
+                UrlInjectorObj o = new UrlInjectorObj(u, root.toString(), method);
+                fixedUrls.add(o);
+            }
+
+        }
+        return fixedUrls;
     }
 
     // Simple URL token replacement, takes a list of urls and a list of tokens and
@@ -86,8 +115,6 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
             String u = iterator.next();
             String method = getHTTPMethod(u);
             u = trimHTTPMethod(u);
-            
-
             if (tokens.size() > 0) {
                 for (String temp : tokens) {
                     JSONObject root = new JSONObject();

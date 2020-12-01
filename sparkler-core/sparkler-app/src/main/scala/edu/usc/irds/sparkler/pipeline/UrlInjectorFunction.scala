@@ -29,8 +29,11 @@ object UrlInjectorFunction extends ((SparklerJob, util.Collection[String]) => ut
   }
 
   def convertToUrlInjector( lst:util.Collection[String]) : util.Collection[UrlInjectorObj] = {
-    var c = List()
-    lst.toList.foreach{ node =>  val uio = new UrlInjectorObj(node, null, null);  c :+ uio  }
+    var c = List[UrlInjectorObj]()
+     lst.forEach(n => {
+           val uio = new UrlInjectorObj(n, null, null)
+          c = uio :: c
+    })
     c
   }
 }

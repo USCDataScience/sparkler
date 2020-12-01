@@ -196,4 +196,7 @@ public class Resource implements Serializable {
         }
     }
 
+    public String getMetadata(){
+        return this.metadata;
+    }
 }
