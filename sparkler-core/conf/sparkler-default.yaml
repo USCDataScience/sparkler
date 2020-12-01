@@ -100,7 +100,7 @@ plugins.active:
 
     - urlfilter-regex
     - urlfilter-samehost
-    - url-injector
+#    - url-injector
 #    - scorer-dd-svn
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
@@ -132,10 +132,10 @@ plugins:
     #What type of element, class, name, id
     chrome.wait.type: "class"
     chrome.dns: "http://localhost:3000/webdriver"
-    chrome.selenium.enabled: "true"
-    chrome.selenium.script.click: "id:txtName"
-    chrome.selenium.script.keys: "COR"
-    chrome.selenium.script.click: "id:btnSearch" 
+    #chrome.selenium.enabled: "true"
+    #chrome.selenium.script.click: "id:txtName"
+    #chrome.selenium.script.keys: "COR"
+    #chrome.selenium.script.click: "id:btnSearch" 
   url.injector:
     mode: selenium
     #mode: replace
