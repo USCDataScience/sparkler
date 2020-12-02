@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -113,19 +112,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
         return new StreamTransformer<>(resources, this);
     }
 
-    private void otherInit() throws SparklerException{
-        this.httpHeaders = new HashMap<String, String>();
-
-        this.httpHeaders.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko)");
-        this.httpHeaders.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-        this.httpHeaders.put("Accept-Language", "en-US,en");
-        this.httpHeaders.put("Referer", "http://minnesota.magellanmedicaid.com/drug_search.asp");
-
-        
-    }
-
     public FetchedData fetch(Resource resource) throws Exception {
-        otherInit();
         LOG.info("DEFAULT FETCHER {}", resource.getUrl());
         HttpURLConnection urlConn = (HttpURLConnection) new URL(resource.getUrl()).openConnection();
         if (httpHeaders != null){
