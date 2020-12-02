@@ -27,7 +27,7 @@
 
 # Default: skip image and other suffixes which produces large content
 # for a more extensive coverage use the urlfilter-suffix plugin
--\.(gif|GIF|jpg|JPG|png|PNG|ico|ICO|css|CSS|sit|SIT|eps|EPS|wmf|WMF|zip|ZIP|ppt|PPT|mpg|MPG|xls|XLS|gz|GZ|rpm|RPM|tgz|TGZ|mov|MOV|exe|EXE|jpeg|JPEG|bmp|BMP|js|JS|svg|SVG|mp3|MP3|mp4|MP4)$
+-\.(gif|GIF|jpg|JPG|png|PNG|ico|ICO|css|CSS|sit|SIT|eps|EPS|wmf|WMF|zip|ZIP|ppt|PPT|mpg|MPG|xls|XLS|gz|GZ|rpm|RPM|tgz|TGZ|mov|MOV|exe|EXE|jpeg|JPEG|bmp|BMP|js|JS|svg|SVG|mp3|MP3|mp4|MP4|pdf|PDF)$
 
 # skip URLs containing certain characters as probable queries, etc.
 -[?*!@=]
