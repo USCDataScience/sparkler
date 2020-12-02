@@ -101,11 +101,11 @@ plugins.active:
 
     - urlfilter-regex
     - urlfilter-samehost
-    - url-injector
+#    - url-injector
 #    - scorer-dd-svn
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
-#    - fetcher-chrome
+    - fetcher-chrome
 
 # All Plugins are listed under this tree
 plugins:
@@ -137,6 +137,7 @@ plugins:
     #chrome.selenium.script.click: "id:txtName"
     #chrome.selenium.script.keys: "COR"
     #chrome.selenium.script.click: "id:btnSearch" 
+    chrome.proxy.address: 172.17.146.238:9998
   url.injector:
     #mode: selenium # currently only compatible with the fetcher-chrome plugin
     #mode: replace

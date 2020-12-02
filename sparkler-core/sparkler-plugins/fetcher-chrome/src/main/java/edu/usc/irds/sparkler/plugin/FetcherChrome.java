@@ -26,10 +26,6 @@ import edu.usc.irds.sparkler.model.ResourceStatus;
 import edu.usc.irds.sparkler.util.FetcherDefault;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.http.HttpException;
-import org.apache.http.HttpResponseInterceptor;
-import org.apache.http.protocol.HttpContext;
-import org.eclipse.jetty.util.ArrayUtil;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -52,13 +48,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
-import java.nio.channels.SelectionKey;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -71,7 +66,6 @@ import com.browserup.bup.filters.ResponseFilter;
 import com.browserup.bup.proxy.CaptureType;
 import com.browserup.bup.util.HttpMessageContents;
 import com.browserup.bup.util.HttpMessageInfo;
-import com.browserup.harreader.model.Har;
 import io.netty.handler.codec.http.HttpResponse;
 
 import org.openqa.selenium.Proxy;
@@ -79,12 +73,12 @@ import org.openqa.selenium.Proxy;
 @Extension
 public class FetcherChrome extends FetcherDefault {
 
-    private static final Integer DEFAULT_TIMEOUT = 2000;
     private static final Logger LOG = LoggerFactory.getLogger(FetcherChrome.class);
     private LinkedHashMap<String, Object> pluginConfig;
     private WebDriver driver;
     private WebElement clickedEl = null;
     private int latestStatus;
+
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
         super.init(context, pluginId);
@@ -99,22 +93,34 @@ public class FetcherChrome extends FetcherDefault {
         } else {
             try {
                 BrowserUpProxy proxy = new BrowserUpProxyServer();
-                Proxy seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
                 proxy.setTrustAllServers(true);
-                
+
                 proxy.enableHarCaptureTypes(CaptureType.REQUEST_CONTENT, CaptureType.RESPONSE_CONTENT);
                 proxy.addResponseFilter(new ResponseFilter() {
                     @Override
-                    public void filterResponse(HttpResponse response, HttpMessageContents contents, HttpMessageInfo messageInfo) {
+                    public void filterResponse(HttpResponse response, HttpMessageContents contents,
+                            HttpMessageInfo messageInfo) {
                         latestStatus = response.getStatus().code();
                     }
                 });
-                proxy.start();
-                
-                int port = proxy.getPort();
 
-                seleniumProxy.setHttpProxy("172.17.146.238:"+Integer.toString(port));
-                seleniumProxy.setSslProxy("172.17.146.238:"+Integer.toString(port));
+                String paddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "auto");
+
+                Proxy seleniumProxy;
+                if (paddress.equals("auto")) {
+                    proxy.start();
+                    int port = proxy.getPort();
+                    seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
+                } else {
+                    String[] s = paddress.split(":");
+                    proxy.start(Integer.parseInt(s[1]));
+                    InetSocketAddress addr = new InetSocketAddress(InetAddress.getByName(s[0]), Integer.parseInt(s[1]));
+                    seleniumProxy = ClientUtil.createSeleniumProxy(addr);
+                }
+
+                // seleniumProxy.setHttpProxy("172.17.146.238:"+Integer.toString(port));
+                // seleniumProxy.setSslProxy("172.17.146.238:"+Integer.toString(port));
+
                 DesiredCapabilities capabilities = DesiredCapabilities.chrome();
                 final ChromeOptions chromeOptions = new ChromeOptions();
                 chromeOptions.addArguments("--no-sandbox");
@@ -124,7 +130,7 @@ public class FetcherChrome extends FetcherDefault {
                 capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
 
                 driver = new RemoteWebDriver(new URL(loc), capabilities);
-            } catch (MalformedURLException e) {
+            } catch (MalformedURLException | UnknownHostException e) {
                 e.printStackTrace();
             }
 
