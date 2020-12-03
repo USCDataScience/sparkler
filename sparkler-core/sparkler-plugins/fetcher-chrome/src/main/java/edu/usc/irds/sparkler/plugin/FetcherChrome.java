@@ -142,6 +142,7 @@ public class FetcherChrome extends FetcherDefault {
     public FetchedData fetch(Resource resource) throws Exception {
         LOG.info("Chrome FETCHER {}", resource.getUrl());
         FetchedData fetchedData;
+        JSONObject json = null;
         /*
          * In this plugin we will work on only HTML data If data is of any other data
          * type like image, pdf etc plugin will return client error so it can be fetched
@@ -158,16 +159,9 @@ public class FetcherChrome extends FetcherDefault {
         LOG.debug("Time taken to create driver- {}", (System.currentTimeMillis() - start));
 
         if(resource.getMetadata()!=null && !resource.getMetadata().equals("")){
-        JSONObject json = processMetadata(resource.getMetadata());
+        json = processMetadata(resource.getMetadata());
 
-        if (json.containsKey("form")) {
-            //processForm((JSONObject) json.get("form"), connection);
-            //connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-
-        } else if (json.containsKey("json")) {
-            //processJson((JSONObject) json.get("json"), connection);
         }
-    }
         // This will block for the page load and any
         // associated AJAX requests
         driver.get(resource.getUrl());
@@ -195,7 +189,9 @@ public class FetcherChrome extends FetcherDefault {
         if (seleniumenabled.equals("true")) {
             runScript(pluginConfig.get("chrome.selenium.script"));
         }
-
+        if(json != null && json.containsKey("selenium")){
+            runScript(json.get("selenium"));
+        }
         String html = driver.getPageSource();
 
         LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
@@ -265,8 +261,8 @@ public class FetcherChrome extends FetcherDefault {
     }
 
     private void runScript(Object orDefault) {
-        if(orDefault != null && orDefault instanceof LinkedHashMap){
-            LinkedHashMap mp = (LinkedHashMap) orDefault;
+        if(orDefault != null && orDefault instanceof Map){
+            Map mp = (Map) orDefault;
 
             Iterator it = mp.entrySet().iterator();
             while (it.hasNext()) {
@@ -274,7 +270,7 @@ public class FetcherChrome extends FetcherDefault {
                 System.out.println(pair.getKey() + " = " + pair.getValue());
 
 
-                LinkedHashMap submap = (LinkedHashMap) pair.getValue();
+                Map submap = (Map) pair.getValue();
                 runSubScript(submap);
                 it.remove(); 
             }
@@ -282,7 +278,7 @@ public class FetcherChrome extends FetcherDefault {
         LOG.debug("");
     }
 
-    private void runSubScript(LinkedHashMap mp){
+    private void runSubScript(Map mp){
         Iterator it = mp.entrySet().iterator();
         String type = null;
         String value = null;
@@ -293,7 +289,9 @@ public class FetcherChrome extends FetcherDefault {
                 type = (String) pair.getValue();
             } else if(pair.getKey().equals("value")){
                 value = (String) pair.getValue();
-            } 
+            }  else if(pair.getKey().equals("operation")){
+                type = (String) pair.getValue();
+            }
 
             it.remove(); 
         }
@@ -328,7 +326,19 @@ public class FetcherChrome extends FetcherDefault {
     }
 
     private void typeCharacters(String chars){
-        clickedEl.sendKeys(chars);
+        if(chars.startsWith("id:")){
+            String[] s = chars.split(":");
+            driver.findElement(By.id(s[1])).sendKeys(s[2]);
+        }
+        else if(chars.startsWith("name:")){
+            String[] s = chars.split(":");
+            driver.findElement(By.name(s[1])).sendKeys(s[2]);
+        } else if(chars.startsWith("xpath:")){
+            String[] s = chars.split(":");
+            driver.findElement(By.xpath(s[1])).sendKeys(s[2]);
+        } else if(clickedEl != null){
+            clickedEl.sendKeys(chars);
+        }
     }
 
     public void closeResources() {

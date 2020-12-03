@@ -80,7 +80,7 @@ fetcher.headers:
   User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version}"
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
   Accept-Language: "en-US,en"
-  Referer: http://minnesota.magellanmedicaid.com/drug_search.asp
+  #Referer: http://minnesota.magellanmedicaid.com/drug_search.asp
 
 # Rotating agents file.
 # File should contain a list of agents which will be used to override the default agent string
@@ -101,7 +101,7 @@ plugins.active:
 
     - urlfilter-regex
     - urlfilter-samehost
-#    - url-injector
+    - url-injector
 #    - scorer-dd-svn
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
@@ -139,28 +139,28 @@ plugins:
     #chrome.selenium.script.click: "id:btnSearch" 
     chrome.proxy.address: 172.17.146.238:9998
   url.injector:
-    #mode: selenium # currently only compatible with the fetcher-chrome plugin
+    mode: selenium # currently only compatible with the fetcher-chrome plugin
     #mode: replace
     #mode: json
-    mode: form
+    #mode: form
     #values: #escaped for json
     #  - "\"COR\""
     #  - "\"VEN\""
     #  - "\"SOM\""
     values:
-      - COR
-      - VEN
-      - SOC
+      - Acitretin
+      - Adempas
+      - Actiq
     selenium:
-      1: 
+      1:
         operation: click
-        value: "id:txtName"
+        value: id:ctl00_ContentPlaceHolder1_rcbDrugName_Arrow
       2:
         operation: keys
-        value: "${token}"
+        value: "id:ctl00_ContentPlaceHolder1_rcbDrugName_Input:${token}"
       3:
         operation: click
-        value: "id:btnSearch" 
+        value: "id:ctl00_ContentPlaceHolder1_DrugSearch" 
     json: "{ \"name\":\"John\", \"age\":${token}, \"car\":null }"
     form:
       hdnField: "submit"
