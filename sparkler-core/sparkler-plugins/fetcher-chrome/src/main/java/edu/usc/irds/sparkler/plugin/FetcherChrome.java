@@ -55,7 +55,7 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map;
 import java.util.Set;
 
@@ -74,7 +74,7 @@ import org.openqa.selenium.Proxy;
 public class FetcherChrome extends FetcherDefault {
 
     private static final Logger LOG = LoggerFactory.getLogger(FetcherChrome.class);
-    private LinkedHashMap<String, Object> pluginConfig;
+    private Map<String, Object> pluginConfig;
     private WebDriver driver;
     private WebElement clickedEl = null;
     private int latestStatus;

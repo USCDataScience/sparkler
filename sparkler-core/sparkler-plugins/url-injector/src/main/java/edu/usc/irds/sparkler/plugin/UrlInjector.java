@@ -16,15 +16,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 
 @Extension
 public class UrlInjector extends AbstractExtensionPoint implements Config {
 
     private static final Logger LOG = LoggerFactory.getLogger(UrlInjector.class);
-    private LinkedHashMap<String, Object> pluginConfig;
+    private Map<String, Object> pluginConfig;
 
     @Override
     public Collection<UrlInjectorObj> processConfig(Collection<String> urls) {
@@ -63,7 +63,7 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
 
     private List<UrlInjectorObj> appendForm(Collection<String> urls, List<String> tokens) {
         List<UrlInjectorObj> fixedUrls = new ArrayList<>();
-        LinkedHashMap script = (LinkedHashMap) pluginConfig.get("form");
+        Map script = (Map) pluginConfig.get("form");
 
         JSONObject root = new JSONObject();
         JSONObject obj = new JSONObject(script);
@@ -143,7 +143,7 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
 
     private List<UrlInjectorObj> appendSelenium(Collection<String> urls, List<String> tokens) {
         List<UrlInjectorObj> fixedUrls = new ArrayList<>();
-        LinkedHashMap script = (LinkedHashMap) pluginConfig.get("selenium");
+        Map script = (Map) pluginConfig.get("selenium");
 
         JSONObject root = new JSONObject();
         JSONObject obj = new JSONObject(script);

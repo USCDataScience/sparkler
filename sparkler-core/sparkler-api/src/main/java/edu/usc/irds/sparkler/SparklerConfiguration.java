@@ -21,8 +21,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+
+import com.google.gson.Gson;
 
 public class SparklerConfiguration extends JSONObject {
 
@@ -34,21 +38,21 @@ public class SparklerConfiguration extends JSONObject {
         super(map);
     }
 
-    public LinkedHashMap<String, Object> getPluginConfiguration(String pluginId) throws SparklerException {
+    public Map<String, Object> getPluginConfiguration(String pluginId) throws SparklerException {
         pluginId = pluginId.replace("-", ".");
         if (this.containsKey(Constants.key.PLUGINS)) {
-            LinkedHashMap plugins = (LinkedHashMap) this.get(Constants.key.PLUGINS);
+            Map plugins = (Map) this.get(Constants.key.PLUGINS);
             if (plugins.containsKey(pluginId)) {
-                return (LinkedHashMap<String, Object>) plugins.get(pluginId);
+                return (Map<String, Object>) plugins.get(pluginId);
             } else {
                 String[] parts = pluginId.split(":");
                 if (parts.length >= 3) { // groupId:artifactId:version
                     // first check without version
                     String newId = parts[0] + ":" + parts[1];
                     if (plugins.containsKey(newId)) {
-                        return (LinkedHashMap<String, Object>) plugins.get(newId);
+                        return (Map<String, Object>) plugins.get(newId);
                     } else if (plugins.containsKey(parts[1])) { // just the id, no groupId or version
-                        return (LinkedHashMap<String, Object>) plugins.get(parts[1]);
+                        return (Map<String, Object>) plugins.get(parts[1]);
                     }
                 }
                 throw new SparklerException("No configuration found for Plugin: " + pluginId);
@@ -63,9 +67,35 @@ public class SparklerConfiguration extends JSONObject {
         JSONObject json;
         try {
             json = (JSONObject) parser.parse(object);
-            this.putAll(json);
+            HashMap<String, Object> yourHashMap = new Gson().fromJson(json.toString(), HashMap.class);
+            Map o = deepMerge(this, yourHashMap);
+            JSONObject j = new JSONObject(this);
+            String str = j.toJSONString();
+            System.out.println(str);
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
+
+    private static Map deepMerge(Map original, Map newMap) {
+        for (Object key : newMap.keySet()) {
+            if (newMap.get(key) instanceof Map && original.get(key) instanceof Map) {
+                Map originalChild = (Map) original.get(key);
+                Map newChild = (Map) newMap.get(key);
+                original.put(key, deepMerge(originalChild, newChild));
+            } else if (newMap.get(key) instanceof List && original.get(key) instanceof List) {
+                List originalChild = (List) original.get(key);
+                List newChild = (List) newMap.get(key);
+                for (Object each : newChild) {
+                    if (!originalChild.contains(each)) {
+                        originalChild.add(each);
+                    }
+                }
+            } else {
+                original.put(key, newMap.get(key));
+            }
+        }
+        return original;
+    }
+
 }
