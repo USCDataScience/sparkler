@@ -64,17 +64,19 @@ public class SparklerConfiguration extends JSONObject {
 
     public void overloadConfig(String object) {
         JSONParser parser = new JSONParser();
-        JSONObject json;
-        try {
-            json = (JSONObject) parser.parse(object);
+        JSONObject json = null;
+            try{
+                json = (JSONObject) parser.parse(object);
+            } catch (Exception exception){
+                System.out.println("Error parsing overload json: " + exception+ " for json: "+object);
+                System.exit(0); // ???
+            }
+
             HashMap<String, Object> yourHashMap = new Gson().fromJson(json.toString(), HashMap.class);
             Map o = deepMerge(this, yourHashMap);
             JSONObject j = new JSONObject(this);
             String str = j.toJSONString();
             System.out.println(str);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
     }
 
     private static Map deepMerge(Map original, Map newMap) {

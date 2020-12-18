@@ -21,7 +21,7 @@ javacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "edu.usc.irds.sparkler" % "sparkler-api" % "0.2.1-SNAPSHOT",
+  "edu.usc.irds.sparkler" % "sparkler-api" % "0.2.2-SNAPSHOT",
   "org.pf4j" % "pf4j" % "2.0.0",
   "org.apache.spark" % "spark-core_2.11" % "1.6.1",
   "org.apache.nutch" % "nutch" % "1.13",

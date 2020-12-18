@@ -26,6 +26,7 @@ import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.pipeline.UrlInjectorFunction
 import edu.usc.irds.sparkler.util.JobUtil
+import edu.usc.irds.sparkler.service.WellBehavedStringArrayOptionHandler
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
@@ -68,13 +69,14 @@ class Injector extends CliTool {
     usage = "Crawdb URI.")
   var sparkSolr: String = conf.get(Constants.key.CRAWLDB).asInstanceOf[String]
 
-    @Option(name = "-co", aliases = Array("--config-override"),
+  @Option(name = "-co", aliases = Array("--config-override"),
+    handler = classOf[StringArrayOptionHandler],
     usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
-  var configOverride: String = ""
+  var configOverride: Array[Any] = Array()
 
   override def run(): Unit = {
     if (configOverride != ""){
-      conf.overloadConfig(configOverride);
+      conf.overloadConfig(configOverride.mkString(" "));
     }
     if (!sparkSolr.isEmpty) {
       val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
