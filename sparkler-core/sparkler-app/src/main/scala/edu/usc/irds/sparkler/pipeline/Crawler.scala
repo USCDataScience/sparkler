@@ -116,6 +116,7 @@ class Crawler extends CliTool {
 
 
   @Option(name = "-co", aliases = Array("--config-override"),
+    handler = classOf[StringArrayOptionHandler],
     usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
   var configOverride: String = ""
 
@@ -130,7 +131,7 @@ class Crawler extends CliTool {
 
   def init(): Unit = {
     if (configOverride != ""){
-      sparklerConf.overloadConfig(configOverride);
+      sparklerConf.overloadConfig(configOverride.mkString(" "));
     }
     if (this.outputPath.isEmpty) {
       this.outputPath = jobId
