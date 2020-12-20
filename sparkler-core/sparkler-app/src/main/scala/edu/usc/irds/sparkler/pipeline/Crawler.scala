@@ -118,7 +118,7 @@ class Crawler extends CliTool {
   @Option(name = "-co", aliases = Array("--config-override"),
     handler = classOf[StringArrayOptionHandler],
     usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
-  var configOverride: String = ""
+  var configOverride: Array[Any] = Array()
 
   /* Generator options, currently not exposed via the CLI
      and only accessible through the config yaml file
@@ -131,6 +131,7 @@ class Crawler extends CliTool {
 
   def init(): Unit = {
     if (configOverride != ""){
+      print(configOverride.mkString(" "))
       sparklerConf.overloadConfig(configOverride.mkString(" "));
     }
     if (this.outputPath.isEmpty) {
