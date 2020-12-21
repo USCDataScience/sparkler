@@ -26,7 +26,6 @@ import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.pipeline.UrlInjectorFunction
 import edu.usc.irds.sparkler.util.JobUtil
-import edu.usc.irds.sparkler.service.WellBehavedStringArrayOptionHandler
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
