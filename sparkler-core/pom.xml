@@ -71,6 +71,10 @@
     </modules>
     <repositories>
         <repository>
+          <id>gitlab-maven</id>
+          <url>https://gitlab.com/api/v4/projects/23300400/packages/maven</url>
+        </repository>
+        <repository>
             <id>central</id>
             <name>Maven Central</name>
             <layout>default</layout>
