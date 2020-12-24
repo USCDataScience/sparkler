@@ -23,7 +23,7 @@
     <parent>
         <artifactId>sparkler-parent</artifactId>
         <groupId>edu.usc.irds.sparkler</groupId>
-        <version>0.2.1-SNAPSHOT</version>
+        <version>0.2.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>edu.usc.irds.sparkler.plugin</groupId>
@@ -39,6 +39,7 @@
         <module>fetcher-htmlunit</module>
         <module>fetcher-chrome</module>
         <module>urlfilter-samehost</module>
+        <module>url-injector</module>
         <!-- Copy template plugin to create a new plugin-->
         <module>template-plugin</module>
     </modules>

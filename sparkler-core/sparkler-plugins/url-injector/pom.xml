@@ -25,45 +25,27 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>fetcher-htmlunit</artifactId>
+    <artifactId>url-injector</artifactId>
     <packaging>jar</packaging>
 
-    <name>fetcher-htmlunit</name>
+    <name>url-injector</name>
     <url>http://maven.apache.org</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <htmlunit.version>2.43.0</htmlunit.version>
         <plugin.id>${project.artifactId}</plugin.id>
-        <plugin.class>edu.usc.irds.sparkler.plugin.HtmlUnitFetcherActivator</plugin.class>
+        <plugin.version>${project.version}</plugin.version>
+        <plugin.provider>${project.groupId}</plugin.provider>
+        <plugin.class>edu.usc.irds.sparkler.plugin.UrlInjectorActivator</plugin.class>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
-            <artifactId>htmlunit</artifactId>
-            <version>${htmlunit.version}</version>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
-            <plugin>
+            <plugin><!-- Config is same as defined in the parent POM -->
                 <artifactId>maven-assembly-plugin</artifactId>
-                <!-- Config is same as defined in the parent POM -->
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M5</version>
-                <configuration>
-                    <properties>
-                        <property>
-                            <name>listener</name>
-                            <value>edu.usc.irds.sparkler.test.WebServerRunListener</value>
-                        </property>
-                    </properties>
-                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -24,6 +24,7 @@ import java.util
 import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
+import edu.usc.irds.sparkler.pipeline.UrlInjectorFunction
 import edu.usc.irds.sparkler.util.JobUtil
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
@@ -67,7 +68,15 @@ class Injector extends CliTool {
     usage = "Crawdb URI.")
   var sparkSolr: String = conf.get(Constants.key.CRAWLDB).asInstanceOf[String]
 
+  @Option(name = "-co", aliases = Array("--config-override"),
+    handler = classOf[StringArrayOptionHandler],
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var configOverride: Array[Any] = Array()
+
   override def run(): Unit = {
+    if (configOverride != ""){
+      conf.overloadConfig(configOverride.mkString(" "));
+    }
     if (!sparkSolr.isEmpty) {
       val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
       uri.put("crawldb.uri", sparkSolr)
@@ -89,11 +98,15 @@ class Injector extends CliTool {
         seedUrls.toList
       }
 
+    val replacedUrls = UrlInjectorFunction(job, urls)
     // TODO: Add URL normalizer and filters before injecting the seeds
-    val seeds: util.Collection[Resource] =
-      urls.map(_.trim)
-        .filter(url => urlValidator.isValid(url))
-        .map(x => new Resource(x, 0, job, ResourceStatus.UNFETCHED, Injector.SEED_PARENT, Injector.SEED_SCORE))
+    var seeds = List[Resource]()
+    replacedUrls.forEach(n => {
+        if(urlValidator.isValid(n.getUrl)){
+          val res = new Resource(n.getUrl.trim, 0, job, ResourceStatus.UNFETCHED, Injector.SEED_PARENT, Injector.SEED_SCORE, n.getMetadata, n.getHttpMethod)
+          seeds = res :: seeds
+        }
+    })
     LOG.info("Injecting {} seeds", seeds.size())
 
     val solrClient = job.newCrawlDbSolrClient()

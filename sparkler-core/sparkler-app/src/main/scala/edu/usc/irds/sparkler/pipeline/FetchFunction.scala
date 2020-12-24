@@ -34,13 +34,18 @@ object FetchFunction
     with Serializable with Loggable {
   val FETCH_TIMEOUT = 1000
   val defaultFetcher = new FetcherDefault
-
+  var initialised = false
   def init(job:SparklerJob): Unit ={
     defaultFetcher.init(job,"")
+    initialised = true
   }
 
   override def apply(job: SparklerJob, resources: Iterator[Resource])
   : Iterator[FetchedData] = {
+    if(!initialised){
+      LOG.debug("INITIALIZING CRAWLER")
+      init(job)
+    }
     val fetcher:scala.Option[Fetcher] = PluginService.getExtension(classOf[Fetcher], job)
     try {
      (fetcher match {case Some(f) => f; case None => defaultFetcher}).fetch(resources)

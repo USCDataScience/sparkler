@@ -21,7 +21,7 @@
     <parent>
         <artifactId>sparkler-parent</artifactId>
         <groupId>edu.usc.irds.sparkler</groupId>
-        <version>0.2.1-SNAPSHOT</version>
+        <version>0.2.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -217,9 +217,9 @@
                             </transformers>
                             <relocations>
                                 <!-- To resolve dependency conflict with Spark -->
-                                <relocation> 
-                                    <pattern>org.apache.http</pattern> 
-                                    <shadedPattern>shaded.org.apache.http</shadedPattern> 
+                                <relocation>
+                                    <pattern>org.apache.http</pattern>
+                                    <shadedPattern>shaded.org.apache.http</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

@@ -40,7 +40,7 @@ class SolrProxy(var crawlDb: SolrClient) extends Closeable with Loggable {
       crawlDb.addBeans(beans)
     } catch {
       case e: Exception =>
-        LOG.debug("Caught {} while adding beans, trying to add one by one", e.getMessage)
+        LOG.warn("Caught {} while adding beans, trying to add one by one", e.getMessage)
         while (beans.hasNext) {
           val bean = beans.next()
           try { // to add one by one

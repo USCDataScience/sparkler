@@ -80,6 +80,7 @@ fetcher.headers:
   User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version}"
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
   Accept-Language: "en-US,en"
+  #Referer: http://minnesota.magellanmedicaid.com/drug_search.asp
 
 # Rotating agents file.
 # File should contain a list of agents which will be used to override the default agent string
@@ -100,10 +101,11 @@ plugins.active:
 
     - urlfilter-regex
     - urlfilter-samehost
+    - url-injector
 #    - scorer-dd-svn
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
-#    - fetcher-chrome
+    - fetcher-chrome
 
 # All Plugins are listed under this tree
 plugins:
@@ -131,6 +133,43 @@ plugins:
     #What type of element, class, name, id
     chrome.wait.type: "class"
     chrome.dns: "http://localhost:3000/webdriver"
+    #chrome.selenium.enabled: "true"
+    #chrome.selenium.script.click: "id:txtName"
+    #chrome.selenium.script.keys: "COR"
+    #chrome.selenium.script.click: "id:btnSearch" 
+    chrome.proxy.address: 172.17.146.238:9998
+  url.injector:
+    mode: selenium # currently only compatible with the fetcher-chrome plugin
+    #mode: replace
+    #mode: json
+    #mode: form
+    #values: #escaped for json
+    #  - "\"COR\""
+    #  - "\"VEN\""
+    #  - "\"SOM\""
+    values:
+      - Acitretin
+      - Adempas
+      - Actiq
+    selenium:
+      1:
+        operation: click
+        value: id:ctl00_ContentPlaceHolder1_rcbDrugName_Arrow
+      2:
+        operation: keys
+        value: "id:ctl00_ContentPlaceHolder1_rcbDrugName_Input:${token}"
+      3:
+        operation: click
+        value: "id:ctl00_ContentPlaceHolder1_DrugSearch" 
+    json: "{ \"name\":\"John\", \"age\":${token}, \"car\":null }"
+    form:
+      hdnField: "submit"
+      txtRequired: ""
+      radSearchBy: "drugname"
+      txtName: "${token}"
+      selTC: ""
+      selProgram: "MA"
+      txtDateOfService: "12/01/2020"
 ##################### Custom properties for MEMEX ###########################################
   memex.webpage.mimetype: "text/html"
 
