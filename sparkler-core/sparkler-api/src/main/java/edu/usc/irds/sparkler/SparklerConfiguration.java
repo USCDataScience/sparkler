@@ -63,6 +63,7 @@ public class SparklerConfiguration extends JSONObject {
     }
 
     public void overloadConfig(String object) {
+      if(object != null && !object.equals("") && !object.equals(" ")){
         JSONParser parser = new JSONParser();
         JSONObject json = null;
             try{
@@ -77,6 +78,7 @@ public class SparklerConfiguration extends JSONObject {
             JSONObject j = new JSONObject(this);
             String str = j.toJSONString();
             System.out.println(str);
+        }
     }
 
     private static Map deepMerge(Map original, Map newMap) {
