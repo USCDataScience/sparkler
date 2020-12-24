@@ -73,6 +73,9 @@
         <repository>
           <id>gitlab-maven</id>
           <url>https://gitlab.com/api/v4/projects/23300400/packages/maven</url>
+          <snapshots>
+             <enabled>true</enabled>
+          </snapshots>
         </repository>
         <repository>
             <id>central</id>
