@@ -80,7 +80,6 @@ fetcher.headers:
   User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/${project.version}"
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
   Accept-Language: "en-US,en"
-  #Referer: http://minnesota.magellanmedicaid.com/drug_search.asp
 
 # Rotating agents file.
 # File should contain a list of agents which will be used to override the default agent string
@@ -101,11 +100,11 @@ plugins.active:
 
     - urlfilter-regex
     - urlfilter-samehost
-    - url-injector
+#    - url-injector
 #    - scorer-dd-svn
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
-    - fetcher-chrome
+#    - fetcher-chrome
 
 # All Plugins are listed under this tree
 plugins:
