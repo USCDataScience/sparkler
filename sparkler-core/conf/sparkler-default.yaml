@@ -136,7 +136,7 @@ plugins:
     #chrome.selenium.script.click: "id:txtName"
     #chrome.selenium.script.keys: "COR"
     #chrome.selenium.script.click: "id:btnSearch" 
-    chrome.proxy.address: 127.0.0.1:9998
+    #chrome.proxy.address: 127.0.0.1:9998
   url.injector:
     mode: selenium # currently only compatible with the fetcher-chrome plugin
     #mode: replace
