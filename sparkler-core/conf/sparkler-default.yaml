@@ -136,7 +136,7 @@ plugins:
     #chrome.selenium.script.click: "id:txtName"
     #chrome.selenium.script.keys: "COR"
     #chrome.selenium.script.click: "id:btnSearch" 
-    chrome.proxy.address: 172.17.146.238:9998
+    chrome.proxy.address: 127.0.0.1:9998
   url.injector:
     mode: selenium # currently only compatible with the fetcher-chrome plugin
     #mode: replace
@@ -153,13 +153,13 @@ plugins:
     selenium:
       1:
         operation: click
-        value: id:ctl00_ContentPlaceHolder1_rcbDrugName_Arrow
+        value: id:some-id
       2:
         operation: keys
-        value: "id:ctl00_ContentPlaceHolder1_rcbDrugName_Input:${token}"
+        value: "id:some-input-id:${token}"
       3:
         operation: click
-        value: "id:ctl00_ContentPlaceHolder1_DrugSearch" 
+        value: "id:some-id" 
     json: "{ \"name\":\"John\", \"age\":${token}, \"car\":null }"
     form:
       hdnField: "submit"
