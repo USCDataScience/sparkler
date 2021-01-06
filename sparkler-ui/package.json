@@ -6,7 +6,7 @@
   "dependencies": {
     "@blueprintjs/core": "^3.14.1",
     "arangojs": "5",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "dotenv": "^7.0.0",
     "js-file-download": "^0.4.10",
     "location-origin": "^1.1.4",
