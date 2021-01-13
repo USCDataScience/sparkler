@@ -14,6 +14,13 @@ var source     = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var rename = require('gulp-rename')
 var watchify = require('watchify');
+var postcss = require('gulp-postcss');
+var cssvars = require('postcss-simple-vars');
+var nested = require('postcss-nested');
+var cssImport = require('postcss-import');
+var autoprefixer = require('autoprefixer');
+var tailwindcss = require('tailwindcss');
+
 
 const production = environments.production;
 var config = {
@@ -69,6 +76,14 @@ gulp.task('javascript-build', function (done) {
 gulp.task('watch', () => {
     browserSync.init({
         proxy: 'localhost:8080',
+        snippetOptions: {
+            rule: {
+                match: /<\/head>/i,
+                fn: function (snippet, match) {
+                    return snippet + match;
+                }
+            }
+        },
     });
 
     gulp.watch(['src/main/resources/**/*.html'], gulp.series('copy-html-and-reload'));
@@ -94,11 +109,17 @@ gulp.task('copy-js', () =>
         .pipe(gulp.dest('target/classes/'))
 );
 
+gulp.task('styles', function(){
+ return gulp.src('src/main/resources/static/css/main.css')
+  .pipe(postcss([tailwindcss, cssImport, cssvars, nested, autoprefixer]))
+  .pipe(gulp.dest('target/classes/static/css/'))
+});
+
 gulp.task('copy-html-and-reload', gulp.series('copy-html', reload));
-gulp.task('copy-css-and-reload', gulp.series('copy-css', reload));
+gulp.task('copy-css-and-reload', gulp.series('styles', reload));
 gulp.task('copy-js-and-reload', gulp.series('javascript', reload));
 
-gulp.task('build', gulp.series('copy-html', 'copy-css', 'javascript-build'));
+gulp.task('build', gulp.series('copy-html', 'styles', 'javascript-build'));
 gulp.task('default', gulp.series('watch'));
 
 function reload(done) {
