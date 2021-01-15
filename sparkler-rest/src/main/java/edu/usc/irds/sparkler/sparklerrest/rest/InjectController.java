@@ -24,7 +24,6 @@ public class InjectController {
     public InjectionMessage postInject(@PathVariable("crawlid") String name, @RequestBody Injection employee, HttpServletResponse response)
     {
         Injector injector = new Injector();
-        InjectionMessage jobid = null;
         try {
             return injector.injectNewURLs(employee.getConfigOverride(), employee.getCrawldb(), name, employee.getUrls());
         } catch (InjectFailedException e) {
@@ -34,8 +33,14 @@ public class InjectController {
     }
 
     @GetMapping(path="/{crawlid}/{url}", produces = "application/json")
-    public String postInjectUrl(@PathVariable("crawlid") String name, @PathVariable("url") String url)
+    public InjectionMessage postInjectUrl(@PathVariable("crawlid") String name, @RequestBody Injection employee, @PathVariable("url") String url)
     {
-        return "{\"greeting\" : \"Hello, " + name + "!\"}";
+        Injector injector = new Injector();
+        try {
+            return injector.injectNewURLs(employee.getConfigOverride(), employee.getCrawldb(), name, new String[]{url});
+        } catch (InjectFailedException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, e.getMsg(), e);
+        }
     }
 }
