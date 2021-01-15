@@ -29,7 +29,7 @@ lib_managed/
 src_managed/
 project/boot/
 project/plugins/project/
-
+sparkler-rest/plugins/
 # Scala-IDE specific
 .scala_dependencies
 .worksheet

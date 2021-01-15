@@ -1,0 +1,15 @@
+###
+
+GET http://localhost:8080/rest/inject/hello
+
+
+###
+
+POST http://localhost:8080/rest/inject/job1
+Content-Type: application/json
+Accept: application/json
+
+{
+  "crawldb": "hello",
+  "urls": ["https://news.bbc.co.uk", "https://us.cnn.com"]
+}

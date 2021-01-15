@@ -74,12 +74,12 @@ class Injector extends CliTool {
   var configOverride: Array[Any] = Array()
 
   override def run(): Unit = {
-    if (configOverride != ""){
+/*    if (configOverride != ""){
       conf.overloadConfig(configOverride.mkString(" "));
     }
     if (!sparkSolr.isEmpty) {
       val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
-      uri.put("crawldb.uri", sparkSolr)
+      (uri).put("crawldb.uri", sparkSolr)
     }
 
     if (jobId.isEmpty) {
@@ -112,7 +112,9 @@ class Injector extends CliTool {
     val solrClient = job.newCrawlDbSolrClient()
     solrClient.addResources(seeds.iterator())
     solrClient.commitCrawlDb()
-    solrClient.close()
+    solrClient.close()*/
+    var injectorRunner = new InjectorRunner()
+    injectorRunner.runInjector(configOverride, sparkSolr, jobId, seedFile, seedUrls)
   }
 
   override def parseArgs(args: Array[String]): Unit = {

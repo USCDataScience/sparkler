@@ -36,7 +36,7 @@ import scala.collection.JavaConversions._
 class PluginService(job:SparklerJob) {
   import PluginService._
 
-  val pluginManager = new DefaultPluginManager()
+  var pluginManager = new DefaultPluginManager()
 
   // This map keeps cache of all active instances
   val registry = new mutable.HashMap[Class[_ <: ExtensionPoint], ExtensionPoint]
@@ -44,6 +44,8 @@ class PluginService(job:SparklerJob) {
   val id2Class = new mutable.HashMap[String, String]
 
   def load(): Unit ={
+
+    pluginManager = new DefaultPluginManager()
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run(): Unit = {
         LOG.warn("Stopping all plugins... Runtime is about to exit.")
