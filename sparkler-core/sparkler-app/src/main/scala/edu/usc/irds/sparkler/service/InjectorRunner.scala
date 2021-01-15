@@ -24,7 +24,7 @@ class InjectorRunner{
     if (configOverride != null && !configOverride.isEmpty ){
       conf.overloadConfig(configOverride.mkString(" "));
     }
-    if (!sparkSolr.isEmpty) {
+    if (sparkSolr != null && !sparkSolr.isEmpty) {
       val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
       (uri).put("crawldb.uri", sparkSolr)
     }

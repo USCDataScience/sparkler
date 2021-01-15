@@ -1,6 +1,7 @@
 package edu.usc.irds.sparkler.sparklerrest.rest;
 
 import edu.usc.irds.sparkler.sparklerrest.exceptions.InjectFailedException;
+import edu.usc.irds.sparkler.sparklerrest.inject.InjectStats;
 import edu.usc.irds.sparkler.sparklerrest.inject.Injection;
 import edu.usc.irds.sparkler.sparklerrest.inject.InjectionMessage;
 import edu.usc.irds.sparkler.sparklerrest.inject.Injector;
@@ -15,9 +16,11 @@ import javax.servlet.http.HttpServletResponse;
 public class InjectController {
 
     @GetMapping(path="/{crawlid}", produces = "application/json")
-    public String getGreeting(@PathVariable("crawlid") String name)
+    public InjectStats[] getGreeting(@PathVariable("crawlid") String name)
     {
-        return "{\"greeting\" : \"Hello, " + name + "!\"}";
+        InjectStats[] injectStats = new InjectStats[]{};
+
+        return injectStats;
     }
 
     @PostMapping(path="/{crawlid}", produces = "application/json")

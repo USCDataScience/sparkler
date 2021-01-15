@@ -10,6 +10,5 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "crawldb": "hello",
   "urls": ["https://news.bbc.co.uk", "https://us.cnn.com"]
 }
