@@ -20,7 +20,7 @@ class InjectorRunner{
 
   val conf: SparklerConfiguration = Constants.defaults.newDefaultConfig()
 
-  def runInjector(configOverride: Array[Any], sparkSolr: String, jobId: String, seedFile: File, seedUrls: Array[String]) : Unit = {
+  def runInjector(configOverride: Array[Any], sparkSolr: String, jobId: String, seedFile: File, seedUrls: Array[String]) : String = {
     if (configOverride != null && !configOverride.isEmpty ){
       conf.overloadConfig(configOverride.mkString(" "));
     }
@@ -61,6 +61,8 @@ class InjectorRunner{
     solrClient.addResources(seeds.iterator())
     solrClient.commitCrawlDb()
     solrClient.close()
+
+    jobI
   }
 
   def stackListFiles(directory: File): Array[File] = {
