@@ -5,8 +5,44 @@ const browserSync = require('browser-sync').create();
 const environments = require('gulp-environments');
 const uglifycss = require('gulp-uglifycss');
 const terser = require('gulp-terser');
+var browserify = require('browserify');
+var sourceMaps = require('gulp-sourcemaps');
+var coffeeify  = require('coffeeify');
+var babelify   = require('babelify')
+var livereload = require('gulp-livereload');
+var source     = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var rename = require('gulp-rename')
+var watchify = require('watchify');
 
 const production = environments.production;
+var config = {
+    js: {
+        src: './src/main/resources/static/js/application.js',       // Entry point
+        outputDir: './target/classes/static/js/',  // Directory to save bundle to
+        mapDir: './maps/',      // Subdirectory to save maps to
+        outputFile: 'bundle.js' // Name to use for bundle
+    },
+};
+
+gulp.task('javascript', function (done) {
+    let bundler = watchify(browserify(config.js.src)  // Pass browserify the entry point
+        .transform(coffeeify)      //  Chain transformations: First, coffeeify . . .
+        .transform(babelify, { presets : [ "@babel/preset-env" ], plugins :[ "@babel/plugin-proposal-class-properties"] }))
+
+    bundler
+        .bundle()                                                        // Start bundle
+        .pipe(source(config.js.src))                        // Entry point
+        .pipe(buffer())                                               // Convert to gulp pipeline
+        .pipe(rename(config.js.outputFile))          // Rename output from 'main.js'
+        .pipe(gulp.dest(config.js.outputDir))
+        .pipe(livereload()).on('end', function() {
+            console.log("ended");
+        done();
+    });
+    //.pipe(sourceMaps.init({ loadMaps : true }))  // Strip inline source maps
+    //.pipe(sourceMaps.write(config.js.mapDir))    // Save source maps to their
+});
 
 gulp.task('watch', () => {
     browserSync.init({
@@ -38,7 +74,8 @@ gulp.task('copy-js', () =>
 
 gulp.task('copy-html-and-reload', gulp.series('copy-html', reload));
 gulp.task('copy-css-and-reload', gulp.series('copy-css', reload));
-gulp.task('copy-js-and-reload', gulp.series('copy-js', reload));
+//gulp.task('copy-js-and-reload', gulp.series('copy-js', reload));
+gulp.task('copy-js-and-reload', gulp.series('javascript', reload));
 
 gulp.task('build', gulp.series('copy-html', 'copy-css', 'copy-js'));
 gulp.task('default', gulp.series('watch'));
