@@ -28,16 +28,13 @@
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
     "watchify": "^3.11.1",
-    "webpack-stream": "^6.1.1"
-  },
-  "dependencies": {
     "babel-preset-env": "^1.7.0",
     "coffeeify": "^3.0.1",
     "coffeescript": "^2.5.1",
     "gulp-rename": "^2.0.0",
-    "gulp-sourcemaps": "^3.0.0",
-    "reactify": "^1.1.1",
-    "stimulus": "^2.0.0",
-    "webpack": "^5.15.0"
+    "gulp-sourcemaps": "^3.0.0"
+  },
+  "dependencies": {
+    "stimulus": "^2.0.0"
   }
 }

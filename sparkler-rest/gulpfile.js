@@ -25,6 +25,10 @@ var config = {
     },
 };
 
+function browser(done){
+
+}
+
 gulp.task('javascript', function (done) {
     let bundler = watchify(browserify(config.js.src)  // Pass browserify the entry point
         .transform(coffeeify)      //  Chain transformations: First, coffeeify . . .
@@ -44,6 +48,24 @@ gulp.task('javascript', function (done) {
     //.pipe(sourceMaps.write(config.js.mapDir))    // Save source maps to their
 });
 
+gulp.task('javascript-build', function (done) {
+    let bundler = browserify(config.js.src)  // Pass browserify the entry point
+        .transform(coffeeify)      //  Chain transformations: First, coffeeify . . .
+        .transform(babelify, { presets : [ "@babel/preset-env" ], plugins :[ "@babel/plugin-proposal-class-properties"] })
+
+    bundler
+        .bundle()                                                        // Start bundle
+        .pipe(source(config.js.src))                        // Entry point
+        .pipe(buffer())                                               // Convert to gulp pipeline
+        .pipe(rename(config.js.outputFile))          // Rename output from 'main.js'
+        .pipe(gulp.dest(config.js.outputDir))
+        .pipe(livereload()).on('end', function() {
+        console.log("ended");
+        done();
+    });
+    //.pipe(sourceMaps.init({ loadMaps : true }))  // Strip inline source maps
+    //.pipe(sourceMaps.write(config.js.mapDir))    // Save source maps to their
+});
 gulp.task('watch', () => {
     browserSync.init({
         proxy: 'localhost:8080',
@@ -74,10 +96,9 @@ gulp.task('copy-js', () =>
 
 gulp.task('copy-html-and-reload', gulp.series('copy-html', reload));
 gulp.task('copy-css-and-reload', gulp.series('copy-css', reload));
-//gulp.task('copy-js-and-reload', gulp.series('copy-js', reload));
 gulp.task('copy-js-and-reload', gulp.series('javascript', reload));
 
-gulp.task('build', gulp.series('copy-html', 'copy-css', 'copy-js'));
+gulp.task('build', gulp.series('copy-html', 'copy-css', 'javascript-build'));
 gulp.task('default', gulp.series('watch'));
 
 function reload(done) {
