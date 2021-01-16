@@ -3,19 +3,11 @@
 <head>
     <title>Getting Started: Serving Web Content</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="/js/bundle.js"></script>
 </head>
 <body>
-
-<script>
-    document.addEventListener('turbolinks:load', function() {
-        console.log('Cool, Turbolinks works!')
-    })
-</script>
     <p>Get your greeting <a href="/greeting">here</a></p>
-    <turbo-frame id="messages" src="/messages">
-        <p>This message will be replaced by the response from /messages.</p>
-    </turbo-frame>
-<div id="tagline"></div>
+
 <div data-controller="hello">
     <input data-hello-target="name" type="text">
 
@@ -23,6 +15,19 @@
 
     <span data-hello-target="output"></span>
 </div>
-<script src="/js/bundle.js"></script>
+
+
+    <section>
+        <h1>Pings section</h1>
+        <h2>Turbo Stream</h2>
+        <form action="/greeting2" method="post" data-turbo-stream>
+            <button type="submit">Ping</button>
+        </form>
+        <div>
+            <p>Ping times</p>
+            <ol id="pings"></ol>
+        </div>
+    </section>
+
 </body>
 </html>
