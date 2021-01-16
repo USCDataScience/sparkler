@@ -1,0 +1,22 @@
+{
+  "name": "thymeleaf-live-reload",
+  "scripts": {
+    "watch": "gulp watch",
+    "build": "gulp build",
+    "build-prod": "gulp build --env production"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "browser-sync": "^2.26.13",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-environments": "^1.0.1",
+    "gulp-terser": "^2.0.1",
+    "gulp-uglifycss": "^1.1.0",
+    "gulp-watch": "^5.0.1"
+  },
+  "dependencies": {
+    "babel-preset-env": "^1.7.0"
+  }
+}

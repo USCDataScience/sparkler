@@ -6,40 +6,25 @@
 	<artifactId>sparkler-rest</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>sparkler-rest</name>
-
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.4.2</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
 	<description>REST API for Sparkler</description>
 
 	<properties>
 		<java.version>11</java.version>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<frontend-maven-plugin.version>1.8.0</frontend-maven-plugin.version>
+		<frontend-maven-plugin.nodeVersion>v12.10.0</frontend-maven-plugin.nodeVersion>
+		<frontend-maven-plugin.npmVersion>6.10.3</frontend-maven-plugin.npmVersion>
 	</properties>
-	<repositories>
-		<repository>
-			<id>spring-snapshots</id>
-			<url>http://repo.spring.io/snapshot</url>
-			<snapshots><enabled>true</enabled></snapshots>
-		</repository>
-		<repository>
-			<id>spring-milestones</id>
-			<url>http://repo.spring.io/milestone</url>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-snapshots</id>
-			<url>http://repo.spring.io/snapshot</url>
-		</pluginRepository>
-		<pluginRepository>
-			<id>spring-milestones</id>
-			<url>http://repo.spring.io/milestone</url>
-		</pluginRepository>
-	</pluginRepositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-			<version>2.4.2</version>
 		</dependency>
 
 		<dependency>
@@ -47,26 +32,20 @@
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
 			<optional>true</optional>
-			<version>2.4.2</version>
-
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
-			<version>1.18.16</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-			<version>2.4.2</version>
-
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
-			<version>2.4.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -91,7 +70,52 @@
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources
+				</directory>               <!-- Do not have the maven-resource-plugin copy these as the frontend-maven-plugin will take care of it -->
+				<excludes>
+					<exclude>**/*.html</exclude>
+					<exclude>**/*.css</exclude>
+					<exclude>**/*.js</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>com.github.eirslett</groupId>
+					<artifactId>frontend-maven-plugin</artifactId>
+					<version>${frontend-maven-plugin.version}</version>
+					<executions>
+						<execution>
+							<id>install-frontend-tooling</id>
+							<goals>
+								<goal>install-node-and-npm</goal>
+							</goals>
+							<configuration>
+								<nodeVersion>${frontend-maven-plugin.nodeVersion}</nodeVersion>
+								<npmVersion>${frontend-maven-plugin.npmVersion}</npmVersion>
+							</configuration>
+						</execution>
+						<execution>
+							<id>run-gulp-build</id>
+							<goals>
+								<goal>gulp</goal>
+							</goals>
+							<configuration>
+								<arguments>build</arguments>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -106,5 +130,28 @@
 			</plugin>
 		</plugins>
 	</build>
-
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.eirslett</groupId>
+						<artifactId>frontend-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>run-gulp-build</id>
+								<goals>
+									<goal>gulp</goal>
+								</goals>
+								<configuration>
+									<arguments>build --env production</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

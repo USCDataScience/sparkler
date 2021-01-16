@@ -58,3 +58,4 @@ tmp*
 workspace*
 sparkler-core/build/*
 sparkler-ui/node_modules/*
+sparker-rest/node/
