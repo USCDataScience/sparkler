@@ -25,7 +25,6 @@ import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.service.SolrProxy
-
 import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
 import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
@@ -129,120 +128,16 @@ class Crawler extends CliTool {
   var job: SparklerJob = _
   var sc: SparkContext = _
 
-  def init(): Unit = {
-    if (configOverride != ""){
-      print(configOverride.mkString(" "))
-      sparklerConf.overloadConfig(configOverride.mkString(" "));
-    }
-    if (this.outputPath.isEmpty) {
-      this.outputPath = jobId
-    }
-    val conf = new SparkConf().setAppName(jobId)
-    if (!sparkMaster.isEmpty) {
-      conf.setMaster(sparkMaster)
-    }
-    if (!sparkSolr.isEmpty){
-      sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put("crawldb.uri", sparkSolr)
-    }
 
-    if (databricksEnable) {
-      LOG.info("Databricks spark is enabled")
-      sc = SparkSession.builder().master("local").getOrCreate().sparkContext
-    }
-    else {
-      sc = new SparkContext(conf)
-    }
-
-    if(!jarPath.isEmpty && jarPath(0) == "true"){
-      sc.getConf.setJars(Array[String](getClass.getProtectionDomain.getCodeSource.getLocation.getPath))
-    }
-    else if(!jarPath.isEmpty) {
-      sc.getConf.setJars(jarPath)
-    }
-
-    job = new SparklerJob(jobId, sparklerConf, "")
-    //FetchFunction.init(job)
-
-  }
   //TODO: URL normalizers
   //TODO: Robots.txt
 
   override def run(): Unit = {
+    var crawlerRunner = new CrawlerRunner()
+    this.outputPath = crawlerRunner.runCrawler(configOverride, sparkSolr, jobId, fetchDelay, iterations,
+      deepCrawlHostFile, deepCrawlHostnames, sc, topN, topG, job, kafkaEnable, kafkaListeners, kafkaTopic,
+      sparklerConf, sparkMaster, outputPath, jarPath)
 
-    //STEP : Initialize environment
-    init()
-
-    val solrc = this.job.newCrawlDbSolrClient()
-    LOG.info("Committing crawldb..")
-    solrc.commitCrawlDb()
-    val localFetchDelay = fetchDelay
-    val job = this.job // local variable to bypass serialization
-
-    for (_ <- 1 to iterations) {
-      var deepCrawlHosts: mutable.Set[String] = new mutable.HashSet[String]()
-      if(deepCrawlHostFile != null) {
-        if(deepCrawlHostFile.isFile) {
-          deepCrawlHosts ++= Source.fromFile(deepCrawlHostFile).getLines().toSet
-        }
-      }
-      else if (deepCrawlHostnames.length > 0) {
-        deepCrawlHosts ++= deepCrawlHostnames.toSet
-      }
-      if (deepCrawlHosts.size > 0) {
-        LOG.info(s"Deep crawling hosts ${deepCrawlHosts.toString}")
-        var taskId = JobUtil.newSegmentId(true)
-        job.currentTask = taskId
-        val deepRdd = new MemexDeepCrawlDbRDD(sc, job, maxGroups = topG, topN = topN,
-          deepCrawlHosts = deepCrawlHostnames)
-        val fetchedRdd = deepRdd.map(r => (r.getGroup, r))
-          .groupByKey()
-          .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-            FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer)
-          })
-          .persist()
-
-
-        if (kafkaEnable) {
-          storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
-        }
-
-        val scoredRdd = score(fetchedRdd)
-        //Step: Store these to nutch segments
-        val outputPath = this.outputPath + "/" + taskId
-
-        storeContent(outputPath, scoredRdd)
-
-        LOG.info("Committing crawldb..")
-        solrc.commitCrawlDb()
-      }
-
-      var taskId = JobUtil.newSegmentId(true)
-      job.currentTask = taskId
-      LOG.info(s"Starting the job:$jobId, task:$taskId")
-
-      val rdd = new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
-      val fetchedRdd = rdd.map(r => (r.getGroup, r))
-        .groupByKey()
-        .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer) })
-        .persist()
-
-      if (kafkaEnable) {
-        storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
-      }
-      val scoredRdd = score(fetchedRdd)
-      //Step: Store these to nutch segments
-      val outputPath = this.outputPath + "/" + taskId
-
-      storeContent(outputPath, scoredRdd)
-
-      LOG.info("Committing crawldb..")
-      solrc.commitCrawlDb()
-    }
-    solrc.close()
-    //PluginService.shutdown(job)
-    LOG.info("Shutting down Spark CTX..")
-    sc.stop()
   }
 
 

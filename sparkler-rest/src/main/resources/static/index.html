@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script type="module" src="https://cdn.skypack.dev/@hotwired/turbo"></script>
+    <script src="https://unpkg.com/stimulus@2.0.0/dist/stimulus.umd.js"></script>
+    <script>
+        (() => {
+            const application = Stimulus.Application.start()
+
+            application.register("hello", class extends Stimulus.Controller {
+                static get targets() {
+                    return [ "name", "output" ]
+                }
+
+                greet() {
+                    this.outputTarget.textContent =
+                        `Hello, ${this.nameTarget.value}!`
+                }
+            })
+        })()
+    </script>
+</head>
+<body>
+
+<script>
+    document.addEventListener('turbolinks:load', function() {
+        console.log('Cool, Turbolinks works!')
+    })
+</script>
+    <p>Get your greeting <a href="/greeting">here</a></p>
+    <turbo-frame id="messages" src="/messages">
+        <p>This message will be replaced by the response from /messages.</p>
+    </turbo-frame>
+<div data-controller="hello">
+    <input data-hello-target="name" type="text">
+
+    <button data-action="click->hello#greet">Greet</button>
+
+    <span data-hello-target="output"></span>
+</div>
+</body>
+</html>
