@@ -445,11 +445,9 @@
                                         <phase>process-resources</phase>
                                         <configuration>
                                             <tasks>
-
                                                 <copy todir="target/classes">
-                                                    <fileset dir="target/scala-2.11/classes/"/>
+                                                    <fileset dir="target/scala-2.12/classes/"/>
                                                 </copy>
-
                                             </tasks>
                                         </configuration>
                                         <goals>

@@ -16,12 +16,7 @@ import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -144,8 +139,16 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
                 try( DataOutputStream wr = new DataOutputStream( urlConn.getOutputStream())) {
                     wr.write( postData );
                  }
-            } else if (json.containsKey("json")) {
+            } else if (json.containsKey("JSON")) {
                 //processJson((JSONObject) json.get("json"), connection);
+                urlConn.setRequestProperty("Content-Type", "application/json");
+                urlConn.setRequestProperty( "charset", "utf-8");
+                byte[] postData = processJson((JSONObject) json.get("JSON"), null);
+                urlConn.setRequestProperty( "Content-Length", Integer.toString( postData.length ));
+                urlConn.setDoOutput(true);
+                try( DataOutputStream wr = new DataOutputStream( urlConn.getOutputStream())) {
+                    wr.write( postData );
+                }
             }
         }
         int responseCode = ((HttpURLConnection)urlConn).getResponseCode();
@@ -196,8 +199,20 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
         }
     }
 
-    private void processJson(JSONObject object, HttpURLConnection conn) {
+    private byte[] processJson(JSONObject object, HttpURLConnection conn) {
 
+        JSONParser parser = new JSONParser();
+        try {
+            //JSONObject json = (JSONObject) parser.parse(object.toString());
+            String s = object.toJSONString();
+            System.out.println("PROCESSED JSON: "+ s);
+            return object.toJSONString().getBytes("UTF-8");
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     private byte[] processForm(JSONObject object) {
