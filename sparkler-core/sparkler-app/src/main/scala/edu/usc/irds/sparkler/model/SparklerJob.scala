@@ -36,7 +36,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient
   * @since 5/31/16
   */
 class SparklerJob(val id: String,
-                  @transient var config: SparklerConfiguration,
+                  var config: SparklerConfiguration,
                   var currentTask: String)
   extends Serializable with JobContext with Loggable {
 
@@ -99,8 +99,8 @@ class SparklerJob(val id: String,
 
   override def getConfiguration: SparklerConfiguration ={
     //FIXME: config has to be serializable
-    //FIXME: remove transient annotation from config and remove this reinitialization
     if (config == null) {
+      LOG.info("Empty Config Detected")
       config = Constants.defaults.newDefaultConfig()
     }
     this.config

@@ -131,7 +131,6 @@ class Crawler extends CliTool {
 
   def init(): Unit = {
     if (configOverride != ""){
-      print(configOverride.mkString(" "))
       sparklerConf.overloadConfig(configOverride.mkString(" "));
     }
     if (this.outputPath.isEmpty) {
@@ -159,7 +158,7 @@ class Crawler extends CliTool {
     else if(!jarPath.isEmpty) {
       sc.getConf.setJars(jarPath)
     }
-
+    LOG.info("Setting local job: " + sparklerConf.get("fetcher.headers"))
     job = new SparklerJob(jobId, sparklerConf, "")
     //FetchFunction.init(job)
 
