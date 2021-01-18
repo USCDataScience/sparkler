@@ -1,0 +1,19 @@
+<p>Get your greeting <a href="/greeting">here</a></p>
+
+<div data-controller="hello">
+    <input data-hello-target="name" type="text">
+    <button data-action="click->hello#greet">Greet</button>
+
+    <span data-hello-target="output"></span>
+</div>
+<section>
+    <h1>Pings section</h1>
+    <h2>Turbo Stream</h2>
+    <form action="/greeting2" method="post" data-turbo-stream>
+        <button type="submit">Ping</button>
+    </form>
+    <div>
+        <p>Ping times</p>
+        <ol id="pings"></ol>
+    </div>
+</section>

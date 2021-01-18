@@ -2,31 +2,16 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Getting Started: Serving Web Content</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <script src="/js/bundle.js"></script>
     <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-<div  th:replace="fragments/header :: header"></div>
-<p>Get your greeting <a href="/greeting">here</a></p>
+<div class="container mx-auto">
+    <div th:replace="fragments/header :: header"></div>
 
-<div data-controller="hello">
-    <input data-hello-target="name" type="text">
-    <button data-action="click->hello#greet">Greet</button>
-
-    <span data-hello-target="output"></span>
+    <div th:replace="fragments/status :: status"></div>
 </div>
-    <section>
-        <h1>Pings section</h1>
-        <h2>Turbo Stream</h2>
-        <form action="/greeting2" method="post" data-turbo-stream>
-            <button type="submit">Ping</button>
-        </form>
-        <div>
-            <p>Ping times</p>
-            <ol id="pings"></ol>
-        </div>
-    </section>
 
 </body>
 </html>

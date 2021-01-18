@@ -1,0 +1,113 @@
+<div th:fragment="status" xmlns:th="http://www.thymeleaf.org" class="p-6">
+    <div>
+        <h1>Status</h1>
+    </div>
+    <div class="grid gap-4 grid-cols-2">
+        <div class="rounded-t-xl overflow-hidden bg-gradient-to-r from-emerald-50 to-teal-100 p-10">
+            <h2>Active Crawls</h2>
+            <table class="table-auto border-collapse border border-green-800">
+                <tr>
+                    <th>Crawl ID</th>
+                    <th>Start Time</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <td>Crawl 1</td>
+                    <td>2021-01-15T20:59:37.039Z</td>
+                    <td><a href="#">View</a></td>
+                </tr>
+                <tr>
+                    <td>Crawl 2</td>
+                    <td>2021-01-15T20:59:37.039Z</td>
+                    <td><a href="#">View</a></td>
+                </tr>
+            </table>
+        </div>
+        <div class="rounded-t-xl overflow-hidden bg-gradient-to-r from-emerald-50 to-teal-100 p-10">
+            <h2>Available Plugins</h2>
+            <table class="table-auto border-collapse border border-green-800">
+                <tr>
+                    <th>Name</th>
+                    <th>Status</th>
+                </tr>
+                <tr>
+                    <td>
+                        url-regex
+                    </td>
+                    <td>
+                        Enabled
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        url-samehost
+                    </td>
+                    <td>
+                        Enabled
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        url-injector
+                    </td>
+                    <td>
+                        Disabled
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        fetcher-chrome
+                    </td>
+                    <td>
+                        Enabled
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="rounded-t-xl overflow-hidden bg-gradient-to-r from-emerald-50 to-teal-100 p-10">
+            <h2>Solr Status</h2>
+            <table class="table-auto border-collapse border border-green-800">
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Database Name</td>
+                    <td>CrawlDB</td>
+                </tr>
+                <tr>
+                    <td>Number of Docs</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td>Maximum Number of Docs</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td>Size</td>
+                    <td>10.97kb</td>
+                </tr>
+                <tr>
+                    <td>Last Modified</td>
+                    <td>2021-01-15T21:03:54.398Z</td>
+                </tr>
+                <tr>
+                    <td>Start Time</td>
+                    <td>2021-01-15T20:58:47.039Z</td>
+                </tr>
+                <tr>
+                    <td>Uptime Time</td>
+                    <td>137220077</td>
+                </tr>
+                <tr>
+                    <td>Instance Dir</td>
+                    <td>/home/bugg/solr/solr-8.7.0/server/solr/configsets/crawldb</td>
+                </tr>
+                <tr>
+                    <td>Data Dir</td>
+                    <td>/home/bugg/solr/solr-8.7.0/server/solr/configsets/crawldb/data/</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
