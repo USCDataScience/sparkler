@@ -1,6 +1,7 @@
 {
   "name": "thymeleaf-live-reload",
   "scripts": {
+    "dev" : "gulp default",
     "watch": "gulp watch",
     "build": "gulp build",
     "build-prod": "gulp build --env production"

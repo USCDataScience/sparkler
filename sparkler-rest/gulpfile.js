@@ -120,7 +120,7 @@ gulp.task('copy-css-and-reload', gulp.series('styles', reload));
 gulp.task('copy-js-and-reload', gulp.series('javascript', reload));
 
 gulp.task('build', gulp.series('copy-html', 'styles', 'javascript-build'));
-gulp.task('default', gulp.series('watch'));
+gulp.task('default', gulp.series('copy-html', 'styles', 'javascript-build', 'watch'));
 
 function reload(done) {
     browserSync.reload();
