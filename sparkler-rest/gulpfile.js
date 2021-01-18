@@ -7,10 +7,10 @@ const uglifycss = require('gulp-uglifycss');
 const terser = require('gulp-terser');
 var browserify = require('browserify');
 var sourceMaps = require('gulp-sourcemaps');
-var coffeeify  = require('coffeeify');
-var babelify   = require('babelify')
+var coffeeify = require('coffeeify');
+var babelify = require('babelify')
 var livereload = require('gulp-livereload');
-var source     = require('vinyl-source-stream');
+var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var rename = require('gulp-rename')
 var watchify = require('watchify');
@@ -32,14 +32,10 @@ var config = {
     },
 };
 
-function browser(done){
-
-}
-
 gulp.task('javascript', function (done) {
     let bundler = watchify(browserify(config.js.src)  // Pass browserify the entry point
         .transform(coffeeify)      //  Chain transformations: First, coffeeify . . .
-        .transform(babelify, { presets : [ "@babel/preset-env" ], plugins :[ "@babel/plugin-proposal-class-properties"] }))
+        .transform(babelify, {presets: ["@babel/preset-env"], plugins: ["@babel/plugin-proposal-class-properties"]}))
 
     bundler
         .bundle()                                                        // Start bundle
@@ -47,8 +43,8 @@ gulp.task('javascript', function (done) {
         .pipe(buffer())                                               // Convert to gulp pipeline
         .pipe(rename(config.js.outputFile))          // Rename output from 'main.js'
         .pipe(gulp.dest(config.js.outputDir))
-        .pipe(livereload()).on('end', function() {
-            console.log("ended");
+        .pipe(livereload()).on('end', function () {
+        console.log("ended");
         done();
     });
     //.pipe(sourceMaps.init({ loadMaps : true }))  // Strip inline source maps
@@ -58,7 +54,7 @@ gulp.task('javascript', function (done) {
 gulp.task('javascript-build', function (done) {
     let bundler = browserify(config.js.src)  // Pass browserify the entry point
         .transform(coffeeify)      //  Chain transformations: First, coffeeify . . .
-        .transform(babelify, { presets : [ "@babel/preset-env" ], plugins :[ "@babel/plugin-proposal-class-properties"] })
+        .transform(babelify, {presets: ["@babel/preset-env"], plugins: ["@babel/plugin-proposal-class-properties"]})
 
     bundler
         .bundle()                                                        // Start bundle
@@ -66,7 +62,7 @@ gulp.task('javascript-build', function (done) {
         .pipe(buffer())                                               // Convert to gulp pipeline
         .pipe(rename(config.js.outputFile))          // Rename output from 'main.js'
         .pipe(gulp.dest(config.js.outputDir))
-        .pipe(livereload()).on('end', function() {
+        .pipe(livereload()).on('end', function () {
         console.log("ended");
         done();
     });
@@ -109,10 +105,10 @@ gulp.task('copy-js', () =>
         .pipe(gulp.dest('target/classes/'))
 );
 
-gulp.task('styles', function(){
- return gulp.src('src/main/resources/static/css/main.css')
-  .pipe(postcss([tailwindcss, cssImport, cssvars, nested, autoprefixer]))
-  .pipe(gulp.dest('target/classes/static/css/'))
+gulp.task('styles', function () {
+    return gulp.src('src/main/resources/static/css/main.css')
+        .pipe(postcss([tailwindcss, cssImport, cssvars, nested, autoprefixer]))
+        .pipe(gulp.dest('target/classes/static/css/'))
 });
 
 gulp.task('copy-html-and-reload', gulp.series('copy-html', reload));
