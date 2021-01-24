@@ -196,6 +196,7 @@ public class FetcherChrome extends FetcherDefault {
 
         LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
 
+        System.out.println("LATEST STATUS: "+latestStatus);
         if (!(latestStatus >= 200 && latestStatus < 300)) {
             // If not fetched through plugin successfully
             // Falling back to default fetcher
@@ -366,6 +367,7 @@ public class FetcherChrome extends FetcherDefault {
                     LOG.debug("waiting for id...");
                     System.out.println("Waiting for id");
                     wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
+
                     System.out.println("Wait over.....");
                     break;
             }
