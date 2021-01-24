@@ -80,6 +80,7 @@ public class FetcherChrome extends FetcherDefault {
     private WebDriver driver;
     private WebElement clickedEl = null;
     private int latestStatus;
+    private Proxy seleniumProxy;
 
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
@@ -90,7 +91,8 @@ public class FetcherChrome extends FetcherDefault {
         pluginConfig = config.getPluginConfiguration(pluginId);
 
         try {
-            startDriver();
+            System.out.println("Initializing Chrome Driver");
+            startDriver(true);
         } catch (UnknownHostException | MalformedURLException e) {
             e.printStackTrace();
             System.out.println("Failed to init Chrome Session");
@@ -104,7 +106,7 @@ public class FetcherChrome extends FetcherDefault {
             } catch (Exception e) {
                 System.out.println("Failed session, restarting");
                 try {
-                    startDriver();
+                    startDriver(false);
                 } catch (UnknownHostException | MalformedURLException unknownHostException) {
                     unknownHostException.printStackTrace();
                 }
@@ -113,7 +115,7 @@ public class FetcherChrome extends FetcherDefault {
 
     }
 
-    private void startDriver() throws UnknownHostException, MalformedURLException {
+    private void startDriver(Boolean restartproxy) throws UnknownHostException, MalformedURLException {
         String loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
         if (loc.equals("")) {
             driver = new ChromeDriver();
@@ -132,16 +134,17 @@ public class FetcherChrome extends FetcherDefault {
 
                 String paddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "auto");
 
-                Proxy seleniumProxy;
                 if (paddress.equals("auto")) {
                     proxy.start();
                     int port = proxy.getPort();
                     seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
                 } else {
-                    String[] s = paddress.split(":");
-                    proxy.start(Integer.parseInt(s[1]));
-                    InetSocketAddress addr = new InetSocketAddress(InetAddress.getByName(s[0]), Integer.parseInt(s[1]));
-                    seleniumProxy = ClientUtil.createSeleniumProxy(addr);
+                    if(restartproxy) {
+                        String[] s = paddress.split(":");
+                        proxy.start(Integer.parseInt(s[1]));
+                        InetSocketAddress addr = new InetSocketAddress(InetAddress.getByName(s[0]), Integer.parseInt(s[1]));
+                        seleniumProxy = ClientUtil.createSeleniumProxy(addr);
+                    }
                 }
 
                 // seleniumProxy.setHttpProxy("172.17.146.238:"+Integer.toString(port));
