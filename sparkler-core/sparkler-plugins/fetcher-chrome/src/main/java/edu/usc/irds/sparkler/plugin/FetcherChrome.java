@@ -70,6 +70,8 @@ import io.netty.handler.codec.http.HttpResponse;
 
 import org.openqa.selenium.Proxy;
 
+import static java.lang.Thread.sleep;
+
 @Extension
 public class FetcherChrome extends FetcherDefault {
 
@@ -87,11 +89,35 @@ public class FetcherChrome extends FetcherDefault {
         // TODO should change everywhere
         pluginConfig = config.getPluginConfiguration(pluginId);
 
+        try {
+            startDriver();
+        } catch (UnknownHostException | MalformedURLException e) {
+            e.printStackTrace();
+            System.out.println("Failed to init Chrome Session");
+        }
+    }
+
+    private void checkSession() {
+        for(int retryloop = 0; retryloop < 10; retryloop++){
+            try{
+                driver.getCurrentUrl();
+            } catch (Exception e) {
+                System.out.println("Failed session, restarting");
+                try {
+                    startDriver();
+                } catch (UnknownHostException | MalformedURLException unknownHostException) {
+                    unknownHostException.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+    private void startDriver() throws UnknownHostException, MalformedURLException {
         String loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
         if (loc.equals("")) {
             driver = new ChromeDriver();
         } else {
-            try {
                 BrowserUpProxy proxy = new BrowserUpProxyServer();
                 proxy.setTrustAllServers(true);
 
@@ -99,7 +125,7 @@ public class FetcherChrome extends FetcherDefault {
                 proxy.addResponseFilter(new ResponseFilter() {
                     @Override
                     public void filterResponse(HttpResponse response, HttpMessageContents contents,
-                            HttpMessageInfo messageInfo) {
+                                               HttpMessageInfo messageInfo) {
                         latestStatus = response.getStatus().code();
                     }
                 });
@@ -130,14 +156,11 @@ public class FetcherChrome extends FetcherDefault {
                 capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
 
                 driver = new RemoteWebDriver(new URL(loc), capabilities);
-            } catch (MalformedURLException | UnknownHostException e) {
-                e.printStackTrace();
-            }
+
 
         }
 
     }
-
     @Override
     public FetchedData fetch(Resource resource) throws Exception {
         LOG.info("Chrome FETCHER {}", resource.getUrl());
@@ -164,6 +187,12 @@ public class FetcherChrome extends FetcherDefault {
         }
         // This will block for the page load and any
         // associated AJAX requests
+
+        try {
+            checkSession();
+        } catch (Exception e){
+            System.out.println("failed to start selenium session");
+        }
         driver.get(resource.getUrl());
         
         int waittimeout = (int) pluginConfig.getOrDefault("chrome.wait.timeout", "-1");
