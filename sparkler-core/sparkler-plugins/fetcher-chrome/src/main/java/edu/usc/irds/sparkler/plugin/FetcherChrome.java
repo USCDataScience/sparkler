@@ -292,7 +292,7 @@ public class FetcherChrome extends FetcherDefault {
             }  else if(pair.getKey().equals("operation")){
                 type = (String) pair.getValue();
             } else if(pair.getKey().equals("wait")){
-                type = (String) pair.getValue()
+                type = (String) pair.getValue();
             }
 
             it.remove(); 
