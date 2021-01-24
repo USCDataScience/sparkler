@@ -291,15 +291,23 @@ public class FetcherChrome extends FetcherDefault {
                 value = (String) pair.getValue();
             }  else if(pair.getKey().equals("operation")){
                 type = (String) pair.getValue();
+            } else if(pair.getKey().equals("wait")){
+                type = (String) pair.getValue()
             }
 
             it.remove(); 
         }
 
-        if(type.equals("click")){
-            clickElement(value);
-        } else if (type.equals("keys")){
-            typeCharacters(value);
+        switch (type) {
+            case "click":
+                clickElement(value);
+                break;
+            case "keys":
+                typeCharacters(value);
+                break;
+            case "wait":
+                waitElement(value);
+                break;
         }
     }
 
@@ -312,17 +320,51 @@ public class FetcherChrome extends FetcherDefault {
             element = element + obj + " ";
         }
         element = element.substring(0, element.length() - 1);
-        
-        if(type.equals("id")){
-            clickedEl = driver.findElement(By.id(element));
-        } else if(type.equals("class")){
-            clickedEl = driver.findElement(By.className(element));
-        } else if(type.equals("name")){
-            clickedEl = driver.findElement(By.name(element));
-        } else if(type.equals("xpath")){
-            clickedEl = driver.findElement(By.xpath(element));
+
+        switch (type) {
+            case "id":
+                clickedEl = driver.findElement(By.id(element));
+                break;
+            case "class":
+                clickedEl = driver.findElement(By.className(element));
+                break;
+            case "name":
+                clickedEl = driver.findElement(By.name(element));
+                break;
+            case "xpath":
+                clickedEl = driver.findElement(By.xpath(element));
+                break;
         }
         clickedEl.click();
+    }
+
+    private void waitElement(String el){
+        String[] splits = el.split(":");
+        String waittype = splits[0];
+        String waitelement = splits[1];
+        String waittime = splits[2];
+
+        int waittimeout = Integer.parseInt(waittime);
+
+        if (waittimeout > -1) {
+            LOG.debug("Waiting {} seconds for element {} of type {} to become visible", waittimeout, waitelement,
+                    waittype);
+            WebDriverWait wait = new WebDriverWait(driver, waittimeout);
+            switch (waittype) {
+                case "class":
+                    LOG.debug("waiting for class...");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(waitelement)));
+                    break;
+                case "name":
+                    LOG.debug("waiting for name...");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.name(waitelement)));
+                    break;
+                case "id":
+                    LOG.debug("waiting for id...");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
+                    break;
+            }
+        }
     }
 
     private void typeCharacters(String chars){
