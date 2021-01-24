@@ -348,7 +348,7 @@ public class FetcherChrome extends FetcherDefault {
 
         System.out.println("Waiting time is: "+ waittime);
         System.out.println("Wait type is: "+ waittype);
-        System.out.print("Wait element is: "+ waitelement);
+        System.out.println("Wait element is: "+ waitelement);
         if (waittimeout > -1) {
             LOG.debug("Waiting {} seconds for element {} of type {} to become visible", waittimeout, waitelement,
                     waittype);
@@ -366,6 +366,7 @@ public class FetcherChrome extends FetcherDefault {
                     LOG.debug("waiting for id...");
                     System.out.println("Waiting for id");
                     wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
+                    System.out.println("Wait over.....");
                     break;
             }
         }
