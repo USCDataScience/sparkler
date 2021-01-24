@@ -1,4 +1,4 @@
-package edu.usc.irds.sparkler.sparklerrest;
+package edu.usc.irds.sparkler.sparklerrest.controllers;
 
 import edu.usc.irds.sparkler.sparklerrest.websocket.Message;
 import edu.usc.irds.sparkler.sparklerrest.websocket.OutputMessage;

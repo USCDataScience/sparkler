@@ -1,5 +1,6 @@
-package edu.usc.irds.sparkler.sparklerrest;
+package edu.usc.irds.sparkler.sparklerrest.controllers;
 
+import edu.usc.irds.sparkler.sparklerrest.CustomMediaType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
