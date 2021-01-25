@@ -240,7 +240,7 @@ public class FetcherChrome extends FetcherDefault {
             return super.fetch(resource);
         }
 
-        fetchedData = new FetchedData(html.getBytes(), "application/html", latestStatus);
+        fetchedData = new FetchedData(html.getBytes(), "text/html", latestStatus);
         resource.setStatus(ResourceStatus.FETCHED.toString());
         fetchedData.setResource(resource);
         return fetchedData;
