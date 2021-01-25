@@ -35,7 +35,7 @@ public class Resource implements Serializable {
     @Field private String parent;
     @Field("dedupe_id") private String dedupeId;
     @Field("http_method") private String httpMethod;
-    @Field("metadata") private String metadata;
+    @Field("jobmeta") private String metadata;
 
     public Resource() {
     }

@@ -206,15 +206,19 @@ public class FetcherChrome extends FetcherDefault {
             LOG.debug("Waiting {} seconds for element {} of type {} to become visible", waittimeout, waitelement,
                     waittype);
             WebDriverWait wait = new WebDriverWait(driver, waittimeout);
-            if (waittype.equals("class")) {
-                LOG.debug("waiting for class...");
-                wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(waitelement)));
-            } else if (waittype.equals("name")) {
-                LOG.debug("waiting for name...");
-                wait.until(ExpectedConditions.visibilityOfElementLocated(By.name(waitelement)));
-            } else if (waittype.equals("id")) {
-                LOG.debug("waiting for id...");
-                wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
+            switch (waittype) {
+                case "class":
+                    LOG.debug("waiting for class...");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(waitelement)));
+                    break;
+                case "name":
+                    LOG.debug("waiting for name...");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.name(waitelement)));
+                    break;
+                case "id":
+                    LOG.debug("waiting for id...");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
+                    break;
             }
         }
         String seleniumenabled = (String) pluginConfig.getOrDefault("chrome.selenium.enabled", "false");
