@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 @RestController
 @RequestMapping(path = "/rest/inject")
 public class InjectController {
+    Injector injector = new Injector();
 
     @GetMapping(path="/{crawlid}", produces = "application/json")
     public InjectStats[] getGreeting(@PathVariable("crawlid") String name)
@@ -26,7 +27,6 @@ public class InjectController {
     @PostMapping(path="/{crawlid}", produces = "application/json")
     public InjectionMessage postInject(@PathVariable("crawlid") String name, @RequestBody Injection employee, HttpServletResponse response)
     {
-        Injector injector = new Injector();
         try {
             return injector.injectNewURLs(employee.getConfigOverride(), employee.getCrawldb(), name, employee.getUrls());
         } catch (InjectFailedException e) {

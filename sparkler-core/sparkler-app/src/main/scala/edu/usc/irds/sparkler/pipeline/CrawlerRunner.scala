@@ -107,7 +107,7 @@ class CrawlerRunner {
     solrc.close()
     //PluginService.shutdown(job)
     LOG.info("Shutting down Spark CTX..")
-    sc.stop()
+    this.sc.stop()
 
     this.outputPath
   }

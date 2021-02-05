@@ -5,10 +5,19 @@ GET http://localhost:8080/rest/inject/hello
 
 ###
 
-POST http://localhost:8080/rest/inject/job1
+POST http://localhost:8080/rest/inject/video
 Content-Type: application/json
 Accept: application/json
 
 {
   "urls": ["https://news.bbc.co.uk", "https://us.cnn.com"]
 }
+
+
+###
+
+POST http://localhost:8080/rest/crawl/video
+Content-Type: application/json
+Accept: application/json
+
+{}

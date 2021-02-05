@@ -6,11 +6,11 @@ import edu.usc.irds.sparkler.service.InjectorRunner;
 import edu.usc.irds.sparkler.sparklerrest.exceptions.InjectFailedException;
 
 public class Injector {
-
+    SparklerConfiguration conf = Constants.defaults.newDefaultConfig();
+    InjectorRunner run = new InjectorRunner();
 
     public InjectionMessage injectNewURLs(Object[] confoverride, String solrurl , String jobId , String[] seedUrls ) throws InjectFailedException {
-        SparklerConfiguration conf = Constants.defaults.newDefaultConfig();
-        InjectorRunner run = new InjectorRunner();
+
         if (seedUrls != null && seedUrls.length > 0 ){
             try {
                 jobId = run.runInjector(confoverride, solrurl, jobId, null, seedUrls);
