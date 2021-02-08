@@ -44,12 +44,12 @@ build_image(){
     prev_dir="$PWD"
     cd "$DIR"
     echo "Building project..."
-      git submodule update --init --recursive
-    mvn package -DskipTests
+    #   git submodule update --init --recursive
+    # mvn package -DskipTests
     cd "$prev_dir"
 
     echo "Building a docker image with tag '$docker_tag' ..."
-    docker build -f "$DIR/sparkler-deployment/docker/Dockerfile" -t "$docker_tag" "$DIR"
+    docker build --no-cache -f "$DIR/sparkler-deployment/docker/Dockerfile" -t "$docker_tag" "$DIR"
 
     if [ $? -ne 0 ]; then
         echo "Error: Failed"
@@ -68,8 +68,8 @@ fetch_image() {
 image_id=`docker images -q "$docker_tag" | head -1`
 if [[ -z "${image_id// }" ]]; then
      echo "Cant find docker image $docker_tag. Going to Fetch it"
-     # build_image;
-     fetch_image
+     build_image;
+    #  fetch_image
      image_id=`docker images -q "$docker_tag" | head -1`
 fi
 echo "Found image: $image_id"
