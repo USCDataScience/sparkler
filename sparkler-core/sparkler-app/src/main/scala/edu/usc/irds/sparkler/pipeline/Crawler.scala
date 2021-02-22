@@ -61,7 +61,7 @@ class Crawler extends CliTool {
 
   @Option(name = "-cdb", aliases = Array("--crawldb"),
     usage = "Crawl DB URI.")
-  var sparkSolr: String = sparklerConf.getDatabaseURI
+  var sparkSolr: String = sparklerConf.getDatabaseURI()
 
   @Option(name = "-id", aliases = Array("--id"), required = true,
     usage = "Job id. When not sure, get the job id from injector command")
