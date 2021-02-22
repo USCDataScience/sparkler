@@ -106,19 +106,11 @@ public interface Constants {
             Yaml yaml = new Yaml();
             InputStream input = null;
             SparklerConfiguration sparklerConf = null;
-//            String errorStr = "";
             try {
                 input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT);
                 Map<String,Object> yamlMap = (Map<String, Object>) yaml.load(input);
-
-//                for (Map.Entry<String, Object> entry : yamlMap.entrySet()) {
-//                    errorStr += ">> " + entry.getKey() + ":" + entry.getValue().toString() + "\n";
-//                }
-//                int errorHere = 0/0;
-
                 sparklerConf = new SparklerConfiguration(yamlMap);
             } catch (Exception e) {
-//                System.err.println("|||\n"+errorStr+"|||\n");
                 e.printStackTrace();
             } finally {
                 IOUtils.closeQuietly(input);
@@ -126,10 +118,6 @@ public interface Constants {
 
             if (sparklerConf != null) {
                 sparklerConf.put(key.UUID_KEY, UUID.randomUUID().toString());
-//                for(Iterator iterator = sparklerConf.keySet().iterator(); iterator.hasNext();) {
-//                    String key = (String) iterator.next();
-//                    System.out.println(">>> " + key + " => " + sparklerConf.get(key));
-//                }
             }
             return sparklerConf;
         }
