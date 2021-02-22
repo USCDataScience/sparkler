@@ -23,7 +23,6 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
-import java.util.Iterator;
 
 /**
  * A static container for all the constants
