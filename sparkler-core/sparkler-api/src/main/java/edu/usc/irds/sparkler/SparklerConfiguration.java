@@ -102,4 +102,9 @@ public class SparklerConfiguration extends JSONObject {
         return original;
     }
 
+    public String getDatabaseURI() {
+        String dbToUse = (String) this.get(Constants.key.CRAWLDB_BACKEND);
+        return (String) this.get(dbToUse+".uri");
+    }
+
 }

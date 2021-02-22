@@ -23,6 +23,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Iterator;
 
 /**
  * A static container for all the constants
@@ -38,7 +39,11 @@ public interface Constants {
 
         // General Properties
         @ConfigKey
-        String CRAWLDB = "crawldb.uri";
+        String CRAWLDB_BACKEND = "crawldb.backend";
+        @ConfigKey
+        String SOLR_URI = "solr.uri";
+        @ConfigKey
+        String ELASTICSEARCH_URI = "elasticsearch.uri";
 
         // Apache Spark Properties
         @ConfigKey
@@ -101,11 +106,19 @@ public interface Constants {
             Yaml yaml = new Yaml();
             InputStream input = null;
             SparklerConfiguration sparklerConf = null;
+//            String errorStr = "";
             try {
                 input = Constants.class.getClassLoader().getResourceAsStream(file.SPARKLER_DEFAULT);
                 Map<String,Object> yamlMap = (Map<String, Object>) yaml.load(input);
+
+//                for (Map.Entry<String, Object> entry : yamlMap.entrySet()) {
+//                    errorStr += ">> " + entry.getKey() + ":" + entry.getValue().toString() + "\n";
+//                }
+//                int errorHere = 0/0;
+
                 sparklerConf = new SparklerConfiguration(yamlMap);
             } catch (Exception e) {
+//                System.err.println("|||\n"+errorStr+"|||\n");
                 e.printStackTrace();
             } finally {
                 IOUtils.closeQuietly(input);
@@ -113,6 +126,10 @@ public interface Constants {
 
             if (sparklerConf != null) {
                 sparklerConf.put(key.UUID_KEY, UUID.randomUUID().toString());
+//                for(Iterator iterator = sparklerConf.keySet().iterator(); iterator.hasNext();) {
+//                    String key = (String) iterator.next();
+//                    System.out.println(">>> " + key + " => " + sparklerConf.get(key));
+//                }
             }
             return sparklerConf;
         }

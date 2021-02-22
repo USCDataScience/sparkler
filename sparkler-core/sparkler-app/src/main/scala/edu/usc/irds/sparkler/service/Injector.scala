@@ -66,7 +66,7 @@ class Injector extends CliTool {
 
   @Option(name = "-cdb", aliases = Array("--crawldb"),
     usage = "Crawdb URI.")
-  var sparkSolr: String = conf.get(Constants.key.CRAWLDB).asInstanceOf[String]
+  var sparkSolr: String = conf.getDatabaseURI()
 
   @Option(name = "-co", aliases = Array("--config-override"),
     handler = classOf[StringArrayOptionHandler],

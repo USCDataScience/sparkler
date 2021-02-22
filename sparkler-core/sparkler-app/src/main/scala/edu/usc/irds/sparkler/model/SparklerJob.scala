@@ -40,7 +40,7 @@ class SparklerJob(val id: String,
                   var currentTask: String)
   extends Serializable with JobContext with Loggable {
 
-  var crawlDbUri: String = config.get(Constants.key.CRAWLDB).toString
+  var crawlDbUri: String = config.getDatabaseURI()
 
   /*
    * mappings from extension point to extension chain
