@@ -14,7 +14,8 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
+
+
 # Pull base image.
 
 # NOTE: always run docker build command from root of sparkler project
@@ -50,16 +51,12 @@ RUN curl -fsSL https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/bina
   && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
 
 ## Setup Solr
-RUN wget http://archive.apache.org/dist/lucene/solr/8.5.0/solr-8.5.0.tgz -O /data/solr.tgz && \
-    cd /data/ && tar xzf /data/solr.tgz && \
-    mv /data/solr-* /data/solr && rm /data/solr.tgz
+#RUN wget http://archive.apache.org/dist/lucene/solr/8.5.0/solr-8.5.0.tgz -O /data/solr.tgz && \
+#    cd /data/ && tar xzf /data/solr.tgz && \
+#    mv /data/solr-* /data/solr && rm /data/solr.tgz
 
 # Setup Solr
 #   This is done in start.dev.sh on container start
-#
-# RUN wget http://archive.apache.org/dist/lucene/solr/8.5.0/solr-8.5.0.tgz -O /data/solr.tgz && \
-#     cd /data/ && tar xzf /data/solr.tgz && \
-#     mv /data/solr-* /data/solr && rm /data/solr.tgz
 
 # add sparkler contents
 #   Once the container is running, call mvn build to generate the build directory
@@ -68,25 +65,25 @@ RUN wget http://archive.apache.org/dist/lucene/solr/8.5.0/solr-8.5.0.tgz -O /dat
 
 # sparkler ui with banana dashboard
 #   when building locally, the war is located in
-RUN ["ln", "-s", "/data/sparkler-core/sparkler-ui/sparkler-dashboard/sparkler-ui.war", "/data/solr/server/solr-webapp/sparkler"]
-RUN ["rm", "-f", "/data/solr/server/etc/jetty.xml"]
-RUN ["ln", "-s", "/data/sparkler-core/conf/solr/sparkler-jetty-context.xml", "/data/solr/server/contexts/sparkler-jetty-context.xml"]
+#RUN ["ln", "-s", "/data/sparkler-core/sparkler-ui/sparkler-dashboard/sparkler-ui.war", "/data/solr/server/solr-webapp/sparkler"]
+#RUN ["rm", "-f", "/data/solr/server/etc/jetty.xml"]
+#RUN ["ln", "-s", "/data/sparkler-core/conf/solr/sparkler-jetty-context.xml", "/data/solr/server/contexts/sparkler-jetty-context.xml"]
 
 ## Patch Solr's Jetty for Banana with the CSP directive header
-RUN ["ln", "-s", "/data/sparkler-core/sparkler-deployment/docker/jetty-csp-patch/jetty.xml", "/data/solr/server/etc/jetty.xml"]
+#RUN ["ln", "-s", "/data/sparkler-core/sparkler-deployment/docker/jetty-csp-patch/jetty.xml", "/data/solr/server/etc/jetty.xml"]
 
 # configure start script
-COPY sparkler-deployment/docker/scripts/start.dev.sh /data/start.dev.sh
-RUN ["chmod", "+x", "/data/start.dev.sh"]
+COPY sparkler-deployment/docker/elasticsearch/scripts/start.sh /data/start.sh
+RUN ["chmod", "+x", "/data/start.sh"]
 
 # add solr and sparkler to path
-RUN ["ln", "-s", "/data/solr/bin/solr", "/usr/bin/solr"]
+#RUN ["ln", "-s", "/data/solr/bin/solr", "/usr/bin/solr"]
 RUN ["ln", "-s", "/data/sparkler-core/bin/sparkler.sh", "/usr/bin/sparkler"]
 
 # configure welcome message
-COPY sparkler-deployment/docker/scripts/greeting.dev.sh /usr/local/bin/greeting.dev.sh
-RUN chmod +x /usr/local/bin/greeting.dev.sh
-RUN echo "sh /usr/local/bin/greeting.dev.sh" >> /root/.bashrc
+COPY sparkler-deployment/docker/elasticsearch/scripts/greeting.sh /usr/local/bin/greeting.sh
+RUN chmod +x /usr/local/bin/greeting.sh
+RUN echo "sh /usr/local/bin/greeting.sh" >> /root/.bashrc
 
 # Define default command
-CMD ["/data/start.dev.sh"]
+CMD ["/data/start.sh"]

@@ -1,4 +1,3 @@
-#!/bin/bash
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,14 +15,30 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# file is running as root
-
-# create solr core
-/data/solr/bin/solr start -force && \
-  /data/solr/bin/solr create_core -force -c crawldb -d /data/sparkler-core/build/conf/solr/crawldb/ && \
-  /data/solr/bin/solr stop -force
-
-/data/solr/bin/solr start -force
-
-tail -f '/dev/null'
-
+version: "3.9"
+services:
+  sparkler:
+    container_name: sparkler-elastic
+    build:
+      dockerfile: ../../../../Dockerfile
+      context: .
+    ports:
+      - 4041:4041
+    volumes:
+      - type: bind
+        source: .
+        target: /data/sparkler-core
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - 9200:9200
+      - 9300:9300
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.11.1
+    ports:
+      - 5601:5601
