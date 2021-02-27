@@ -18,10 +18,6 @@
 
 # Pull base image.
 
-# NOTE: always run docker build command from root of sparkler project
-# Build command:
-#    docker build -t sparkler-dev:latest -f sparkler-deployment/docker/Dockerfile.dev sparkler-core
-
 FROM openjdk:13
 
 # Setting Maven Version that needs to be installed
@@ -49,28 +45,6 @@ WORKDIR /data
 RUN curl -fsSL https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz | tar xzf - -C /usr/share \
   && mv /usr/share/apache-maven-$MAVEN_VERSION /usr/share/maven \
   && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
-
-## Setup Solr
-#RUN wget http://archive.apache.org/dist/lucene/solr/8.5.0/solr-8.5.0.tgz -O /data/solr.tgz && \
-#    cd /data/ && tar xzf /data/solr.tgz && \
-#    mv /data/solr-* /data/solr && rm /data/solr.tgz
-
-# Setup Solr
-#   This is done in start.dev.sh on container start
-
-# add sparkler contents
-#   Once the container is running, call mvn build to generate the build directory
-#
-# ADD ./build /data/sparkler
-
-# sparkler ui with banana dashboard
-#   when building locally, the war is located in
-#RUN ["ln", "-s", "/data/sparkler-core/sparkler-ui/sparkler-dashboard/sparkler-ui.war", "/data/solr/server/solr-webapp/sparkler"]
-#RUN ["rm", "-f", "/data/solr/server/etc/jetty.xml"]
-#RUN ["ln", "-s", "/data/sparkler-core/conf/solr/sparkler-jetty-context.xml", "/data/solr/server/contexts/sparkler-jetty-context.xml"]
-
-## Patch Solr's Jetty for Banana with the CSP directive header
-#RUN ["ln", "-s", "/data/sparkler-core/sparkler-deployment/docker/jetty-csp-patch/jetty.xml", "/data/solr/server/etc/jetty.xml"]
 
 # configure start script
 COPY sparkler-deployment/docker/elasticsearch/scripts/start.sh /data/start.sh

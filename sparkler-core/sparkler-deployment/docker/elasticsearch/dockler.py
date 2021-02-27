@@ -59,13 +59,6 @@ def main() -> None:
         action="store_true",
     )
 
-    parser.add_argument(
-        "--network",
-        help="Starts Sparkler, Elasticsearch & Kibana using docker-compose",
-        default=False,
-        action="store_true",
-    )
-
     parsed_args = parser.parse_args()
 
     if parsed_args.clean:
@@ -73,11 +66,9 @@ def main() -> None:
     if parsed_args.build:
         build()
     if parsed_args.run:
-        run_container()
+        elastic_network()
     if parsed_args.login:
         login()
-    if parsed_args.network:
-        elastic_network()
 
 
 def build() -> None:
@@ -89,20 +80,6 @@ def build() -> None:
     ])
 
     _shell_exec_check_output(cmd, cwd = REPO_ROOT)
-
-
-def run_container() -> None:
-    cmd = " ".join([
-        "docker run",
-        "--detach",
-        "--name sparkler-elastic",
-        f"--volume '{REPO_ROOT}/sparkler-core:/data/sparkler-core'",
-        "--publish 4041:4041",
-        "sparkler-elastic:latest",
-    ])
-
-    _shell_exec_check_output(cmd, cwd = REPO_ROOT)
-    print("Container running. Login via 'docker exec -it sparkler-elastic /bin/bash'")
 
 
 def login() -> None:
