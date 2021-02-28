@@ -78,7 +78,11 @@ def up() -> None:
         f"docker-compose --file sparkler-core/sparkler-deployment/docker/elasticsearch/docker-compose.yml up --detach"
     ])
 
-    _shell_exec_check_output(cmd, cwd = REPO_ROOT)
+    try:
+        _shell_exec_check_output(cmd, cwd = REPO_ROOT)
+    except Exception:
+        _eprint(f"Exec failed. If docker-compose is missing, follow the instructions here to install: https://github.com/USCDataScience/sparkler/wiki/docker-compose")
+        sys.exit(1)
 
 
 def down() -> None:
@@ -86,7 +90,11 @@ def down() -> None:
         f"docker-compose --file sparkler-core/sparkler-deployment/docker/elasticsearch/docker-compose.yml down"
     ])
 
-    _shell_exec_check_output(cmd, cwd = REPO_ROOT)
+    try:
+        _shell_exec_check_output(cmd, cwd = REPO_ROOT)
+    except Exception:
+        _eprint(f"Exec failed. If docker-compose is missing, follow the instructions here to install: https://github.com/USCDataScience/sparkler/wiki/docker-compose")
+        sys.exit(1)
 
 
 def _eprint(msg: str) -> None:
