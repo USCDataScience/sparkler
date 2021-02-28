@@ -17,15 +17,8 @@
 # under the License.
 
 cat << EOF
-       _____                  _    _           
-      / ____|                | |  | |          
-     | (___  _ __   __ _ _ __| | _| | ___ _ __ 
-      \___ \| '_ \ / _` | '__| |/ / |/ _ \ '__|
-      ____) | |_) | (_| | |  |   <| |  __/ |   
-     |_____/| .__/ \__,_|_|  |_|\_\_|\___|_|   
-            | |                                
-            |_|                                
 
+Welcome to Sparkler
 
 You can access spark master UI at http://localhost:4041 when spark master is running
 
