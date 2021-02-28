@@ -23,6 +23,7 @@ import sys
 from typing import Any
 
 
+SCRIPT_DIR: str = os.path.dirname(os.path.realpath(__file__))
 REPO_ROOT: str = os.path.realpath(os.path.join(__file__, '..', '..', '..', '..', '..'))
 
 
@@ -32,15 +33,15 @@ def main() -> None:
     )
 
     parser.add_argument(
-        "--build",
-        help="Builds an image",
+        "--up",
+        help="Brings the service up",
         default=False,
         action="store_true",
     )
 
     parser.add_argument(
-        "--run",
-        help="Run the container",
+        "--down",
+        help="Brings the service down and cleans up containers",
         default=False,
         action="store_true",
     )
@@ -52,59 +53,40 @@ def main() -> None:
         action="store_true",
     )
 
-    parser.add_argument(
-        "--clean",
-        help="Remove all dev images and containers",
-        default=False,
-        action="store_true",
-    )
-
     parsed_args = parser.parse_args()
 
-    if parsed_args.clean:
-        clean()
-    if parsed_args.build:
-        build()
-    if parsed_args.run:
-        elastic_network()
+    if parsed_args.up:
+        up()
+    if parsed_args.down:
+        down()
     if parsed_args.login:
         login()
 
 
-def build() -> None:
-    cmd = " ".join([
-        "docker build",
-        "--tag sparkler-elastic:latest",
-        "--file sparkler-core/sparkler-deployment/docker/elasticsearch/Dockerfile",
-        f"{REPO_ROOT}/sparkler-core",
-    ])
-
-    _shell_exec_check_output(cmd, cwd = REPO_ROOT)
-
-
 def login() -> None:
-    cmd = " ".join([
-        "docker exec -it sparkler-elastic /bin/bash"
+    msg = "\n".join([
+        "Login to any of the running service containers by running:",
+        "  docker exec -it sparkler-elastic /bin/bash",
+        "  docker exec -it elasticsearch /bin/bash",
+        "  docker exec -it kibana /bin/bash",
     ])
+    print(msg)
+
+
+def up() -> None:
+    cmd = " ".join([
+        f"docker-compose --file sparkler-core/sparkler-deployment/docker/elasticsearch/docker-compose.yml up --detach"
+    ])
+
     _shell_exec_check_output(cmd, cwd = REPO_ROOT)
 
 
-def clean() -> None:
+def down() -> None:
     cmd = " ".join([
-        "docker container stop sparkler-elastic;",
-        "docker container rm sparkler-elastic;",
-        "docker image rm sparkler-elastic:latest",
+        f"docker-compose --file sparkler-core/sparkler-deployment/docker/elasticsearch/docker-compose.yml down"
     ])
 
     _shell_exec_check_output(cmd, cwd = REPO_ROOT)
-
-
-def elastic_network() -> None:
-    cmd = " ".join([
-        "docker-compose --file docker-compose.yml up --detach"
-    ])
-
-    _shell_exec_check_output(cmd)
 
 
 def _eprint(msg: str) -> None:
@@ -113,9 +95,7 @@ def _eprint(msg: str) -> None:
 
 def _shell_exec_check_output(cmd: str, **kwargs: Any) -> None:
     _eprint(f"Exec: {cmd}")
-    result = subprocess.run(cmd, shell=True, **kwargs)
-    if result.returncode != 0:
-        sys.exit(result.returncode)
+    subprocess.run(cmd, check=True, shell=True, **kwargs)
 
 
 if __name__ == "__main__":

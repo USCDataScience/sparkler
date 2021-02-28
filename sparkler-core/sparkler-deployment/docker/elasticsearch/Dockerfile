@@ -47,15 +47,14 @@ RUN curl -fsSL https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/bina
   && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
 
 # configure start script
-COPY sparkler-deployment/docker/elasticsearch/scripts/start.sh /data/start.sh
+COPY scripts/start.sh /data/start.sh
 RUN ["chmod", "+x", "/data/start.sh"]
 
-# add solr and sparkler to path
-#RUN ["ln", "-s", "/data/solr/bin/solr", "/usr/bin/solr"]
+# add sparkler to path
 RUN ["ln", "-s", "/data/sparkler-core/bin/sparkler.sh", "/usr/bin/sparkler"]
 
 # configure welcome message
-COPY sparkler-deployment/docker/elasticsearch/scripts/greeting.sh /usr/local/bin/greeting.sh
+COPY scripts/greeting.sh /usr/local/bin/greeting.sh
 RUN chmod +x /usr/local/bin/greeting.sh
 RUN echo "sh /usr/local/bin/greeting.sh" >> /root/.bashrc
 

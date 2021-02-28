@@ -20,7 +20,7 @@ services:
   sparkler:
     container_name: sparkler-elastic
     build:
-      dockerfile: ../../../../Dockerfile
+      dockerfile: ./Dockerfile
       context: .
     ports:
       - 4041:4041
