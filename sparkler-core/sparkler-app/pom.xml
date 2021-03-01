@@ -98,17 +98,6 @@
            <version>${kafka.version}</version>
          </dependency>
 
-
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-solrj</artifactId>
-            <version>${solr.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-core</artifactId> <!-- Needed to support Embedded Solr -->
-            <version>${solr.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
@@ -459,6 +448,43 @@
                         </plugins>
                     </build>
         </profile>
-
+        <profile>
+            <id>solr</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.solr</groupId>
+                    <artifactId>solr-solrj</artifactId>
+                    <version>${solr.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.solr</groupId>
+                    <artifactId>solr-core</artifactId> <!-- Needed to support Embedded Solr -->
+                    <version>${solr.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>elasticsearch</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.elasticsearch</groupId>
+                    <artifactId>elasticsearch</artifactId>
+                    <version>7.10.2</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.elasticsearch.client</groupId>
+                    <artifactId>elasticsearch-rest-client</artifactId>
+                    <version>7.10.2</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.elasticsearch.client</groupId>
+                    <artifactId>elasticsearch-rest-high-level-client</artifactId>
+                    <version>7.10.2</version>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
 </project>
