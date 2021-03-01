@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.solr
+package edu.usc.irds.sparkler.storage.solr
 
 import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
@@ -31,7 +31,7 @@ import scala.collection.JavaConversions._
  */
 class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) => Any) with Serializable {
 
-  import edu.usc.irds.sparkler.solr.SolrUpsert.LOG
+  import edu.usc.irds.sparkler.storage.solr.SolrUpsert.LOG
 
   override def apply(context: TaskContext, docs: Iterator[Resource]): Any = {
     LOG.debug("Inserting new resources into CrawlDb")

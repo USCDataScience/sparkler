@@ -26,7 +26,7 @@ import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.service.SolrProxy
 
-import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
+import edu.usc.irds.sparkler.storage.solr.{SolrStatusUpdate, SolrUpsert, StatusUpdateSolrTransformer, ScoreUpdateSolrTransformer}
 import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text

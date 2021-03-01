@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.pipeline
+package edu.usc.irds.sparkler.storage.solr
 
 import java.util
 import java.util.Iterator
@@ -24,7 +24,7 @@ import com.google.common.hash.{HashFunction, Hashing}
 import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.CrawlData
-import edu.usc.irds.sparkler.solr.schema.FieldMapper
+import edu.usc.irds.sparkler.storage.solr.schema.FieldMapper
 import org.apache.solr.common.SolrInputDocument
 
 import scala.collection.JavaConverters._

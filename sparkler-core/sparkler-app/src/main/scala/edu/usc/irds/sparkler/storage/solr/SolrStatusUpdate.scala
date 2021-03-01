@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.solr
+package edu.usc.irds.sparkler.storage.solr
 
 import SolrStatusUpdate.LOG
 import edu.usc.irds.sparkler.base.Loggable
