@@ -43,7 +43,7 @@ class MemexDeepCrawlDbRDD(sc: SparkContext,
     query.set("sort", sortBy)
     query.setRows(batchSize)
 
-    new SolrResultIterator[Resource](job.newCrawlDbSolrClient().crawlDb, query,
+    new SolrResultIterator[Resource](job.newCrawlDbProxy().getClient(), query,
       batchSize, classOf[Resource], closeClient = true, limit = topN)
   }
 
@@ -57,8 +57,8 @@ class MemexDeepCrawlDbRDD(sc: SparkContext,
     qry.set("group.field", Constants.solr.PARENT)
     qry.set("group.limit", 0)
     qry.setRows(maxGroups)
-    val proxy = job.newCrawlDbSolrClient()
-    val solr = proxy.crawlDb
+    val proxy = job.newCrawlDbProxy()
+    val solr = proxy.getClient()
     val groupRes = solr.query(qry).getGroupResponse.getValues.get(0)
     val grps = groupRes.getValues
     MemexDeepCrawlDbRDD.LOG.info(s"selecting ${grps.size()} out of ${groupRes.getNGroups}")

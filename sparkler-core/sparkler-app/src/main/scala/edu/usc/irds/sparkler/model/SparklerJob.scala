@@ -19,17 +19,15 @@ package edu.usc.irds.sparkler.model
 
 import java.io.File
 
+import edu.usc.irds.sparkler.storage.CrawlDbProxyFactory
+import edu.usc.irds.sparkler.storage.CrawlDbProxy
+
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.service.{RejectingURLFilterChain, SolrProxy}
+import edu.usc.irds.sparkler.service.RejectingURLFilterChain
 import edu.usc.irds.sparkler.util.JobUtil
 import edu.usc.irds.sparkler._
-import org.apache.solr.client.solrj.SolrClient
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer
-import org.apache.solr.client.solrj.impl.{CloudSolrClient}
-import org.apache.solr.core.CoreContainer
 
 import scala.collection.mutable
-import org.apache.solr.client.solrj.impl.HttpSolrClient
 
 /**
   *
@@ -40,61 +38,21 @@ class SparklerJob(val id: String,
                   var currentTask: String)
   extends Serializable with JobContext with Loggable {
 
-  var crawlDbUri: String = config.getDatabaseURI()
-
   /*
    * mappings from extension point to extension chain
    */
   //TODO: we should be able to overwrite these from config file
   val extChain: collection.mutable.HashMap[Class[_<:ExtensionPoint], Class[_<:ExtensionChain[_]]] =
-    mutable.HashMap(
-      (classOf[URLFilter], classOf[RejectingURLFilterChain])
-    )
-
-  /**
-    * Creates solr client based on the crawldburi
-    * @return Solr Client
-    */
-  def newSolrClient(): SolrClient = {
-    if (crawlDbUri.startsWith("http://") || crawlDbUri.startsWith("https://")) {
-      new HttpSolrClient.Builder(crawlDbUri).build
-    } else if (crawlDbUri.startsWith("file://")) {
-      var solrHome = crawlDbUri.replace("file://", "")
-      LOG.info("Embedded Solr, Solr Core={}", solrHome)
-      val solrHomeFile = new File(solrHome)
-      if (!solrHomeFile.exists()) {
-        val msg = s"Solr Core $solrHome doesn't exists"
-        LOG.warn(msg)
-        throw new SparklerException(msg)
-      }
-
-      //parent directory is solr home
-      solrHome = solrHomeFile.getParent
-      //directory name is the core name
-      val coreName = solrHomeFile.getName
-      LOG.info(s"Loading Embedded Solr, Home=$solrHome, Core=$coreName")
-      val coreContainer: CoreContainer = new CoreContainer(solrHome)
-      coreContainer.load()
-      new EmbeddedSolrServer(coreContainer, coreName)
-    } else if (crawlDbUri.contains("::")){
-      //Expected format = collection::zkhost1:port1,zkhost2:port2
-      // usually cloud uri has multi ZK hosts separated by comma(,)
-      val Array(collectionName, zkhosts) = crawlDbUri.split("::")
-      LOG.info("Solr crawldb.uri:{}, Cloud Client: Collection:{} ZKHost={}", crawlDbUri, collectionName, zkhosts)
-      val client = new CloudSolrClient.Builder().withZkHost(zkhosts).build()
-      client.setDefaultCollection(collectionName)
-      client
-    } else {
-      throw new RuntimeException(s"$crawlDbUri not supported")
-    }
-  }
+  mutable.HashMap(
+    (classOf[URLFilter], classOf[RejectingURLFilterChain])
+  )
 
   def this(id: String, conf: SparklerConfiguration) {
     this(id, conf, JobUtil.newSegmentId())
   }
 
-  def newCrawlDbSolrClient(): SolrProxy = {
-    new SolrProxy(newSolrClient())
+  def newCrawlDbProxy() = {
+    new CrawlDbProxyFactory(config).getProxy()
   }
 
   override def getConfiguration: SparklerConfiguration ={

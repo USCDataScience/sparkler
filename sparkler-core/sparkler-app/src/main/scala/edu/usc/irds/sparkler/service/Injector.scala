@@ -109,10 +109,10 @@ class Injector extends CliTool {
     })
     LOG.info("Injecting {} seeds", seeds.size())
 
-    val solrClient = job.newCrawlDbSolrClient()
-    solrClient.addResources(seeds.iterator())
-    solrClient.commitCrawlDb()
-    solrClient.close()
+    val dbClient = job.newCrawlDbProxy()
+    dbClient.addResources(seeds.iterator())
+    dbClient.commitCrawlDb()
+    dbClient.close()
   }
 
   override def parseArgs(args: Array[String]): Unit = {

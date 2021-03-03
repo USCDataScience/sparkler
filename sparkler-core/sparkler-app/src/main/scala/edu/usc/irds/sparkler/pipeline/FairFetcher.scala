@@ -69,7 +69,7 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
     data.parsedData.outlinks = outLinkFilterFunc(job, data)
     val doc = solrUpdateFunction(data)
     LOG.info("Adding doc to SOLR")
-    job.newCrawlDbSolrClient().addResource(doc)
+    job.newCrawlDbProxy().addResource(doc)
     data
   }
 }

@@ -15,27 +15,18 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.storage.solr
-
-import SolrStatusUpdate.LOG
-import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.model.SparklerJob
-import org.apache.spark.TaskContext
-import org.apache.solr.common.SolrInputDocument
-
-import scala.collection.JavaConversions._
+package edu.usc.irds.sparkler.storage
 
 /**
- * Created by karanjeets on 6/11/16
- */
-class SolrStatusUpdate(job: SparklerJob) extends ((TaskContext, Iterator[SolrInputDocument]) => Any) with Serializable {
+  *
+  * @since 3/2/2021
+  */
+abstract class CrawlDbProxy() {
 
-  override def apply(context: TaskContext, docs: Iterator[SolrInputDocument]): Any = {
-    LOG.debug("Updating document status into CrawlDb")
-    val solrClient = job.newCrawlDbProxy()
-    solrClient.addResourceDocs(docs)
-    solrClient.close()
-  }
+//  def newClient(crawlDbUri: String)
+//  def getClient()
+//  def commitCrawlDb(): Unit
+//  def close(): Unit
+
 }
 
-object SolrStatusUpdate extends Loggable;

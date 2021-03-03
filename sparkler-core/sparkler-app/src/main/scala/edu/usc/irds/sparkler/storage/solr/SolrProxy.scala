@@ -15,21 +15,71 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.service
+package edu.usc.irds.sparkler.storage.solr
 
-import java.io.Closeable
-
+import java.io.{Closeable, File}
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.model.Resource
+import edu.usc.irds.sparkler.storage.CrawlDbProxy
+import edu.usc.irds.sparkler._
+
 import org.apache.solr.client.solrj.SolrClient
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer
+import org.apache.solr.client.solrj.impl.{CloudSolrClient}
+import org.apache.solr.core.CoreContainer
 import org.apache.solr.common.SolrInputDocument
+
+import org.apache.solr.client.solrj.impl.HttpSolrClient
 
 /**
   *
   * @since 5/28/16
   */
-class SolrProxy(var crawlDb: SolrClient) extends Closeable with Loggable {
+class SolrProxy(var config: SparklerConfiguration) extends CrawlDbProxy with Closeable with Loggable {
 
+  /**
+    * Creates solr client based on the crawldburi
+    * @return Solr Client
+    */
+  def newClient(crawlDbUri: String): SolrClient = {
+    if (crawlDbUri.startsWith("http://") || crawlDbUri.startsWith("https://")) {
+      new HttpSolrClient.Builder(crawlDbUri).build
+    } else if (crawlDbUri.startsWith("file://")) {
+      var solrHome = crawlDbUri.replace("file://", "")
+      LOG.info("Embedded Solr, Solr Core={}", solrHome)
+      val solrHomeFile = new File(solrHome)
+      if (!solrHomeFile.exists()) {
+        val msg = s"Solr Core $solrHome doesn't exists"
+        LOG.warn(msg)
+        throw new SparklerException(msg)
+      }
+
+      //parent directory is solr home
+      solrHome = solrHomeFile.getParent
+      //directory name is the core name
+      val coreName = solrHomeFile.getName
+      LOG.info(s"Loading Embedded Solr, Home=$solrHome, Core=$coreName")
+      val coreContainer: CoreContainer = new CoreContainer(solrHome)
+      coreContainer.load()
+      new EmbeddedSolrServer(coreContainer, coreName)
+    } else if (crawlDbUri.contains("::")){
+      //Expected format = collection::zkhost1:port1,zkhost2:port2
+      // usually cloud uri has multi ZK hosts separated by comma(,)
+      val Array(collectionName, zkhosts) = crawlDbUri.split("::")
+      LOG.info("Solr crawldb.uri:{}, Cloud Client: Collection:{} ZKHost={}", crawlDbUri, collectionName, zkhosts)
+      val client = new CloudSolrClient.Builder().withZkHost(zkhosts).build()
+      client.setDefaultCollection(collectionName)
+      client
+    } else {
+      throw new RuntimeException(s"$crawlDbUri not supported")
+    }
+  }
+
+  // creates the solr client
+  private var crawlDb = newClient(config.getDatabaseURI())
+
+  def getClient(): SolrClient = {
+    return crawlDb
+  }
 
   def addResourceDocs(docs: java.util.Iterator[SolrInputDocument]): Unit = {
     crawlDb.add(docs)
