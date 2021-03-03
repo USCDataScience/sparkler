@@ -48,8 +48,8 @@ class MemexCrawlDbRDD(sc: SparkContext,
     qry.set("group.limit", 0)
     qry.setRows(maxGroups)
     val proxy = job.newStorageProxy()
-    val solr = proxy.getClient()
-    val groupRes = solr.query(qry).getGroupResponse.getValues.get(0)
+    val client = proxy.getClient()
+    val groupRes = client.query(qry).getGroupResponse.getValues.get(0)
     val grps = groupRes.getValues
     MemexCrawlDbRDD.LOG.info(s"selecting ${grps.size()} out of ${groupRes.getNGroups}")
     val res = new Array[Partition](grps.size())

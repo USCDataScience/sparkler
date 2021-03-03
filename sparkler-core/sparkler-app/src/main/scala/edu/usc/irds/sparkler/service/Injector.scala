@@ -66,7 +66,7 @@ class Injector extends CliTool {
 
   @Option(name = "-cdb", aliases = Array("--crawldb"),
     usage = "Crawdb URI.")
-  var sparkSolr: String = conf.getDatabaseURI()
+  var sparkStorage: String = conf.getDatabaseURI()
 
   @Option(name = "-co", aliases = Array("--config-override"),
     handler = classOf[StringArrayOptionHandler],
@@ -77,9 +77,9 @@ class Injector extends CliTool {
     if (configOverride != ""){
       conf.overloadConfig(configOverride.mkString(" "));
     }
-    if (!sparkSolr.isEmpty) {
+    if (!sparkStorage.isEmpty) {
       val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
-      uri.put("crawldb.uri", sparkSolr)
+      uri.put("crawldb.uri", sparkStorage)
     }
 
     if (jobId.isEmpty) {
@@ -109,10 +109,10 @@ class Injector extends CliTool {
     })
     LOG.info("Injecting {} seeds", seeds.size())
 
-    val dbClient = job.newStorageProxy()
-    dbClient.addResources(seeds.iterator())
-    dbClient.commitCrawlDb()
-    dbClient.close()
+    val storageProxy = job.newStorageProxy()
+    storageProxy.addResources(seeds.iterator())
+    storageProxy.commitCrawlDb()
+    storageProxy.close()
   }
 
   override def parseArgs(args: Array[String]): Unit = {

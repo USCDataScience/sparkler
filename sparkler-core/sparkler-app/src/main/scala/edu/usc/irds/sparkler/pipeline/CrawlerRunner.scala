@@ -10,14 +10,15 @@ import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
 import edu.usc.irds.sparkler.{MemexDeepCrawlDbRDD, MemexCrawlDbRDD}
 import edu.usc.irds.sparkler.model.ResourceStatus.UNFETCHED
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
-import edu.usc.irds.sparkler.solr._
+import edu.usc.irds.sparkler.storage.solr._
 import java.io.File
 import scala.collection.mutable
 import scala.io.Source
 import edu.usc.irds.sparkler.util.JobUtil
 import org.apache.solr.common.SolrInputDocument
 import org.apache.spark.rdd.RDD
-import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
+
+
 class CrawlerRunner {
 
   import Crawler.LOG
@@ -39,9 +40,9 @@ class CrawlerRunner {
     this.outputPath = op
     val job = init(configOverride, jobId, sparkSolr, databricksEnable = false, sparklerConf, outputPath, sparkMaster, jarPath)
 
-    val solrc = job.newCrawlDbSolrClient()
+    val storageProxy = job.newStorageProxy()
     LOG.info("Committing crawldb..")
-    solrc.commitCrawlDb()
+    storageProxy.commitCrawlDb()
     val localFetchDelay = fetchDelay
     for (_ <- 1 to iterations) {
       var deepCrawlHosts: mutable.Set[String] = new mutable.HashSet[String]()
@@ -78,7 +79,7 @@ class CrawlerRunner {
         Crawler.storeContent(outputPath, scoredRdd)
 
         LOG.info("Committing crawldb..")
-        solrc.commitCrawlDb()
+        storageProxy.commitCrawlDb()
       }
 
       var taskId = JobUtil.newSegmentId(true)
@@ -102,9 +103,9 @@ class CrawlerRunner {
       Crawler.storeContent(this.outputPath, scoredRdd)
 
       LOG.info("Committing crawldb..")
-      solrc.commitCrawlDb()
+      storageProxy.commitCrawlDb()
     }
-    solrc.close()
+    storageProxy.close()
     //PluginService.shutdown(job)
     LOG.info("Shutting down Spark CTX..")
     this.sc.stop()
