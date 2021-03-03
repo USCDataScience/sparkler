@@ -21,7 +21,7 @@ package edu.usc.irds.sparkler.storage
   *
   * @since 3/2/2021
   */
-abstract class CrawlDbProxy() {
+abstract class StorageProxy() {
 
 //  def newClient(crawlDbUri: String)
 //  def getClient()

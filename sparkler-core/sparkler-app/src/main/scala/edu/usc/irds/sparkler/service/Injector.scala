@@ -109,7 +109,7 @@ class Injector extends CliTool {
     })
     LOG.info("Injecting {} seeds", seeds.size())
 
-    val dbClient = job.newCrawlDbProxy()
+    val dbClient = job.newStorageProxy()
     dbClient.addResources(seeds.iterator())
     dbClient.commitCrawlDb()
     dbClient.close()

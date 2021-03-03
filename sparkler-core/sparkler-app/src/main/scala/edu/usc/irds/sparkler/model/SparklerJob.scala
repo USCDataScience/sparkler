@@ -19,8 +19,7 @@ package edu.usc.irds.sparkler.model
 
 import java.io.File
 
-import edu.usc.irds.sparkler.storage.CrawlDbProxyFactory
-import edu.usc.irds.sparkler.storage.CrawlDbProxy
+import edu.usc.irds.sparkler.storage.StorageProxyFactory
 
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.service.RejectingURLFilterChain
@@ -51,8 +50,8 @@ class SparklerJob(val id: String,
     this(id, conf, JobUtil.newSegmentId())
   }
 
-  def newCrawlDbProxy() = {
-    new CrawlDbProxyFactory(config).getProxy()
+  def newStorageProxy() = {
+    new StorageProxyFactory(config).getProxy()
   }
 
   override def getConfiguration: SparklerConfiguration ={

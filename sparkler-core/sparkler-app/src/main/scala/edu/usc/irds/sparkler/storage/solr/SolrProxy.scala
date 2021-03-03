@@ -19,7 +19,7 @@ package edu.usc.irds.sparkler.storage.solr
 
 import java.io.{Closeable, File}
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.storage.CrawlDbProxy
+import edu.usc.irds.sparkler.storage.StorageProxy
 import edu.usc.irds.sparkler._
 
 import org.apache.solr.client.solrj.SolrClient
@@ -34,7 +34,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient
   *
   * @since 5/28/16
   */
-class SolrProxy(var config: SparklerConfiguration) extends CrawlDbProxy with Closeable with Loggable {
+class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Closeable with Loggable {
 
   /**
     * Creates solr client based on the crawldburi

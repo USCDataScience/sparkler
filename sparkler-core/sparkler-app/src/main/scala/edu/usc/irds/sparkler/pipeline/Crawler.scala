@@ -170,7 +170,7 @@ class Crawler extends CliTool {
     //STEP : Initialize environment
     init()
 
-    val solrc = this.job.newCrawlDbProxy()
+    val solrc = this.job.newStorageProxy()
     LOG.info("Committing crawldb..")
     solrc.commitCrawlDb()
     val localFetchDelay = fetchDelay

@@ -35,7 +35,7 @@ class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) =>
 
   override def apply(context: TaskContext, docs: Iterator[Resource]): Any = {
     LOG.debug("Inserting new resources into CrawlDb")
-    val solrClient = job.newCrawlDbProxy()
+    val solrClient = job.newStorageProxy()
 
     //TODO: handle this in server side - tell solr to skip docs if they already exist
 

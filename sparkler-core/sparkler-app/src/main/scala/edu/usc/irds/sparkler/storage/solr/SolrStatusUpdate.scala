@@ -32,7 +32,7 @@ class SolrStatusUpdate(job: SparklerJob) extends ((TaskContext, Iterator[SolrInp
 
   override def apply(context: TaskContext, docs: Iterator[SolrInputDocument]): Any = {
     LOG.debug("Updating document status into CrawlDb")
-    val solrClient = job.newCrawlDbProxy()
+    val solrClient = job.newStorageProxy()
     solrClient.addResourceDocs(docs)
     solrClient.close()
   }

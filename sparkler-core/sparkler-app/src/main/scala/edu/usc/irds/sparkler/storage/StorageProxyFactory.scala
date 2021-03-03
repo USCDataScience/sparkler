@@ -24,7 +24,7 @@ import edu.usc.irds.sparkler.SparklerConfiguration
   *
   * @since 3/2/2021
   */
-class CrawlDbProxyFactory(var config: SparklerConfiguration) {
+class StorageProxyFactory(var config: SparklerConfiguration) {
 
   var crawlDbUri: String = config.getDatabaseURI()
 
