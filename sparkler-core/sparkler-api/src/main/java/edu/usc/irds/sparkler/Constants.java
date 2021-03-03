@@ -152,6 +152,7 @@ public interface Constants {
         String SEGMENT = "segment";
         String RAW_CONTENT = "raw_content";
         String WEBPAGE_MIMETYPE = "text/html";
+        String JSON_MIMETYPE = "application/json";
         String PARENT = "parent";
         String RESPONSE_TIME = "response_time";
     }

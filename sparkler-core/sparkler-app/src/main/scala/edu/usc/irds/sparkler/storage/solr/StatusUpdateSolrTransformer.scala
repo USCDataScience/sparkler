@@ -58,6 +58,8 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     if (Constants.solr.WEBPAGE_MIMETYPE
       .equalsIgnoreCase(data.fetchedData.getContentType.split("; ")(0))) {
       sUpdate.setField(Constants.solr.RAW_CONTENT, new String(data.fetchedData.getContent))
+    } else if (Constants.solr.JSON_MIMETYPE.equalsIgnoreCase(data.fetchedData.getContentType.split("; ")(0))){
+      sUpdate.setField(Constants.solr.RAW_CONTENT, new String(data.fetchedData.getContent))
     }
     sUpdate.setField(Constants.solr.RESPONSE_TIME, data.fetchedData.getResponseTime)
     for ((scoreKey, score) <- data.fetchedData.getResource.getScore) {
