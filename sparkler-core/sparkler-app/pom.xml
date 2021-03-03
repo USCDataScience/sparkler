@@ -469,6 +469,18 @@
         <profile>
             <id>elasticsearch</id>
             <dependencies>
+                <!-- Including the Solr dependencies for the time being while working on
+                integrating Elasticsearch to  prevent build errors when using this profile -->
+                <dependency>
+                    <groupId>org.apache.solr</groupId>
+                    <artifactId>solr-solrj</artifactId>
+                    <version>${solr.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.solr</groupId>
+                    <artifactId>solr-core</artifactId> <!-- Needed to support Embedded Solr -->
+                    <version>${solr.version}</version>
+                </dependency>
                 <dependency>
                     <groupId>org.elasticsearch</groupId>
                     <artifactId>elasticsearch</artifactId>
