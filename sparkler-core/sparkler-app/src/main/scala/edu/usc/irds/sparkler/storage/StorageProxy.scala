@@ -17,6 +17,10 @@
 
 package edu.usc.irds.sparkler.storage
 
+import edu.usc.irds.sparkler.storage.solr.SolrProxy
+import org.apache.solr.client.solrj.SolrClient
+import org.elasticsearch.client.RestHighLevelClient
+
 /**
   *
   * @since 3/2/2021
@@ -24,8 +28,8 @@ package edu.usc.irds.sparkler.storage
 abstract class StorageProxy() {
 
   // TODO: Change return Any??
-  def newClient(crawlDbUri: String): Any
-  def getClient(): Any
+  def newClient(crawlDbUri: String): Either[SolrClient,RestHighLevelClient]
+  def getClient(): Either[SolrClient,RestHighLevelClient]
   def commitCrawlDb(): Unit
   def close(): Unit
 
