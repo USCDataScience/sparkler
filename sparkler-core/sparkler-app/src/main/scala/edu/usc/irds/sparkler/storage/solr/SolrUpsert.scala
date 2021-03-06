@@ -41,7 +41,7 @@ class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) =>
 
     //This filter function returns true if there is no other resource  with the same dedupe_id
     val newLinksFilter: (Resource => Boolean) = doc => {
-      val qry = new SolrQuery(s"${Constants.solr.DEDUPE_ID}:${doc.getDedupeId}")
+      val qry = new SolrQuery(s"${Constants.storage.DEDUPE_ID}:${doc.getDedupeId}")
       qry.setRows(0) //we are interested in counts only and not the contents
       solrClient.getClient().query(qry).getResults.getNumFound == 0
       // if zero hits, then there are no duplicates

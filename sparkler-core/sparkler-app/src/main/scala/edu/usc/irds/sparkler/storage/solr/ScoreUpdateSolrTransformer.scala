@@ -41,9 +41,9 @@ object ScoreUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) with
     val hashFunction: HashFunction = Hashing.sha256()
     val sUpdate = new SolrInputDocument()
     //FIXME: handle failure case
-    sUpdate.setField(Constants.solr.ID, data.fetchedData.getResource.getId)
+    sUpdate.setField(Constants.storage.ID, data.fetchedData.getResource.getId)
 
-    sUpdate.setField(Constants.solr.GENERATE_SCORE, Map("set" -> data.fetchedData.getResource.getGenerateScore()).asJava)
+    sUpdate.setField(Constants.storage.GENERATE_SCORE, Map("set" -> data.fetchedData.getResource.getGenerateScore()).asJava)
 
     sUpdate
   }

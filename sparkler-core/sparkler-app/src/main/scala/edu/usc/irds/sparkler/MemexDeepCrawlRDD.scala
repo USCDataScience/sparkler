@@ -38,8 +38,8 @@ class MemexDeepCrawlDbRDD(sc: SparkContext,
       }
     }
     query.addFilterQuery(hostnameFilter)
-    query.addFilterQuery(s"""${Constants.solr.PARENT}:"${escapeQueryChars(partition.group)}"""")
-    query.addFilterQuery(s"${Constants.solr.CRAWL_ID}:${job.id}")
+    query.addFilterQuery(s"""${Constants.storage.PARENT}:"${escapeQueryChars(partition.group)}"""")
+    query.addFilterQuery(s"${Constants.storage.CRAWL_ID}:${job.id}")
     query.set("sort", sortBy)
     query.setRows(batchSize)
 
@@ -50,11 +50,11 @@ class MemexDeepCrawlDbRDD(sc: SparkContext,
   override protected def getPartitions: Array[Partition] = {
     val qry = new SolrQuery(generateQry)
 
-    qry.addFilterQuery(s"${Constants.solr.CRAWL_ID}:${job.id}")
+    qry.addFilterQuery(s"${Constants.storage.CRAWL_ID}:${job.id}")
     qry.set("sort", sortBy)
     qry.set("group", true)
     qry.set("group.ngroups", true)
-    qry.set("group.field", Constants.solr.PARENT)
+    qry.set("group.field", Constants.storage.PARENT)
     qry.set("group.limit", 0)
     qry.setRows(maxGroups)
     val proxy = job.newStorageProxy()
@@ -75,8 +75,8 @@ class MemexDeepCrawlDbRDD(sc: SparkContext,
 
 object MemexDeepCrawlDbRDD extends Loggable {
 
-  val DEFAULT_ORDER = Constants.solr.DISCOVER_DEPTH + " asc," + Constants.solr.SCORE + " desc"
-  val DEFAULT_FILTER_QRY = Constants.solr.STATUS + ":" + ResourceStatus.UNFETCHED
+  val DEFAULT_ORDER = Constants.storage.DISCOVER_DEPTH + " asc," + Constants.storage.SCORE + " desc"
+  val DEFAULT_FILTER_QRY = Constants.storage.STATUS + ":" + ResourceStatus.UNFETCHED
   val DEFAULT_GROUPS = 10
   val DEFAULT_TOPN = 1000
 }

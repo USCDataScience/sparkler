@@ -23,10 +23,11 @@ package edu.usc.irds.sparkler.storage
   */
 abstract class StorageProxy() {
 
-//  def newClient(crawlDbUri: String)
-//  def getClient()
-//  def commitCrawlDb(): Unit
-//  def close(): Unit
+  // TODO: Change return Any??
+  def newClient(crawlDbUri: String): Any
+  def getClient(): Any
+  def commitCrawlDb(): Unit
+  def close(): Unit
 
 }
 
