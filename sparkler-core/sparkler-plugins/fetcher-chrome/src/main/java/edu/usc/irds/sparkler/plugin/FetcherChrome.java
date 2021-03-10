@@ -323,8 +323,17 @@ public class FetcherChrome extends FetcherDefault {
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             System.out.println(pair.getKey() + " = " + pair.getValue());
-            type = (String) pair.getValue();
-
+            if(pair.getKey().equals("input")){
+                type = (String) pair.getValue();
+            }  else if(pair.getKey().equals("operation")){
+                type = (String) pair.getValue();
+            } else if(pair.getKey().equals("wait")){
+                type = (String) pair.getValue();
+            } else if(pair.getKey().equals("select")) {
+                type = (String) pair.getValue();
+            } else if(pair.getKey().equals("value")) {
+                value = (String) pair.getValue();
+            }
             it.remove();
         }
 
@@ -340,6 +349,7 @@ public class FetcherChrome extends FetcherDefault {
                 break;
             case "select":
                 selectElement(value);
+                break;
         }
     }
 
