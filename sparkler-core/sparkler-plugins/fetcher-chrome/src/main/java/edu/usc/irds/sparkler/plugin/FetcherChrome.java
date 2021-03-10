@@ -374,6 +374,7 @@ public class FetcherChrome extends FetcherDefault {
         String[] splits = value.split(":");
         String type = splits[0];
         Select selectObj = null;
+        System.out.println("Finding Select: "+ splits[1]);
         switch (type) {
             case "id":
                 selectObj = new Select(driver.findElement(By.id(splits[1])));
@@ -390,6 +391,7 @@ public class FetcherChrome extends FetcherDefault {
         }
 
         if (selectObj != null) {
+            System.out.println("Finding Select Option: "+ splits[3]);
             switch (splits[2]) {
                 case "value":
                     selectObj.selectByValue(splits[3]);
