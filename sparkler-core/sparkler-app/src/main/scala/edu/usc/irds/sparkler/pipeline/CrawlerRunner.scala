@@ -133,6 +133,8 @@ class CrawlerRunner {
 
     scoredRdd
   }
+
+  // scalastyle:off
   def init(configOverride: Array[Any], jobId: String, sparkSolr: String, databricksEnable: Boolean,
            sparklerConf: SparklerConfiguration, outputPath: String, sparkMaster: String,
            jarPath: Array[String]): SparklerJob = {
@@ -146,7 +148,8 @@ class CrawlerRunner {
     if (!sparkMaster.isEmpty) {
       conf.setMaster(sparkMaster)
     }
-    if (!sparkSolr.isEmpty){
+
+    if (sparkSolr != null && !sparkSolr.isEmpty){
       sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put("crawldb.uri", sparkSolr)
     }
 
@@ -167,5 +170,5 @@ class CrawlerRunner {
 
     new SparklerJob(jobId, sparklerConf, "")
   }
-
+  // scalastyle:on
 }

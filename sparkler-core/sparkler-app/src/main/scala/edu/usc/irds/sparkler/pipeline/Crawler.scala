@@ -128,7 +128,44 @@ class Crawler extends CliTool {
   var job: SparklerJob = _
   var sc: SparkContext = _
 
-
+//<<<<<<< HEAD
+//
+//=======
+//  def init(): Unit = {
+//    if (configOverride != ""){
+//      sparklerConf.overloadConfig(configOverride.mkString(" "));
+//    }
+//    if (this.outputPath.isEmpty) {
+//      this.outputPath = jobId
+//    }
+//    val conf = new SparkConf().setAppName(jobId)
+//    if (!sparkMaster.isEmpty) {
+//      conf.setMaster(sparkMaster)
+//    }
+//    if (!sparkSolr.isEmpty){
+//      sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put("crawldb.uri", sparkSolr)
+//    }
+//
+//    if (databricksEnable) {
+//      LOG.info("Databricks spark is enabled")
+//      sc = SparkSession.builder().master("local").getOrCreate().sparkContext
+//    }
+//    else {
+//      sc = new SparkContext(conf)
+//    }
+//
+//    if(!jarPath.isEmpty && jarPath(0) == "true"){
+//      sc.getConf.setJars(Array[String](getClass.getProtectionDomain.getCodeSource.getLocation.getPath))
+//    }
+//    else if(!jarPath.isEmpty) {
+//      sc.getConf.setJars(jarPath)
+//    }
+//    LOG.info("Setting local job: " + sparklerConf.get("fetcher.headers"))
+//    job = new SparklerJob(jobId, sparklerConf, "")
+//    //FetchFunction.init(job)
+//
+//  }
+//>>>>>>> master
   //TODO: URL normalizers
   //TODO: Robots.txt
 

@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by karanjeetsingh on 10/22/16.
@@ -35,7 +36,7 @@ public class Resource implements Serializable {
     @Field private String parent;
     @Field("dedupe_id") private String dedupeId;
     @Field("http_method") private String httpMethod;
-    @Field("metadata") private String metadata;
+    @Field("jobmeta") private String metadata;
 
     public Resource() {
     }
@@ -112,7 +113,10 @@ public class Resource implements Serializable {
     }
 
     public static String resourceId(String url, JobContext job, Date timestamp) {
-        return StringUtil.sha256hash(String.format("%s-%s-%s", job.getId(), url, timestamp.getTime()));
+        Random rand = new Random();
+        int int_random = rand.nextInt(10000000);
+
+        return StringUtil.sha256hash(String.format("%s-%s-%s-%s", job.getId(), url, timestamp.getTime(), int_random));
     }
 
     // Getters & Setters

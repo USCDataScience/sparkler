@@ -124,6 +124,7 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
                     try {
                         json = (JSONObject) parser.parse(parsedJsonStr);
                         root.put("JSON", json);
+                        root.put("TAG", pluginConfig.get("tag"));
                     } catch (ParseException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();

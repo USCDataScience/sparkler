@@ -38,6 +38,7 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
@@ -70,6 +71,8 @@ import io.netty.handler.codec.http.HttpResponse;
 
 import org.openqa.selenium.Proxy;
 
+import static java.lang.Thread.sleep;
+
 @Extension
 public class FetcherChrome extends FetcherDefault {
 
@@ -78,6 +81,7 @@ public class FetcherChrome extends FetcherDefault {
     private WebDriver driver;
     private WebElement clickedEl = null;
     private int latestStatus;
+    private Proxy seleniumProxy;
 
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
@@ -87,11 +91,36 @@ public class FetcherChrome extends FetcherDefault {
         // TODO should change everywhere
         pluginConfig = config.getPluginConfiguration(pluginId);
 
+        try {
+            System.out.println("Initializing Chrome Driver");
+            startDriver(true);
+        } catch (UnknownHostException | MalformedURLException e) {
+            e.printStackTrace();
+            System.out.println("Failed to init Chrome Session");
+        }
+    }
+
+    private void checkSession() {
+        for(int retryloop = 0; retryloop < 10; retryloop++){
+            try{
+                driver.getCurrentUrl();
+            } catch (Exception e) {
+                System.out.println("Failed session, restarting");
+                try {
+                    startDriver(false);
+                } catch (UnknownHostException | MalformedURLException unknownHostException) {
+                    unknownHostException.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+    private void startDriver(Boolean restartproxy) throws UnknownHostException, MalformedURLException {
         String loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
         if (loc.equals("")) {
             driver = new ChromeDriver();
         } else {
-            try {
                 BrowserUpProxy proxy = new BrowserUpProxyServer();
                 proxy.setTrustAllServers(true);
 
@@ -99,23 +128,24 @@ public class FetcherChrome extends FetcherDefault {
                 proxy.addResponseFilter(new ResponseFilter() {
                     @Override
                     public void filterResponse(HttpResponse response, HttpMessageContents contents,
-                            HttpMessageInfo messageInfo) {
+                                               HttpMessageInfo messageInfo) {
                         latestStatus = response.getStatus().code();
                     }
                 });
 
                 String paddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "auto");
 
-                Proxy seleniumProxy;
                 if (paddress.equals("auto")) {
                     proxy.start();
                     int port = proxy.getPort();
                     seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
                 } else {
-                    String[] s = paddress.split(":");
-                    proxy.start(Integer.parseInt(s[1]));
-                    InetSocketAddress addr = new InetSocketAddress(InetAddress.getByName(s[0]), Integer.parseInt(s[1]));
-                    seleniumProxy = ClientUtil.createSeleniumProxy(addr);
+                    if(restartproxy) {
+                        String[] s = paddress.split(":");
+                        proxy.start(Integer.parseInt(s[1]));
+                        InetSocketAddress addr = new InetSocketAddress(InetAddress.getByName(s[0]), Integer.parseInt(s[1]));
+                        seleniumProxy = ClientUtil.createSeleniumProxy(addr);
+                    }
                 }
 
                 // seleniumProxy.setHttpProxy("172.17.146.238:"+Integer.toString(port));
@@ -130,14 +160,11 @@ public class FetcherChrome extends FetcherDefault {
                 capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
 
                 driver = new RemoteWebDriver(new URL(loc), capabilities);
-            } catch (MalformedURLException | UnknownHostException e) {
-                e.printStackTrace();
-            }
+
 
         }
 
     }
-
     @Override
     public FetchedData fetch(Resource resource) throws Exception {
         LOG.info("Chrome FETCHER {}", resource.getUrl());
@@ -164,6 +191,12 @@ public class FetcherChrome extends FetcherDefault {
         }
         // This will block for the page load and any
         // associated AJAX requests
+
+        try {
+            checkSession();
+        } catch (Exception e){
+            System.out.println("failed to start selenium session");
+        }
         driver.get(resource.getUrl());
         
         int waittimeout = (int) pluginConfig.getOrDefault("chrome.wait.timeout", "-1");
@@ -174,15 +207,19 @@ public class FetcherChrome extends FetcherDefault {
             LOG.debug("Waiting {} seconds for element {} of type {} to become visible", waittimeout, waitelement,
                     waittype);
             WebDriverWait wait = new WebDriverWait(driver, waittimeout);
-            if (waittype.equals("class")) {
-                LOG.debug("waiting for class...");
-                wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(waitelement)));
-            } else if (waittype.equals("name")) {
-                LOG.debug("waiting for name...");
-                wait.until(ExpectedConditions.visibilityOfElementLocated(By.name(waitelement)));
-            } else if (waittype.equals("id")) {
-                LOG.debug("waiting for id...");
-                wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
+            switch (waittype) {
+                case "class":
+                    LOG.debug("waiting for class...");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(waitelement)));
+                    break;
+                case "name":
+                    LOG.debug("waiting for name...");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.name(waitelement)));
+                    break;
+                case "id":
+                    LOG.debug("waiting for id...");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
+                    break;
             }
         }
         String seleniumenabled = (String) pluginConfig.getOrDefault("chrome.selenium.enabled", "false");
@@ -196,14 +233,15 @@ public class FetcherChrome extends FetcherDefault {
 
         LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
 
-        if (!(latestStatus >= 200 && latestStatus < 300)) {
+        System.out.println("LATEST STATUS: "+latestStatus);
+        if (!(latestStatus >= 200 && latestStatus < 300) && latestStatus != 0) {
             // If not fetched through plugin successfully
             // Falling back to default fetcher
             LOG.info("{} Failed to fetch the page. Falling back to default fetcher.", resource.getUrl());
             return super.fetch(resource);
         }
 
-        fetchedData = new FetchedData(html.getBytes(), "application/html", latestStatus);
+        fetchedData = new FetchedData(html.getBytes(), "text/html", latestStatus);
         resource.setStatus(ResourceStatus.FETCHED.toString());
         fetchedData.setResource(resource);
         return fetchedData;
@@ -285,21 +323,23 @@ public class FetcherChrome extends FetcherDefault {
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             System.out.println(pair.getKey() + " = " + pair.getValue());
-            if(pair.getKey().equals("input")){
-                type = (String) pair.getValue();
-            } else if(pair.getKey().equals("value")){
-                value = (String) pair.getValue();
-            }  else if(pair.getKey().equals("operation")){
-                type = (String) pair.getValue();
-            }
+            type = (String) pair.getValue();
 
             it.remove(); 
         }
 
-        if(type.equals("click")){
-            clickElement(value);
-        } else if (type.equals("keys")){
-            typeCharacters(value);
+        switch (type) {
+            case "click":
+                clickElement(value);
+                break;
+            case "keys":
+                typeCharacters(value);
+                break;
+            case "wait":
+                waitElement(value);
+                break;
+            case "select":
+                selectElement(value);
         }
     }
 
@@ -312,17 +352,92 @@ public class FetcherChrome extends FetcherDefault {
             element = element + obj + " ";
         }
         element = element.substring(0, element.length() - 1);
-        
-        if(type.equals("id")){
-            clickedEl = driver.findElement(By.id(element));
-        } else if(type.equals("class")){
-            clickedEl = driver.findElement(By.className(element));
-        } else if(type.equals("name")){
-            clickedEl = driver.findElement(By.name(element));
-        } else if(type.equals("xpath")){
-            clickedEl = driver.findElement(By.xpath(element));
+
+        switch (type) {
+            case "id":
+                clickedEl = driver.findElement(By.id(element));
+                break;
+            case "class":
+                clickedEl = driver.findElement(By.className(element));
+                break;
+            case "name":
+                clickedEl = driver.findElement(By.name(element));
+                break;
+            case "xpath":
+                clickedEl = driver.findElement(By.xpath(element));
+                break;
         }
         clickedEl.click();
+    }
+
+    private void selectElement(String value){
+        String[] splits = value.split(":");
+        String type = splits[0];
+        Select selectObj = null;
+        switch (type) {
+            case "id":
+                selectObj = new Select(driver.findElement(By.id(splits[1])));
+                break;
+            case "class":
+                selectObj = new Select(driver.findElement(By.className(splits[1])));
+                break;
+            case "name":
+                selectObj = new Select(driver.findElement(By.name(splits[1])));
+                break;
+            case "xpath":
+                selectObj = new Select(driver.findElement(By.xpath(splits[1])));
+                break;
+        }
+
+        if (selectObj != null) {
+            switch (splits[2]) {
+                case "value":
+                    selectObj.selectByValue(splits[3]);
+                    break;
+                case "index":
+                    selectObj.selectByIndex(Integer.parseInt(splits[3]));
+                    break;
+                case "visible":
+                    selectObj.selectByVisibleText(splits[3]);
+                    break;
+            }
+        }
+
+    }
+
+    private void waitElement(String el){
+        String[] splits = el.split(":");
+        String waittype = splits[0];
+        String waitelement = splits[1];
+        String waittime = splits[2];
+
+        int waittimeout = Integer.parseInt(waittime);
+
+        System.out.println("Waiting time is: "+ waittime);
+        System.out.println("Wait type is: "+ waittype);
+        System.out.println("Wait element is: "+ waitelement);
+        if (waittimeout > -1) {
+            LOG.debug("Waiting {} seconds for element {} of type {} to become visible", waittimeout, waitelement,
+                    waittype);
+            WebDriverWait wait = new WebDriverWait(driver, waittimeout);
+            switch (waittype) {
+                case "class":
+                    LOG.debug("waiting for class...");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(waitelement)));
+                    break;
+                case "name":
+                    LOG.debug("waiting for name...");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.name(waitelement)));
+                    break;
+                case "id":
+                    LOG.debug("waiting for id...");
+                    System.out.println("Waiting for id");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
+
+                    System.out.println("Wait over.....");
+                    break;
+            }
+        }
     }
 
     private void typeCharacters(String chars){

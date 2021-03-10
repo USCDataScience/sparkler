@@ -145,15 +145,15 @@ object PluginService extends Loggable {
 
   def getExtension[X <: ExtensionPoint](point:Class[X], job: SparklerJob):Option[X] = {
     //lazy initialization for distributed mode (wherever this code gets executed)
-    if (!cache.contains(job.id)){
+    //if (!cache.contains(job.id)){
       this.synchronized {
-        if(!cache.contains(job.id)) {
+        //if(!cache.contains(job.id)) {
           val service = new PluginService(job)
           service.load()
           cache.put(job.id, service)
-        }
+        //}
       }
-    }
+    //}
     cache(job.id).getExtension(point)
   }
 }

@@ -18,9 +18,11 @@ class InjectorRunner{
   import Injector.LOG
   val urlValidator: UrlValidator = new UrlValidator()
 
-  val conf: SparklerConfiguration = Constants.defaults.newDefaultConfig()
+  var conf: SparklerConfiguration = Constants.defaults.newDefaultConfig()
 
   def runInjector(configOverride: Array[Any], sparkSolr: String, jobId: String, seedFile: File, seedUrls: Array[String]) : String = {
+    conf = Constants.defaults.newDefaultConfig()
+
     if (configOverride != null && !configOverride.isEmpty ){
       conf.overloadConfig(configOverride.mkString(" "));
     }

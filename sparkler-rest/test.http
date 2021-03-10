@@ -2,15 +2,94 @@
 
 GET http://localhost:8080/rest/inject/hello
 
+###
+
+POST http://54.39.180.249:8080/rest/inject/video61
+Content-Type: application/json
+Accept: application/json
+
+{"urls":["http://news.bbc.co.uk"],"configOverride":{"crawldb.uri":"http://ec2-35-174-200-133.compute-1.amazonaws.com:8983/solr/crawldb","spark.master":"spark://127.0.0.1:7077","databricks.enable":"true","generate.topn":1000,"generate.top.groups":256,"generate.sortby":"discover_depth asc, score asc","generate.groupby":"group","fetcher.server.delay":1812,"fetcher.headers":{"Referer":"https://rxtools.aetnamedicare.com/helpfultools/2021/Resources/PlanInformation","Origin":"https://rxtools.aetnamedicare.com","Upgrade-Insecure-Requests":"1","Content-Length":"","Connection":"keep-alive","Accept-Encoding":"","Accept":"application/json","Host":"www.drxwebservices.com","Cache-Control":"max-age=0","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzYjphcHBfaWQiOiI0MjEwMDY2Iiwic2I6ZG9tYWluIjoiQWV0bmFfUENCcm9rZXJDQ19QUk9EIiwic2I6cGxhbnllYXIiOiIyMDIxIiwic3ViIjoiMTBCWG1vcUVFZXFqQVFCUVZwYkJsQSIsInNiOmVudiI6IlBST0QiLCJuYmYiOjE2MTM5ODQ5NjYsImV4cCI6MTYxMzk5MjE2NiwiaWF0IjoxNjEzOTg0OTY2LCJhdWQiOiJodHRwczovL3d3dy5kcnh3ZWJzZXJ2aWNlcy5jb20vc3BhIn0.JxXDmQGW2Gd2FuqRvebzse2CJRmKkZ1EsJtvRX55ZGY","Accept-Language":"en-GB,en;q=0.5","Content-Type":"application/json"},"plugins.active":["urlfilter-regex","urlfilter-samehost","url-injector"],"plugins":{"url.injector":{"mode":"replace","values":["abilify"]}}}}
 
 ###
 
-POST http://localhost:8080/rest/inject/video
+POST http://localhost:8080/rest/inject/video104
+Content-Type: application/json
+Accept: application/json
+
+
+{"urls":["POST|https://www.drxwebservices.com/spa/v1/plans?=0JBTDD1L70"],"configOverride":{"crawldb.uri":"http://ec2-35-174-200-133.compute-1.amazonaws.com:8983/solr/crawldb","spark.master":"spark://127.0.0.1:7077","databricks.enable":"true","generate.topn":1000,"generate.top.groups":256,"generate.sortby":"discover_depth asc, score asc","generate.groupby":"group","fetcher.server.delay":2235,"fetcher.headers":{"Referer":"https://rxtools.aetnamedicare.com/helpfultools/2021/Resources/PlanInformation","Origin":"https://rxtools.aetnamedicare.com","Upgrade-Insecure-Requests":"1","Content-Length":"","Connection":"keep-alive","Accept-Encoding":"","Accept":"application/json","Host":"www.drxwebservices.com","Cache-Control":"max-age=0","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzYjphcHBfaWQiOiI0MjEwMDY2Iiwic2I6ZG9tYWluIjoiQWV0bmFfUENCcm9rZXJDQ19QUk9EIiwic2I6cGxhbnllYXIiOiIyMDIxIiwic3ViIjoiMTBCWG1vcUVFZXFqQVFCUVZwYkJsQSIsInNiOmVudiI6IlBST0QiLCJuYmYiOjE2MTQwNzk2MjIsImV4cCI6MTYxNDA4NjgyMiwiaWF0IjoxNjE0MDc5NjIyLCJhdWQiOiJodHRwczovL3d3dy5kcnh3ZWJzZXJ2aWNlcy5jb20vc3BhIn0.EXjkJdsfdMXU8EPxmEnN7SbDEzdPMbYK8qQojzF6oFA","Accept-Language":"en-GB,en;q=0.5","Content-Type":"application/json"},"plugins.active":["urlfilter-regex","urlfilter-samehost","url-injector"],"plugins":{"url.injector":{"mode":"json","values":["test"],"json":"{\"demographics\":{\"zip\":\"19067\",\"fips\":\"42017\",\"subsidyLevel\":null,\"subsidyPercent\":null,\"ageRange\":null,\"healthStatus\":null},\"search\":{\"planType\":\"1\",\"year\":2021,\"effectiveDate\":\"03/01/2021\",\"cultureCode\":\"en-US\",\"includePUFPlans\":false},\"medigapAnswers\":{},\"drugs\":[{\"dosageId\":\"181TPLQJYS\",\"ndc\":\"59148000613\",\"userQuantity\":30,\"daysOfSupply\":30}],\"pharmacies\":[],\"currentYearPlanID\":\"\",\"agentGuid\":\"\",\"costByEffectiveDate\":false,\"preferences\":[]}"}}}}
+
+###
+POST http://localhost:8080/rest/inject/video104
+Content-Type: application/json
+Accept: application/json
+
+{"urls":["POST|https://www.drxwebservices.com/spa/v1/plans?=0JBTDD1L70"],"configOverride":{"crawldb.uri":"http://ec2-35-174-200-133.compute-1.amazonaws.com:8983/solr/crawldb","spark.master":"spark://127.0.0.1:7077","databricks.enable":"true","generate.topn":1000,"generate.top.groups":256,"generate.sortby":"discover_depth asc, score asc","generate.groupby":"group","fetcher.server.delay":2235,"fetcher.headers":{"Referer":"https://rxtools.aetnamedicare.com/helpfultools/2021/Resources/PlanInformation","Origin":"https://rxtools.aetnamedicare.com","Upgrade-Insecure-Requests":"1","Content-Length":"","Connection":"keep-alive","Accept-Encoding":"","Accept":"application/json","Host":"www.drxwebservices.com","Cache-Control":"max-age=0","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzYjphcHBfaWQiOiI0MjEwMDY2Iiwic2I6ZG9tYWluIjoiQWV0bmFfUENCcm9rZXJDQ19QUk9EIiwic2I6cGxhbnllYXIiOiIyMDIxIiwic3ViIjoiMTBCWG1vcUVFZXFqQVFCUVZwYkJsQSIsInNiOmVudiI6IlBST0QiLCJuYmYiOjE2MTQwNzk2MjIsImV4cCI6MTYxNDA4NjgyMiwiaWF0IjoxNjE0MDc5NjIyLCJhdWQiOiJodHRwczovL3d3dy5kcnh3ZWJzZXJ2aWNlcy5jb20vc3BhIn0.EXjkJdsfdMXU8EPxmEnN7SbDEzdPMbYK8qQojzF6oFA","Accept-Language":"en-GB,en;q=0.5","Content-Type":"application/json"},"plugins.active":["urlfilter-regex","urlfilter-samehost","url-injector"],"plugins":{"url.injector":{"mode":"json","values":["test"],"json":"{\"demographics\":{\"zip\":\"19067\",\"fips\":\"42017\",\"subsidyLevel\":null,\"subsidyPercent\":null,\"ageRange\":null,\"healthStatus\":null},\"search\":{\"planType\":\"1\",\"year\":2021,\"effectiveDate\":\"03/01/2021\",\"cultureCode\":\"en-US\",\"includePUFPlans\":false},\"medigapAnswers\":{},\"drugs\":[{\"dosageId\":\"1MJCR3CZRV\",\"ndc\":\"59148000713\",\"userQuantity\":30,\"daysOfSupply\":30}],\"pharmacies\":[],\"currentYearPlanID\":\"\",\"agentGuid\":\"\",\"costByEffectiveDate\":false,\"preferences\":[]}"}}}}
+
+###
+
+POST http://localhost:8080/rest/inject/video100
 Content-Type: application/json
 Accept: application/json
 
 {
-  "urls": ["https://news.bbc.co.uk", "https://us.cnn.com"]
+  "urls": [
+    "https://news.bbc.co.uk"
+  ],
+  "configOverride": {
+    "kafka.enable": false,
+    "generate.groupby": "group",
+    "spark.master": "local[*]",
+    "crawldb.uri": "http://ec2-35-174-200-133.compute-1.amazonaws.com:8983/solr/crawldb",
+    "generate.top.groups": 256.0,
+    "plugins": {
+      "urlfilter.regex": {
+        "urlfilter.regex.file": "regex-urlfilter.txt"
+      },
+      "scorer.dd.svn": {
+        "scorer.dd.svn.url": "http://domain-discovery:5000/classify/predict",
+        "scorer.dd.svn.fallback": 0,
+        #
+        "scorer.dd.svn.key": "svn_score"
+      },
+      "fetcher.jbrowser": null,
+      "fetcher.chrome": {
+        "chrome.wait.timeout": -1,
+        "chrome.wait.element": "some element",
+        "chrome.wait.type": "class",
+        "chrome.dns": "http://localhost:3000/webdriver"
+      },
+      "url.injector":{"mode":"json","values":["test"],"json":"{"demographics":{"zip":"19067","fips":"42017","subsidyLevel":null,"subsidyPercent":null,"ageRange":null,"healthStatus":null},"search":{"planType":"1","year":2021,"effectiveDate":"03/01/2021","cultureCode":"en-US","includePUFPlans":false},"medigapAnswers":{},"drugs":[{"dosageId":"181TPLQJYS","ndc":"59148000613","userQuantity":30,"daysOfSupply":30}],"pharmacies":[],"currentYearPlanID":"","agentGuid":"","costByEffectiveDate":false,"preferences":[]}"}
+      "memex.webpage.mimetype": "text/html"
+    },
+    "fetcher.headers": {
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Sparkler/0.2.2-SNAPSHOT",
+      "Accept": "application/json",
+      "Accept-Language": "en-GB,en;q=0.5",
+      "Origin": "https://rxtools.aetnamedicare.com",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzYjphcHBfaWQiOiI0MjEwMDY2Iiwic2I6ZG9tYWluIjoiQWV0bmFfUENCcm9rZXJDQ19QUk9EIiwic2I6cGxhbnllYXIiOiIyMDIxIiwic3ViIjoiMTBCWG1vcUVFZXFqQVFCUVZwYkJsQSIsInNiOmVudiI6IlBST0QiLCJuYmYiOjE2MTM5ODQ5NjYsImV4cCI6MTYxMzk5MjE2NiwiaWF0IjoxNjEzOTg0OTY2LCJhdWQiOiJodHRwczovL3d3dy5kcnh3ZWJzZXJ2aWNlcy5jb20vc3BhIn0.JxXDmQGW2Gd2FuqRvebzse2CJRmKkZ1EsJtvRX55ZGY",
+      "Cache-Control": "max-age=0",
+      "Upgrade-Insecure-Requests": "1",
+      "Referer": "https://rxtools.aetnamedicare.com/helpfultools/2021/Resources/PlanInformation",
+      "Connection": "keep-alive",
+      "Host": "www.drxwebservices.com",
+      "Accept-Encoding": "",
+      "Content-Length": "",
+      "Content-Type": "application/json"
+    },
+    "fetcher.server.delay": 2655.0,
+    "plugins.active": [
+      "urlfilter-regex",
+      "urlfilter-samehost",
+      "url-injector"
+    ],
+    "generate.topn": 1000.0,
+    "sparkler.conf.uuid": "b5d2a5bf-ad9f-4747-873c-f693129541a2",
+    "generate.sortby": "discover_depth asc, score asc",
+    "databricks.enable": "false",
+    "kafka.topic": "sparkler_%s",
+    "kafka.listeners": "localhost:9092"
+  }
 }
 
 
