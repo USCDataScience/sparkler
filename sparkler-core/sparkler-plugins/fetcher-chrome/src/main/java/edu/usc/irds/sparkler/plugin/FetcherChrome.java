@@ -472,9 +472,10 @@ public class FetcherChrome extends FetcherDefault {
 
     private boolean isWebPage(String webUrl) {
         try {
-            URLConnection conn = new URL(webUrl).openConnection();
+            URL url = new URL(webUrl);
+            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             String contentType = conn.getHeaderField("Content-Type");
-            return contentType.contains("text") || contentType.contains("ml");
+            return contentType.contains("text") || contentType.contains("ml") || conn.getResponseCode() == 302;
         } catch (Exception e) {
             LOG.debug(e.getMessage(), e);
         }
