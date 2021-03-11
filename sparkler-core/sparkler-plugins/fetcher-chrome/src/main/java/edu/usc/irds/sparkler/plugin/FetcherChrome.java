@@ -354,9 +354,9 @@ public class FetcherChrome extends FetcherDefault {
     }
 
     private void clickElement(String el){
-        String splits[] = el.split(":");
+        String[] splits = splitElements(el);
         String type = splits[0];
-        Object pruned[] = ArrayUtils.remove(splits, 0);
+        Object[] pruned = ArrayUtils.remove(splits, 0);
         String element = "";
         for (Object obj : pruned){
             element = element + obj + " ";
@@ -381,7 +381,7 @@ public class FetcherChrome extends FetcherDefault {
     }
 
     private void selectElement(String value){
-        String[] splits = value.split(":");
+        String[] splits = splitElements(value);
         String type = splits[0];
         Select selectObj = null;
         System.out.println("Finding Select: "+ splits[1]);
@@ -418,7 +418,7 @@ public class FetcherChrome extends FetcherDefault {
     }
 
     private void waitElement(String el){
-        String[] splits = el.split(":");
+        String[] splits = splitElements(el);
         String waittype = splits[0];
         String waitelement = splits[1];
         String waittime = splits[2];
@@ -453,16 +453,14 @@ public class FetcherChrome extends FetcherDefault {
     }
 
     private void typeCharacters(String chars){
-        if(chars.startsWith("id:")){
-            String[] s = chars.split(":");
-            driver.findElement(By.id(s[1])).sendKeys(s[2]);
+        String[] splits = splitElements(chars);
+        if(splits[0].startsWith("id")){
+            driver.findElement(By.id(splits[1])).sendKeys(splits[2]);
         }
-        else if(chars.startsWith("name:")){
-            String[] s = chars.split(":");
-            driver.findElement(By.name(s[1])).sendKeys(s[2]);
-        } else if(chars.startsWith("xpath:")){
-            String[] s = chars.split(":");
-            driver.findElement(By.xpath(s[1])).sendKeys(s[2]);
+        else if(splits[0].startsWith("name")){
+            driver.findElement(By.name(splits[1])).sendKeys(splits[2]);
+        } else if(splits[0].startsWith("xpath:")){
+            driver.findElement(By.xpath(splits[1])).sendKeys(splits[2]);
         } else if(clickedEl != null){
             clickedEl.sendKeys(chars);
         }
@@ -510,6 +508,17 @@ public class FetcherChrome extends FetcherDefault {
         } else {
             LOG.debug("Driver was null");
         }
+    }
+
+    private String[] splitElements(String str){
+        String[] splits = str.split(":(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+        String[] ret = new String[splits.length];
+        int i = 0;
+        for (String s : splits){
+            ret[i] = s.replaceAll("^\"|\"$", "");
+            i++;
+        }
+        return ret;
     }
 
 }
