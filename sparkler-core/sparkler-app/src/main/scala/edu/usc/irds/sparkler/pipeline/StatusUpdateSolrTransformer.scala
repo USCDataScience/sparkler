@@ -55,7 +55,7 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     sUpdate.setField(Constants.solr.RELATIVE_PATH, URLUtil.reverseUrl(data.fetchedData.getResource.getUrl))
     sUpdate.setField(Constants.solr.OUTLINKS, data.parsedData.outlinks.toArray)
     sUpdate.setField(Constants.solr.SEGMENT, data.fetchedData.getSegment)
-    val splitMimeTypes = data.fetchedData.toLowerCase().getContentType.split(";")
+    val splitMimeTypes = data.fetchedData.getContentType.toLowerCase().split(";")
     if (splitMimeTypes.contains(Constants.solr.WEBPAGE_MIMETYPE.toLowerCase())) {
       sUpdate.setField(Constants.solr.RAW_CONTENT, new String(data.fetchedData.getContent))
     } else if (splitMimeTypes.contains(Constants.solr.JSON_MIMETYPE.toLowerCase())){
