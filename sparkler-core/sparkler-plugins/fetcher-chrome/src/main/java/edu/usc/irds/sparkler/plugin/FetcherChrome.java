@@ -38,6 +38,7 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
@@ -46,18 +47,14 @@ import org.slf4j.LoggerFactory;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map;
 import java.util.Set;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 
 import com.browserup.bup.BrowserUpProxy;
 import com.browserup.bup.BrowserUpProxyServer;
@@ -120,45 +117,45 @@ public class FetcherChrome extends FetcherDefault {
         if (loc.equals("")) {
             driver = new ChromeDriver();
         } else {
-                BrowserUpProxy proxy = new BrowserUpProxyServer();
-                proxy.setTrustAllServers(true);
+            BrowserUpProxy proxy = new BrowserUpProxyServer();
+            proxy.setTrustAllServers(true);
 
-                proxy.enableHarCaptureTypes(CaptureType.REQUEST_CONTENT, CaptureType.RESPONSE_CONTENT);
-                proxy.addResponseFilter(new ResponseFilter() {
-                    @Override
-                    public void filterResponse(HttpResponse response, HttpMessageContents contents,
-                                               HttpMessageInfo messageInfo) {
-                        latestStatus = response.getStatus().code();
-                    }
-                });
-
-                String paddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "auto");
-
-                if (paddress.equals("auto")) {
-                    proxy.start();
-                    int port = proxy.getPort();
-                    seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
-                } else {
-                    if(restartproxy) {
-                        String[] s = paddress.split(":");
-                        proxy.start(Integer.parseInt(s[1]));
-                        InetSocketAddress addr = new InetSocketAddress(InetAddress.getByName(s[0]), Integer.parseInt(s[1]));
-                        seleniumProxy = ClientUtil.createSeleniumProxy(addr);
-                    }
+            proxy.enableHarCaptureTypes(CaptureType.REQUEST_CONTENT, CaptureType.RESPONSE_CONTENT);
+            proxy.addResponseFilter(new ResponseFilter() {
+                @Override
+                public void filterResponse(HttpResponse response, HttpMessageContents contents,
+                                           HttpMessageInfo messageInfo) {
+                    latestStatus = response.getStatus().code();
                 }
+            });
 
-                // seleniumProxy.setHttpProxy("172.17.146.238:"+Integer.toString(port));
-                // seleniumProxy.setSslProxy("172.17.146.238:"+Integer.toString(port));
+            String paddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "auto");
 
-                DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-                final ChromeOptions chromeOptions = new ChromeOptions();
-                chromeOptions.addArguments("--no-sandbox");
-                chromeOptions.addArguments("--headless");
-                chromeOptions.addArguments("--ignore-certificate-errors");
-                capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
-                capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
+            if (paddress.equals("auto")) {
+                proxy.start();
+                int port = proxy.getPort();
+                seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
+            } else {
+                if(restartproxy) {
+                    String[] s = paddress.split(":");
+                    proxy.start(Integer.parseInt(s[1]));
+                    InetSocketAddress addr = new InetSocketAddress(InetAddress.getByName(s[0]), Integer.parseInt(s[1]));
+                    seleniumProxy = ClientUtil.createSeleniumProxy(addr);
+                }
+            }
 
-                driver = new RemoteWebDriver(new URL(loc), capabilities);
+            // seleniumProxy.setHttpProxy("172.17.146.238:"+Integer.toString(port));
+            // seleniumProxy.setSslProxy("172.17.146.238:"+Integer.toString(port));
+
+            DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+            final ChromeOptions chromeOptions = new ChromeOptions();
+            chromeOptions.addArguments("--no-sandbox");
+            chromeOptions.addArguments("--headless");
+            chromeOptions.addArguments("--ignore-certificate-errors");
+            capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
+            capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
+
+            driver = new RemoteWebDriver(new URL(loc), capabilities);
 
 
         }
@@ -185,7 +182,7 @@ public class FetcherChrome extends FetcherDefault {
         LOG.debug("Time taken to create driver- {}", (System.currentTimeMillis() - start));
 
         if(resource.getMetadata()!=null && !resource.getMetadata().equals("")){
-        json = processMetadata(resource.getMetadata());
+            json = processMetadata(resource.getMetadata());
 
         }
         // This will block for the page load and any
@@ -197,7 +194,7 @@ public class FetcherChrome extends FetcherDefault {
             System.out.println("failed to start selenium session");
         }
         driver.get(resource.getUrl());
-        
+
         int waittimeout = (int) pluginConfig.getOrDefault("chrome.wait.timeout", "-1");
         String waittype = (String) pluginConfig.getOrDefault("chrome.wait.type", "");
         String waitelement = (String) pluginConfig.getOrDefault("chrome.wait.element", "");
@@ -278,7 +275,7 @@ public class FetcherChrome extends FetcherDefault {
         //out.writeBytes(content);
         //out.flush();
         //out.close();
-    
+
     }
 
     private JSONObject processMetadata(String metadata) {
@@ -288,7 +285,7 @@ public class FetcherChrome extends FetcherDefault {
             try {
                 json = (JSONObject) parser.parse(metadata);
                 return json;
-                
+
             } catch (ParseException e) {
                 e.printStackTrace();
             }
@@ -309,7 +306,7 @@ public class FetcherChrome extends FetcherDefault {
 
                 Map submap = (Map) pair.getValue();
                 runSubScript(submap);
-                it.remove(); 
+                it.remove();
             }
         }
         LOG.debug("");
@@ -324,15 +321,16 @@ public class FetcherChrome extends FetcherDefault {
             System.out.println(pair.getKey() + " = " + pair.getValue());
             if(pair.getKey().equals("input")){
                 type = (String) pair.getValue();
-            } else if(pair.getKey().equals("value")){
-                value = (String) pair.getValue();
             }  else if(pair.getKey().equals("operation")){
                 type = (String) pair.getValue();
             } else if(pair.getKey().equals("wait")){
                 type = (String) pair.getValue();
+            } else if(pair.getKey().equals("select")) {
+                type = (String) pair.getValue();
+            } else if(pair.getKey().equals("value")) {
+                value = (String) pair.getValue();
             }
-
-            it.remove(); 
+            it.remove();
         }
 
         switch (type) {
@@ -345,13 +343,16 @@ public class FetcherChrome extends FetcherDefault {
             case "wait":
                 waitElement(value);
                 break;
+            case "select":
+                selectElement(value);
+                break;
         }
     }
 
     private void clickElement(String el){
-        String splits[] = el.split(":");
+        String[] splits = splitElements(el);
         String type = splits[0];
-        Object pruned[] = ArrayUtils.remove(splits, 0);
+        Object[] pruned = ArrayUtils.remove(splits, 0);
         String element = "";
         for (Object obj : pruned){
             element = element + obj + " ";
@@ -375,8 +376,45 @@ public class FetcherChrome extends FetcherDefault {
         clickedEl.click();
     }
 
+    private void selectElement(String value){
+        String[] splits = splitElements(value);
+        String type = splits[0];
+        Select selectObj = null;
+        System.out.println("Finding Select: "+ splits[1]);
+        switch (type) {
+            case "id":
+                selectObj = new Select(driver.findElement(By.id(splits[1])));
+                break;
+            case "class":
+                selectObj = new Select(driver.findElement(By.className(splits[1])));
+                break;
+            case "name":
+                selectObj = new Select(driver.findElement(By.name(splits[1])));
+                break;
+            case "xpath":
+                selectObj = new Select(driver.findElement(By.xpath(splits[1])));
+                break;
+        }
+
+        if (selectObj != null) {
+            System.out.println("Finding Select Option: "+ splits[3]);
+            switch (splits[2]) {
+                case "value":
+                    selectObj.selectByValue(splits[3]);
+                    break;
+                case "index":
+                    selectObj.selectByIndex(Integer.parseInt(splits[3]));
+                    break;
+                case "visible":
+                    selectObj.selectByVisibleText(splits[3]);
+                    break;
+            }
+        }
+
+    }
+
     private void waitElement(String el){
-        String[] splits = el.split(":");
+        String[] splits = splitElements(el);
         String waittype = splits[0];
         String waitelement = splits[1];
         String waittime = splits[2];
@@ -411,16 +449,14 @@ public class FetcherChrome extends FetcherDefault {
     }
 
     private void typeCharacters(String chars){
-        if(chars.startsWith("id:")){
-            String[] s = chars.split(":");
-            driver.findElement(By.id(s[1])).sendKeys(s[2]);
+        String[] splits = splitElements(chars);
+        if(splits[0].startsWith("id")){
+            driver.findElement(By.id(splits[1])).sendKeys(splits[2]);
         }
-        else if(chars.startsWith("name:")){
-            String[] s = chars.split(":");
-            driver.findElement(By.name(s[1])).sendKeys(s[2]);
-        } else if(chars.startsWith("xpath:")){
-            String[] s = chars.split(":");
-            driver.findElement(By.xpath(s[1])).sendKeys(s[2]);
+        else if(splits[0].startsWith("name")){
+            driver.findElement(By.name(splits[1])).sendKeys(splits[2]);
+        } else if(splits[0].startsWith("xpath:")){
+            driver.findElement(By.xpath(splits[1])).sendKeys(splits[2]);
         } else if(clickedEl != null){
             clickedEl.sendKeys(chars);
         }
@@ -432,9 +468,13 @@ public class FetcherChrome extends FetcherDefault {
 
     private boolean isWebPage(String webUrl) {
         try {
-            URLConnection conn = new URL(webUrl).openConnection();
+            URL url = new URL(webUrl);
+            CookieManager cm = new java.net.CookieManager();
+            CookieHandler.setDefault(cm);
+            CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
+            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             String contentType = conn.getHeaderField("Content-Type");
-            return contentType.contains("text") || contentType.contains("ml");
+            return contentType.contains("text") || contentType.contains("ml") || conn.getResponseCode() == 302;
         } catch (Exception e) {
             LOG.debug(e.getMessage(), e);
         }
@@ -468,6 +508,17 @@ public class FetcherChrome extends FetcherDefault {
         } else {
             LOG.debug("Driver was null");
         }
+    }
+
+    private String[] splitElements(String str){
+        String[] splits = str.split(":(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+        String[] ret = new String[splits.length];
+        int i = 0;
+        for (String s : splits){
+            ret[i] = s.replaceAll("^\"|\"$", "");
+            i++;
+        }
+        return ret;
     }
 
 }
