@@ -18,7 +18,7 @@
 package edu.usc.irds.sparkler.storage
 
 import edu.usc.irds.sparkler.storage.solr.SolrProxy
-import edu.usc.irds.sparkler.SparklerConfiguration
+import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
 
 /**
   *
@@ -26,10 +26,10 @@ import edu.usc.irds.sparkler.SparklerConfiguration
   */
 class StorageProxyFactory(var config: SparklerConfiguration) {
 
-  var crawlDbUri: String = config.getDatabaseURI()
+  val dbToUse: String = config.get(Constants.key.CRAWLDB_BACKEND).asInstanceOf[String]
 
   def getProxy() = {
-    crawlDbUri match {
+    dbToUse match {
       case "solr" => new SolrProxy(config)
       case _ => new SolrProxy(config)
     }
