@@ -19,13 +19,11 @@ package edu.usc.irds.sparkler.pipeline
 
 import java.io.File
 import java.util
-
 import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
-
-import edu.usc.irds.sparkler.storage.solr.{SolrProxy, SolrStatusUpdate, SolrUpsert, StatusUpdateSolrTransformer, ScoreUpdateSolrTransformer}
+import edu.usc.irds.sparkler.storage.solr._
 import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
@@ -35,7 +33,6 @@ import org.apache.solr.common.SolrInputDocument
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
-
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
@@ -139,7 +136,7 @@ class Crawler extends CliTool {
     if (!sparkMaster.isEmpty) {
       conf.setMaster(sparkMaster)
     }
-    if (!sparkStorage.isEmpty){
+    if (!sparkStorage.isEmpty){  // TODO: still uses "crawldb.uri" instead of "solr.uri"
       sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put("crawldb.uri", sparkStorage)
     }
 
@@ -170,7 +167,7 @@ class Crawler extends CliTool {
     //STEP : Initialize environment
     init()
 
-    val storageProxy = this.job.newStorageProxy()
+    val storageProxy = this.job.newStorageProxy()  // solrProxy or elasticsearchProxy
     LOG.info("Committing crawldb..")
     storageProxy.commitCrawlDb()
     val localFetchDelay = fetchDelay
@@ -190,7 +187,7 @@ class Crawler extends CliTool {
         LOG.info(s"Deep crawling hosts ${deepCrawlHosts.toString}")
         var taskId = JobUtil.newSegmentId(true)
         job.currentTask = taskId
-        val deepRdd = new MemexDeepCrawlDbRDD(sc, job, maxGroups = topG, topN = topN,
+        val deepRdd = new SolrDeepRDD(sc, job, maxGroups = topG, topN = topN,
           deepCrawlHosts = deepCrawlHostnames)
         val fetchedRdd = deepRdd.map(r => (r.getGroup, r))
           .groupByKey()
@@ -218,7 +215,7 @@ class Crawler extends CliTool {
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
-      val rdd = new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
+      val rdd = new SolrRDD(sc, job, maxGroups = topG, topN = topN)
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,

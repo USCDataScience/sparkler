@@ -36,6 +36,9 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient
   */
 class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Closeable with Loggable {
 
+  // creates the solr client
+  private var crawlDb = newClient(config.getDatabaseURI())
+
   /**
     * Creates solr client based on the crawldburi
     * @return Solr Client
@@ -74,20 +77,24 @@ class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Clo
     }
   }
 
-  // creates the solr client
-  private var crawlDb = newClient(config.getDatabaseURI())
-
   def getClient(): SolrClient = {
-    return crawlDb
+    crawlDb
   }
 
-  def addResourceDocs(docs: java.util.Iterator[SolrInputDocument]): Unit = {
-    crawlDb.add(docs)
+  // TODO: for following 3 add resource methods: test input is SolrInputDocument because of relaxation in StorageProxy
+//  def addResourceDocs(docs: java.util.Iterator[SolrInputDocument]): Unit = {
+  def addResourceDocs(docs: java.util.Iterator[_]): Unit = {
+  try{
+      crawlDb.add(docs.asInstanceOf[java.util.Iterator[SolrInputDocument]])  // SolrClient method add()
+    } catch {
+      case e: ClassCastException => println("Must pass java.util.Iterator[SolrInputDocument] to SolrProxy.addResourceDocs")
+    }
+
   }
 
   def addResources(beans: java.util.Iterator[_]): Unit = {
     try {
-      crawlDb.addBeans(beans)
+      crawlDb.addBeans(beans)  // SolrClient method addBeans()
     } catch {
       case e: Exception =>
         LOG.warn("Caught {} while adding beans, trying to add one by one", e.getMessage)
@@ -104,15 +111,20 @@ class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Clo
     }
   }
 
-  def addResource(doc: SolrInputDocument): Unit = {
-    crawlDb.add(doc)
+//  def addResource(doc: SolrInputDocument): Unit = {
+  def addResource(doc: Any): Unit = {
+    try{
+      crawlDb.add(doc.asInstanceOf[SolrInputDocument])  // SolrClient method add()
+    } catch {
+      case e: ClassCastException => println("Must pass SolrInputDocument to SolrProxy.addResource")
+    }
   }
 
   def commitCrawlDb(): Unit = {
-    crawlDb.commit()
+    crawlDb.commit()  // SolrClient method commit()
   }
 
-  override def close(): Unit = {
-    crawlDb.close()
+  def close(): Unit = {
+    crawlDb.close()  // SolrClient method close()
   }
 }

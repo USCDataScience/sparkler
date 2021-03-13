@@ -27,9 +27,15 @@ import org.elasticsearch.client.RestHighLevelClient
   */
 abstract class StorageProxy() {
 
-  // TODO: Change return Any??
-  def newClient(crawlDbUri: String): Either[SolrClient,RestHighLevelClient]
-  def getClient(): Either[SolrClient,RestHighLevelClient]
+  // TODO: handle interaction between outside classes (RDD etc) and clients (SolrClient etc)
+  //    with methods between StorageProxy and respective clients.
+  //    outside classes should not be able to getClient
+
+  def getClient(): Any
+  def addResourceDocs(docs: java.util.Iterator[_]): Unit
+  def addResources(beans: java.util.Iterator[_]): Unit
+  def addResource(doc: Any): Unit
+
   def commitCrawlDb(): Unit
   def close(): Unit
 

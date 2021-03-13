@@ -71,7 +71,8 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
   def getClient(): RestHighLevelClient = {
     crawlDb
   }
-  def addResourceDocs(docs: Any): Unit = ???
+
+  def addResourceDocs(docs: java.util.Iterator[_]): Unit = ???
 
   def addResources(beans: java.util.Iterator[_]): Unit = ???
 

@@ -17,9 +17,12 @@
 
 package edu.usc.irds.sparkler.storage
 
-import edu.usc.irds.sparkler.storage.solr.SolrProxy
+import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
 import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
-import edu.usc.irds.sparkler.storage.elasticsearch.ElasticsearchProxy
+import edu.usc.irds.sparkler.storage.solr.{SolrDeepRDD, SolrRDD, SolrProxy}
+import edu.usc.irds.sparkler.storage.elasticsearch._
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 /**
   *
@@ -37,4 +40,30 @@ class StorageProxyFactory(var config: SparklerConfiguration) {
     }
   }
 
+  def getDeepRDD(sc: SparkContext,
+                 job: SparklerJob,
+                 sortBy: String = SolrDeepRDD.DEFAULT_ORDER,
+                 generateQry: String = SolrDeepRDD.DEFAULT_FILTER_QRY,
+                 maxGroups: Int = SolrDeepRDD.DEFAULT_GROUPS,
+                 topN: Int = SolrDeepRDD.DEFAULT_TOPN,
+                 deepCrawlHosts: Array[String] = new Array[String](0)): RDD[Resource] = {
+    dbToUse match {
+      case "elasticsearch" => new ElasticsearchDeepRDD(sc, job, sortBy, generateQry, maxGroups, topN, deepCrawlHosts): ElasticsearchDeepRDD
+      case "solr" => new SolrDeepRDD(sc, job, sortBy, generateQry, maxGroups, topN, deepCrawlHosts): SolrDeepRDD
+      case _ => new SolrDeepRDD(sc, job, sortBy, generateQry, maxGroups, topN, deepCrawlHosts): SolrDeepRDD
+    }
+  }
+
+  def getRDD(sc: SparkContext,
+             job: SparklerJob,
+             sortBy: String = SolrRDD.DEFAULT_ORDER,
+             generateQry: String = SolrRDD.DEFAULT_FILTER_QRY,
+             maxGroups: Int = SolrRDD.DEFAULT_GROUPS,
+             topN: Int = SolrRDD.DEFAULT_TOPN): RDD[Resource] = {
+    dbToUse match {
+      case "elasticsearch" => new ElasticsearchRDD(sc, job, sortBy, generateQry, maxGroups, topN): ElasticsearchRDD
+      case "solr" => new SolrRDD(sc, job, sortBy, generateQry, maxGroups, topN): SolrRDD
+      case _ => new SolrRDD(sc, job, sortBy, generateQry, maxGroups, topN): SolrRDD
+    }
+  }
 }

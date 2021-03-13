@@ -19,7 +19,7 @@ package edu.usc.irds.sparkler.storage.solr
 
 import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
-import org.apache.solr.client.solrj.SolrQuery
+import org.apache.solr.client.solrj.{SolrClient, SolrQuery}
 import org.apache.spark.TaskContext
 import org.slf4j.LoggerFactory
 
@@ -35,7 +35,13 @@ class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) =>
 
   override def apply(context: TaskContext, docs: Iterator[Resource]): Any = {
     LOG.debug("Inserting new resources into CrawlDb")
-    val solrClient = job.newStorageProxy()
+    val proxy = job.newStorageProxy()
+    var client : SolrClient = null
+    try {
+      client = proxy.getClient().asInstanceOf[SolrClient]
+    } catch {
+      case e: ClassCastException => println("client is not SolrClient.")
+    }
 
     //TODO: handle this in server side - tell solr to skip docs if they already exist
 
@@ -43,15 +49,15 @@ class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) =>
     val newLinksFilter: (Resource => Boolean) = doc => {
       val qry = new SolrQuery(s"${Constants.storage.DEDUPE_ID}:${doc.getDedupeId}")
       qry.setRows(0) //we are interested in counts only and not the contents
-      solrClient.getClient().query(qry).getResults.getNumFound == 0
+      client.query(qry).getResults.getNumFound == 0
       // if zero hits, then there are no duplicates
     }
     val newResources = docs.withFilter(newLinksFilter)
 
     LOG.info("Inserting new resources to Solr ")
-    solrClient.addResources(newResources)
+    proxy.addResources(newResources)
     LOG.debug("New resources inserted, Closing..")
-    solrClient.close()
+    proxy.close()
   }
 }
 

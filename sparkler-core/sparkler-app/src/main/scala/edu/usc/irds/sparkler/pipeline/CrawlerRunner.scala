@@ -7,7 +7,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 import edu.usc.irds.sparkler.pipeline._
 import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
-import edu.usc.irds.sparkler.{MemexDeepCrawlDbRDD, MemexCrawlDbRDD}
+import edu.usc.irds.sparkler.storage.solr.SolrDeepRDD
 import edu.usc.irds.sparkler.model.ResourceStatus.UNFETCHED
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.storage.solr._
@@ -58,7 +58,7 @@ class CrawlerRunner {
         LOG.info(s"Deep crawling hosts ${deepCrawlHosts.toString}")
         var taskId = JobUtil.newSegmentId(true)
         job.currentTask = taskId
-        val deepRdd = new MemexDeepCrawlDbRDD(this.sc, job, maxGroups = topG, topN = topN,
+        val deepRdd = new SolrDeepRDD(this.sc, job, maxGroups = topG, topN = topN,
           deepCrawlHosts = deepCrawlHostnames)
         val fetchedRdd = deepRdd.map(r => (r.getGroup, r))
           .groupByKey()
@@ -86,7 +86,7 @@ class CrawlerRunner {
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
-      val rdd = new MemexCrawlDbRDD(this.sc, job, maxGroups = topG, topN = topN)
+      val rdd = new SolrRDD(this.sc, job, maxGroups = topG, topN = topN)
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
