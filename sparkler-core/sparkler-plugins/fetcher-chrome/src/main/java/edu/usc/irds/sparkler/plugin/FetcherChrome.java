@@ -47,18 +47,14 @@ import org.slf4j.LoggerFactory;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map;
 import java.util.Set;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 
 import com.browserup.bup.BrowserUpProxy;
 import com.browserup.bup.BrowserUpProxyServer;
@@ -473,6 +469,9 @@ public class FetcherChrome extends FetcherDefault {
     private boolean isWebPage(String webUrl) {
         try {
             URL url = new URL(webUrl);
+            CookieManager cm = new java.net.CookieManager();
+            CookieHandler.setDefault(cm);
+            CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             String contentType = conn.getHeaderField("Content-Type");
             return contentType.contains("text") || contentType.contains("ml") || conn.getResponseCode() == 302;
