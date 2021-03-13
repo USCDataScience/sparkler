@@ -39,10 +39,6 @@ public interface Constants {
         // General Properties
         @ConfigKey
         String CRAWLDB_BACKEND = "crawldb.backend";
-        @ConfigKey
-        String SOLR_URI = "solr.uri";
-        @ConfigKey
-        String ELASTICSEARCH_URI = "elasticsearch.uri";
 
         // Apache Spark Properties
         @ConfigKey
