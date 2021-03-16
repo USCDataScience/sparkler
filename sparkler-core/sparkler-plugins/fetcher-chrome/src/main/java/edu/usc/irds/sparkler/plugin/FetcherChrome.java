@@ -66,7 +66,6 @@ public class FetcherChrome extends FetcherDefault {
     private static final Logger LOG = LoggerFactory.getLogger(FetcherChrome.class);
     private Map<String, Object> pluginConfig;
     private WebDriver driver;
-    private WebElement clickedEl = null;
     private int latestStatus;
     private Proxy seleniumProxy;
 
@@ -100,7 +99,6 @@ public class FetcherChrome extends FetcherDefault {
                 }
             }
         }
-
     }
 
     private void startDriver(Boolean restartproxy) throws UnknownHostException, MalformedURLException {
