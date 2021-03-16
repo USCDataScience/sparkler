@@ -44,6 +44,7 @@ import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.*;
+import java.util.List;
 import java.util.Map;
 import java.net.CookieHandler;
 import java.net.CookieManager;
@@ -209,18 +210,26 @@ public class FetcherChrome extends FetcherDefault {
         }
         SeleniumScripter scripter = new SeleniumScripter(driver);
         String seleniumenabled = (String) pluginConfig.getOrDefault("chrome.selenium.enabled", "false");
+        String html = null;
         if (seleniumenabled.equals("true")) {
             if(pluginConfig.get("chrome.selenium.script") != null && pluginConfig.get("chrome.selenium.script") instanceof Map) {
                 Map<String, Object> map = (Map<String, Object>) pluginConfig.get("chrome.selenium.script");
                 scripter.runScript(map, null, null);
+                List<String> snapshots = scripter.getSnapshots();
+                html = String.join(",", snapshots);
             }
         }
         if(json != null && json.containsKey("selenium")){
             if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
                 scripter.runScript((Map<String, Object>) json.get("selenium"), null, null);
+                List<String> snapshots = scripter.getSnapshots();
+                html = String.join(",", snapshots);
             }
         }
-        String html = driver.getPageSource();
+
+        if(html == null) {
+            html = driver.getPageSource();
+        }
 
         LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
 
