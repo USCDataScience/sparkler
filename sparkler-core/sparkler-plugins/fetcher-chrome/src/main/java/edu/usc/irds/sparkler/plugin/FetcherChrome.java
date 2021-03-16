@@ -17,6 +17,7 @@
 
 package edu.usc.irds.sparkler.plugin;
 
+import com.kytheralabs.SeleniumScripter;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
@@ -38,20 +39,12 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.*;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map;
-import java.util.Set;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -66,8 +59,6 @@ import com.browserup.bup.util.HttpMessageInfo;
 import io.netty.handler.codec.http.HttpResponse;
 
 import org.openqa.selenium.Proxy;
-
-import static java.lang.Thread.sleep;
 
 @Extension
 public class FetcherChrome extends FetcherDefault {
@@ -218,12 +209,18 @@ public class FetcherChrome extends FetcherDefault {
                     break;
             }
         }
+        SeleniumScripter scripter = new SeleniumScripter(driver);
         String seleniumenabled = (String) pluginConfig.getOrDefault("chrome.selenium.enabled", "false");
         if (seleniumenabled.equals("true")) {
-            runScript(pluginConfig.get("chrome.selenium.script"));
+            if(pluginConfig.get("chrome.selenium.script") != null && pluginConfig.get("chrome.selenium.script") instanceof Map) {
+                Map<String, Object> map = (Map<String, Object>) pluginConfig.get("chrome.selenium.script");
+                scripter.runScript(map, null, null);
+            }
         }
         if(json != null && json.containsKey("selenium")){
-            runScript(json.get("selenium"));
+            if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
+                scripter.runScript((Map<String, Object>) json.get("selenium"), null, null);
+            }
         }
         String html = driver.getPageSource();
 
@@ -243,41 +240,6 @@ public class FetcherChrome extends FetcherDefault {
         return fetchedData;
     }
 
-    private void processJson(JSONObject object, HttpURLConnection conn) {
-
-    }
-
-    private void processForm(JSONObject object, HttpURLConnection conn) {
-        Set keys = object.keySet();
-        Iterator keyIter = keys.iterator();
-        String content = "";
-        for (int i = 0; keyIter.hasNext(); i++) {
-            Object key = keyIter.next();
-            if (i != 0) {
-                content += "&";
-            }
-            try {
-                content += key + "=" + URLEncoder.encode((String) object.get(key), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
-        System.out.println(content);
-        try {
-            DataOutputStream out = new DataOutputStream(conn.getOutputStream());
-            out.writeBytes(content);
-            out.flush();
-            out.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        //out.writeBytes(content);
-        //out.flush();
-        //out.close();
-
-    }
-
     private JSONObject processMetadata(String metadata) {
         if(metadata != null){
             JSONParser parser = new JSONParser();
@@ -294,178 +256,6 @@ public class FetcherChrome extends FetcherDefault {
 
     }
 
-    private void runScript(Object orDefault) {
-        if(orDefault != null && orDefault instanceof Map){
-            Map mp = (Map) orDefault;
-
-            Iterator it = mp.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry pair = (Map.Entry)it.next();
-                System.out.println(pair.getKey() + " = " + pair.getValue());
-
-
-                Map submap = (Map) pair.getValue();
-                runSubScript(submap);
-                it.remove();
-            }
-        }
-        LOG.debug("");
-    }
-
-    private void runSubScript(Map mp){
-        Iterator it = mp.entrySet().iterator();
-        String type = null;
-        String value = null;
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            System.out.println(pair.getKey() + " = " + pair.getValue());
-            if(pair.getKey().equals("input")){
-                type = (String) pair.getValue();
-            }  else if(pair.getKey().equals("operation")){
-                type = (String) pair.getValue();
-            } else if(pair.getKey().equals("wait")){
-                type = (String) pair.getValue();
-            } else if(pair.getKey().equals("select")) {
-                type = (String) pair.getValue();
-            } else if(pair.getKey().equals("value")) {
-                value = (String) pair.getValue();
-            }
-            it.remove();
-        }
-
-        switch (type) {
-            case "click":
-                clickElement(value);
-                break;
-            case "keys":
-                typeCharacters(value);
-                break;
-            case "wait":
-                waitElement(value);
-                break;
-            case "select":
-                selectElement(value);
-                break;
-        }
-    }
-
-    private void clickElement(String el){
-        String[] splits = splitElements(el);
-        String type = splits[0];
-        Object[] pruned = ArrayUtils.remove(splits, 0);
-        String element = "";
-        for (Object obj : pruned){
-            element = element + obj + " ";
-        }
-        element = element.substring(0, element.length() - 1);
-
-        switch (type) {
-            case "id":
-                clickedEl = driver.findElement(By.id(element));
-                break;
-            case "class":
-                clickedEl = driver.findElement(By.className(element));
-                break;
-            case "name":
-                clickedEl = driver.findElement(By.name(element));
-                break;
-            case "xpath":
-                clickedEl = driver.findElement(By.xpath(element));
-                break;
-        }
-        clickedEl.click();
-    }
-
-    private void selectElement(String value){
-        String[] splits = splitElements(value);
-        String type = splits[0];
-        Select selectObj = null;
-        System.out.println("Finding Select: "+ splits[1]);
-        switch (type) {
-            case "id":
-                selectObj = new Select(driver.findElement(By.id(splits[1])));
-                break;
-            case "class":
-                selectObj = new Select(driver.findElement(By.className(splits[1])));
-                break;
-            case "name":
-                selectObj = new Select(driver.findElement(By.name(splits[1])));
-                break;
-            case "xpath":
-                selectObj = new Select(driver.findElement(By.xpath(splits[1])));
-                break;
-        }
-
-        if (selectObj != null) {
-            System.out.println("Finding Select Option: "+ splits[3]);
-            switch (splits[2]) {
-                case "value":
-                    selectObj.selectByValue(splits[3]);
-                    break;
-                case "index":
-                    selectObj.selectByIndex(Integer.parseInt(splits[3]));
-                    break;
-                case "visible":
-                    selectObj.selectByVisibleText(splits[3]);
-                    break;
-            }
-        }
-
-    }
-
-    private void waitElement(String el){
-        String[] splits = splitElements(el);
-        String waittype = splits[0];
-        String waitelement = splits[1];
-        String waittime = splits[2];
-
-        int waittimeout = Integer.parseInt(waittime);
-
-        System.out.println("Waiting time is: "+ waittime);
-        System.out.println("Wait type is: "+ waittype);
-        System.out.println("Wait element is: "+ waitelement);
-        if (waittimeout > -1) {
-            LOG.debug("Waiting {} seconds for element {} of type {} to become visible", waittimeout, waitelement,
-                    waittype);
-            WebDriverWait wait = new WebDriverWait(driver, waittimeout);
-            switch (waittype) {
-                case "class":
-                    LOG.debug("waiting for class...");
-                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(waitelement)));
-                    break;
-                case "name":
-                    LOG.debug("waiting for name...");
-                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.name(waitelement)));
-                    break;
-                case "id":
-                    LOG.debug("waiting for id...");
-                    System.out.println("Waiting for id");
-                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
-
-                    System.out.println("Wait over.....");
-                    break;
-            }
-        }
-    }
-
-    private void typeCharacters(String chars){
-        String[] splits = splitElements(chars);
-        if(splits[0].startsWith("id")){
-            driver.findElement(By.id(splits[1])).sendKeys(splits[2]);
-        }
-        else if(splits[0].startsWith("name")){
-            driver.findElement(By.name(splits[1])).sendKeys(splits[2]);
-        } else if(splits[0].startsWith("xpath:")){
-            driver.findElement(By.xpath(splits[1])).sendKeys(splits[2]);
-        } else if(clickedEl != null){
-            clickedEl.sendKeys(chars);
-        }
-    }
-
-    public void closeResources() {
-        quitBrowserInstance(driver);
-    }
-
     private boolean isWebPage(String webUrl) {
         try {
             URL url = new URL(webUrl);
@@ -479,46 +269,6 @@ public class FetcherChrome extends FetcherDefault {
             LOG.debug(e.getMessage(), e);
         }
         return false;
-    }
-
-    private boolean hasDriverQuit() {
-        try {
-            String result = driver.toString();
-            return result.contains("(null)");
-        } catch (Exception e) {
-            LOG.debug(e.getMessage(), e);
-        }
-        return false;
-    }
-
-    public void quitBrowserInstance(WebDriver driver) {
-        if (driver != null) {
-            if (!hasDriverQuit()) {
-                try {
-                    // FIXME - Exception when closing the driver. Adding an unused GET request
-                    driver.get("http://www.apache.org/");
-                    driver.quit();
-                } catch (Exception e) {
-                    LOG.debug("Exception {} raised. The driver is either already closed " +
-                            "or this is an unknown exception", e.getMessage());
-                }
-            } else {
-                LOG.debug("Driver is already quit");
-            }
-        } else {
-            LOG.debug("Driver was null");
-        }
-    }
-
-    private String[] splitElements(String str){
-        String[] splits = str.split(":(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-        String[] ret = new String[splits.length];
-        int i = 0;
-        for (String s : splits){
-            ret[i] = s.replaceAll("^\"|\"$", "");
-            i++;
-        }
-        return ret;
     }
 
 }

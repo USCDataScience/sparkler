@@ -36,6 +36,13 @@
         <plugin.id>${project.artifactId}</plugin.id>
         <plugin.class>edu.usc.irds.sparkler.plugin.FetcherChromeActivator</plugin.class>
     </properties>
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub OWNER Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/sparkler-kythera/seleniumscripter</url>
+        </repository>
+    </repositories>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-chrome-driver -->
         <dependency>
@@ -103,7 +110,11 @@
             <artifactId>netty-codec-http</artifactId>
             <version>4.0.15.Final</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.kytheralabs</groupId>
+            <artifactId>seleniumscripter</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
