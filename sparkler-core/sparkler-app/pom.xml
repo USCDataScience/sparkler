@@ -468,33 +468,73 @@
         </profile>
         <profile>
             <id>elasticsearch</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.carrotgarden.maven</groupId>
+                        <artifactId>scalor-maven-plugin_2.12</artifactId>
+                        <version>1.5.0.20190502185130</version>
+                        <!-- Overriding the configuration for scalor-maven-plugin to exclude files -->
+                        <configuration>
+                            <!-- Compiler bridge. -->
+                            <defineBridge>
+                                <dependency>
+                                    <groupId>org.scala-sbt</groupId>
+                                    <artifactId>compiler-bridge_${version.scala.epoch}</artifactId>
+                                    <version>${version.scala.zinc}</version>
+                                </dependency>
+                            </defineBridge>
+
+                            <!-- Scala compiler. -->
+                            <defineCompiler>
+                                <dependency>
+                                    <groupId>org.scala-lang</groupId>
+                                    <artifactId>scala-compiler</artifactId>
+                                    <version>${version.scala.release}</version>
+                                </dependency>
+                            </defineCompiler>
+
+                            <!-- Compiler plugins. -->
+                            <definePluginList>
+                                <dependency>
+                                    <groupId>org.scalamacros</groupId>
+                                    <artifactId>paradise_${version.scala.release}</artifactId>
+                                    <version>${version.scala.plugin.macro}</version>
+                                </dependency>
+                                <!--<dependency>
+                                    <groupId>org.scala-js</groupId>
+                                    <artifactId>scalajs-compiler_${version.scala.release}</artifactId>
+                                    <version>${version.scalajs.release}</version>
+                                </dependency>-->
+                            </definePluginList>
+                            <!--
+                                Excluding all files in the sparkler-app/src/main/scala/ directory because
+                                they all depend on solr or a class that depends on solr.
+                             -->
+                            <compileRegexScalaExclude>
+                                .*/scala[/].*
+                            </compileRegexScalaExclude>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
             <dependencies>
                 <!-- Including the Solr dependencies for the time being while working on
                 integrating Elasticsearch to  prevent build errors when using this profile -->
                 <dependency>
-                    <groupId>org.apache.solr</groupId>
-                    <artifactId>solr-solrj</artifactId>
-                    <version>${solr.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.solr</groupId>
-                    <artifactId>solr-core</artifactId> <!-- Needed to support Embedded Solr -->
-                    <version>${solr.version}</version>
-                </dependency>
-                <dependency>
                     <groupId>org.elasticsearch</groupId>
                     <artifactId>elasticsearch</artifactId>
-                    <version>7.11.1</version>
+                    <version>${elasticsearch.version}</version>
                 </dependency>
                 <dependency>
                     <groupId>org.elasticsearch.client</groupId>
                     <artifactId>elasticsearch-rest-client</artifactId>
-                    <version>7.11.1</version>
+                    <version>${elasticsearch.version}</version>
                 </dependency>
                 <dependency>
                     <groupId>org.elasticsearch.client</groupId>
                     <artifactId>elasticsearch-rest-high-level-client</artifactId>
-                    <version>7.11.1</version>
+                    <version>${elasticsearch.version}</version>
                 </dependency>
             </dependencies>
         </profile>
