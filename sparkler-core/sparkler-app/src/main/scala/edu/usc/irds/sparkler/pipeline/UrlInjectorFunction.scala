@@ -8,6 +8,8 @@ import scala.collection.JavaConversions._
 import java.util.ArrayList
 import java.util
 import edu.usc.irds.sparkler.UrlInjectorObj
+
+
 object UrlInjectorFunction extends ((SparklerJob, util.Collection[String]) => util.Collection[UrlInjectorObj]) with Serializable with Loggable{
 
  override def apply(job: SparklerJob, resources: util.Collection[String])

@@ -38,7 +38,7 @@ public interface Constants {
 
         // General Properties
         @ConfigKey
-        String CRAWLDB = "crawldb.uri";
+        String CRAWLDB_BACKEND = "crawldb.backend";
 
         // Apache Spark Properties
         @ConfigKey
@@ -122,7 +122,7 @@ public interface Constants {
         String SPARKLER_DEFAULT = "sparkler-default.yaml";
     }
 
-    interface solr { // Solr Fields
+    interface storage { // Storage Fields
         String ID = "id";
         String CRAWL_ID = "crawl_id";
         String URL = "url";

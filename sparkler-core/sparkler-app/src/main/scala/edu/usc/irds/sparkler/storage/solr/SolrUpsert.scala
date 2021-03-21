@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.solr
+package edu.usc.irds.sparkler.storage.solr
 
 import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
@@ -31,19 +31,19 @@ import scala.collection.JavaConversions._
  */
 class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) => Any) with Serializable {
 
-  import edu.usc.irds.sparkler.solr.SolrUpsert.LOG
+  import edu.usc.irds.sparkler.storage.solr.SolrUpsert.LOG
 
   override def apply(context: TaskContext, docs: Iterator[Resource]): Any = {
     LOG.debug("Inserting new resources into CrawlDb")
-    val solrClient = job.newCrawlDbSolrClient()
+    val solrClient = job.newStorageProxy()
 
     //TODO: handle this in server side - tell solr to skip docs if they already exist
 
     //This filter function returns true if there is no other resource  with the same dedupe_id
     val newLinksFilter: (Resource => Boolean) = doc => {
-      val qry = new SolrQuery(s"${Constants.solr.DEDUPE_ID}:${doc.getDedupeId}")
+      val qry = new SolrQuery(s"${Constants.storage.DEDUPE_ID}:${doc.getDedupeId}")
       qry.setRows(0) //we are interested in counts only and not the contents
-      solrClient.crawlDb.query(qry).getResults.getNumFound == 0
+      solrClient.getClient().query(qry).getResults.getNumFound == 0
       // if zero hits, then there are no duplicates
     }
     val newResources = docs.withFilter(newLinksFilter)

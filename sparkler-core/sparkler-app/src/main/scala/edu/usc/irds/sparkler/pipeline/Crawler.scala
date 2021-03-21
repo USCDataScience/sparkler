@@ -24,9 +24,8 @@ import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
-import edu.usc.irds.sparkler.service.SolrProxy
 
-import edu.usc.irds.sparkler.solr.{SolrStatusUpdate, SolrUpsert}
+import edu.usc.irds.sparkler.storage.solr.{SolrProxy, SolrStatusUpdate, SolrUpsert, StatusUpdateSolrTransformer, ScoreUpdateSolrTransformer}
 import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
@@ -61,7 +60,7 @@ class Crawler extends CliTool {
 
   @Option(name = "-cdb", aliases = Array("--crawldb"),
     usage = "Crawl DB URI.")
-  var sparkSolr: String = sparklerConf.get(Constants.key.CRAWLDB).asInstanceOf[String]
+  var sparkStorage: String = sparklerConf.getDatabaseURI()
 
   @Option(name = "-id", aliases = Array("--id"), required = true,
     usage = "Job id. When not sure, get the job id from injector command")
@@ -140,8 +139,8 @@ class Crawler extends CliTool {
     if (!sparkMaster.isEmpty) {
       conf.setMaster(sparkMaster)
     }
-    if (!sparkSolr.isEmpty){
-      sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put("crawldb.uri", sparkSolr)
+    if (!sparkStorage.isEmpty){
+      sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put("crawldb.uri", sparkStorage)
     }
 
     if (databricksEnable) {
@@ -171,9 +170,9 @@ class Crawler extends CliTool {
     //STEP : Initialize environment
     init()
 
-    val solrc = this.job.newCrawlDbSolrClient()
+    val storageProxy = this.job.newStorageProxy()
     LOG.info("Committing crawldb..")
-    solrc.commitCrawlDb()
+    storageProxy.commitCrawlDb()
     val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
 
@@ -212,7 +211,7 @@ class Crawler extends CliTool {
         storeContent(outputPath, scoredRdd)
 
         LOG.info("Committing crawldb..")
-        solrc.commitCrawlDb()
+        storageProxy.commitCrawlDb()
       }
 
       var taskId = JobUtil.newSegmentId(true)
@@ -236,9 +235,9 @@ class Crawler extends CliTool {
       storeContent(outputPath, scoredRdd)
 
       LOG.info("Committing crawldb..")
-      solrc.commitCrawlDb()
+      storageProxy.commitCrawlDb()
     }
-    solrc.close()
+    storageProxy.close()
     //PluginService.shutdown(job)
     LOG.info("Shutting down Spark CTX..")
     sc.stop()

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.pipeline
+package edu.usc.irds.sparkler.storage.solr
 
 import java.util
 import java.util.Iterator
@@ -24,7 +24,7 @@ import com.google.common.hash.{HashFunction, Hashing}
 import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.CrawlData
-import edu.usc.irds.sparkler.solr.schema.FieldMapper
+import edu.usc.irds.sparkler.storage.solr.schema.FieldMapper
 import org.apache.solr.common.SolrInputDocument
 
 import scala.collection.JavaConverters._
@@ -41,9 +41,9 @@ object ScoreUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) with
     val hashFunction: HashFunction = Hashing.sha256()
     val sUpdate = new SolrInputDocument()
     //FIXME: handle failure case
-    sUpdate.setField(Constants.solr.ID, data.fetchedData.getResource.getId)
+    sUpdate.setField(Constants.storage.ID, data.fetchedData.getResource.getId)
 
-    sUpdate.setField(Constants.solr.GENERATE_SCORE, Map("set" -> data.fetchedData.getResource.getGenerateScore()).asJava)
+    sUpdate.setField(Constants.storage.GENERATE_SCORE, Map("set" -> data.fetchedData.getResource.getGenerateScore()).asJava)
 
     sUpdate
   }
