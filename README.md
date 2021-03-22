@@ -23,7 +23,7 @@ To use sparkler, install [docker](https://www.docker.com/community-edition#/down
 
 ```bash
 # Step 0. Get this script
-wget https://raw.githubusercontent.com/USCDataScience/sparkler/master/bin/dockler.sh
+wget https://raw.githubusercontent.com/USCDataScience/sparkler/master/sparkler-core/bin/dockler.sh
 # Step 1. Run the script - it starts docker container and forwards ports to host
 bash dockler.sh 
 # Step 2. Inject seed urls

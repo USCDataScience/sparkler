@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.solr.schema;
+package edu.usc.irds.sparkler.storage.solr.schema;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

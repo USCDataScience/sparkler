@@ -110,6 +110,17 @@
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
             </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>${maven.clean.plugin.version}</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>build</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
