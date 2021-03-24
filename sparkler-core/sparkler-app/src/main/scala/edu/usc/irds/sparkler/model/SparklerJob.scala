@@ -18,13 +18,13 @@
 package edu.usc.irds.sparkler.model
 
 import java.io.File
-
-import edu.usc.irds.sparkler.storage.StorageProxyFactory
-
+import edu.usc.irds.sparkler.storage.{StorageProxy, StorageProxyFactory}
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.service.RejectingURLFilterChain
 import edu.usc.irds.sparkler.util.JobUtil
 import edu.usc.irds.sparkler._
+import edu.usc.irds.sparkler.storage.elasticsearch.ElasticsearchProxy
+import edu.usc.irds.sparkler.storage.solr.SolrProxy
 
 import scala.collection.mutable
 
@@ -50,7 +50,7 @@ class SparklerJob(val id: String,
     this(id, conf, JobUtil.newSegmentId())
   }
 
-  def newStorageProxy() = {
+  def newStorageProxy(): StorageProxy = {
     new StorageProxyFactory(config).getProxy()
   }
 

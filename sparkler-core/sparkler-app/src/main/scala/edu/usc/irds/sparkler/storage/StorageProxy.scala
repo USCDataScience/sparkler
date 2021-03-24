@@ -17,15 +17,25 @@
 
 package edu.usc.irds.sparkler.storage
 
+import edu.usc.irds.sparkler.storage.solr.SolrProxy
+import org.apache.solr.client.solrj.SolrClient
+import org.elasticsearch.client.RestHighLevelClient
+
 /**
   *
   * @since 3/2/2021
   */
 abstract class StorageProxy() {
 
-  // TODO: Change return Any??
-  def newClient(crawlDbUri: String): Any
+  // TODO: handle interaction between outside classes (RDD etc) and clients (SolrClient etc)
+  //    with methods between StorageProxy and respective clients.
+  //    outside classes should not be able to getClient
+
   def getClient(): Any
+  def addResourceDocs(docs: java.util.Iterator[_]): Unit
+  def addResources(beans: java.util.Iterator[_]): Unit
+  def addResource(doc: Any): Unit
+
   def commitCrawlDb(): Unit
   def close(): Unit
 
