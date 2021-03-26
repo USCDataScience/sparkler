@@ -38,6 +38,12 @@ import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.search.builder.SearchSourceBuilder
 
+import scala.collection.mutable.ArrayBuffer
+import java.io.IOException
+
+// TODO: NEED TO REMOVE AFTER USE
+import org.apache.solr.common.SolrInputDocument
+
 /**
   *
   * @since 3/6/21
@@ -47,14 +53,18 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
   // creates the solr client
   private var crawlDb = newClient(config.getDatabaseURI())
 
-  def newClient(crawlDbUri: String): RestHighLevelClient = {
-    val hostname : String = crawlDbUri.substring(0, crawlDbUri.indexOf(':'))
-    val port : Int = Integer.valueOf(crawlDbUri.substring(crawlDbUri.indexOf(':') + 1))
+  private var indexRequests = ArrayBuffer[IndexRequest]()
 
-    if (crawlDbUri.startsWith("http://") || crawlDbUri.startsWith("https://")) {
+  def newClient(crawlDbUri: String): RestHighLevelClient = {
+    val scheme : String = crawlDbUri.substring(0, crawlDbUri.indexOf(':'))
+    val hostname : String = crawlDbUri.substring(crawlDbUri.indexOf(':')+3, crawlDbUri.lastIndexOf(':'))
+    val port : Int = Integer.valueOf(crawlDbUri.substring(crawlDbUri.lastIndexOf(':') + 1))
+
+    if (scheme.equals("http") || scheme.equals("https")) {
       new RestHighLevelClient(
         RestClient.builder(
-          new HttpHost(hostname, port, "http"),  // TODO: add https?
+          new HttpHost(hostname, port, scheme),
+          new HttpHost(hostname, port+1, scheme),  // documentation says we need to implement 2 ports
         )
       );
     } else if (crawlDbUri.startsWith("file://")) {
@@ -64,21 +74,65 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
     } else {
       throw new RuntimeException(s"$crawlDbUri not supported")
     }
-
-
   }
 
   def getClient(): RestHighLevelClient = {
     crawlDb
   }
 
-  def addResourceDocs(docs: java.util.Iterator[_]): Unit = ???
+  def addResourceDocs(docs: java.util.Iterator[_]): Unit = {
 
-  def addResources(beans: java.util.Iterator[_]): Unit = ???
+  }
 
-  def addResource(doc: Any): Unit = ???
+  def addResources(beans: java.util.Iterator[_]): Unit = {
 
-  def commitCrawlDb(): Unit = ???
+  }
 
-  def close(): Unit = ???
+  def addResource(doc: Any): Unit = {
+    var builder : XContentBuilder = null
+    try {
+      builder = XContentFactory.jsonBuilder()
+        .startObject()
+        .field("fullName", "CSCI 401")
+        .field("year", 2021)
+        .field("project", "Elasticsearch for Sparkler")
+        .endObject()
+    }
+    catch {
+      case e: IOException =>
+        e.printStackTrace()
+    }
+
+    val indexRequest = new IndexRequest("crawldb")
+    indexRequest.source(builder)
+    indexRequest.id()  // TODO: NEED TO GET THE RIGHT ID?
+
+    indexRequests.append(indexRequest)
+  }
+
+  def commitCrawlDb(): Unit = {
+    var numCommited = 0
+    for (indexRequest <- indexRequests) {
+      var response : IndexResponse = null
+      try {
+        response = crawlDb.index(indexRequest, RequestOptions.DEFAULT)
+        numCommited += 1
+
+//        if (response != null) {
+//          System.out.println(response.getResult())
+//          System.out.println(response)
+//          System.out.println()
+//        }
+      }
+      catch {
+        case e: IOException =>
+          e.printStackTrace()
+      }
+    }
+    indexRequests = ArrayBuffer[IndexRequest]()  // clear indexRequests
+  }
+
+  def close(): Unit = {
+    crawlDb.close();
+  }
 }
