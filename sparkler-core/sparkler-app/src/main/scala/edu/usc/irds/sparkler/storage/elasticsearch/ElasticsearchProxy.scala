@@ -81,11 +81,11 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
   }
 
   def addResourceDocs(docs: java.util.Iterator[_]): Unit = {
-
+    addResource(null)  // temp placeholder
   }
 
   def addResources(beans: java.util.Iterator[_]): Unit = {
-
+    addResource(null)  // temp placeholder
   }
 
   def addResource(doc: Any): Unit = {
@@ -111,13 +111,10 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
   }
 
   def commitCrawlDb(): Unit = {
-    var numCommited = 0
     for (indexRequest <- indexRequests) {
       var response : IndexResponse = null
       try {
         response = crawlDb.index(indexRequest, RequestOptions.DEFAULT)
-        numCommited += 1
-
 //        if (response != null) {
 //          System.out.println(response.getResult())
 //          System.out.println(response)
