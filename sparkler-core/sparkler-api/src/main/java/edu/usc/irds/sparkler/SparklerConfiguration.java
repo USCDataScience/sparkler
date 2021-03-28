@@ -102,4 +102,9 @@ public class SparklerConfiguration extends JSONObject {
         return original;
     }
 
+    public String getDatabaseURI() {
+        String dbToUse = (String) this.getOrDefault(Constants.key.CRAWLDB_BACKEND, "solr"); // solr is default
+        return (String) this.get(dbToUse+".uri");
+    }
+
 }

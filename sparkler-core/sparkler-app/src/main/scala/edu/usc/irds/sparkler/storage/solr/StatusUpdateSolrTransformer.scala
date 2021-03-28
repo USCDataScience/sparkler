@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.pipeline
+package edu.usc.irds.sparkler.storage.solr
 
 import java.util
 
@@ -23,7 +23,7 @@ import com.google.common.hash.{HashFunction, Hashing}
 import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.CrawlData
-import edu.usc.irds.sparkler.solr.schema.FieldMapper
+import edu.usc.irds.sparkler.storage.solr.schema.FieldMapper
 import edu.usc.irds.sparkler.util.URLUtil
 import org.apache.solr.common.SolrInputDocument
 
@@ -43,33 +43,33 @@ object StatusUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) wit
     val sUpdate = new SolrInputDocument()
     //FIXME: handle failure case
     //val x:java.util.Map[String, Object] = Map("ss" -> new Object).asJava
-    sUpdate.setField(Constants.solr.ID, data.fetchedData.getResource.getId)
-    sUpdate.setField(Constants.solr.STATUS, Map("set" -> data.fetchedData.getResource.getStatus).asJava)
-    sUpdate.setField(Constants.solr.FETCH_TIMESTAMP, Map("set" -> data.fetchedData.getFetchedAt).asJava)
-    sUpdate.setField(Constants.solr.LAST_UPDATED_AT, Map("set" -> new util.Date()).asJava)
-    sUpdate.setField(Constants.solr.RETRIES_SINCE_FETCH, Map("inc" -> 1).asJava)
-    sUpdate.setField(Constants.solr.EXTRACTED_TEXT, data.parsedData.extractedText)
-    sUpdate.setField(Constants.solr.CONTENT_TYPE, data.fetchedData.getContentType.split("; ")(0))
-    sUpdate.setField(Constants.solr.FETCH_STATUS_CODE, data.fetchedData.getResponseCode)
-    sUpdate.setField(Constants.solr.SIGNATURE, hashFunction.hashBytes(data.fetchedData.getContent).toString)
-    sUpdate.setField(Constants.solr.RELATIVE_PATH, URLUtil.reverseUrl(data.fetchedData.getResource.getUrl))
-    sUpdate.setField(Constants.solr.OUTLINKS, data.parsedData.outlinks.toArray)
-    sUpdate.setField(Constants.solr.SEGMENT, data.fetchedData.getSegment)
+    sUpdate.setField(Constants.storage.ID, data.fetchedData.getResource.getId)
+    sUpdate.setField(Constants.storage.STATUS, Map("set" -> data.fetchedData.getResource.getStatus).asJava)
+    sUpdate.setField(Constants.storage.FETCH_TIMESTAMP, Map("set" -> data.fetchedData.getFetchedAt).asJava)
+    sUpdate.setField(Constants.storage.LAST_UPDATED_AT, Map("set" -> new util.Date()).asJava)
+    sUpdate.setField(Constants.storage.RETRIES_SINCE_FETCH, Map("inc" -> 1).asJava)
+    sUpdate.setField(Constants.storage.EXTRACTED_TEXT, data.parsedData.extractedText)
+    sUpdate.setField(Constants.storage.CONTENT_TYPE, data.fetchedData.getContentType.split("; ")(0))
+    sUpdate.setField(Constants.storage.FETCH_STATUS_CODE, data.fetchedData.getResponseCode)
+    sUpdate.setField(Constants.storage.SIGNATURE, hashFunction.hashBytes(data.fetchedData.getContent).toString)
+    sUpdate.setField(Constants.storage.RELATIVE_PATH, URLUtil.reverseUrl(data.fetchedData.getResource.getUrl))
+    sUpdate.setField(Constants.storage.OUTLINKS, data.parsedData.outlinks.toArray)
+    sUpdate.setField(Constants.storage.SEGMENT, data.fetchedData.getSegment)
     val splitMimeTypes = data.fetchedData.getContentType.toLowerCase().split(";")
-    if (splitMimeTypes.contains(Constants.solr.WEBPAGE_MIMETYPE.toLowerCase())) {
-      sUpdate.setField(Constants.solr.RAW_CONTENT, new String(data.fetchedData.getContent))
-    } else if (splitMimeTypes.contains(Constants.solr.JSON_MIMETYPE.toLowerCase())){
-      sUpdate.setField(Constants.solr.RAW_CONTENT, new String(data.fetchedData.getContent))
+    if (splitMimeTypes.contains(Constants.storage.WEBPAGE_MIMETYPE.toLowerCase())) {
+      sUpdate.setField(Constants.storage.RAW_CONTENT, new String(data.fetchedData.getContent))
+    } else if (splitMimeTypes.contains(Constants.storage.JSON_MIMETYPE.toLowerCase())){
+      sUpdate.setField(Constants.storage.RAW_CONTENT, new String(data.fetchedData.getContent))
     }
-    sUpdate.setField(Constants.solr.RESPONSE_TIME, data.fetchedData.getResponseTime)
+    sUpdate.setField(Constants.storage.RESPONSE_TIME, data.fetchedData.getResponseTime)
     for ((scoreKey, score) <- data.fetchedData.getResource.getScore) {
       sUpdate.setField(scoreKey, Map("set" -> score).asJava)
     }
 
     val md = data.parsedData.metadata
     val mdFields = md.names().map(name => (name, if (md.isMultiValued(name)) md.getValues(name) else md.get(name))).toMap
-    updateFields(mdFields, Constants.solr.MD_SUFFIX, sUpdate)
-    updateFields(data.parsedData.headers, Constants.solr.HDR_SUFFIX, sUpdate)
+    updateFields(mdFields, Constants.storage.MD_SUFFIX, sUpdate)
+    updateFields(data.parsedData.headers, Constants.storage.HDR_SUFFIX, sUpdate)
     sUpdate
   }
 

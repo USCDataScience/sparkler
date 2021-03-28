@@ -15,14 +15,19 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.solr
-
-import org.apache.spark.Partition
+package edu.usc.irds.sparkler.storage
 
 /**
-  * Created by thammegr on 6/7/16.
+  *
+  * @since 3/2/2021
   */
-class SolrGroupPartition(val indx: Int, val group: String, val start: Int = 0,
-                         val end: Int = Int.MaxValue) extends Partition {
-  override def index: Int = indx
+abstract class StorageProxy() {
+
+  // TODO: Change return Any??
+  def newClient(crawlDbUri: String): Any
+  def getClient(): Any
+  def commitCrawlDb(): Unit
+  def close(): Unit
+
 }
+
