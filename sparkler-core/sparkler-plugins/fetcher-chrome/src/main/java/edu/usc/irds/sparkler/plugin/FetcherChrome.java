@@ -141,13 +141,17 @@ public class FetcherChrome extends FetcherDefault {
             final ChromeOptions chromeOptions = new ChromeOptions();
             chromeOptions.addArguments("--no-sandbox");
             chromeOptions.addArguments("--headless");
+            chromeOptions.addArguments("--disable-gpu");
+            chromeOptions.addArguments("--disable-extensions");
             chromeOptions.addArguments("--ignore-certificate-errors");
             capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
             capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
 
-            driver = new RemoteWebDriver(new URL(loc), capabilities);
-
-
+            if(loc.equals("local")){
+                driver = new ChromeDriver(capabilities);
+            } else{
+                driver = new RemoteWebDriver(new URL(loc), capabilities);
+            }
         }
 
     }
