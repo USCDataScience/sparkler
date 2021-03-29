@@ -102,7 +102,7 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
                 String method = getHTTPMethod(rep);
                 rep = trimHTTPMethod(rep);
                 root.put("TAG", this.pluginConfig.getOrDefault("tag", "no tag defined"));
-                UrlInjectorObj o = new UrlInjectorObj(rep, null, method);
+                UrlInjectorObj o = new UrlInjectorObj(rep, root.toString(), method);
                 fixedUrls.add(o);
             }
         }
