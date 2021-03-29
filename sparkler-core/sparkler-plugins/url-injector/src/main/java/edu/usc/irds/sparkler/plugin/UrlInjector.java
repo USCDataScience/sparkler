@@ -76,6 +76,7 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
                 for (String temp : tokens) {
                     String json = root.toString();
                     json = json.replace("${token}", temp);
+                    root.put("TAG", this.pluginConfig.get("tag"));
                     UrlInjectorObj o = new UrlInjectorObj(u, json, method);
                     fixedUrls.add(o);
                 }
@@ -124,6 +125,7 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
                     try {
                         json = (JSONObject) parser.parse(parsedJsonStr);
                         root.put("JSON", json);
+                        root.put("TAG", this.pluginConfig.get("tag"));
                     } catch (ParseException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
@@ -155,6 +157,7 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
             if (tokens.size() > 0) {
                 for (String temp : tokens) {
                     String json = root.toString();
+                    root.put("TAG", this.pluginConfig.get("tag"));
                     json = json.replace("${token}", temp);
                     UrlInjectorObj o = new UrlInjectorObj(u, json, method);
                     fixedUrls.add(o);
