@@ -238,12 +238,12 @@ public class FetcherChrome extends FetcherDefault {
         LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
 
         System.out.println("LATEST STATUS: "+latestStatus);
-        if (!(latestStatus >= 200 && latestStatus < 300) && latestStatus != 0) {
+        /*if (!(latestStatus >= 200 && latestStatus < 300) && latestStatus != 0) {
             // If not fetched through plugin successfully
             // Falling back to default fetcher
             LOG.info("{} Failed to fetch the page. Falling back to default fetcher.", resource.getUrl());
             return super.fetch(resource);
-        }
+        }*/
 
         fetchedData = new FetchedData(html.getBytes(), "text/html", latestStatus);
         resource.setStatus(ResourceStatus.FETCHED.toString());
