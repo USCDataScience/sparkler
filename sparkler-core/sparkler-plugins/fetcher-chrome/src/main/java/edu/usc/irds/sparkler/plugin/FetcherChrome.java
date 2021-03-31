@@ -144,6 +144,7 @@ public class FetcherChrome extends FetcherDefault {
             chromeOptions.addArguments("--disable-gpu");
             chromeOptions.addArguments("--disable-extensions");
             chromeOptions.addArguments("--ignore-certificate-errors");
+            chromeOptions.addArguments("--incognito");
             capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
             capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
 
@@ -157,6 +158,7 @@ public class FetcherChrome extends FetcherDefault {
     }
     @Override
     public FetchedData fetch(Resource resource) throws Exception {
+        startDriver(false);
         LOG.info("Chrome FETCHER {}", resource.getUrl());
         FetchedData fetchedData;
         JSONObject json = null;
@@ -248,6 +250,8 @@ public class FetcherChrome extends FetcherDefault {
         fetchedData = new FetchedData(html.getBytes(), "text/html", latestStatus);
         resource.setStatus(ResourceStatus.FETCHED.toString());
         fetchedData.setResource(resource);
+        driver.quit();
+        driver = null;
         return fetchedData;
     }
 
