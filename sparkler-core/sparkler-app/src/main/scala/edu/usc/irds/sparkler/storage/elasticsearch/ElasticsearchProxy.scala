@@ -50,7 +50,7 @@ import org.apache.solr.common.SolrInputDocument
   */
 class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy with Closeable with Loggable {
 
-  // creates the solr client
+  // creates the client
   private var crawlDb = newClient(config.getDatabaseURI())
 
   private var indexRequests = ArrayBuffer[IndexRequest]()
@@ -64,7 +64,7 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
       new RestHighLevelClient(
         RestClient.builder(
           new HttpHost(hostname, port, scheme),
-          new HttpHost(hostname, port+1, scheme),  // documentation says we need to implement 2 ports
+//          new HttpHost(hostname, port+1, scheme),  // documentation says we need to implement 2 ports
         )
       );
     } else if (crawlDbUri.startsWith("file://")) {
@@ -115,11 +115,6 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
       var response : IndexResponse = null
       try {
         response = crawlDb.index(indexRequest, RequestOptions.DEFAULT)
-//        if (response != null) {
-//          System.out.println(response.getResult())
-//          System.out.println(response)
-//          System.out.println()
-//        }
       }
       catch {
         case e: IOException =>
