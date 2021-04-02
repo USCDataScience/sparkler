@@ -18,16 +18,17 @@
 package edu.usc.irds.sparkler.storage.solr
 
 import java.io.{Closeable, File}
+
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.storage.StorageProxy
 import edu.usc.irds.sparkler._
+import edu.usc.irds.sparkler.model.Resource
 
 import org.apache.solr.client.solrj.SolrClient
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer
 import org.apache.solr.client.solrj.impl.{CloudSolrClient}
 import org.apache.solr.core.CoreContainer
 import org.apache.solr.common.SolrInputDocument
-
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 
 /**
@@ -92,19 +93,19 @@ class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Clo
 
   }
 
-  def addResources(beans: java.util.Iterator[_]): Unit = {
+  def addResources(resources: java.util.Iterator[Resource]): Unit = {
     try {
-      crawlDb.addBeans(beans)  // SolrClient method addBeans()
+      crawlDb.addBeans(resources)  // SolrClient method addBeans()
     } catch {
       case e: Exception =>
         LOG.warn("Caught {} while adding beans, trying to add one by one", e.getMessage)
-        while (beans.hasNext) {
-          val bean = beans.next()
+        while (resources.hasNext()) {
+          val bean = resources.next()
           try { // to add one by one
             crawlDb.addBean(bean)
           } catch {
             case e2: Exception =>
-              LOG.warn("(SKIPPED) {} while adding {}", e2.getMessage, bean)
+              LOG.warn("(SKIPPED) {} while adding {}", e2.getMessage, bean.asInstanceOf[Any])
               LOG.debug(e2.getMessage, e2)
           }
         }

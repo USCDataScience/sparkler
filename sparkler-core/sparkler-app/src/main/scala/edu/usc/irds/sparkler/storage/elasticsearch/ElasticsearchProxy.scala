@@ -18,9 +18,13 @@
 package edu.usc.irds.sparkler.storage.elasticsearch
 
 import java.io.{Closeable, File}
+import scala.collection.mutable.ArrayBuffer
+import java.io.IOException
+
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.storage.StorageProxy
 import edu.usc.irds.sparkler._
+import edu.usc.irds.sparkler.model.Resource
 
 import org.apache.http.HttpHost
 import org.elasticsearch.action.get.GetRequest
@@ -38,11 +42,9 @@ import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.search.builder.SearchSourceBuilder
 
-import scala.collection.mutable.ArrayBuffer
-import java.io.IOException
-
 // TODO: NEED TO REMOVE AFTER USE
 import org.apache.solr.common.SolrInputDocument
+
 
 /**
   *
@@ -84,13 +86,38 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
     addResource(null)  // temp placeholder
   }
 
-  def addResources(beans: java.util.Iterator[_]): Unit = {
-    addResource(null)  // temp placeholder
+  def addResources(resources: java.util.Iterator[Resource]): Unit = {
+    var resource : Resource = null
+    var dataMap : java.util.Map[String, Object] = null
+
+    while (resources.hasNext()) {
+      try {
+        resource = resources.next()
+        dataMap = resource.getDataAsMap()
+      }
+      catch {
+        case e: IOException =>
+          e.printStackTrace()
+      }
+
+      var indexRequest = new IndexRequest("crawldb")
+      indexRequest.source(dataMap)
+      indexRequest.id(resource.getId())
+
+      indexRequests.append(indexRequest)
+    }
   }
 
   def addResource(doc: Any): Unit = {
     var builder : XContentBuilder = null
+    var docSolr : SolrInputDocument = null
     try {
+      docSolr = doc.asInstanceOf[SolrInputDocument]
+      if (docSolr != null) {
+        println(docSolr.toString())
+        var error = 0/0
+      }
+
       builder = XContentFactory.jsonBuilder()
         .startObject()
         .field("fullName", "CSCI 401")

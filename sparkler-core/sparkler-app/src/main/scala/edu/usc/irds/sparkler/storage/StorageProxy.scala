@@ -17,9 +17,7 @@
 
 package edu.usc.irds.sparkler.storage
 
-import edu.usc.irds.sparkler.storage.solr.SolrProxy
-import org.apache.solr.client.solrj.SolrClient
-import org.elasticsearch.client.RestHighLevelClient
+import edu.usc.irds.sparkler.model.Resource
 
 /**
   *
@@ -33,7 +31,7 @@ abstract class StorageProxy() {
 
   def getClient(): Any
   def addResourceDocs(docs: java.util.Iterator[_]): Unit
-  def addResources(beans: java.util.Iterator[_]): Unit
+  def addResources(beans: java.util.Iterator[Resource]): Unit
   def addResource(doc: Any): Unit
 
   def commitCrawlDb(): Unit

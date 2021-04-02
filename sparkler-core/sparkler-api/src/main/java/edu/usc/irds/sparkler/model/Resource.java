@@ -203,4 +203,42 @@ public class Resource implements Serializable {
     public String getMetadata(){
         return this.metadata;
     }
+
+    public Date getLastUpdatedAt() {
+        return this.lastUpdatedAt;
+    }
+
+    public Date getIndexedAt() {
+        return this.indexedAt;
+    }
+
+    public String getHostname() {
+        return this.hostname;
+    }
+
+    public String getParent() {
+        return this.parent;
+    }
+
+    public Map<String, Object> getDataAsMap() {
+        Map<String, Object> dataMap = new HashMap<String, Object>() {{
+            put("id", getId());
+            put("url", getUrl());
+            put("group", getGroup());
+            put("discover_depth", getDiscoverDepth());
+            put("status", getStatus());
+            put("fetch_timestamp", getFetchTimestamp());
+            put("crawl_id", getCrawlId());
+            put("dedupe_id", getDedupeId());
+            put("*_score", getScore());
+            put("generate_score", getGenerateScore());
+            put("http_method", getHttpMethod());
+            put("jobmeta", getMetadata());
+            put("last_updated_at", getLastUpdatedAt());
+            put("indexed_at", getIndexedAt());
+            put("hostname", getHostname());
+            put("parent", getParent());
+        }};
+        return dataMap;
+    }
 }
