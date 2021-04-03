@@ -1,7 +1,7 @@
 package edu.usc.irds.sparkler.storage.solr
 
 import edu.usc.irds.sparkler.Constants
-import edu.usc.irds.sparkler.base.Loggable
+import edu.usc.irds.sparkler.storage.StorageRDD
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.util.SolrResultIterator
 import org.apache.solr.client.solrj.{SolrClient, SolrQuery}
@@ -80,12 +80,12 @@ class SolrRDD(sc: SparkContext,
 }
 
 
-object SolrRDD extends Loggable {
+object SolrRDD extends StorageRDD {
 
-  val DEFAULT_ORDER = Constants.storage.DISCOVER_DEPTH + " asc," + Constants.storage.SCORE + " desc"
-  val DEFAULT_FILTER_QRY = Constants.storage.STATUS + ":" + ResourceStatus.UNFETCHED
-  val DEFAULT_GROUPS = 1000
-  val DEFAULT_TOPN = 1000
+  override val DEFAULT_ORDER = Constants.storage.DISCOVER_DEPTH + " asc," + Constants.storage.SCORE + " desc"
+  override val DEFAULT_FILTER_QRY = Constants.storage.STATUS + ":" + ResourceStatus.UNFETCHED
+  override val DEFAULT_GROUPS = 1000
+  override val DEFAULT_TOPN = 1000
 }
 
 

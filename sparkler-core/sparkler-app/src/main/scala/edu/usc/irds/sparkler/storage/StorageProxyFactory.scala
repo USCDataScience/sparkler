@@ -21,7 +21,7 @@ package edu.usc.irds.sparkler.storage
 import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
 import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
 import edu.usc.irds.sparkler.storage.solr.{SolrDeepRDD, SolrRDD, SolrProxy}
-import edu.usc.irds.sparkler.storage.elasticsearch._
+import edu.usc.irds.sparkler.storage.elasticsearch.{ElasticsearchDeepRDD, ElasticsearchRDD, ElasticsearchProxy}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -33,12 +33,11 @@ class StorageProxyFactory(var config: SparklerConfiguration) {
 
   val dbToUse: String = config.get(Constants.key.CRAWLDB_BACKEND).asInstanceOf[String]
 
-
   def getProxy(): StorageProxy = {
-    dbToUse match {
-      case "elasticsearch" => new ElasticsearchProxy(config): ElasticsearchProxy
-      case "solr" => new SolrProxy(config): SolrProxy
-      case _ => new SolrProxy(config): SolrProxy  // TODO: check null?
+      dbToUse match {
+        case "elasticsearch" => new ElasticsearchProxy(config)
+        case "solr" => new SolrProxy(config)
+        case _ => new SolrProxy(config)
     }
   }
 
@@ -67,5 +66,21 @@ class StorageProxyFactory(var config: SparklerConfiguration) {
       case "solr" => new SolrRDD(sc, job, sortBy, generateQry, maxGroups, topN): SolrRDD
       case _ => new SolrRDD(sc, job, sortBy, generateQry, maxGroups, topN): SolrRDD
     }
+  }
+
+  def getRDDDefaults(): StorageRDD = {
+    dbToUse match {
+      case "elasticsearch" => ElasticsearchRDD
+      case "solr" => SolrRDD
+      case _ => SolrRDD
+    }
+  }
+
+  def getDeepRDDDefaults(): StorageRDD = {
+    dbToUse match {
+    case "elasticsearch" => ElasticsearchDeepRDD
+    case "solr" => SolrDeepRDD
+    case _ => SolrDeepRDD
+  }
   }
 }

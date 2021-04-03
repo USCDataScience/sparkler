@@ -58,7 +58,7 @@ class CrawlerRunner {
         LOG.info(s"Deep crawling hosts ${deepCrawlHosts.toString}")
         var taskId = JobUtil.newSegmentId(true)
         job.currentTask = taskId
-        val deepRdd = new SolrDeepRDD(this.sc, job, maxGroups = topG, topN = topN,
+        val deepRdd = job.newDeepRDD(this.sc, job, maxGroups = topG, topN = topN,
           deepCrawlHosts = deepCrawlHostnames)
         val fetchedRdd = deepRdd.map(r => (r.getGroup, r))
           .groupByKey()
@@ -86,7 +86,7 @@ class CrawlerRunner {
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
-      val rdd = new SolrRDD(this.sc, job, maxGroups = topG, topN = topN)
+      val rdd = job.newRDD(this.sc, job, maxGroups = topG, topN = topN)
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
