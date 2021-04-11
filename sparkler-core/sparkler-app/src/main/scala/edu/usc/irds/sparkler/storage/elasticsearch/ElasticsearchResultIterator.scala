@@ -66,7 +66,7 @@ class ElasticsearchResultIterator[T] extends Iterator[T] {
   }
 
   private def initializeScrollContext(): Unit = {
-    request.scroll(TimeValue.timeValueMinutes(1L));
+    request.scroll(TimeValue.timeValueMinutes(1L))
     var searchResponse : SearchResponse = client.search(request, RequestOptions.DEFAULT)
     scrollId = searchResponse.getScrollId()
     currentPage = searchResponse.getHits().iterator()
@@ -84,7 +84,7 @@ class ElasticsearchResultIterator[T] extends Iterator[T] {
         currentPage = searchScrollResponse.getHits().iterator()
       } catch {
         case e: Exception =>
-          throw new RuntimeException(e);
+          throw new RuntimeException(e)
       }
     }
 

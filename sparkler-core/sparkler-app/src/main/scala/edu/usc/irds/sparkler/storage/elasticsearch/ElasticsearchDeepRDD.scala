@@ -1,7 +1,7 @@
 package edu.usc.irds.sparkler.storage.elasticsearch
 
 import edu.usc.irds.sparkler.Constants
-import edu.usc.irds.sparkler.storage.StorageRDD
+import edu.usc.irds.sparkler.storage.{StorageRDD, SparklerGroupPartition}
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.storage.solr.SolrResultIterator
 import org.apache.solr.client.solrj.util.ClientUtils.escapeQueryChars

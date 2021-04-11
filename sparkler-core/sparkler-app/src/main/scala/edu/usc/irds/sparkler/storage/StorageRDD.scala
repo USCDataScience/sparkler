@@ -33,12 +33,3 @@ abstract class StorageRDD() extends Loggable {
   val DEFAULT_TOPN = 1000
 
 }
-
-
-//object StorageRDD {
-//
-////  val DEFAULT_ORDER = Constants.storage.DISCOVER_DEPTH + " asc," + Constants.storage.SCORE + " desc"
-////  val DEFAULT_FILTER_QRY = Constants.storage.STATUS + ":" + ResourceStatus.UNFETCHED
-////  val DEFAULT_GROUPS = 1000
-////  val DEFAULT_TOPN = 1000
-//}

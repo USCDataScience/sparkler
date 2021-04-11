@@ -132,7 +132,7 @@ public interface Constants {
         String NUM_FETCHES = "numFetches";
         String DISCOVER_DEPTH = "discover_depth";
         String FETCH_DEPTH = "fetch_depth";
-        String SCORE = "page_score";
+        String SCORE = "_score";
         String GENERATE_SCORE = "generate_score";
         String STATUS = "status";
         String LAST_UPDATED_AT = "last_updated_at";

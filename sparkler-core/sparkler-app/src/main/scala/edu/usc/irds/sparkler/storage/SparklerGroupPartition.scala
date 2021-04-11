@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.storage.solr
+package edu.usc.irds.sparkler.storage
 
 import org.apache.spark.Partition
 
 /**
   * Created by thammegr on 6/7/16.
   */
-class SolrGroupPartition(val indx: Int, val group: String, val start: Int = 0,
+class SparklerGroupPartition(val indx: Int, val group: String, val start: Int = 0,
                          val end: Int = Int.MaxValue) extends Partition {
   override def index: Int = indx
 }

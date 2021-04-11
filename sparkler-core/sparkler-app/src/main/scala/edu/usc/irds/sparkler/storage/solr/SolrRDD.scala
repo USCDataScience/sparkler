@@ -1,7 +1,7 @@
 package edu.usc.irds.sparkler.storage.solr
 
 import edu.usc.irds.sparkler.Constants
-import edu.usc.irds.sparkler.storage.StorageRDD
+import edu.usc.irds.sparkler.storage.{StorageRDD, SparklerGroupPartition}
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import org.apache.solr.client.solrj.{SolrClient, SolrQuery}
 import org.apache.solr.client.solrj.util.ClientUtils.escapeQueryChars
@@ -27,7 +27,7 @@ class SolrRDD(sc: SparkContext,
   assert(maxGroups > 0)
 
   override def compute(split: Partition, context: TaskContext): Iterator[Resource] = {
-    val partition: SolrGroupPartition = split.asInstanceOf[SolrGroupPartition]
+    val partition: SparklerGroupPartition = split.asInstanceOf[SparklerGroupPartition]
     val batchSize = 100
     val query = new SolrQuery(generateQry)
     query.addFilterQuery(s"""${Constants.storage.PARENT}:"${escapeQueryChars(partition.group)}"""")
@@ -71,7 +71,7 @@ class SolrRDD(sc: SparkContext,
     val res = new Array[Partition](grps.size())
     for (i <- 0 until grps.size()) {
       //TODO: improve partitioning : (1) club smaller domains, (2) support for multiple partitions for larger domains
-      res(i) = new SolrGroupPartition(i, grps.get(i).getGroupValue)
+      res(i) = new SparklerGroupPartition(i, grps.get(i).getGroupValue)
     }
     proxy.close()
     res
