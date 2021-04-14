@@ -100,16 +100,19 @@ class ElasticsearchResultIterator[T] extends Iterator[T] {
     }
   }
 
+  private def deserialize(searchHit: SearchHit): T = {
+    searchHit.asInstanceOf[T] // placeholder to pass compile
+    // NOTE: the template class must implement a constuctor for T(java.util.Map<String, Object>)
+//    beanType.getConstructor(Map[String, Object].getClass).newInstance(searchHit.getSourceAsMap())
+  }
+
   override def hasNext: Boolean = nextBean.isDefined
 
   override def next(): T = {
     val tmp = nextBean
     nextBean = getNextBean()
     count += 1
-
-    // TODO: need to deserialize. tmp.get is currently a SearchHit - https://www.javadoc.io/doc/org.elasticsearch/elasticsearch/7.2.0/org/elasticsearch/search/SearchHit.html
-    // need to deserialize tmp.get into an object of class T
-    tmp.get.asInstanceOf[T]
+    deserialize(tmp.get)
   }
 }
 
