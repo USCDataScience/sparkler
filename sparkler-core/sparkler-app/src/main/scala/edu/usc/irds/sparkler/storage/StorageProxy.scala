@@ -25,10 +25,6 @@ import edu.usc.irds.sparkler.model.Resource
   */
 abstract class StorageProxy() {
 
-  // TODO: handle interaction between outside classes (RDD etc) and clients (SolrClient etc)
-  //    with methods between StorageProxy and respective clients.
-  //    outside classes should not be able to getClient
-
   def getClient(): Any
   def addResourceDocs(docs: java.util.Iterator[_]): Unit
   def addResources(beans: java.util.Iterator[Resource]): Unit
