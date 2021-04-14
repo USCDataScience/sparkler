@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -99,6 +100,64 @@ public class Resource implements Serializable {
         this(url, discoverDepth, sparklerJob, status, fetchTimestamp, parent);
         this.score = score;
         
+    }
+
+    public Resource(Map<String, Object> dataMap) {
+        // TODO: check this format
+        String defaultDateFormat = "EEE MMM dd HH:mm:ss zzz yyyy";
+
+        if (dataMap.containsKey("id")) id = (String)dataMap.get("id");
+        if (dataMap.containsKey("url")) url = (String)dataMap.get("url");
+        if (dataMap.containsKey("group")) group = (String)dataMap.get("group");
+        if (dataMap.containsKey("discover_depth")) {
+            try {
+                discoverDepth = Integer.valueOf((String)dataMap.get("discover_depth"));
+            } catch (Exception e) {
+                System.err.println("Could not retrieve and parse to Integer: discover_depth");
+            }
+        }
+        if (dataMap.containsKey("status")) status = (String)dataMap.get("status");
+        if (dataMap.containsKey("fetch_timestamp")) {
+            try {
+                fetchTimestamp = new SimpleDateFormat(defaultDateFormat).parse((String)dataMap.get("fetch_timestamp"));
+            } catch (Exception e) {
+                System.err.println("Could not retrieve and parse to Date: fetch_timestamp");
+            }
+        }
+        if (dataMap.containsKey("crawl_id")) crawlId = (String)dataMap.get("crawl_id");
+        if (dataMap.containsKey("dedupe_id")) dedupeId = (String)dataMap.get("dedupe_id");
+        if (dataMap.containsKey("*_score")) {
+            try {
+                score = (HashMap<String, Double>)dataMap.get("*_score");
+            } catch (Exception e) {
+                System.err.println("Could not retrieve and parse to HashMap<String, Double>: *_score");
+            }
+        }
+        if (dataMap.containsKey("generate_score")) {
+            try {
+                generateScore = Double.valueOf((String)dataMap.get("generate_score"));
+            } catch (Exception e) {
+                System.err.println("Could not retrieve and parse to Double: generate_score");
+            }
+        }
+        if (dataMap.containsKey("http_method")) httpMethod = (String)dataMap.get("http_method");
+        if (dataMap.containsKey("jobmeta")) metadata = (String)dataMap.get("jobmeta");
+        if (dataMap.containsKey("last_updated_at")) {
+            try {
+                lastUpdatedAt = new SimpleDateFormat(defaultDateFormat).parse((String)dataMap.get("last_updated_at"));
+            } catch (Exception e) {
+                System.err.println("Could not retrieve and parse to Date: last_updated_at");
+            }
+        }
+        if (dataMap.containsKey("indexed_at")) {
+            try {
+                indexedAt = new SimpleDateFormat(defaultDateFormat).parse((String)dataMap.get("indexed_at"));
+            } catch (Exception e) {
+                System.err.println("Could not retrieve and parse to Date: indexed_at");
+            }
+        }
+        if (dataMap.containsKey("hostname")) hostname = (String)dataMap.get("hostname");
+        if (dataMap.containsKey("parent")) parent = (String)dataMap.get("parent");
     }
 
     @Override
