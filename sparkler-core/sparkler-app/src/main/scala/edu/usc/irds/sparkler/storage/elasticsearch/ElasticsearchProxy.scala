@@ -83,7 +83,10 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
   }
 
   def addResourceDocs(docs: java.util.Iterator[_]): Unit = {
-    addResource(null)  // temp placeholder
+    while (docs.hasNext()) {
+      val doc : XContentBuilder = docs.next()
+      addResource(doc)
+    }
   }
 
   def addResources(resources: java.util.Iterator[Resource]): Unit = {
@@ -108,28 +111,7 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
     }
   }
 
-  def addResource(doc: Any): Unit = {
-    var builder : XContentBuilder = null
-    var docSolr : SolrInputDocument = null
-    try {
-      docSolr = doc.asInstanceOf[SolrInputDocument]
-      if (docSolr != null) {
-        println(docSolr.toString())
-        var error = 0/0
-      }
-
-      builder = XContentFactory.jsonBuilder()
-        .startObject()
-        .field("fullName", "CSCI 401")
-        .field("year", 2021)
-        .field("project", "Elasticsearch for Sparkler")
-        .endObject()
-    }
-    catch {
-      case e: IOException =>
-        e.printStackTrace()
-    }
-
+  def addResource(builder: Any): Unit = {
     val indexRequest = new IndexRequest("crawldb")
     indexRequest.source(builder)
     indexRequest.id()  // TODO: NEED TO GET THE RIGHT ID?
@@ -154,4 +136,22 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
   def close(): Unit = {
     crawlDb.close();
   }
+
+  def getStatusUpdater(job : SparklerJob): Unit = {
+    val updater = new ElasticsearchStatusUpdate(job)
+    updater
+  }
+  def getUpserter(job : SparklerJob): Unit = {
+    val upserter = new ElasticsearchUpsert(job)
+    upserter
+  }
+  def getScoreUpdateTransformer(): Unit = {
+    val scoreTransformer = ScoreUpdateElasticsearchTransformer
+    scoreTransformer
+  }
+  def getStatusUpdateTransformer(): Unit = {
+    val statusTransformer = StatusUpdateElasticsearchTransformer
+    statusTransformer
+  }
+
 }
