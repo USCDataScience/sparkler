@@ -44,6 +44,7 @@ import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.net.CookieHandler;
@@ -220,14 +221,25 @@ public class FetcherChrome extends FetcherDefault {
         if (seleniumenabled.equals("true")) {
             if(pluginConfig.get("chrome.selenium.script") != null && pluginConfig.get("chrome.selenium.script") instanceof Map) {
                 Map<String, Object> map = (Map<String, Object>) pluginConfig.get("chrome.selenium.script");
-                scripter.runScript(map, null, null);
+                try {
+                    scripter.runScript(map, null, null);
+                } catch (Exception ignored){
+
+                }
                 List<String> snapshots = scripter.getSnapshots();
                 html = String.join(",", snapshots);
             }
         }
         if(json != null && json.containsKey("selenium")){
             if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
-                scripter.runScript((Map<String, Object>) json.get("selenium"), null, null);
+                try {
+                    scripter.runScript((Map<String, Object>) json.get("selenium"), null, null);
+                } catch (Exception ignored){
+                    Map<String, Object> tempmap = new HashMap<>();
+                    tempmap.put("type", "file");
+                    tempmap.put("targetdir", "/dbfs/FileStore/screenshots/"+resource.getCrawlId()+System.currentTimeMillis());
+                    scripter.screenshot(tempmap);
+                }
                 List<String> snapshots = scripter.getSnapshots();
                 html = String.join(",", snapshots);
             }
