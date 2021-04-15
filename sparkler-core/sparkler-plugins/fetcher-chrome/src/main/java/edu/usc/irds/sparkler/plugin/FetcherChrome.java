@@ -234,11 +234,12 @@ public class FetcherChrome extends FetcherDefault {
             if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
                 try {
                     scripter.runScript((Map<String, Object>) json.get("selenium"), null, null);
-                } catch (Exception ignored){
+                } catch (Exception e){
                     Map<String, Object> tempmap = new HashMap<>();
                     tempmap.put("type", "file");
                     tempmap.put("targetdir", "/dbfs/FileStore/screenshots/"+resource.getCrawlId()+System.currentTimeMillis());
                     scripter.screenshot(tempmap);
+                    e.printStackTrace();
                 }
                 List<String> snapshots = scripter.getSnapshots();
                 html = String.join(",", snapshots);
