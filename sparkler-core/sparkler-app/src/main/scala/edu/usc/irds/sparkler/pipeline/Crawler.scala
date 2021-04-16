@@ -137,7 +137,7 @@ class Crawler extends CliTool {
       conf.setMaster(sparkMaster)
     }
     if (!sparkStorage.isEmpty){
-      val dbToUse: String = conf.get(Constants.key.CRAWLDB_BACKEND).asInstanceOf[String]
+      val dbToUse: String = sparklerConf.get(Constants.key.CRAWLDB_BACKEND).asInstanceOf[String]
       sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put(dbToUse+".uri", sparkStorage)
     }
 
