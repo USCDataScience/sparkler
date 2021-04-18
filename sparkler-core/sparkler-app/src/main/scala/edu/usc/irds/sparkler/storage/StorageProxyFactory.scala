@@ -29,7 +29,7 @@ import org.apache.spark.rdd.RDD
   *
   * @since 3/2/2021
   */
-class StorageProxyFactory(var config: SparklerConfiguration) {
+class StorageProxyFactory(var config: SparklerConfiguration) extends java.io.Serializable {
 
   val dbToUse: String = config.get(Constants.key.CRAWLDB_BACKEND).asInstanceOf[String]
 
