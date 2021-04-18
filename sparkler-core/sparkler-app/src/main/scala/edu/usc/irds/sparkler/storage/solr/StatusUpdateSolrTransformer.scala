@@ -23,7 +23,7 @@ import com.google.common.hash.{HashFunction, Hashing}
 import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.CrawlData
-import edu.usc.irds.sparkler.storage.solr.schema.FieldMapper
+import edu.usc.irds.sparkler.storage.FieldMapper
 import edu.usc.irds.sparkler.util.URLUtil
 import org.apache.solr.common.SolrInputDocument
 

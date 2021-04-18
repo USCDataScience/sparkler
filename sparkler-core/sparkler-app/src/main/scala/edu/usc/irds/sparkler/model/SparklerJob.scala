@@ -18,9 +18,8 @@
 package edu.usc.irds.sparkler.model
 
 import java.io.File
-import edu.usc.irds.sparkler.storage.{StorageProxy, StorageProxyFactory}
+import edu.usc.irds.sparkler.storage.{StorageProxyFactory, StorageProxy, StorageRDD, Upserter}
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.storage.StorageRDD
 import edu.usc.irds.sparkler.service.RejectingURLFilterChain
 import edu.usc.irds.sparkler.util.JobUtil
 import edu.usc.irds.sparkler._
@@ -76,6 +75,10 @@ class SparklerJob(val id: String,
                  topN: Int = deepRDDDefaults.DEFAULT_TOPN,
                  deepCrawlHosts: Array[String] = new Array[String](0)): RDD[Resource] = {
     storageProxyFactory.getDeepRDD(sc, job, sortBy, generateQry, maxGroups, topN, deepCrawlHosts)
+  }
+
+  def newUpserter(): Upserter = {
+    storageProxyFactory.getUpserter(this)
   }
 
   override def getConfiguration: SparklerConfiguration ={

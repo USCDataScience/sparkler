@@ -17,25 +17,25 @@
 
 package edu.usc.irds.sparkler.storage
 
-import edu.usc.irds.sparkler.model.Resource
+import StatusUpdate.LOG
+import edu.usc.irds.sparkler.Constants
+import edu.usc.irds.sparkler.base.Loggable
+import edu.usc.irds.sparkler.model.SparklerJob
+import org.apache.spark.TaskContext
+
+import scala.collection.JavaConversions._
 
 /**
-  *
-  * @since 3/2/2021
-  */
-abstract class StorageProxy() {
+ * Created by karanjeets on 6/11/16
+ */
+class StatusUpdate(job: SparklerJob) extends ((TaskContext, Iterator[Map[String, Object]]) => Any) with Serializable {
 
-  def getClient(): Any
-
-  def addResourceDocs(docs: java.util.Iterator[_]): Unit
-  def addResources(beans: java.util.Iterator[Resource]): Unit
-  def addResource(doc: Any): Unit
-
-  def updateResources(data: java.util.Iterator[Map[String, Object]]): Unit
-  def updateResource(data: Map[String, Object]): Unit
-
-  def commitCrawlDb(): Unit
-  def close(): Unit
-
+  override def apply(context: TaskContext, docs: Iterator[Map[String, Object]]): Any = {
+    LOG.debug("Updating document status into CrawlDb")
+    val proxy = job.newStorageProxy()
+    proxy.updateResources(docs)
+    proxy.close()
+  }
 }
 
+object StatusUpdate extends Loggable;

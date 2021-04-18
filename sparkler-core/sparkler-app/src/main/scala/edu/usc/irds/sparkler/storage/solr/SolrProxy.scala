@@ -121,6 +121,24 @@ class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Clo
     }
   }
 
+  def updateResources(data: java.util.Iterator[Map[String, Object]]): Unit = {
+    while (data.hasNext()) {
+      updateResource(data.next())
+    }
+  }
+
+  def updateResource(data: Map[String, Object]): Unit = {
+    val sUpdate = new SolrInputDocument()
+
+    for ((key, value) <- data) {
+      if (key == Constants.storage.ID) sUpdate.setField(key, value)
+      else sUpdate.setField(key, Map("set" -> value))
+    }
+
+    // Solr has implicit upsert
+    addResource(sUpdate)
+  }
+
   def commitCrawlDb(): Unit = {
     crawlDb.commit()  // SolrClient method commit()
   }

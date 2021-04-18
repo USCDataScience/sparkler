@@ -7,10 +7,10 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 import edu.usc.irds.sparkler.pipeline._
 import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
-import edu.usc.irds.sparkler.storage.solr.SolrDeepRDD
 import edu.usc.irds.sparkler.model.ResourceStatus.UNFETCHED
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
-import edu.usc.irds.sparkler.storage.solr._
+import edu.usc.irds.sparkler.storage.{StatusUpdate, ScoreUpdateTransformer}
+import edu.usc.irds.sparkler.storage.solr.{SolrDeepRDD, SolrProxy, SolrUpsert, StatusUpdateSolrTransformer}
 import java.io.File
 import scala.collection.mutable
 import scala.io.Source
@@ -118,8 +118,8 @@ class CrawlerRunner {
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(joba, d))
 
-    val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.map(d => ScoreUpdateSolrTransformer(d))
-    val scoreUpdateFunc = new SolrStatusUpdate(joba)
+    val scoreUpdateRdd: RDD[Map[String, Object]] = scoredRdd.map(d => ScoreUpdateTransformer(d))
+    val scoreUpdateFunc = new StatusUpdate(joba)
     this.sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
 
     //TODO (was OutlinkUpsert)
