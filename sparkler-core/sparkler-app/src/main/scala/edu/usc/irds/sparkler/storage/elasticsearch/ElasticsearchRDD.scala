@@ -105,46 +105,44 @@ class ElasticsearchRDD(sc: SparkContext,
     // querying
     var q : BoolQueryBuilder = QueryBuilders.boolQuery()
       .filter(QueryBuilders.termQuery(Constants.storage.CRAWL_ID, job.id))
-    println(Constants.storage.CRAWL_ID + " => " + job.id)
 
-    for (query <- generateQry.split(",")) {
-      try {
-        val Array(field, value) = query.split(":").take(2)
-        q.filter(QueryBuilders.termQuery(field, value)) // <-- this doesn't for status/UNFETCHED??
-//        q.filter(QueryBuilders.termQuery("group", "www.bbc.com")) // <-- this works
-        println(field + " => " + value)
-      } catch {
-        case e: Exception => println("Exception parsing generateQry: " + generateQry)
-      }
-    }
+//    for (query <- generateQry.split(",")) {
+//      try {
+//        val Array(field, value) = query.split(":").take(2)
+//        q.filter(QueryBuilders.termQuery(field, value)) // <-- this doesn't work for status/UNFETCHED??
+//        println(field + " => " + value)
+//      } catch {
+//        case e: Exception => println("Exception parsing generateQry: " + generateQry)
+//      }
+//    }
 
     searchSourceBuilder.query(q)
 
     // sorting
-//    for (sort <- sortBy.split(",")) {
-//      try {
-//        val Array(field, order) = sort.split(" ").take(2)
-//        if (order.toLowerCase() == "asc") {
-//          searchSourceBuilder.sort(field, SortOrder.ASC)
-//        }
-//        else if (order.toLowerCase() == "desc") {
-//          searchSourceBuilder.sort(field, SortOrder.DESC)
-//        }
-//        else {
-//          println("Invalid sort order for: " + field)
-//        }
-//      } catch {
-//        case e: Exception => println("Exception parsing sortBy: " + sortBy)
-//      }
-//    }
+    for (sort <- sortBy.split(",")) {
+      try {
+        val Array(field, order) = sort.split(" ").take(2)
+        if (order.toLowerCase() == "asc") {
+          searchSourceBuilder.sort(field, SortOrder.ASC)
+        }
+        else if (order.toLowerCase() == "desc") {
+          searchSourceBuilder.sort(field, SortOrder.DESC)
+        }
+        else {
+          println("Invalid sort order for: " + field)
+        }
+      } catch {
+        case e: Exception => println("Exception parsing sortBy: " + sortBy)
+      }
+    }
 
     // grouping
-//    var groupBy : TermsAggregationBuilder = AggregationBuilders.terms("by" + Constants.storage.PARENT)
-//                                                          .field(Constants.storage.PARENT + ".keyword")
-//    groupBy.size(1)
-//    searchSourceBuilder.aggregation(groupBy)
-//    searchSourceBuilder.size(maxGroups)
-//
+    var groupBy : TermsAggregationBuilder = AggregationBuilders.terms("by" + Constants.storage.PARENT)
+                                                          .field(Constants.storage.PARENT + ".keyword")
+    groupBy.size(1)
+    searchSourceBuilder.aggregation(groupBy)
+    searchSourceBuilder.size(maxGroups)
+
     searchRequest.source(searchSourceBuilder)
 
     val proxy = job.newStorageProxy()
@@ -173,15 +171,20 @@ class ElasticsearchRDD(sc: SparkContext,
 //    }
 
     var shs : SearchHits = searchResponse.getHits()
-    println("searchhits size: " + shs.getTotalHits().value)
+//    println("searchhits size: " + shs.getTotalHits().value)
 
-    shs.getHits().foreach(sh => {
-      println("SearchHit - source: " + sh.getSourceAsString())
-      var source: java.util.Map[java.lang.String, java.lang.Object] = sh.getSourceAsMap()
-      println("SearchHit - source - url: " + source.get("url"))
-    })
+//    shs.getHits().foreach(sh => {
+//      println("SearchHit - source: " + sh.getSourceAsString())
+//      var source: java.util.Map[java.lang.String, java.lang.Object] = sh.getSourceAsMap()
+//      println("SearchHit - source - url: " + source.get("url"))
+//    })
 
-    val res = new Array[Partition](1)
+    val res = new Array[Partition](shs.getTotalHits().value.toInt)
+    for (i <- 0 until shs.getTotalHits().value.toInt) {
+      //TODO: improve partitioning : (1) club smaller domains, (2) support for multiple partitions for larger domains
+      res(i) = new SparklerGroupPartition(i, shs.getHits()(i).getSourceAsMap().get("group").asInstanceOf[String])
+//      println(shs.getHits()(i).getSourceAsMap().get("group").asInstanceOf[String])
+    }
 
     proxy.close()
     res
