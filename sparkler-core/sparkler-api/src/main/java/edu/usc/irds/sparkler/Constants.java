@@ -151,6 +151,7 @@ public interface Constants {
         String JSON_MIMETYPE = "application/json";
         String PARENT = "parent";
         String RESPONSE_TIME = "response_time";
+        String HOSTNAME = "hostname";
     }
 
 }

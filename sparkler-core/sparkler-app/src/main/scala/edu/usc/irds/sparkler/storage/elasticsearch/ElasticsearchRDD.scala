@@ -81,7 +81,7 @@ class ElasticsearchRDD(sc: SparkContext,
       }
     }
 
-    searchSourceBuilder.size(maxGroups)
+    searchSourceBuilder.size(batchSize)
 
     searchSourceBuilder.query(q)
     searchRequest.source(searchSourceBuilder)
