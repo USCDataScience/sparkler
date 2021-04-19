@@ -22,7 +22,7 @@ import java.io.{Closeable, File}
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.storage.StorageProxy
 import edu.usc.irds.sparkler._
-import edu.usc.irds.sparkler.model.Resource
+import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
 
 import org.apache.solr.client.solrj.SolrClient
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer
@@ -131,4 +131,22 @@ class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Clo
   def close(): Unit = {
     crawlDb.close()  // SolrClient method close()
   }
+
+  def getStatusUpdater(job : SparklerJob): Unit = {
+    val updater = new SolrStatusUpdate(job)
+    updater
+  }
+  def getUpserter(job : SparklerJob): Unit = {
+    val upserter = new SolrUpsert(job)
+    upserter
+  }
+  def getScoreUpdateTransformer(): Unit = {
+    val scoreTransformer = ScoreUpdateSolrTransformer
+    scoreTransformer
+  }
+  def getStatusUpdateTransformer(): Unit = {
+    val statusTransformer = StatusUpdateSolrTransformer
+    statusTransformer
+  }
+
 }

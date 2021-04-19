@@ -154,4 +154,22 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
   def close(): Unit = {
     crawlDb.close();
   }
+
+  def getStatusUpdater(job : SparklerJob): Unit = {
+    val updater = new ElasticsearchStatusUpdate(job)
+    updater
+  }
+  def getUpserter(job : SparklerJob): Unit = {
+    val upserter = new ElasticsearchUpsert(job)
+    upserter
+  }
+  def getScoreUpdateTransformer(): Unit = {
+    val scoreTransformer = ScoreUpdateElasticsearchTransformer
+    scoreTransformer
+  }
+  def getStatusUpdateTransformer(): Unit = {
+    val statusTransformer = StatusUpdateElasticsearchTransformer
+    statusTransformer
+  }
+
 }

@@ -15,29 +15,25 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.storage
+package edu.usc.irds.sparkler.storage.elasticsearch
 
-import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
+import ElasticsearchStatusUpdate.LOG
+import edu.usc.irds.sparkler.base.Loggable
+import edu.usc.irds.sparkler.model.SparklerJob
+import org.apache.spark.TaskContext
 
-/**
-  *
-  * @since 3/2/2021
-  */
-abstract class StorageProxy() {
+import org.elasticsearch.common.xcontent.XContentBuilder
 
-  def getClient(): Any
+import scala.collection.JavaConversions._
 
-  def addResourceDocs(docs: java.util.Iterator[Map[String, Object]]): Unit
-  def addResources(beans: java.util.Iterator[Resource]): Unit
-  def addResource(doc: Map[String, Object]): Unit
+class ElasticsearchStatusUpdate(job: SparklerJob) extends ((TaskContext, Iterator[XContentBuilder]) => Any) with Serializable {
 
-  def commitCrawlDb(): Unit
-  def close(): Unit
-
-  def getStatusUpdater(job : SparklerJob): Unit
-  def getUpserter(job : SparklerJob): Unit
-  def getScoreUpdateTransformer(): Unit
-  def getStatusUpdateTransformer(): Unit
-
+  override def apply(context: TaskContext, docs: Iterator[XContentBuilder]): Any = {
+    LOG.debug("Updating document status into CrawlDb")
+    val elasticsearchClient = job.newStorageProxy()
+    elasticsearchClient.addResourceDocs(docs)
+    elasticsearchClient.close()
+  }
 }
 
+object ElasticsearchStatusUpdate extends Loggable;
