@@ -34,10 +34,5 @@ abstract class StorageProxy() {
   def commitCrawlDb(): Unit
   def close(): Unit
 
-  def getStatusUpdater(job : SparklerJob): Unit
-  def getUpserter(job : SparklerJob): Unit
-  def getScoreUpdateTransformer(): Unit
-  def getStatusUpdateTransformer(): Unit
-
 }
 

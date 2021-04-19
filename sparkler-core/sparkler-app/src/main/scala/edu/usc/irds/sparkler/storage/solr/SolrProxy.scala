@@ -132,21 +132,4 @@ class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Clo
     crawlDb.close()  // SolrClient method close()
   }
 
-  def getStatusUpdater(job : SparklerJob): Unit = {
-    val updater = new SolrStatusUpdate(job)
-    updater
-  }
-  def getUpserter(job : SparklerJob): Unit = {
-    val upserter = new SolrUpsert(job)
-    upserter
-  }
-  def getScoreUpdateTransformer(): Unit = {
-    val scoreTransformer = ScoreUpdateSolrTransformer
-    scoreTransformer
-  }
-  def getStatusUpdateTransformer(): Unit = {
-    val statusTransformer = StatusUpdateSolrTransformer
-    statusTransformer
-  }
-
 }
