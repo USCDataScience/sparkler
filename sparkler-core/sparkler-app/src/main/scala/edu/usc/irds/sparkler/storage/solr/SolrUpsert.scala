@@ -22,6 +22,7 @@ import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
 import org.apache.solr.client.solrj.{SolrClient, SolrQuery}
 import org.apache.spark.TaskContext
 import org.slf4j.LoggerFactory
+import edu.usc.irds.sparkler.storage.Upserter
 
 import scala.collection.JavaConversions._
 
@@ -29,13 +30,13 @@ import scala.collection.JavaConversions._
 /**
  * Created by karanjeets on 6/11/16
  */
-class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) => Any) with Serializable {
+class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) => Any) with Serializable with Upserter {
 
   import edu.usc.irds.sparkler.storage.solr.SolrUpsert.LOG
 
   override def apply(context: TaskContext, docs: Iterator[Resource]): Any = {
     LOG.debug("Inserting new resources into CrawlDb")
-    val proxy = job.newStorageProxy()
+    val proxy = job.getStorageFactory().getProxy()
     var client : SolrClient = null
     try {
       client = proxy.getClient().asInstanceOf[SolrClient]

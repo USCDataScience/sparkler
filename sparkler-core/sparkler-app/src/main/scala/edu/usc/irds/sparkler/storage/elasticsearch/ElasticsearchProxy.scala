@@ -33,6 +33,7 @@ import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.action.index.IndexResponse
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.action.search.SearchResponse
+import org.elasticsearch.action.update.UpdateRequest
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.RestClient
 import org.elasticsearch.client.RestHighLevelClient
@@ -82,10 +83,13 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
     crawlDb
   }
 
-  def addResourceDocs(docs: java.util.Iterator[_]): Unit = {
-    while (docs.hasNext()) {
-      val doc : XContentBuilder = docs.next()
-      addResource(doc)
+  def addResourceDocs(docs: java.util.Iterator[Map[String, Object]]): Unit = {
+    try{
+      while (docs.hasNext()) {
+        addResource(docs.next())
+      }
+    } catch {
+      case e: ClassCastException => println("Must pass java.util.Iterator[Map[String, Object]] to ElasticsearchProxy.addResourceDocs")
     }
   }
 
@@ -111,12 +115,26 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
     }
   }
 
-  def addResource(builder: Any): Unit = {
-    val indexRequest = new IndexRequest("crawldb")
-    indexRequest.source(builder)
-    indexRequest.id()  // TODO: NEED TO GET THE RIGHT ID?
+  def addResource(doc: Map[String, Object]): Unit = {
+    try {
+      val updateData : XContentBuilder = XContentFactory.jsonBuilder()
+        .startObject()
+      for ((key, value) <- doc) {
+        if (key != Constants.storage.ID) updateData.field(key, value)
+      }
+      updateData.endObject()
 
-    indexRequests.append(indexRequest)
+      var indexRequest : IndexRequest = new IndexRequest("crawldb", "type", doc.get(Constants.storage.ID).get.asInstanceOf[String])
+        .source(updateData)
+      var updateRequest : UpdateRequest = new UpdateRequest("crawldb", "type", doc.get(Constants.storage.ID).get.asInstanceOf[String])
+        .doc(updateData)
+        .upsert(indexRequest) // upsert either updates or insert if not found
+      crawlDb.update(updateRequest, RequestOptions.DEFAULT)
+    }
+    catch {
+      case e: IOException =>
+        e.printStackTrace()
+    }
   }
 
   def commitCrawlDb(): Unit = {

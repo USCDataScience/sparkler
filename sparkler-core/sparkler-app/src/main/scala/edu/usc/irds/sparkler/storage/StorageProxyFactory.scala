@@ -20,8 +20,8 @@ package edu.usc.irds.sparkler.storage
 
 import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
 import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
-import edu.usc.irds.sparkler.storage.solr.{SolrDeepRDD, SolrRDD, SolrProxy}
-import edu.usc.irds.sparkler.storage.elasticsearch.{ElasticsearchDeepRDD, ElasticsearchRDD, ElasticsearchProxy}
+import edu.usc.irds.sparkler.storage.solr.{SolrDeepRDD, SolrRDD, SolrProxy, SolrUpsert}
+import edu.usc.irds.sparkler.storage.elasticsearch.{ElasticsearchDeepRDD, ElasticsearchRDD, ElasticsearchProxy, ElasticsearchUpsert}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -29,7 +29,7 @@ import org.apache.spark.rdd.RDD
   *
   * @since 3/2/2021
   */
-class StorageProxyFactory(var config: SparklerConfiguration) {
+class StorageProxyFactory(var config: SparklerConfiguration) extends java.io.Serializable {
 
   val dbToUse: String = config.get(Constants.key.CRAWLDB_BACKEND).asInstanceOf[String]
 
@@ -78,9 +78,17 @@ class StorageProxyFactory(var config: SparklerConfiguration) {
 
   def getDeepRDDDefaults(): StorageRDD = {
     dbToUse match {
-    case "elasticsearch" => ElasticsearchDeepRDD
-    case "solr" => SolrDeepRDD
-    case _ => SolrDeepRDD
+      case "elasticsearch" => ElasticsearchDeepRDD
+      case "solr" => SolrDeepRDD
+      case _ => SolrDeepRDD
+    }
   }
+
+  def getUpserter(job: SparklerJob): Upserter = {
+    dbToUse match {
+      case "elasticsearch" => new ElasticsearchUpsert(job)
+      case "solr" => new SolrUpsert(job)
+      case _ => new SolrUpsert(job)
+    }
   }
 }

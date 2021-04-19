@@ -20,6 +20,12 @@ import org.elasticsearch.search.aggregations.Aggregations
 import org.elasticsearch.search.aggregations.Aggregation
 import org.apache.lucene.queryparser.classic.QueryParserBase
 
+import org.elasticsearch.search.SearchHits
+import org.elasticsearch.search.SearchHit
+import org.elasticsearch.common.document.DocumentField
+
+import scala.collection.JavaConversions._
+
 /**
   * @since 4/3/21
   */
@@ -36,11 +42,13 @@ class ElasticsearchRDD(sc: SparkContext,
   assert(topN > 0)
   assert(maxGroups > 0)
 
+  val storageFactory = job.getStorageFactory()
+
   override def compute(split: Partition, context: TaskContext): Iterator[Resource] = {
     val partition: SparklerGroupPartition = split.asInstanceOf[SparklerGroupPartition]
     val batchSize = 100
 
-    var searchRequest : SearchRequest = new SearchRequest()
+    var searchRequest : SearchRequest = new SearchRequest("crawldb")
     var searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
 
     var q : BoolQueryBuilder = QueryBuilders.boolQuery()
@@ -75,12 +83,12 @@ class ElasticsearchRDD(sc: SparkContext,
       }
     }
 
-    searchSourceBuilder.size(maxGroups)
+    searchSourceBuilder.size(batchSize)
 
     searchSourceBuilder.query(q)
     searchRequest.source(searchSourceBuilder)
 
-    val proxy = job.newStorageProxy()
+    val proxy = storageFactory.getProxy()
     var client : RestHighLevelClient = null
     try {
       client = proxy.getClient().asInstanceOf[RestHighLevelClient]
@@ -93,23 +101,24 @@ class ElasticsearchRDD(sc: SparkContext,
   }
 
   override protected def getPartitions: Array[Partition] = {
-    var searchRequest : SearchRequest = new SearchRequest()
+    var searchRequest : SearchRequest = new SearchRequest("crawldb")
     var searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
 
+    // querying
     var q : BoolQueryBuilder = QueryBuilders.boolQuery()
       .filter(QueryBuilders.termQuery(Constants.storage.CRAWL_ID, job.id))
-    println(Constants.storage.CRAWL_ID + " => " + job.id)
 
-    // querying
-    for (query <- generateQry.split(",")) {
-      try {
-        val Array(field, value) = query.split(":").take(2)
-        q.filter(QueryBuilders.termQuery(field, value))
-        println(field + " => " + value)
-      } catch {
-        case e: Exception => println("Exception parsing generateQry: " + generateQry)
-      }
-    }
+//    for (query <- generateQry.split(",")) {
+//      try {
+//        val Array(field, value) = query.split(":").take(2)
+//        q.filter(QueryBuilders.termQuery(field, value)) // <-- this doesn't work for status/UNFETCHED??
+//        println(field + " => " + value)
+//      } catch {
+//        case e: Exception => println("Exception parsing generateQry: " + generateQry)
+//      }
+//    }
+
+    searchSourceBuilder.query(q)
 
     // sorting
     for (sort <- sortBy.split(",")) {
@@ -136,10 +145,9 @@ class ElasticsearchRDD(sc: SparkContext,
     searchSourceBuilder.aggregation(groupBy)
     searchSourceBuilder.size(maxGroups)
 
-    searchSourceBuilder.query(q)
     searchRequest.source(searchSourceBuilder)
 
-    val proxy = job.newStorageProxy()
+    val proxy = storageFactory.getProxy()
     var client : RestHighLevelClient = null
     try {
       client = proxy.getClient().asInstanceOf[RestHighLevelClient]
@@ -148,25 +156,37 @@ class ElasticsearchRDD(sc: SparkContext,
     }
 
     var searchResponse : SearchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
-    println(searchResponse.toString())
+//    println(searchResponse.toString())
 
-    var aggregations : Aggregations = searchResponse.getAggregations()
-    if (aggregations == null) println("Aggregations is NULL")
-    else println("Aggregations is NOT NULL")
+//    var aggregations : Aggregations = searchResponse.getAggregations()
+//    if (aggregations == null) println("Aggregations is NULL")
+//    else println("Aggregations is NOT NULL")
+//
+//    var aggregationList = aggregations.asList()
+//    println(aggregationList.size())
+//
+//    var aggregation : Aggregation = aggregations.get("by" + Constants.storage.PARENT)
+//    if (aggregation == null) println("Aggregation is NULL")
+//    else {
+//      println("Aggregation is NOT NULL: " + aggregation.getName())
+//      println("Type: " + aggregation.getType())
+//    }
 
-    var aggregationList = aggregations.asList()
-    println(aggregationList.size())
+    var shs : SearchHits = searchResponse.getHits()
+//    println("searchhits size: " + shs.getTotalHits().value)
 
-    var aggregation : Aggregation = aggregations.get("by" + Constants.storage.PARENT)
-    if (aggregation == null) println("Aggregation is NULL")
-    else {
-      println("Aggregation is NOT NULL: " + aggregation.getName())
-      println("Type: " + aggregation.getType())
+//    shs.getHits().foreach(sh => {
+//      println("SearchHit - source: " + sh.getSourceAsString())
+//      var source: java.util.Map[java.lang.String, java.lang.Object] = sh.getSourceAsMap()
+//      println("SearchHit - source - url: " + source.get("url"))
+//    })
+
+    val res = new Array[Partition](shs.getTotalHits().value.toInt)
+    for (i <- 0 until shs.getTotalHits().value.toInt) {
+      //TODO: improve partitioning : (1) club smaller domains, (2) support for multiple partitions for larger domains
+      res(i) = new SparklerGroupPartition(i, shs.getHits()(i).getSourceAsMap().get("group").asInstanceOf[String])
+//      println(shs.getHits()(i).getSourceAsMap().get("group").asInstanceOf[String])
     }
-
-
-
-    val res = new Array[Partition](1)
 
     proxy.close()
     res

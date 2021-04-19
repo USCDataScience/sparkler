@@ -17,27 +17,16 @@
 
 package edu.usc.irds.sparkler.storage
 
-import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
+import edu.usc.irds.sparkler.model.Resource
+import org.apache.spark.TaskContext
 
 /**
   *
-  * @since 3/2/2021
+  * @since 4/18/2021
   */
-abstract class StorageProxy() {
+trait Upserter extends ((TaskContext, Iterator[Resource]) => Any) {
 
-  def getClient(): Any
-
-  def addResourceDocs(docs: java.util.Iterator[Map[String, Object]]): Unit
-  def addResources(beans: java.util.Iterator[Resource]): Unit
-  def addResource(doc: Map[String, Object]): Unit
-
-  def commitCrawlDb(): Unit
-  def close(): Unit
-
-  def getStatusUpdater(job : SparklerJob): Unit
-  def getUpserter(job : SparklerJob): Unit
-  def getScoreUpdateTransformer(): Unit
-  def getStatusUpdateTransformer(): Unit
+  def apply(context: TaskContext, docs: Iterator[Resource]): Any
 
 }
 
