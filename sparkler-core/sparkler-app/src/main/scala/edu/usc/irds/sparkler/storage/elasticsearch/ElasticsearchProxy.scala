@@ -83,8 +83,14 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
     crawlDb
   }
 
-  def addResourceDocs(docs: java.util.Iterator[_]): Unit = {
-    addResource(null)  // temp placeholder
+  def addResourceDocs(docs: java.util.Iterator[Map[String, Object]]): Unit = {
+    try{
+      while (docs.hasNext()) {
+        addResource(docs.next())
+      }
+    } catch {
+      case e: ClassCastException => println("Must pass java.util.Iterator[Map[String, Object]] to ElasticsearchProxy.addResourceDocs")
+    }
   }
 
   def addResources(resources: java.util.Iterator[Resource]): Unit = {
@@ -109,59 +115,24 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
     }
   }
 
-  def addResource(doc: Any): Unit = {
-    var builder : XContentBuilder = null
-    var docSolr : SolrInputDocument = null
-    try {
-      docSolr = doc.asInstanceOf[SolrInputDocument]
-      if (docSolr != null) {
-        println(docSolr.toString())
-        var error = 0/0
-      }
-
-      builder = XContentFactory.jsonBuilder()
-        .startObject()
-        .field("fullName", "CSCI 401")
-        .field("year", 2021)
-        .field("project", "Elasticsearch for Sparkler")
-        .endObject()
-    }
-    catch {
-      case e: IOException =>
-        e.printStackTrace()
-    }
-
-    val indexRequest = new IndexRequest("crawldb")
-    indexRequest.source(builder)
-    indexRequest.id()  // TODO: NEED TO GET THE RIGHT ID?
-
-    indexRequests.append(indexRequest)
-  }
-
-  def updateResources(data: java.util.Iterator[Map[String, Object]]): Unit = {
-    while (data.hasNext()) {
-      updateResource(data.next())
-    }
-  }
-
-  def updateResource(data: Map[String, Object]): Unit = {
+  def addResource(doc: Map[String, Object]): Unit = {
     try {
       val updateData : XContentBuilder = XContentFactory.jsonBuilder()
         .startObject()
-      for ((key, value) <- data) {
+      for ((key, value) <- doc) {
         if (key != Constants.storage.ID) updateData.field(key, value)
       }
       updateData.endObject()
 
-      var indexRequest : IndexRequest = new IndexRequest("crawldb", "type", data.get(Constants.storage.ID).get.asInstanceOf[String])
+      var indexRequest : IndexRequest = new IndexRequest("crawldb", "type", doc.get(Constants.storage.ID).get.asInstanceOf[String])
         .source(updateData)
-      var updateRequest : UpdateRequest = new UpdateRequest("crawldb", "type", data.get(Constants.storage.ID).get.asInstanceOf[String])
+      var updateRequest : UpdateRequest = new UpdateRequest("crawldb", "type", doc.get(Constants.storage.ID).get.asInstanceOf[String])
         .doc(updateData)
         .upsert(indexRequest) // upsert either updates or insert if not found
       crawlDb.update(updateRequest, RequestOptions.DEFAULT)
     }
     catch {
-      case e: Exception =>
+      case e: IOException =>
         e.printStackTrace()
     }
   }

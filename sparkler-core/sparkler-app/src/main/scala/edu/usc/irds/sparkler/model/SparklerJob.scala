@@ -18,7 +18,7 @@
 package edu.usc.irds.sparkler.model
 
 import java.io.File
-import edu.usc.irds.sparkler.storage.{StorageProxyFactory, StorageProxy, StorageRDD, Upserter}
+import edu.usc.irds.sparkler.storage.StorageProxyFactory
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.service.RejectingURLFilterChain
 import edu.usc.irds.sparkler.util.JobUtil
@@ -38,8 +38,6 @@ class SparklerJob(val id: String,
   extends Serializable with JobContext with Loggable {
 
   var storageProxyFactory : StorageProxyFactory = new StorageProxyFactory(config)
-  var rddDefaults : StorageRDD = storageProxyFactory.getRDDDefaults()
-  var deepRDDDefaults : StorageRDD = storageProxyFactory.getDeepRDDDefaults()
 
   /*
    * mappings from extension point to extension chain
@@ -57,33 +55,6 @@ class SparklerJob(val id: String,
   def getStorageFactory(): StorageProxyFactory = {
     storageProxyFactory
   }
-
-//  def newStorageProxy(): StorageProxy = {
-//    storageProxyFactory.getProxy()
-//  }
-
-//  def newRDD(sc: SparkContext,
-//             job: SparklerJob,
-//             sortBy: String = rddDefaults.DEFAULT_ORDER,
-//             generateQry: String = rddDefaults.DEFAULT_FILTER_QRY,
-//             maxGroups: Int = rddDefaults.DEFAULT_GROUPS,
-//             topN: Int = rddDefaults.DEFAULT_TOPN): RDD[Resource] = {
-//    storageProxyFactory.getRDD(sc, job, sortBy, generateQry, maxGroups, topN)
-//  }
-//
-//  def newDeepRDD(sc: SparkContext,
-//                 job: SparklerJob,
-//                 sortBy: String = deepRDDDefaults.DEFAULT_ORDER,
-//                 generateQry: String = deepRDDDefaults.DEFAULT_FILTER_QRY,
-//                 maxGroups: Int = deepRDDDefaults.DEFAULT_GROUPS,
-//                 topN: Int = deepRDDDefaults.DEFAULT_TOPN,
-//                 deepCrawlHosts: Array[String] = new Array[String](0)): RDD[Resource] = {
-//    storageProxyFactory.getDeepRDD(sc, job, sortBy, generateQry, maxGroups, topN, deepCrawlHosts)
-//  }
-//
-//  def newUpserter(): Upserter = {
-//    storageProxyFactory.getUpserter(this)
-//  }
 
   override def getConfiguration: SparklerConfiguration ={
     //FIXME: config has to be serializable

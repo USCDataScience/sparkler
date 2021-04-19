@@ -27,12 +27,9 @@ abstract class StorageProxy() {
 
   def getClient(): Any
 
-  def addResourceDocs(docs: java.util.Iterator[_]): Unit
+  def addResourceDocs(docs: java.util.Iterator[Map[String, Object]]): Unit
   def addResources(beans: java.util.Iterator[Resource]): Unit
-  def addResource(doc: Any): Unit
-
-  def updateResources(data: java.util.Iterator[Map[String, Object]]): Unit
-  def updateResource(data: Map[String, Object]): Unit
+  def addResource(doc: Map[String, Object]): Unit
 
   def commitCrawlDb(): Unit
   def close(): Unit

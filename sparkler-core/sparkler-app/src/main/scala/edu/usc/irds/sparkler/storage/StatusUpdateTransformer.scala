@@ -46,7 +46,7 @@ object StatusUpdateTransformer extends (CrawlData => Map[String, Object] ) with 
       Constants.storage.RETRIES_SINCE_FETCH -> Map("inc" -> 1).asJava,
       Constants.storage.EXTRACTED_TEXT -> data.parsedData.extractedText,
       Constants.storage.CONTENT_TYPE -> data.fetchedData.getContentType.split("; ")(0),
-      Constants.storage.FETCH_STATUS_CODE -> data.fetchedData.getResponseCode.asInstanceOf[String],gi
+      Constants.storage.FETCH_STATUS_CODE -> data.fetchedData.getResponseCode.asInstanceOf[String],
       Constants.storage.SIGNATURE -> hashFunction.hashBytes(data.fetchedData.getContent).toString,
       Constants.storage.RELATIVE_PATH -> URLUtil.reverseUrl(data.fetchedData.getResource.getUrl),
       Constants.storage.OUTLINKS -> data.parsedData.outlinks.toArray,

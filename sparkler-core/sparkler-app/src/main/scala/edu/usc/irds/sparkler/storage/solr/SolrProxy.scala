@@ -82,15 +82,14 @@ class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Clo
     crawlDb
   }
 
-  // TODO: for following 3 add resource methods: test input is SolrInputDocument because of relaxation in StorageProxy
-//  def addResourceDocs(docs: java.util.Iterator[SolrInputDocument]): Unit = {
-  def addResourceDocs(docs: java.util.Iterator[_]): Unit = {
-  try{
-      crawlDb.add(docs.asInstanceOf[java.util.Iterator[SolrInputDocument]])  // SolrClient method add()
+  def addResourceDocs(docs: java.util.Iterator[Map[String, Object]]): Unit = {
+    try{
+      while (docs.hasNext()) {
+        addResource(docs.next())
+      }
     } catch {
-      case e: ClassCastException => println("Must pass java.util.Iterator[SolrInputDocument] to SolrProxy.addResourceDocs")
+      case e: ClassCastException => println("Must pass java.util.Iterator[Map[String, Object]] to SolrProxy.addResourceDocs")
     }
-
   }
 
   def addResources(resources: java.util.Iterator[Resource]): Unit = {
@@ -112,31 +111,17 @@ class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Clo
     }
   }
 
-//  def addResource(doc: SolrInputDocument): Unit = {
-  def addResource(doc: Any): Unit = {
+  def addResource(doc: Map[String, Object]): Unit = {
     try{
-      crawlDb.add(doc.asInstanceOf[SolrInputDocument])  // SolrClient method add()
+      val sUpdate = new SolrInputDocument()
+      for ((key, value) <- doc) {
+        sUpdate.setField(key, value)
+      }
+
+      crawlDb.add(sUpdate)  // SolrClient method add()
     } catch {
-      case e: ClassCastException => println("Must pass SolrInputDocument to SolrProxy.addResource")
+      case e: ClassCastException => println("Must pass Map[String, Object] to SolrProxy.addResource")
     }
-  }
-
-  def updateResources(data: java.util.Iterator[Map[String, Object]]): Unit = {
-    while (data.hasNext()) {
-      updateResource(data.next())
-    }
-  }
-
-  def updateResource(data: Map[String, Object]): Unit = {
-    val sUpdate = new SolrInputDocument()
-
-    for ((key, value) <- data) {
-      if (key == Constants.storage.ID) sUpdate.setField(key, value)
-      else sUpdate.setField(key, Map("set" -> value))
-    }
-
-    // Solr has implicit upsert
-    addResource(sUpdate)
   }
 
   def commitCrawlDb(): Unit = {
