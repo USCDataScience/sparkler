@@ -33,7 +33,7 @@ object ScoreUpdateTransformer extends (CrawlData => Map[String, Object]) with Se
 
     val toUpdate : Map[String, Object] = Map(
       Constants.storage.ID -> data.fetchedData.getResource.getId,
-      Constants.storage.GENERATE_SCORE -> data.fetchedData.getResource.getGenerateScore()
+      Constants.storage.GENERATE_SCORE -> Map("set" -> data.fetchedData.getResource.getGenerateScore()).asJava
     )
 
     toUpdate

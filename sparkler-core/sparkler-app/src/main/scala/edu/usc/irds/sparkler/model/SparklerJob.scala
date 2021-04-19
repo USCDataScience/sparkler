@@ -54,32 +54,36 @@ class SparklerJob(val id: String,
     this(id, conf, JobUtil.newSegmentId())
   }
 
-  def newStorageProxy(): StorageProxy = {
-    storageProxyFactory.getProxy()
+  def getStorageFactory(): StorageProxyFactory = {
+    storageProxyFactory
   }
 
-  def newRDD(sc: SparkContext,
-             job: SparklerJob,
-             sortBy: String = rddDefaults.DEFAULT_ORDER,
-             generateQry: String = rddDefaults.DEFAULT_FILTER_QRY,
-             maxGroups: Int = rddDefaults.DEFAULT_GROUPS,
-             topN: Int = rddDefaults.DEFAULT_TOPN): RDD[Resource] = {
-    storageProxyFactory.getRDD(sc, job, sortBy, generateQry, maxGroups, topN)
-  }
+//  def newStorageProxy(): StorageProxy = {
+//    storageProxyFactory.getProxy()
+//  }
 
-  def newDeepRDD(sc: SparkContext,
-                 job: SparklerJob,
-                 sortBy: String = deepRDDDefaults.DEFAULT_ORDER,
-                 generateQry: String = deepRDDDefaults.DEFAULT_FILTER_QRY,
-                 maxGroups: Int = deepRDDDefaults.DEFAULT_GROUPS,
-                 topN: Int = deepRDDDefaults.DEFAULT_TOPN,
-                 deepCrawlHosts: Array[String] = new Array[String](0)): RDD[Resource] = {
-    storageProxyFactory.getDeepRDD(sc, job, sortBy, generateQry, maxGroups, topN, deepCrawlHosts)
-  }
-
-  def newUpserter(): Upserter = {
-    storageProxyFactory.getUpserter(this)
-  }
+//  def newRDD(sc: SparkContext,
+//             job: SparklerJob,
+//             sortBy: String = rddDefaults.DEFAULT_ORDER,
+//             generateQry: String = rddDefaults.DEFAULT_FILTER_QRY,
+//             maxGroups: Int = rddDefaults.DEFAULT_GROUPS,
+//             topN: Int = rddDefaults.DEFAULT_TOPN): RDD[Resource] = {
+//    storageProxyFactory.getRDD(sc, job, sortBy, generateQry, maxGroups, topN)
+//  }
+//
+//  def newDeepRDD(sc: SparkContext,
+//                 job: SparklerJob,
+//                 sortBy: String = deepRDDDefaults.DEFAULT_ORDER,
+//                 generateQry: String = deepRDDDefaults.DEFAULT_FILTER_QRY,
+//                 maxGroups: Int = deepRDDDefaults.DEFAULT_GROUPS,
+//                 topN: Int = deepRDDDefaults.DEFAULT_TOPN,
+//                 deepCrawlHosts: Array[String] = new Array[String](0)): RDD[Resource] = {
+//    storageProxyFactory.getDeepRDD(sc, job, sortBy, generateQry, maxGroups, topN, deepCrawlHosts)
+//  }
+//
+//  def newUpserter(): Upserter = {
+//    storageProxyFactory.getUpserter(this)
+//  }
 
   override def getConfiguration: SparklerConfiguration ={
     //FIXME: config has to be serializable

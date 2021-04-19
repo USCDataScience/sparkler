@@ -41,6 +41,8 @@ class ElasticsearchDeepRDD(sc: SparkContext,
   assert(topN > 0)
   assert(maxGroups > 0)
 
+  val storageFactory = job.getStorageFactory()
+
   override def compute(split: Partition, context: TaskContext): Iterator[Resource] = {
     val partition: SparklerGroupPartition = split.asInstanceOf[SparklerGroupPartition]
     val batchSize = 100
@@ -95,7 +97,7 @@ class ElasticsearchDeepRDD(sc: SparkContext,
     searchSourceBuilder.query(q)
     searchRequest.source(searchSourceBuilder)
 
-    val proxy = job.newStorageProxy()
+    val proxy = storageFactory.getProxy()
     var client : RestHighLevelClient = null
     try {
       client = proxy.getClient().asInstanceOf[RestHighLevelClient]
@@ -154,7 +156,7 @@ class ElasticsearchDeepRDD(sc: SparkContext,
 
     searchRequest.source(searchSourceBuilder)
 
-    val proxy = job.newStorageProxy()
+    val proxy = storageFactory.getProxy()
     var client : RestHighLevelClient = null
     try {
       client = proxy.getClient().asInstanceOf[RestHighLevelClient]

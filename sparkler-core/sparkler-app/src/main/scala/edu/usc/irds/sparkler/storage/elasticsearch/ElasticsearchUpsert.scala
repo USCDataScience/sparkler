@@ -40,7 +40,7 @@ class ElasticsearchUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Reso
 
   override def apply(context: TaskContext, docs: Iterator[Resource]): Any = {
     LOG.debug("Inserting new resources into CrawlDb")
-    val proxy = job.newStorageProxy()
+    val proxy = job.getStorageFactory().getProxy()
     var client : RestHighLevelClient = null
     try {
       client = proxy.getClient().asInstanceOf[RestHighLevelClient]
