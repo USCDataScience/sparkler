@@ -56,14 +56,14 @@ class ElasticsearchRDD(sc: SparkContext,
       .filter(QueryBuilders.termQuery(Constants.storage.CRAWL_ID, job.id))
 
     // querying
-    for (query <- generateQry.split(",")) {
-      try {
-        val Array(field, value) = query.split(":").take(2)
-        q.filter(QueryBuilders.termQuery(field, value))
-      } catch {
-        case e: Exception => println("Exception parsing generateQry: " + generateQry)
-      }
-    }
+//    for (query <- generateQry.split(",")) {
+//      try {
+//        val Array(field, value) = query.split(":").take(2)
+//        q.filter(QueryBuilders.termQuery(field, value))
+//      } catch {
+//        case e: Exception => println("Exception parsing generateQry: " + generateQry)
+//      }
+//    }
 
     // sorting
     for (sort <- sortBy.split(",")) {
@@ -96,6 +96,8 @@ class ElasticsearchRDD(sc: SparkContext,
       case e: ClassCastException => println("client is not RestHighLevelClient.")
     }
 
+    println("ElasticsearchRDD: compute() ---------------")
+    println(searchRequest.toString())
     new ElasticsearchResultIterator[Resource](client, searchRequest,
       batchSize, classOf[Resource], closeClient = true, limit = topN)
   }
@@ -184,8 +186,8 @@ class ElasticsearchRDD(sc: SparkContext,
     val res = new Array[Partition](shs.getTotalHits().value.toInt)
     for (i <- 0 until shs.getTotalHits().value.toInt) {
       //TODO: improve partitioning : (1) club smaller domains, (2) support for multiple partitions for larger domains
-      res(i) = new SparklerGroupPartition(i, shs.getHits()(i).getSourceAsMap().get("group").asInstanceOf[String])
-//      println(shs.getHits()(i).getSourceAsMap().get("group").asInstanceOf[String])
+      res(i) = new SparklerGroupPartition(i, shs.getHits()(i).getSourceAsMap().get(Constants.storage.PARENT).asInstanceOf[String])
+//      println(shs.getHits()(i).getSourceAsMap().get(Constants.storage.PARENT).asInstanceOf[String])
     }
 
     proxy.close()

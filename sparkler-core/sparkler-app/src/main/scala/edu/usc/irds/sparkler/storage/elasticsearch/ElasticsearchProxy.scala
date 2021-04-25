@@ -119,14 +119,16 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
     try {
       val updateData : XContentBuilder = XContentFactory.jsonBuilder()
         .startObject()
+      println("ElasticsearchProxy: addResource()")
       for ((key, value) <- doc) {
+        println(key + " => " + value)
         if (key != Constants.storage.ID) updateData.field(key, value)
       }
       updateData.endObject()
 
-      var indexRequest : IndexRequest = new IndexRequest("crawldb", "type", doc.get(Constants.storage.ID).get.asInstanceOf[String])
+      var indexRequest : IndexRequest = new IndexRequest("crawldb", "_doc", doc.get(Constants.storage.ID).get.asInstanceOf[String])
         .source(updateData)
-      var updateRequest : UpdateRequest = new UpdateRequest("crawldb", "type", doc.get(Constants.storage.ID).get.asInstanceOf[String])
+      var updateRequest : UpdateRequest = new UpdateRequest("crawldb", "_doc", doc.get(Constants.storage.ID).get.asInstanceOf[String])
         .doc(updateData)
         .upsert(indexRequest) // upsert either updates or insert if not found
       crawlDb.update(updateRequest, RequestOptions.DEFAULT)

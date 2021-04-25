@@ -23,7 +23,7 @@ import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
-import edu.usc.irds.sparkler.storage.{StorageProxyFactory, StatusUpdate, ScoreUpdateTransformer, StatusUpdateTransformer}
+import edu.usc.irds.sparkler.storage.{StorageProxyFactory, StatusUpdate}
 import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
@@ -193,7 +193,7 @@ class Crawler extends CliTool {
         val fetchedRdd = deepRdd.map(r => (r.getGroup, r))
           .groupByKey()
           .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-            FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateTransformer)
+            FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer())
           })
           .persist()
 
@@ -220,7 +220,7 @@ class Crawler extends CliTool {
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateTransformer) })
+          FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer()) })
         .persist()
 
       if (kafkaEnable) {
@@ -248,7 +248,7 @@ class Crawler extends CliTool {
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(job, d))
 
-    val scoreUpdateRdd: RDD[Map[String, Object]] = scoredRdd.map(d => ScoreUpdateTransformer(d))
+    val scoreUpdateRdd: RDD[Map[String, Object]] = scoredRdd.map(d => storageFactory.getScoreUpdateTransformer()(d))
     val scoreUpdateFunc = new StatusUpdate(job)
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
 
@@ -276,7 +276,7 @@ class Crawler extends CliTool {
     sc.runJob(OutLinkUpsert(job, rdd), storageFactory.getUpserter(job))
 
     //Step: Update status+score of fetched resources
-    val statusUpdateRdd: RDD[Map[String, Object]] = rdd.map(d => StatusUpdateTransformer(d))
+    val statusUpdateRdd: RDD[Map[String, Object]] = rdd.map(d => storageFactory.getStatusUpdateTransformer()(d))
     sc.runJob(statusUpdateRdd, new StatusUpdate(job))
 
     //Step: Store these to nutch segments

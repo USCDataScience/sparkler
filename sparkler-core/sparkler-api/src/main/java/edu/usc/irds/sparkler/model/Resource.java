@@ -1,5 +1,6 @@
 package edu.usc.irds.sparkler.model;
 
+import edu.usc.irds.sparkler.Constants;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.util.StringUtil;
 import org.apache.solr.client.solrj.beans.Field;
@@ -103,24 +104,28 @@ public class Resource implements Serializable {
     }
 
     public Resource(Map<String, Object> dataMap) {
-        // TODO: check this format
-        String defaultDateFormat = "EEE MMM dd HH:mm:ss zzz yyyy";
+        System.out.println("Resource constructor ---------------");
+        for (String key : dataMap.keySet()) {
+            System.out.println(key + " => " + dataMap.get(key));
+        }
 
         if (dataMap.containsKey("id")) id = (String)dataMap.get("id");
         if (dataMap.containsKey("url")) url = (String)dataMap.get("url");
         if (dataMap.containsKey("group")) group = (String)dataMap.get("group");
         if (dataMap.containsKey("discover_depth")) {
             try {
-                discoverDepth = Integer.valueOf((String)dataMap.get("discover_depth"));
+                discoverDepth = (Integer)dataMap.get("discover_depth");
             } catch (Exception e) {
+                System.err.println(e.toString());
                 System.err.println("Could not retrieve and parse to Integer: discover_depth");
             }
         }
         if (dataMap.containsKey("status")) status = (String)dataMap.get("status");
         if (dataMap.containsKey("fetch_timestamp")) {
             try {
-                fetchTimestamp = new SimpleDateFormat(defaultDateFormat).parse((String)dataMap.get("fetch_timestamp"));
+                fetchTimestamp = new SimpleDateFormat(Constants.defaultDateFormat).parse((String)dataMap.get("fetch_timestamp"));
             } catch (Exception e) {
+                System.err.println(e.toString());
                 System.err.println("Could not retrieve and parse to Date: fetch_timestamp");
             }
         }
@@ -135,8 +140,9 @@ public class Resource implements Serializable {
         }
         if (dataMap.containsKey("generate_score")) {
             try {
-                generateScore = Double.valueOf((String)dataMap.get("generate_score"));
+                generateScore = (Double)dataMap.get("generate_score");
             } catch (Exception e) {
+                System.err.println(e.toString());
                 System.err.println("Could not retrieve and parse to Double: generate_score");
             }
         }
@@ -144,15 +150,17 @@ public class Resource implements Serializable {
         if (dataMap.containsKey("jobmeta")) metadata = (String)dataMap.get("jobmeta");
         if (dataMap.containsKey("last_updated_at")) {
             try {
-                lastUpdatedAt = new SimpleDateFormat(defaultDateFormat).parse((String)dataMap.get("last_updated_at"));
+                lastUpdatedAt = new SimpleDateFormat(Constants.defaultDateFormat).parse((String)dataMap.get("last_updated_at"));
             } catch (Exception e) {
+                System.err.println(e.toString());
                 System.err.println("Could not retrieve and parse to Date: last_updated_at");
             }
         }
         if (dataMap.containsKey("indexed_at")) {
             try {
-                indexedAt = new SimpleDateFormat(defaultDateFormat).parse((String)dataMap.get("indexed_at"));
+                indexedAt = new SimpleDateFormat(Constants.defaultDateFormat).parse((String)dataMap.get("indexed_at"));
             } catch (Exception e) {
+                System.err.println(e.toString());
                 System.err.println("Could not retrieve and parse to Date: indexed_at");
             }
         }

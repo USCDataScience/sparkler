@@ -20,8 +20,10 @@ package edu.usc.irds.sparkler.storage
 
 import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
 import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
-import edu.usc.irds.sparkler.storage.solr.{SolrDeepRDD, SolrRDD, SolrProxy, SolrUpsert}
-import edu.usc.irds.sparkler.storage.elasticsearch.{ElasticsearchDeepRDD, ElasticsearchRDD, ElasticsearchProxy, ElasticsearchUpsert}
+import edu.usc.irds.sparkler.storage.solr.{SolrDeepRDD, SolrRDD, SolrProxy}
+import edu.usc.irds.sparkler.storage.solr.{SolrUpsert, StatusUpdateSolrTransformer, ScoreUpdateSolrTransformer}
+import edu.usc.irds.sparkler.storage.elasticsearch.{ElasticsearchDeepRDD, ElasticsearchRDD, ElasticsearchProxy}
+import edu.usc.irds.sparkler.storage.elasticsearch.{ElasticsearchUpsert, StatusUpdateElasticsearchTransformer, ScoreUpdateElasticsearchTransformer}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -89,6 +91,22 @@ class StorageProxyFactory(var config: SparklerConfiguration) extends java.io.Ser
       case "elasticsearch" => new ElasticsearchUpsert(job)
       case "solr" => new SolrUpsert(job)
       case _ => new SolrUpsert(job)
+    }
+  }
+
+  def getStatusUpdateTransformer() : StatusUpdateTransformer = {
+    dbToUse match {
+      case "elasticsearch" => StatusUpdateElasticsearchTransformer
+      case "solr" => StatusUpdateSolrTransformer
+      case _ => StatusUpdateSolrTransformer
+    }
+  }
+
+  def getScoreUpdateTransformer() : ScoreUpdateTransformer = {
+    dbToUse match {
+      case "elasticsearch" => ScoreUpdateElasticsearchTransformer
+      case "solr" => ScoreUpdateSolrTransformer
+      case _ => ScoreUpdateSolrTransformer
     }
   }
 }

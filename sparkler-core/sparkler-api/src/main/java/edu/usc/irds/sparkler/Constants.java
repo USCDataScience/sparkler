@@ -154,4 +154,6 @@ public interface Constants {
         String HOSTNAME = "hostname";
     }
 
+    String defaultDateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
 }

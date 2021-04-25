@@ -15,18 +15,29 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.storage
+package edu.usc.irds.sparkler.storage.elasticsearch
 
+import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.CrawlData
+import edu.usc.irds.sparkler.storage.ScoreUpdateTransformer
+
+import scala.collection.JavaConverters._
 
 /**
-  *
-  * @since 4/18/2021
+  * Created by thammegr on 6/7/16.
+  * Modified by karanjeets
   */
-trait ScoreUpdateTransformer extends (CrawlData => Map[String, Object]) with Serializable with Loggable {
+object ScoreUpdateElasticsearchTransformer extends (CrawlData => Map[String, Object]) with Serializable with Loggable with ScoreUpdateTransformer {
 
-  def apply(data: CrawlData): Map[String, Object]
+  override def apply(data: CrawlData): Map[String, Object] = {
 
+    val toUpdate : Map[String, Object] = Map(
+      Constants.storage.ID -> data.fetchedData.getResource.getId,
+      Constants.storage.GENERATE_SCORE -> data.fetchedData.getResource.getGenerateScore()
+//      Constants.storage.GENERATE_SCORE -> Map("set" -> data.fetchedData.getResource.getGenerateScore()).asJava
+    )
+
+    toUpdate
+  }
 }
-

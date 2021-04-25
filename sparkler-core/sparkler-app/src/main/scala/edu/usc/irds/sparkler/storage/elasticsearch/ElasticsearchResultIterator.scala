@@ -17,6 +17,8 @@
 
 package edu.usc.irds.sparkler.storage.elasticsearch
 
+import edu.usc.irds.sparkler.model.Resource
+
 import org.elasticsearch.client.RestHighLevelClient
 
 import org.elasticsearch.action.search.SearchRequest
@@ -69,7 +71,9 @@ class ElasticsearchResultIterator[T] extends Iterator[T] {
     request.scroll(TimeValue.timeValueMinutes(1L))
     var searchResponse : SearchResponse = client.search(request, RequestOptions.DEFAULT)
     scrollId = searchResponse.getScrollId()
+    println("ElasticsearchResultIterator: initializeScrollContext() - scrollId: " + scrollId)
     currentPage = searchResponse.getHits().iterator()
+    println("ElasticsearchResultIterator: initializeScrollContext() - first batch size: " + searchResponse.getHits().getTotalHits().value.toInt)
   }
 
   private def getNextBean(dontFetch: Boolean = false): Option[SearchHit] = {
@@ -81,6 +85,7 @@ class ElasticsearchResultIterator[T] extends Iterator[T] {
         scrollRequest.scroll(TimeValue.timeValueSeconds(30))
         var searchScrollResponse : SearchResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT)
         scrollId = searchScrollResponse.getScrollId()
+        println("ElasticsearchResultIterator: getNextBean() - scrollId: " + scrollId)
         currentPage = searchScrollResponse.getHits().iterator()
       } catch {
         case e: Exception =>
@@ -89,7 +94,10 @@ class ElasticsearchResultIterator[T] extends Iterator[T] {
     }
 
     if (count < limit && currentPage.hasNext) {
-      Some(currentPage.next())
+      var sh : SearchHit = currentPage.next()
+      println("ElasticsearchResultIterator: getNextBean() - found something")
+      println(sh.toString())
+      Some(sh)
     } else {
       ElasticsearchResultIterator.LOG.debug("Reached the end of result set")
       if (closeClient) {
@@ -101,9 +109,19 @@ class ElasticsearchResultIterator[T] extends Iterator[T] {
   }
 
   private def deserialize(searchHit: SearchHit): T = {
-    searchHit.asInstanceOf[T] // placeholder to pass compile
+//    searchHit.asInstanceOf[T] // placeholder to pass compile
     // NOTE: the template class must implement a constuctor for T(java.util.Map<String, Object>)
 //    beanType.getConstructor(Map[String, Object].getClass).newInstance(searchHit.getSourceAsMap())
+    try {
+      // assumes that T is a Resource; as far as we can tell, this is always true as of 4/24/2021
+      // TODO: create a new instance of a generic type rather than Resource
+      new Resource(searchHit.getSourceAsMap()).asInstanceOf[T]
+    } catch {
+      case e: Exception => {
+        println("ElasticsearchResultIterator: could not create new instance of Resource and cast to T")
+        throw new RuntimeException(e)
+      }
+    }
   }
 
   override def hasNext: Boolean = nextBean.isDefined

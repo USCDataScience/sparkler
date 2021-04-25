@@ -17,68 +17,16 @@
 
 package edu.usc.irds.sparkler.storage
 
-import java.util
-
-import com.google.common.hash.{HashFunction, Hashing}
-import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.CrawlData
-import edu.usc.irds.sparkler.util.URLUtil
-
-import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
 
 /**
-  * Created by Thamme Gowda on 6/7/16.
-  * Modified by karanjeets
+  *
+  * @since 4/18/2021
   */
-object StatusUpdateTransformer extends (CrawlData => Map[String, Object] ) with Serializable with Loggable {
-  LOG.debug("Update Transformer Created")
-  val fieldMapper: FieldMapper = FieldMapper.initialize()
+trait StatusUpdateTransformer extends (CrawlData => Map[String, Object] ) with Serializable with Loggable {
 
-  override def apply(data: CrawlData): Map[String, Object] = {
-    val hashFunction: HashFunction = Hashing.sha256()
-    var toUpdate : Map[String, Object] = Map(
-      Constants.storage.ID -> data.fetchedData.getResource.getId,
-      Constants.storage.STATUS -> Map("set" -> data.fetchedData.getResource.getStatus).asJava,
-      Constants.storage.FETCH_TIMESTAMP -> Map("set" -> data.fetchedData.getFetchedAt).asJava,
-      Constants.storage.LAST_UPDATED_AT -> Map("set" -> new util.Date()).asJava,
-      Constants.storage.RETRIES_SINCE_FETCH -> Map("inc" -> 1).asJava,
-      Constants.storage.EXTRACTED_TEXT -> data.parsedData.extractedText,
-      Constants.storage.CONTENT_TYPE -> data.fetchedData.getContentType.split("; ")(0),
-      Constants.storage.FETCH_STATUS_CODE -> data.fetchedData.getResponseCode.asInstanceOf[String],
-      Constants.storage.SIGNATURE -> hashFunction.hashBytes(data.fetchedData.getContent).toString,
-      Constants.storage.RELATIVE_PATH -> URLUtil.reverseUrl(data.fetchedData.getResource.getUrl),
-      Constants.storage.OUTLINKS -> data.parsedData.outlinks.toArray,
-      Constants.storage.SEGMENT -> data.fetchedData.getSegment
-    )
+  def apply(data: CrawlData): Map[String, Object]
 
-    val splitMimeTypes = data.fetchedData.getContentType.toLowerCase().split(";")
-    if (splitMimeTypes.contains(Constants.storage.WEBPAGE_MIMETYPE.toLowerCase())) {
-      toUpdate = toUpdate + (Constants.storage.RAW_CONTENT -> new String(data.fetchedData.getContent))
-    } else if (splitMimeTypes.contains(Constants.storage.JSON_MIMETYPE.toLowerCase())){
-      toUpdate = toUpdate + (Constants.storage.RAW_CONTENT -> new String(data.fetchedData.getContent))
-    }
-    toUpdate = toUpdate + (Constants.storage.RESPONSE_TIME -> data.fetchedData.getResponseTime)
-    for ((scoreKey, score) <- data.fetchedData.getResource.getScore) {
-      toUpdate = toUpdate + (scoreKey -> Map("set" -> score).asJava)
-    }
-
-    val md = data.parsedData.metadata
-    val mdFields = md.names().map(name => (name, if (md.isMultiValued(name)) md.getValues(name) else md.get(name))).toMap
-
-    var mapped = fieldMapper.mapFields(mdFields, true)
-    for (k <- mapped.keySet()) {
-      var key = if (Constants.storage.MD_SUFFIX == null || Constants.storage.MD_SUFFIX.isEmpty || k.endsWith(Constants.storage.MD_SUFFIX)) k else k + Constants.storage.MD_SUFFIX
-      toUpdate = toUpdate + (key -> mapped(k))
-    }
-
-    mapped = fieldMapper.mapFields(data.parsedData.headers, true)
-    for (k <- mapped.keySet()) {
-      var key = if (Constants.storage.HDR_SUFFIX == null || Constants.storage.HDR_SUFFIX.isEmpty || k.endsWith(Constants.storage.HDR_SUFFIX)) k else k + Constants.storage.HDR_SUFFIX
-      toUpdate = toUpdate + (key -> mapped(k))
-    }
-
-    toUpdate
-  }
 }
+
