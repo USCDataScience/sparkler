@@ -47,7 +47,7 @@ public class Resource implements Serializable {
     private Double pageScore = 0.0;
     private Integer retriesSinceFetch = -1;
     private Integer fetchStatusCode = 0;
-    private Long responseTime = 0;
+    private Long responseTime = new Long(0);
 
     public Resource() {
     }
