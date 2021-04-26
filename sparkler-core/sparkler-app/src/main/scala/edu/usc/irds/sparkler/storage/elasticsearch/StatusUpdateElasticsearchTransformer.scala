@@ -19,6 +19,7 @@ package edu.usc.irds.sparkler.storage.elasticsearch
 
 import java.util.Date
 import java.text.SimpleDateFormat
+import java.util.AbstractMap.SimpleEntry
 
 import com.google.common.hash.{HashFunction, Hashing}
 import edu.usc.irds.sparkler.Constants
@@ -46,7 +47,8 @@ object StatusUpdateElasticsearchTransformer extends (CrawlData => Map[String, Ob
       Constants.storage.STATUS -> data.fetchedData.getResource.getStatus,
       Constants.storage.FETCH_TIMESTAMP -> new SimpleDateFormat(Constants.defaultDateFormat).format(data.fetchedData.getFetchedAt),
       Constants.storage.LAST_UPDATED_AT -> new SimpleDateFormat(Constants.defaultDateFormat).format(new Date()),
-      Constants.storage.RETRIES_SINCE_FETCH -> "1",
+      Constants.storage.RETRIES_SINCE_FETCH -> new SimpleEntry[String, Integer]("inc", 1),
+//      Constants.storage.RETRIES_SINCE_FETCH -> "1",
 //      Constants.storage.STATUS -> Map("set" -> data.fetchedData.getResource.getStatus).asJava,
 //      Constants.storage.FETCH_TIMESTAMP -> Map("set" -> data.fetchedData.getFetchedAt).asJava,
 //      Constants.storage.LAST_UPDATED_AT -> Map("set" -> new Date()).asJava,

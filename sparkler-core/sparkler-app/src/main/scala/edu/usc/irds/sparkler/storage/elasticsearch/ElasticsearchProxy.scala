@@ -42,9 +42,11 @@ import org.elasticsearch.common.xcontent.XContentFactory
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.search.builder.SearchSourceBuilder
+import org.elasticsearch.script.Script
+import org.elasticsearch.script.ScriptType
 
-// TODO: NEED TO REMOVE AFTER USE
-import org.apache.solr.common.SolrInputDocument
+import java.util.Collections.singletonMap
+import java.util.AbstractMap.SimpleEntry
 
 
 /**
@@ -117,21 +119,48 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
 
   def addResource(doc: Map[String, Object]): Unit = {
     try {
+      println("ElasticsearchProxy: addResource()")
+
+      var updateRequestForScripts : UpdateRequest = new UpdateRequest("crawldb",
+            doc.get(Constants.storage.ID).get.asInstanceOf[String])
+
       val updateData : XContentBuilder = XContentFactory.jsonBuilder()
         .startObject()
-      println("ElasticsearchProxy: addResource()")
       for ((key, value) <- doc) {
         println(key + " => " + value)
-        if (key != Constants.storage.ID) updateData.field(key, value)
+        if (value.isInstanceOf[SimpleEntry[String, Object]]) {
+          // handle various commands besides setting
+          // currently only increment ("inc") exists as of 4/25/2021
+          var pair : SimpleEntry[String, Object] = value.asInstanceOf[SimpleEntry[String, Object]]
+          if (pair.getKey().asInstanceOf[String] == "inc") {
+            // script to increment field
+            var scriptCode : String = "ctx._source." + key + " = ctx._source." + key + " ? ctx._source." + key + " += " + pair.getValue() + " : 0"
+            var newScript : Script = new Script(scriptCode)
+            updateRequestForScripts.script(newScript)
+            println("ElasticsearchProxy: addResource() - added script")
+            println(scriptCode)
+            println("---")
+            println(newScript.toString)
+          }
+          else {
+            println("ElasticsearchProxy: addResource() - unknown command in Map")
+          }
+        }
+        else if (key != Constants.storage.ID) updateData.field(key, value)
       }
       updateData.endObject()
 
-      var indexRequest : IndexRequest = new IndexRequest("crawldb", "_doc", doc.get(Constants.storage.ID).get.asInstanceOf[String])
+      var indexRequest : IndexRequest = new IndexRequest("crawldb", doc.get(Constants.storage.ID).get.asInstanceOf[String])
         .source(updateData)
-      var updateRequest : UpdateRequest = new UpdateRequest("crawldb", "_doc", doc.get(Constants.storage.ID).get.asInstanceOf[String])
+      var updateRequest : UpdateRequest = new UpdateRequest("crawldb", doc.get(Constants.storage.ID).get.asInstanceOf[String])
         .doc(updateData)
         .upsert(indexRequest) // upsert either updates or insert if not found
+
+      updateRequest.retryOnConflict(3)
+      updateRequestForScripts.retryOnConflict(3)
       crawlDb.update(updateRequest, RequestOptions.DEFAULT)
+      // TODO: get scripting to work in order to increment a field
+//      crawlDb.update(updateRequestForScripts, RequestOptions.DEFAULT)
     }
     catch {
       case e: IOException =>

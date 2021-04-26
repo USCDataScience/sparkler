@@ -40,6 +40,15 @@ public class Resource implements Serializable {
     @Field("http_method") private String httpMethod;
     @Field("jobmeta") private String metadata;
 
+    private String version = "1.0";
+    private Date modifiedTime = new Date();
+    private String crawler = "sparkler";
+    private Integer fetchDepth = 0;
+    private Double pageScore = 0.0;
+    private Integer retriesSinceFetch = -1;
+    private Integer fetchStatusCode = 0;
+    private Long responseTime = 0;
+
     public Resource() {
     }
 
@@ -116,8 +125,8 @@ public class Resource implements Serializable {
             try {
                 discoverDepth = (Integer)dataMap.get("discover_depth");
             } catch (Exception e) {
-                System.err.println(e.toString());
                 System.err.println("Could not retrieve and parse to Integer: discover_depth");
+                System.err.println(e.toString());
             }
         }
         if (dataMap.containsKey("status")) status = (String)dataMap.get("status");
@@ -125,8 +134,8 @@ public class Resource implements Serializable {
             try {
                 fetchTimestamp = new SimpleDateFormat(Constants.defaultDateFormat).parse((String)dataMap.get("fetch_timestamp"));
             } catch (Exception e) {
-                System.err.println(e.toString());
                 System.err.println("Could not retrieve and parse to Date: fetch_timestamp");
+                System.err.println(e.toString());
             }
         }
         if (dataMap.containsKey("crawl_id")) crawlId = (String)dataMap.get("crawl_id");
@@ -136,14 +145,15 @@ public class Resource implements Serializable {
                 score = (HashMap<String, Double>)dataMap.get("*_score");
             } catch (Exception e) {
                 System.err.println("Could not retrieve and parse to HashMap<String, Double>: *_score");
+                System.err.println(e.toString());
             }
         }
         if (dataMap.containsKey("generate_score")) {
             try {
                 generateScore = (Double)dataMap.get("generate_score");
             } catch (Exception e) {
-                System.err.println(e.toString());
                 System.err.println("Could not retrieve and parse to Double: generate_score");
+                System.err.println(e.toString());
             }
         }
         if (dataMap.containsKey("http_method")) httpMethod = (String)dataMap.get("http_method");
@@ -152,20 +162,70 @@ public class Resource implements Serializable {
             try {
                 lastUpdatedAt = new SimpleDateFormat(Constants.defaultDateFormat).parse((String)dataMap.get("last_updated_at"));
             } catch (Exception e) {
-                System.err.println(e.toString());
                 System.err.println("Could not retrieve and parse to Date: last_updated_at");
+                System.err.println(e.toString());
             }
         }
         if (dataMap.containsKey("indexed_at")) {
             try {
                 indexedAt = new SimpleDateFormat(Constants.defaultDateFormat).parse((String)dataMap.get("indexed_at"));
             } catch (Exception e) {
-                System.err.println(e.toString());
                 System.err.println("Could not retrieve and parse to Date: indexed_at");
+                System.err.println(e.toString());
             }
         }
         if (dataMap.containsKey("hostname")) hostname = (String)dataMap.get("hostname");
         if (dataMap.containsKey("parent")) parent = (String)dataMap.get("parent");
+        if (dataMap.containsKey("version")) version = (String)dataMap.get("version");
+        if (dataMap.containsKey("modified_time")) {
+            try {
+                modifiedTime = new SimpleDateFormat(Constants.defaultDateFormat).parse((String)dataMap.get("modified_time"));
+            } catch (Exception e) {
+                System.err.println("Could not retrieve and parse to Date: modified_time");
+                System.err.println(e.toString());
+            }
+        }
+        if (dataMap.containsKey("crawler")) crawler = (String)dataMap.get("crawler");
+        if (dataMap.containsKey("fetch_depth")) {
+            try {
+                fetchDepth = (Integer)dataMap.get("fetch_depth");
+            } catch (Exception e) {
+                System.err.println("Could not retrieve and parse to Integer: fetch_depth");
+                System.err.println(e.toString());
+            }
+        }
+        if (dataMap.containsKey("page_score")) {
+            try {
+                pageScore = (Double)dataMap.get("page_score");
+            } catch (Exception e) {
+                System.err.println("Could not retrieve and parse to Double: page_score");
+                System.err.println(e.toString());
+            }
+        }
+        if (dataMap.containsKey("retries_since_fetch")) {
+            try {
+                retriesSinceFetch = (Integer)dataMap.get("retries_since_fetch");
+            } catch (Exception e) {
+                System.err.println("Could not retrieve and parse to Integer: retries_since_fetch");
+                System.err.println(e.toString());
+            }
+        }
+        if (dataMap.containsKey("fetch_status_code")) {
+            try {
+                fetchStatusCode = (Integer)dataMap.get("fetch_status_code");
+            } catch (Exception e) {
+                System.err.println("Could not retrieve and parse to Integer: fetch_status_code");
+                System.err.println(e.toString());
+            }
+        }
+        if (dataMap.containsKey("response_time")) {
+            try {
+                responseTime = (Long)dataMap.get("response_time");
+            } catch (Exception e) {
+                System.err.println("Could not retrieve and parse to Long: response_time");
+                System.err.println(e.toString());
+            }
+        }
     }
 
     @Override
@@ -287,6 +347,22 @@ public class Resource implements Serializable {
         return this.parent;
     }
 
+    public String getVersion() { return this.version; }
+
+    public Date getModifiedTime() { return this.modifiedTime; }
+
+    public String getCrawler() { return this.crawler; }
+
+    public Integer getFetchDepth() { return this.fetchDepth; }
+
+    public Double getPageScore() { return this.pageScore; }
+
+    public Integer getRetriesSinceFetch() { return this.retriesSinceFetch; }
+
+    public Integer getFetchStatusCode() { return this.fetchStatusCode; }
+
+    public Long getResponseTime() { return this.responseTime; }
+
     public Map<String, Object> getDataAsMap() {
         Map<String, Object> dataMap = new HashMap<String, Object>() {{
             put("id", getId());
@@ -297,7 +373,6 @@ public class Resource implements Serializable {
             put("fetch_timestamp", getFetchTimestamp());
             put("crawl_id", getCrawlId());
             put("dedupe_id", getDedupeId());
-            put("*_score", getScore());
             put("generate_score", getGenerateScore());
             put("http_method", getHttpMethod());
             put("jobmeta", getMetadata());
@@ -305,7 +380,20 @@ public class Resource implements Serializable {
             put("indexed_at", getIndexedAt());
             put("hostname", getHostname());
             put("parent", getParent());
+            put("version", getVersion());
+            put("modified_time", getModifiedTime());
+            put("crawler", getCrawler());
+            put("fetch_depth", getFetchDepth());
+            put("page_score", getPageScore());
+            put("retries_since_fetch", getRetriesSinceFetch());
+            put("fetch_status_code", getFetchStatusCode());
+            put("response_time", getResponseTime());
         }};
+
+        Map<String, Double> scores = getScore();
+        for (String key : scores.keySet()) {
+            dataMap.put(key, scores.get(key));
+        }
         return dataMap;
     }
 }
