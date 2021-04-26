@@ -30,9 +30,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
+import org.openqa.selenium.Proxy;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.CapabilityType;
@@ -59,8 +58,6 @@ import com.browserup.bup.proxy.CaptureType;
 import com.browserup.bup.util.HttpMessageContents;
 import com.browserup.bup.util.HttpMessageInfo;
 import io.netty.handler.codec.http.HttpResponse;
-
-import org.openqa.selenium.Proxy;
 
 @Extension
 public class FetcherChrome extends FetcherDefault {
@@ -146,6 +143,7 @@ public class FetcherChrome extends FetcherDefault {
             chromeOptions.addArguments("--disable-extensions");
             chromeOptions.addArguments("--ignore-certificate-errors");
             chromeOptions.addArguments("--incognito");
+            chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
             capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
             capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
 
