@@ -49,6 +49,7 @@ import java.util.Map;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+import java.util.concurrent.TimeUnit;
 
 import com.browserup.bup.BrowserUpProxy;
 import com.browserup.bup.BrowserUpProxyServer;
@@ -144,12 +145,15 @@ public class FetcherChrome extends FetcherDefault {
             chromeOptions.addArguments("--ignore-certificate-errors");
             chromeOptions.addArguments("--incognito");
             chromeOptions.addArguments("--window-size=1920,1080");
+            chromeOptions.addArguments("--disable-features=VizDisplayCompositor");
+
             chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
             capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
             capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
 
             if(loc.equals("local")){
                 driver = new ChromeDriver(capabilities);
+                driver.manage().timeouts().pageLoadTimeout(600, TimeUnit.SECONDS);
             } else{
                 driver = new RemoteWebDriver(new URL(loc), capabilities);
             }
