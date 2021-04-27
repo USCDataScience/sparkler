@@ -68,7 +68,7 @@ class ElasticsearchDeepRDD(sc: SparkContext,
     for (query <- generateQry.split(",")) {
       try {
         val Array(field, value) = query.split(":").take(2)
-        q.filter(QueryBuilders.termQuery(field, value))
+        q.must(QueryBuilders.matchQuery(field, value))
       } catch {
         case e: Exception => println("Exception parsing generateQry: " + generateQry)
       }
@@ -117,15 +117,14 @@ class ElasticsearchDeepRDD(sc: SparkContext,
     var q : BoolQueryBuilder = QueryBuilders.boolQuery()
       .filter(QueryBuilders.termQuery(Constants.storage.CRAWL_ID, job.id))
 
-    //    for (query <- generateQry.split(",")) {
-    //      try {
-    //        val Array(field, value) = query.split(":").take(2)
-    //        q.filter(QueryBuilders.termQuery(field, value)) // <-- this doesn't work for status/UNFETCHED??
-    //        println(field + " => " + value)
-    //      } catch {
-    //        case e: Exception => println("Exception parsing generateQry: " + generateQry)
-    //      }
-    //    }
+    for (query <- generateQry.split(",")) {
+      try {
+        val Array(field, value) = query.split(":").take(2)
+        q.must(QueryBuilders.matchQuery(field, value))
+      } catch {
+        case e: Exception => println("Exception parsing generateQry: " + generateQry)
+      }
+    }
 
     searchSourceBuilder.query(q)
 

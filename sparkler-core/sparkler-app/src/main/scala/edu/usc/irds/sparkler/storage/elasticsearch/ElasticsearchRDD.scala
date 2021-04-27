@@ -56,14 +56,14 @@ class ElasticsearchRDD(sc: SparkContext,
       .filter(QueryBuilders.termQuery(Constants.storage.CRAWL_ID, job.id))
 
     // querying
-//    for (query <- generateQry.split(",")) {
-//      try {
-//        val Array(field, value) = query.split(":").take(2)
-//        q.filter(QueryBuilders.termQuery(field, value))
-//      } catch {
-//        case e: Exception => println("Exception parsing generateQry: " + generateQry)
-//      }
-//    }
+    for (query <- generateQry.split(",")) {
+      try {
+        val Array(field, value) = query.split(":").take(2)
+        q.must(QueryBuilders.matchQuery(field, value))
+      } catch {
+        case e: Exception => println("Exception parsing generateQry: " + generateQry)
+      }
+    }
 
     // sorting
     for (sort <- sortBy.split(",")) {
@@ -110,15 +110,14 @@ class ElasticsearchRDD(sc: SparkContext,
     var q : BoolQueryBuilder = QueryBuilders.boolQuery()
       .filter(QueryBuilders.termQuery(Constants.storage.CRAWL_ID, job.id))
 
-//    for (query <- generateQry.split(",")) {
-//      try {
-//        val Array(field, value) = query.split(":").take(2)
-//        q.filter(QueryBuilders.termQuery(field, value)) // <-- this doesn't work for status/UNFETCHED??
-//        println(field + " => " + value)
-//      } catch {
-//        case e: Exception => println("Exception parsing generateQry: " + generateQry)
-//      }
-//    }
+    for (query <- generateQry.split(",")) {
+      try {
+        val Array(field, value) = query.split(":").take(2)
+        q.must(QueryBuilders.matchQuery(field, value))
+      } catch {
+        case e: Exception => println("Exception parsing generateQry: " + generateQry)
+      }
+    }
 
     searchSourceBuilder.query(q)
 
@@ -148,6 +147,7 @@ class ElasticsearchRDD(sc: SparkContext,
     searchSourceBuilder.size(maxGroups)
 
     searchRequest.source(searchSourceBuilder)
+//    println(searchRequest.toString())
 
     val proxy = storageFactory.getProxy()
     var client : RestHighLevelClient = null
@@ -176,7 +176,7 @@ class ElasticsearchRDD(sc: SparkContext,
 
     var shs : SearchHits = searchResponse.getHits()
 //    println("searchhits size: " + shs.getTotalHits().value)
-
+//
 //    shs.getHits().foreach(sh => {
 //      println("SearchHit - source: " + sh.getSourceAsString())
 //      var source: java.util.Map[java.lang.String, java.lang.Object] = sh.getSourceAsMap()
