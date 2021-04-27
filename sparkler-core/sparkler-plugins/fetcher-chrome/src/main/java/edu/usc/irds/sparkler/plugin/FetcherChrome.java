@@ -147,7 +147,7 @@ public class FetcherChrome extends FetcherDefault {
             chromeOptions.addArguments("--window-size=1920,1080");
 
             chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
-            capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
+            //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
             capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
 
             if(loc.equals("local")){
