@@ -146,7 +146,7 @@ public class FetcherChrome extends FetcherDefault {
             chromeOptions.addArguments("--incognito");
             chromeOptions.addArguments("--window-size=1920,1080");
 
-            chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
+            chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
             //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
             capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
 
