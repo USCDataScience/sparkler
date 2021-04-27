@@ -145,7 +145,6 @@ public class FetcherChrome extends FetcherDefault {
             chromeOptions.addArguments("--ignore-certificate-errors");
             chromeOptions.addArguments("--incognito");
             chromeOptions.addArguments("--window-size=1920,1080");
-            chromeOptions.addArguments("--disable-features=VizDisplayCompositor");
 
             chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
             capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
@@ -153,7 +152,7 @@ public class FetcherChrome extends FetcherDefault {
 
             if(loc.equals("local")){
                 driver = new ChromeDriver(capabilities);
-                driver.manage().timeouts().pageLoadTimeout(600, TimeUnit.SECONDS);
+                driver.manage().timeouts().pageLoadTimeout(3600, TimeUnit.SECONDS);
             } else{
                 driver = new RemoteWebDriver(new URL(loc), capabilities);
             }
