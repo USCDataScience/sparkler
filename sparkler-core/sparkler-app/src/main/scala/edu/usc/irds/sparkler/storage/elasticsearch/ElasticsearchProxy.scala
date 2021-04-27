@@ -121,9 +121,6 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
     try {
       println("ElasticsearchProxy: addResource()")
 
-      var updateRequestForScripts : UpdateRequest = new UpdateRequest("crawldb",
-            doc.get(Constants.storage.ID).get.asInstanceOf[String])
-
       val updateData : XContentBuilder = XContentFactory.jsonBuilder()
         .startObject()
       for ((key, value) <- doc) {
@@ -134,16 +131,23 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
           var pair : SimpleEntry[String, Object] = value.asInstanceOf[SimpleEntry[String, Object]]
           if (pair.getKey().asInstanceOf[String] == "inc") {
             // script to increment field
-            var scriptCode : String = "ctx._source." + key + " = ctx._source." + key + " ? ctx._source." + key + " += " + pair.getValue() + " : 0"
+            var updateRequestForScripts : UpdateRequest = new UpdateRequest("crawldb",
+              doc.get(Constants.storage.ID).get.asInstanceOf[String])
+
+            var scriptCode : String = "ctx._source." + key + " += " + pair.getValue()
             var newScript : Script = new Script(scriptCode)
             updateRequestForScripts.script(newScript)
+
+            crawlDb.update(updateRequestForScripts, RequestOptions.DEFAULT)
+            updateRequestForScripts.retryOnConflict(3)
+
             println("ElasticsearchProxy: addResource() - added script")
             println(scriptCode)
             println("---")
             println(newScript.toString)
           }
           else {
-            println("ElasticsearchProxy: addResource() - unknown command in Map")
+            println("ElasticsearchProxy: addResource() - unknown command in SimpleEntry[String, Object]")
           }
         }
         else if (key != Constants.storage.ID) updateData.field(key, value)
@@ -157,10 +161,7 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
         .upsert(indexRequest) // upsert either updates or insert if not found
 
       updateRequest.retryOnConflict(3)
-      updateRequestForScripts.retryOnConflict(3)
       crawlDb.update(updateRequest, RequestOptions.DEFAULT)
-      // TODO: get scripting to work in order to increment a field
-//      crawlDb.update(updateRequestForScripts, RequestOptions.DEFAULT)
     }
     catch {
       case e: IOException =>
