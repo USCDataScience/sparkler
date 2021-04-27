@@ -39,7 +39,7 @@ class ElasticsearchUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Reso
   import edu.usc.irds.sparkler.storage.elasticsearch.ElasticsearchUpsert.LOG
 
   override def apply(context: TaskContext, docs: Iterator[Resource]): Any = {
-    LOG.debug("Inserting new resources into CrawlDb")
+    LOG.debug("ElasticsearchUpsert - Inserting new resources into CrawlDb")
     val proxy = job.getStorageFactory().getProxy()
     var client : RestHighLevelClient = null
     try {
@@ -48,17 +48,22 @@ class ElasticsearchUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Reso
       case e: ClassCastException => println("client is not RestHighLevelClient.")
     }
 
-    //TODO: handle this in server side - tell solr to skip docs if they already exist
-
     //This filter function returns true if there is no other resource  with the same dedupe_id
     val newLinksFilter: (Resource => Boolean) = doc => {
+      println("ElasticsearchUpsert: newLinksFilter()")
+      println("Resource ID: " + doc.getId)
+      println("Dedupe ID: " + doc.getDedupeId)
+      println("URL: " + doc.getUrl)
       var searchRequest : SearchRequest = new SearchRequest("crawldb")
       var searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
       var qry : BoolQueryBuilder = QueryBuilders.boolQuery()
-        .filter(QueryBuilders.termQuery(Constants.storage.DEDUPE_ID, doc.getDedupeId))
+        .must(QueryBuilders.matchQuery(Constants.storage.DEDUPE_ID, doc.getDedupeId))
       searchSourceBuilder.query(qry)
       searchRequest.source(searchSourceBuilder)
+      println(searchRequest.toString)
       var searchResponse : SearchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
+      println(searchResponse.toString)
+      println("Total Hits: " + searchResponse.getHits().getTotalHits().value.toString)
       searchResponse.getHits().getTotalHits().value.toInt == 0
       // if zero hits, then there are no duplicates
     }

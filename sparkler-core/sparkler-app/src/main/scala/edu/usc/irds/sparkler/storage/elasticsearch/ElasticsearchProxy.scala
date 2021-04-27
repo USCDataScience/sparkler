@@ -96,6 +96,7 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
   }
 
   def addResources(resources: java.util.Iterator[Resource]): Unit = {
+    println("ElasticsearchProxy: addResources() - begin")
     var resource : Resource = null
     var dataMap : java.util.Map[String, Object] = null
 
@@ -103,18 +104,24 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
       try {
         resource = resources.next()
         dataMap = resource.getDataAsMap()
+        println(dataMap.toString())
       }
       catch {
         case e: IOException =>
           e.printStackTrace()
       }
 
+      println("inserting into Elasticsearch - " + resource.getId())
+
       var indexRequest = new IndexRequest("crawldb")
       indexRequest.source(dataMap)
       indexRequest.id(resource.getId())
 
+      println(indexRequest.toString)
+
       indexRequests.append(indexRequest)
     }
+    println("ElasticsearchProxy: addResources() - end")
   }
 
   def addResource(doc: Map[String, Object]): Unit = {
@@ -184,7 +191,8 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
   }
 
   def close(): Unit = {
-    crawlDb.close();
+    commitCrawlDb() // make sure buffer is flushed
+    crawlDb.close()
   }
 
 }

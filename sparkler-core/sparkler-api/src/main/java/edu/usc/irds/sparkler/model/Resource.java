@@ -220,7 +220,7 @@ public class Resource implements Serializable {
         }
         if (dataMap.containsKey("response_time")) {
             try {
-                responseTime = (Long)dataMap.get("response_time");
+                responseTime = new Long((String)dataMap.get("response_time"));
             } catch (Exception e) {
                 System.err.println("Could not retrieve and parse to Long: response_time");
                 System.err.println(e.toString());

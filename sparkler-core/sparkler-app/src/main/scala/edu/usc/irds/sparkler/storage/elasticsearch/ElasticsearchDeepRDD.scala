@@ -51,14 +51,14 @@ class ElasticsearchDeepRDD(sc: SparkContext,
     var searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
 
     var q : BoolQueryBuilder = QueryBuilders.boolQuery()
-      .filter(QueryBuilders.termQuery(Constants.storage.PARENT, QueryParserBase.escape(partition.group)))
-      .filter(QueryBuilders.termQuery(Constants.storage.CRAWL_ID, job.id))
+      .must(QueryBuilders.matchQuery(Constants.storage.PARENT, QueryParserBase.escape(partition.group)))
+      .must(QueryBuilders.matchQuery(Constants.storage.CRAWL_ID, job.id))
 
     for(url <- deepCrawlHosts) {
       try {
         val hostname = new URL(url).getHost
         // should is similar to OR for Elasticsearch
-        q.should(QueryBuilders.termQuery(Constants.storage.HOSTNAME, hostname))
+        q.should(QueryBuilders.matchQuery(Constants.storage.HOSTNAME, hostname))
       } catch {
         case e: Exception => print(s"Exception occured while getting host from $url")
       }
@@ -115,7 +115,7 @@ class ElasticsearchDeepRDD(sc: SparkContext,
 
     // querying
     var q : BoolQueryBuilder = QueryBuilders.boolQuery()
-      .filter(QueryBuilders.termQuery(Constants.storage.CRAWL_ID, job.id))
+      .must(QueryBuilders.matchQuery(Constants.storage.CRAWL_ID, job.id))
 
     for (query <- generateQry.split(",")) {
       try {

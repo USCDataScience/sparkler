@@ -35,7 +35,7 @@ class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) =>
   import edu.usc.irds.sparkler.storage.solr.SolrUpsert.LOG
 
   override def apply(context: TaskContext, docs: Iterator[Resource]): Any = {
-    LOG.debug("Inserting new resources into CrawlDb")
+    LOG.debug("SolrUpsert - Inserting new resources into CrawlDb")
     val proxy = job.getStorageFactory().getProxy()
     var client : SolrClient = null
     try {

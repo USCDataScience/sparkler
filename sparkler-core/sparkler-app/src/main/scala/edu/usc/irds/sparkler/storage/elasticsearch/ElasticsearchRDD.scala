@@ -52,8 +52,8 @@ class ElasticsearchRDD(sc: SparkContext,
     var searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
 
     var q : BoolQueryBuilder = QueryBuilders.boolQuery()
-      .filter(QueryBuilders.termQuery(Constants.storage.PARENT, QueryParserBase.escape(partition.group)))
-      .filter(QueryBuilders.termQuery(Constants.storage.CRAWL_ID, job.id))
+      .must(QueryBuilders.matchQuery(Constants.storage.PARENT, QueryParserBase.escape(partition.group)))
+      .must(QueryBuilders.matchQuery(Constants.storage.CRAWL_ID, job.id))
 
     // querying
     for (query <- generateQry.split(",")) {
@@ -108,7 +108,7 @@ class ElasticsearchRDD(sc: SparkContext,
 
     // querying
     var q : BoolQueryBuilder = QueryBuilders.boolQuery()
-      .filter(QueryBuilders.termQuery(Constants.storage.CRAWL_ID, job.id))
+      .must(QueryBuilders.matchQuery(Constants.storage.CRAWL_ID, job.id))
 
     for (query <- generateQry.split(",")) {
       try {
