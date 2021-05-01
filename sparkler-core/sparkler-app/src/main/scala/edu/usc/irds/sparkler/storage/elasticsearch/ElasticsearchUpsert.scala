@@ -50,20 +50,13 @@ class ElasticsearchUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Reso
 
     //This filter function returns true if there is no other resource  with the same dedupe_id
     val newLinksFilter: (Resource => Boolean) = doc => {
-      println("ElasticsearchUpsert: newLinksFilter()")
-      println("Resource ID: " + doc.getId)
-      println("Dedupe ID: " + doc.getDedupeId)
-      println("URL: " + doc.getUrl)
       var searchRequest : SearchRequest = new SearchRequest("crawldb")
       var searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
       var qry : BoolQueryBuilder = QueryBuilders.boolQuery()
         .must(QueryBuilders.matchQuery(Constants.storage.DEDUPE_ID, doc.getDedupeId))
       searchSourceBuilder.query(qry)
       searchRequest.source(searchSourceBuilder)
-      println(searchRequest.toString)
       var searchResponse : SearchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
-      println(searchResponse.toString)
-      println("Total Hits: " + searchResponse.getHits().getTotalHits().value.toString)
       searchResponse.getHits().getTotalHits().value.toInt == 0
       // if zero hits, then there are no duplicates
     }

@@ -68,8 +68,7 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
     if (scheme.equals("http") || scheme.equals("https")) {
       new RestHighLevelClient(
         RestClient.builder(
-          new HttpHost(hostname, port, scheme),
-//          new HttpHost(hostname, port+1, scheme),  // documentation says we need to implement 2 ports
+          new HttpHost(hostname, port, scheme)
         )
       );
     } else if (crawlDbUri.startsWith("file://")) {
@@ -96,7 +95,6 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
   }
 
   def addResources(resources: java.util.Iterator[Resource]): Unit = {
-    println("ElasticsearchProxy: addResources() - begin")
     var resource : Resource = null
     var dataMap : java.util.Map[String, Object] = null
 
@@ -104,34 +102,25 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
       try {
         resource = resources.next()
         dataMap = resource.getDataAsMap()
-        println(dataMap.toString())
       }
       catch {
         case e: IOException =>
           e.printStackTrace()
       }
 
-      println("inserting into Elasticsearch - " + resource.getId())
-
       var indexRequest = new IndexRequest("crawldb")
       indexRequest.source(dataMap)
       indexRequest.id(resource.getId())
 
-      println(indexRequest.toString)
-
       indexRequests.append(indexRequest)
     }
-    println("ElasticsearchProxy: addResources() - end")
   }
 
   def addResource(doc: Map[String, Object]): Unit = {
     try {
-      println("ElasticsearchProxy: addResource()")
-
       val updateData : XContentBuilder = XContentFactory.jsonBuilder()
         .startObject()
       for ((key, value) <- doc) {
-        println(key + " => " + value)
         if (value.isInstanceOf[SimpleEntry[String, Object]]) {
           // handle various commands besides setting
           // currently only increment ("inc") exists as of 4/25/2021
@@ -147,11 +136,6 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
 
             crawlDb.update(updateRequestForScripts, RequestOptions.DEFAULT)
             updateRequestForScripts.retryOnConflict(3)
-
-            println("ElasticsearchProxy: addResource() - added script")
-            println(scriptCode)
-            println("---")
-            println(newScript.toString)
           }
           else {
             println("ElasticsearchProxy: addResource() - unknown command in SimpleEntry[String, Object]")

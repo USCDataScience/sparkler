@@ -109,9 +109,6 @@ class ElasticsearchResultIterator[T] extends Iterator[T] {
   }
 
   private def deserialize(searchHit: SearchHit): T = {
-//    searchHit.asInstanceOf[T] // placeholder to pass compile
-    // NOTE: the template class must implement a constuctor for T(java.util.Map<String, Object>)
-//    beanType.getConstructor(Map[String, Object].getClass).newInstance(searchHit.getSourceAsMap())
     try {
       // assumes that T is a Resource; as far as we can tell, this is always true as of 4/24/2021
       // TODO: create a new instance of a generic type rather than Resource

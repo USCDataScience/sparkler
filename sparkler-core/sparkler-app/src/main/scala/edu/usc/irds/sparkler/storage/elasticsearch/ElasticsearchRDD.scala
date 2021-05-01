@@ -96,8 +96,6 @@ class ElasticsearchRDD(sc: SparkContext,
       case e: ClassCastException => println("client is not RestHighLevelClient.")
     }
 
-    println("ElasticsearchRDD: compute() ---------------")
-    println(searchRequest.toString())
     new ElasticsearchResultIterator[Resource](client, searchRequest,
       batchSize, classOf[Resource], closeClient = true, limit = topN)
   }
@@ -147,7 +145,6 @@ class ElasticsearchRDD(sc: SparkContext,
     searchSourceBuilder.size(maxGroups)
 
     searchRequest.source(searchSourceBuilder)
-//    println(searchRequest.toString())
 
     val proxy = storageFactory.getProxy()
     var client : RestHighLevelClient = null
@@ -158,36 +155,11 @@ class ElasticsearchRDD(sc: SparkContext,
     }
 
     var searchResponse : SearchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
-//    println(searchResponse.toString())
-
-//    var aggregations : Aggregations = searchResponse.getAggregations()
-//    if (aggregations == null) println("Aggregations is NULL")
-//    else println("Aggregations is NOT NULL")
-//
-//    var aggregationList = aggregations.asList()
-//    println(aggregationList.size())
-//
-//    var aggregation : Aggregation = aggregations.get("by" + Constants.storage.PARENT)
-//    if (aggregation == null) println("Aggregation is NULL")
-//    else {
-//      println("Aggregation is NOT NULL: " + aggregation.getName())
-//      println("Type: " + aggregation.getType())
-//    }
-
     var shs : SearchHits = searchResponse.getHits()
-//    println("searchhits size: " + shs.getTotalHits().value)
-//
-//    shs.getHits().foreach(sh => {
-//      println("SearchHit - source: " + sh.getSourceAsString())
-//      var source: java.util.Map[java.lang.String, java.lang.Object] = sh.getSourceAsMap()
-//      println("SearchHit - source - url: " + source.get("url"))
-//    })
-
     val res = new Array[Partition](shs.getTotalHits().value.toInt)
     for (i <- 0 until shs.getTotalHits().value.toInt) {
       //TODO: improve partitioning : (1) club smaller domains, (2) support for multiple partitions for larger domains
       res(i) = new SparklerGroupPartition(i, shs.getHits()(i).getSourceAsMap().get(Constants.storage.PARENT).asInstanceOf[String])
-//      println(shs.getHits()(i).getSourceAsMap().get(Constants.storage.PARENT).asInstanceOf[String])
     }
 
     proxy.close()
