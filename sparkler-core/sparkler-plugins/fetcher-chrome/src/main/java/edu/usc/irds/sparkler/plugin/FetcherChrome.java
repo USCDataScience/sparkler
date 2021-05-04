@@ -239,7 +239,7 @@ public class FetcherChrome extends FetcherDefault {
                 } catch (Exception e){
                     Map<String, Object> tempmap = new HashMap<>();
                     tempmap.put("type", "file");
-                    tempmap.put("targetdir", "/dbfs/FileStore/screenshots/"+resource.getCrawlId()+System.currentTimeMillis());
+                    tempmap.put("targetdir", pluginConfig.getOrDefault("chrome.selenium.screenshotdir","/dbfs/FileStore/screenshots/")+resource.getCrawlId()+System.currentTimeMillis());
                     scripter.screenshot(tempmap);
                     e.printStackTrace();
                 }
