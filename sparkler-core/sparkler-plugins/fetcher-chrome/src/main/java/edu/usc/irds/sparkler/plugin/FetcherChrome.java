@@ -26,8 +26,6 @@ import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import edu.usc.irds.sparkler.util.FetcherDefault;
 
-import jdk.internal.org.jline.utils.Log;
-import org.apache.commons.lang.ArrayUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -35,7 +33,6 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -158,9 +155,9 @@ public class FetcherChrome extends FetcherDefault {
                 driver = new RemoteWebDriver(new URL(loc), capabilities);
             }
 
-            driver.manage().window().setSize(1920, 1080);
+            driver.manage().window().setSize(new Dimension(1920, 1080));
             driver.manage().window().maximize();
-            Log.info("The Chrome Window size is: "+driver.manage().window().getSize());
+            LOG.info("The Chrome Window size is: "+driver.manage().window().getSize());
         }
 
     }
