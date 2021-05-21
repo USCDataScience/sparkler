@@ -26,6 +26,7 @@ import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import edu.usc.irds.sparkler.util.FetcherDefault;
 
+import jdk.internal.org.jline.utils.Log;
 import org.apache.commons.lang.ArrayUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -156,6 +157,9 @@ public class FetcherChrome extends FetcherDefault {
             } else{
                 driver = new RemoteWebDriver(new URL(loc), capabilities);
             }
+
+            driver.manage().window().maximize();
+            Log.info("The Chrome Window size is: "+driver.manage().window().getSize());
         }
 
     }
