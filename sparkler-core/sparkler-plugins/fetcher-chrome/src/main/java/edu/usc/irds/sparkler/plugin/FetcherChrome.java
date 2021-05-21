@@ -158,6 +158,7 @@ public class FetcherChrome extends FetcherDefault {
                 driver = new RemoteWebDriver(new URL(loc), capabilities);
             }
 
+            driver.manage().window().setSize(1920, 1080);
             driver.manage().window().maximize();
             Log.info("The Chrome Window size is: "+driver.manage().window().getSize());
         }
