@@ -176,6 +176,3 @@ lazy val ui = (project in file("sparkler-ui"))
 
 
 enablePlugins(PackPlugin)
-
-name := "myprog"
-base := file(".")
