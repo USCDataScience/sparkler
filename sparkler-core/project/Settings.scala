@@ -61,7 +61,9 @@ object Settings {
       "Restlet Repository" at "https://maven.restlet.com/",
       "JBoss Repository" at "https://repository.jboss.org/nexus/content/repositories/",
       "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
-      "Scala-Tools Snapshots" at "https://scala-tools.org/repo-snapshots/"
+      "Scala-Tools Snapshots" at "https://scala-tools.org/repo-snapshots/",
+      "Gitlab Spicule 2" at "https://gitlab.com/api/v4/projects/26391218/packages/maven",
+      "Gitlab Spicule" at "https://gitlab.com/api/v4/projects/23300400/packages/maven"
     )
   )
   lazy val assemblyProject = common ++ baseAssemblySettings ++ Seq(
