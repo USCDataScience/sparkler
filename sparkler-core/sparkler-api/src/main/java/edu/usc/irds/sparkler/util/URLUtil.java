@@ -266,49 +266,66 @@ public class URLUtil {
      * does the Yahoo! webcrawler handle redirects?</a> <br>
      * <br>
      * <ol>
-     * <li>Choose target url if either url is malformed.</li>
-     * <li>If different domains the keep the destination whether or not the
-     * redirect is temp or perm</li>
-     * <ul>
-     * <li>a.com -> b.com*</li>
-     * </ul>
-     * <li>If the redirect is permanent and the source is root, keep the source.</li>
-     * <ul>
-     * <li>*a.com -> a.com?y=1 || *a.com -> a.com/xyz/index.html</li>
-     * </ul>
-     * <li>If the redirect is permanent and the source is not root and the
-     * destination is root, keep the destination</li>
-     * <ul>
-     * <li>a.com/xyz/index.html -> a.com*</li>
-     * </ul>
-     * <li>If the redirect is permanent and neither the source nor the destination
-     * is root, then keep the destination</li>
-     * <ul>
-     * <li>a.com/xyz/index.html -> a.com/abc/page.html*</li>
-     * </ul>
-     * <li>If the redirect is temporary and source is root and destination is not
-     * root, then keep the source</li>
-     * <ul>
-     * <li>*a.com -> a.com/xyz/index.html</li>
-     * </ul>
-     * <li>If the redirect is temporary and source is not root and destination is
-     * root, then keep the destination</li>
-     * <ul>
-     * <li>a.com/xyz/index.html -> a.com*</li>
-     * </ul>
-     * <li>If the redirect is temporary and neither the source or the destination
-     * is root, then keep the shortest url. First check for the shortest host, and
-     * if both are equal then check by path. Path is first by length then by the
-     * number of / path separators.</li>
-     * <ul>
-     * <li>a.com/xyz/index.html -> a.com/abc/page.html*</li>
-     * <li>*www.a.com/xyz/index.html -> www.news.a.com/xyz/index.html</li>
-     * </ul>
-     * <li>If the redirect is temporary and both the source and the destination
-     * are root, then keep the shortest sub-domain</li>
-     * <ul>
-     * <li>*www.a.com -> www.news.a.com</li>
-     * </ul>
+     *  <li>Choose target url if either url is malformed.</li>
+     *  <li>If different domains the keep the destination whether or not the
+     *  redirect is temp or perm</li>
+     *  <li>
+     *      <ul>
+     *          <li>a.com -&gt; b.com*</li>
+     *      </ul>
+     *  </li>
+     *  <li>If the redirect is permanent and the source is root, keep the source.</li>
+     *  <li>
+     *      <ul>
+     *          <li>*a.com -&gt; a.com?y=1 || *a.com -&gt; a.com/xyz/index.html</li>
+     *      </ul>
+     *  </li>
+     *  <li>If the redirect is permanent and the source is not root and the
+     *  destination is root, keep the destination</li>
+     *  <li>
+     *      <ul>
+     *          <li>a.com/xyz/index.html -&gt; a.com*</li>
+     *      </ul>
+     *  </li>
+     *  <li>If the redirect is permanent and neither the source nor the destination
+     *  is root, then keep the destination</li>
+     *  <li>
+     *      <ul>
+     *          <li>a.com/xyz/index.html -&gt; a.com/abc/page.html*</li>
+     *      </ul>
+     *  </li>
+     *  <li>If the redirect is temporary and source is root and destination is not
+     *  root, then keep the source</li>
+     *  <li>
+     *      <ul>
+     *          <li>*a.com -&gt; a.com/xyz/index.html</li>
+     *      </ul>
+     *  </li>
+     *  <li>If the redirect is temporary and source is not root and destination is
+     *  root, then keep the destination</li>
+     *  <li>
+     *      <ul>
+     *          <li>a.com/xyz/index.html -&gt; a.com*</li>
+     *      </ul>
+     *  </li>
+     *  <li>If the redirect is temporary and neither the source or the destination
+     *  is root, then keep the shortest url. First check for the shortest host, and
+     *  if both are equal then check by path. Path is first by length then by the
+     *  number of / path separators.</li>
+     *  <li>
+     *      <ul>
+     *          <li>a.com/xyz/index.html -&gt; a.com/abc/page.html*</li>
+     *          <li>*www.a.com/xyz/index.html -&gt; www.news.a.com/xyz/index.html</li>
+     *      </ul>
+     *  </li>
+     *  <li>If the redirect is temporary and both the source and the destination
+     *  are root, then keep the shortest sub-domain</li>
+     *  <li>
+     *      <ul>
+     *          <li>*www.a.com -&gt; www.news.a.com</li>
+     *      </ul>
+     *  </li>
+     * </ol>
      * <br>
      * While not in this logic there is a further piece of representative url
      * logic that occurs during indexing and after scoring. During creation of the

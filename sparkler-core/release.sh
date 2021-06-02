@@ -1,3 +1,4 @@
+#!/bin/bash
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,48 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-*.class
-*.log
-*.jar
-*.war
-core/build/**
+# Script     : release.sh 
+# Usage      : ./release.sh
+# Description: Release Sparkler Silently - Create tag with version in version.sbt and bump it
 
-# sbt specific
-.cache
-.history
-.lib/
-dist/*
-target/
-lib_managed/
-src_managed/
-project/boot/
-project/plugins/project/
-
-# Scala-IDE specific
-.scala_dependencies
-.worksheet
-**~
-sparkler-job-**
-.idea/
-*.iml
-
-# Eclipse-IDE specific
-.classpath
-.project
-.cache-main
-.settings/
-
-. auto generated files
-sjob-**
-
-# MAC Files
-.DS_Store
-
-# Application Files
-/resources
-felix-cache/
-
-tmp*
-workspace*
-sparkler-core/build/*
-sparkler-ui/node_modules/*
+sbt clean package test && sbt releaseSilent

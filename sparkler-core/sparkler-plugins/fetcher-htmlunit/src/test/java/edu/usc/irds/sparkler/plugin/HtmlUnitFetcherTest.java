@@ -25,8 +25,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class HtmlUnitFetcherTest {
-
-
 	@Test
 	public void testJBrowserImage() throws Exception {
 		HtmlUnitFetcher htmlUnitFetcher = TestUtils.newInstance(HtmlUnitFetcher.class, "fetcher.htmlunit");

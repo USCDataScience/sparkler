@@ -45,7 +45,7 @@ build_image(){
     cd "$DIR"
     echo "Building project..."
       git submodule update --init --recursive
-    mvn package -DskipTests
+    sbt package
     cd "$prev_dir"
 
     echo "Building a docker image with tag '$docker_tag' ..."

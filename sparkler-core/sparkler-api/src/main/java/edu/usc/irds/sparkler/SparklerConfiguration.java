@@ -17,16 +17,13 @@
 
 package edu.usc.irds.sparkler;
 
+import com.google.gson.Gson;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.gson.Gson;
 
 public class SparklerConfiguration extends JSONObject {
 

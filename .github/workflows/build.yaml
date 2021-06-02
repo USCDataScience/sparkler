@@ -16,9 +16,9 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 13.0.1
-      - name: Build with Maven
+      - name: Build with SBT
         working-directory: ./sparkler-core
-        run: mvn -B package --file pom.xml
+        run: sbt clean package test
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
