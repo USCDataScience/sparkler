@@ -116,6 +116,10 @@ lazy val scorerDdSvn = (project in file(s"$sparklerPlugins/scorer-dd-svn"))
   .enablePlugins(JavaAppPackaging)
   .settings(
     Settings.plugin,
+    assemblyMergeStrategy in assembly := {
+      case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+      case x => MergeStrategy.first
+    },
     name := "scorer-dd-svn",
     libraryDependencies ++= Seq(
       ScorerDdSvn.httpClient
@@ -127,10 +131,7 @@ lazy val scorerDdSvn = (project in file(s"$sparklerPlugins/scorer-dd-svn"))
     )
   )
   .dependsOn(api)
-assemblyMergeStrategy in assembly := {
-  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-  case x => MergeStrategy.first
-}
+
 lazy val urlFilterRegex = (project in file(s"$sparklerPlugins/urlfilter-regex"))
   .enablePlugins(JavaAppPackaging)
   .settings(
