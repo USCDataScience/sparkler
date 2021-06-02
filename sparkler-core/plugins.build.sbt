@@ -66,6 +66,7 @@ lazy val fetcherChrome = (project in file(s"$sparklerPlugins/fetcher-chrome"))
     libraryDependencies ++= Seq(
       //FetcherChrome.Selenium.chromeDriver,
       FetcherChrome.Selenium.java,
+      FetcherChrome.browserup,
     ),
     Settings.pluginManifest(
       id = "fetcher-chrome",

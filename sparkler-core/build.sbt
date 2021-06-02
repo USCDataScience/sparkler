@@ -56,6 +56,12 @@ developers := List(
   // Apologies if we missed you. Please add yourself here..
 )
 
+
+
+resolvers += "Gitlab Spicule" at "https://gitlab.com/api/v4/projects/23300400/packages/maven"
+
+
+
 lazy val plugins = ProjectRef(file("./"), "plugins")
 
 lazy val root = (project in file("."))

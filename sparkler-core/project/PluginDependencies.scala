@@ -27,6 +27,8 @@ object FetcherChrome {
     lazy val chromeDriver = group % "selenium-chrome-driver" % version
     lazy val java = group % "selenium-java" % version
   }
+  lazy val browserup = "com.browserup" % "browserup-proxy-core" % "3.0.0-SNAPSHOT"
+
 }
 
 object FetcherHtmlUnit {
