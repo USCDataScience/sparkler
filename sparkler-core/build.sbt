@@ -176,3 +176,5 @@ lazy val ui = (project in file("sparkler-ui"))
 
 
 enablePlugins(PackPlugin)
+
+packMain := Map("inject" -> "edu.usc.irds.sparkler.service.Injector")

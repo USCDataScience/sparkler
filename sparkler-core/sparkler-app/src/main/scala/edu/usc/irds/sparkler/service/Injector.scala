@@ -16,9 +16,7 @@
  */
 
 package edu.usc.irds.sparkler.service
-import scala.collection.JavaConversions._
 import java.io.File
-import java.nio.file.NotDirectoryException
 import java.util
 
 import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
