@@ -151,7 +151,8 @@
    <field name="seed" type="string" indexed="true" stored="true" multiValued="false" docValues="true" />
    <field name="modified_time" type="date" indexed="true" stored="true" multiValued="false" default="NOW" />
    <field name="retries_since_fetch" type="int" indexed="true" stored="true" default="-1" multiValued="false" docValues="true" />
-
+   <field name="jobmeta" type="string" indexed="true" stored="true" multiValued="false" docValues="true"/>
+   <field name="http_method" type="string" indexed="true" stored="true" multiValued="false" docValues="true"/>
    <field name="response_time" type="long" indexed="true" stored="true" default="0" multiValued="false" docValues="true" />
 
   <!-- Admin -->

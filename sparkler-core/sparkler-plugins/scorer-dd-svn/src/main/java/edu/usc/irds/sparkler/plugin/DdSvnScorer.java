@@ -17,7 +17,6 @@
 
 package edu.usc.irds.sparkler.plugin;
 
-
 import edu.usc.irds.sparkler.*;
 import edu.usc.irds.sparkler.plugin.ddsvn.ApacheHttpRestClient;
 import org.json.simple.JSONArray;
@@ -27,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -43,7 +41,7 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
 
     private ApacheHttpRestClient restClient= new ApacheHttpRestClient();
 
-    private LinkedHashMap<String, Object> pluginConfig;
+    private Map<String, Object> pluginConfig;
 
     private String uriClassifier;
 
@@ -76,7 +74,7 @@ public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
 
     @Override
     public Double score(String extractedText) throws Exception {
-        LinkedHashMap<String, Object> cfg = jobContext.getConfiguration().getPluginConfiguration(pluginId);
+        Map<String, Object> cfg = jobContext.getConfiguration().getPluginConfiguration(pluginId);
         this.uriClassifier = cfg.getOrDefault(SCORER_DD_SVN_URL, DEFAULT_SCORER_DD_SVN_URL).toString();
         this.fallbackScore = cfg.getOrDefault(FALLBACK_SCORE, DEFAULT_FALLBACK_SCORE).toString();
         this.scoreKey = cfg.getOrDefault(SCORE_KEY, DEFAULT_SCORE_KEY).toString();

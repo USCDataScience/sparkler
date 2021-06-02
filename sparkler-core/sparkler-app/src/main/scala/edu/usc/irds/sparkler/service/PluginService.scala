@@ -70,8 +70,11 @@ class PluginService(job:SparklerJob) {
       if (pw == null){ throw new Exception(s"Failed to load extension $pluginId") }
       pluginManager.startPlugin(pluginId)
       val exts = pluginManager.getExtensions(pluginId)
+      LOG.info(s"Extensions found: $exts")
       for (ext <- exts){
         class2Id(ext.getClass.getName) = pw.getPluginId
+        LOG.info(s"Extensions lookup: $pw.getPluginId")
+        LOG.info(s"Extensions id lookup: $ext.getClass.getName")
         id2Class(pw.getPluginId) = ext.getClass.getName
       }
     }

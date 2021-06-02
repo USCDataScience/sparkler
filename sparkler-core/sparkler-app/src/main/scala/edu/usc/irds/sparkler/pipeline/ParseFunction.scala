@@ -71,8 +71,8 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
       parseData.metadata = meta
     } catch {
       case e: Throwable =>
-        LOG.warn("PARSING-CONTENT-ERROR {}", data.fetchedData.getResource.getUrl)
-        LOG.warn(e.getMessage, e)
+        LOG.warn("PARSING-CONTENT-ERROR {}", data.fetchedData.getResource.getUrl + " " + e.getMessage())
+        LOG.debug(e.getMessage, e)
         parseData
     } finally { IOUtils.closeQuietly(stream) }
 

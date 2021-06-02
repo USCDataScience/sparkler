@@ -33,14 +33,14 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Extension
 public class FetcherJBrowser extends FetcherDefault {
 
     private static final Integer DEFAULT_TIMEOUT = 2000;
     private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
-    private LinkedHashMap<String, Object> pluginConfig;
+    private Map<String, Object> pluginConfig;
     private JBrowserDriver driver;
 
 

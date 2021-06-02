@@ -18,9 +18,11 @@
 package edu.usc.irds.sparkler.plugin;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebClientOptions;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import edu.usc.irds.sparkler.JobContext;
@@ -38,12 +40,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 
 /**
  * This class has implements {@link edu.usc.irds.sparkler.Fetcher} using
@@ -51,7 +53,7 @@ import java.util.Map;
  *
  */
 @Extension
-public class HtmlUnitFetcher extends FetcherDefault  implements AutoCloseable {
+public class HtmlUnitFetcher extends FetcherDefault implements AutoCloseable {
 
     private static final Integer DEFAULT_TIMEOUT = 2000;
     private static final Integer DEFAULT_JS_TIMEOUT = 2000;
@@ -61,7 +63,7 @@ public class HtmlUnitFetcher extends FetcherDefault  implements AutoCloseable {
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
         super.init(context, pluginId);
-        //TODO: get timeouts from configurations
+        // TODO: get timeouts from configurations
         driver = new WebClient(BrowserVersion.BEST_SUPPORTED);
         driver.setJavaScriptTimeout(DEFAULT_JS_TIMEOUT);
         WebClientOptions options = driver.getOptions();
@@ -96,7 +98,15 @@ public class HtmlUnitFetcher extends FetcherDefault  implements AutoCloseable {
                 driver.removeRequestHeader(USER_AGENT);
                 driver.addRequestHeader(USER_AGENT, userAgent);
             }
-            Page page = driver.getPage(resource.getUrl());
+            HttpMethod method = HttpMethod.GET;
+            if(resource.getHttpMethod().equals("PUT")){
+                method = HttpMethod.PUT;
+            } else if(resource.getHttpMethod().equals("POST")){
+                method = HttpMethod.POST;
+            }
+            URL url = new URL(resource.getUrl());
+            WebRequest requestSettings = new WebRequest(url, method);
+            Page page = driver.getPage(requestSettings);
 
             WebResponse response = page.getWebResponse();
             boolean truncated = false;

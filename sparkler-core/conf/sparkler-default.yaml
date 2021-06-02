@@ -17,16 +17,20 @@
 
 ##################### General Properties ################################
 
-# Crawl Database URL. Stores crawl metadata and status updates.
+# uri - Crawl Database URL. Stores crawl metadata and status updates.
+
+crawldb.backend: solr  # "solr" is default until "elasticsearch" becomes usable.
+
 # Type: String. Default: http://localhost:8983/solr/crawldb
 # for standalone server
-crawldb.uri: http://localhost:8983/solr/crawldb
+# For quick test crawls using embedded solr
+# solr.uri: file://conf/solr/crawldb
+# For cloudmode with zookeepers; Format = collectionName::zkhost1:port1,zkhost2:port2,zkhost3:port3
+# solr.uri: crawldb::localhost:9983
+solr.uri: http://localhost:8983/solr/crawldb
 
-# for quick test crawls using embedded solr
-#crawldb.uri: file://conf/solr/crawldb
-
-# for cloudmode with zookeepers; Format = collectionName::zkhost1:port1,zkhost2:port2,zkhost3:port3
-# crawldb.uri: crawldb::localhost:9983
+# elasticsearch settings
+elasticsearch.uri: http://localhost:9200
 
 
 ##################### Apache Spark Properties ###########################
@@ -34,7 +38,7 @@ crawldb.uri: http://localhost:8983/solr/crawldb
 # URL on which Apache Spark is running.
 # Type: String. Default is "local[*]" for local mode.
 spark.master: local[*]
-
+databricks.enable: false
 
 ##################### Apache Kafka Properties ###########################
 # Enable Kafka Dump
@@ -100,6 +104,7 @@ plugins.active:
 
     - urlfilter-regex
     - urlfilter-samehost
+#    - url-injector
 #    - scorer-dd-svn
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
@@ -121,10 +126,53 @@ plugins:
   # based document/content.
   fetcher.jbrowser:
     # Configuration Properties
-    socket.timeout: 3000
-    connect.timeout: 3000
-  # fetcher.chrome:
-  #  chrome.dns: "http://browserless:3000/webdriver"
+    #socket.timeout: 3000
+    #connect.timeout: 3000
+  fetcher.chrome:
+    #Set timeout to > -1 to enable the wait for element visibility for some ajax sites.
+    chrome.wait.timeout: -1
+    #Element name
+    chrome.wait.element: "some element"
+    #What type of element, class, name, id
+    chrome.wait.type: "class"
+    chrome.dns: "http://localhost:3000/webdriver"
+    #chrome.selenium.enabled: "true"
+    #chrome.selenium.script.click: "id:txtName"
+    #chrome.selenium.script.keys: "COR"
+    #chrome.selenium.script.click: "id:btnSearch" 
+    #chrome.proxy.address: 127.0.0.1:9998
+  url.injector:
+    mode: selenium # currently only compatible with the fetcher-chrome plugin
+    #mode: replace
+    #mode: json
+    #mode: form
+    #values: #escaped for json
+    #  - "\"COR\""
+    #  - "\"VEN\""
+    #  - "\"SOM\""
+    values:
+      - Acitretin
+      - Adempas
+      - Actiq
+    selenium:
+      1:
+        operation: click
+        value: id:some-id
+      2:
+        operation: keys
+        value: "id:some-input-id:${token}"
+      3:
+        operation: click
+        value: "id:some-id" 
+    json: "{ \"name\":\"John\", \"age\":${token}, \"car\":null }"
+    form:
+      hdnField: "submit"
+      txtRequired: ""
+      radSearchBy: "drugname"
+      txtName: "${token}"
+      selTC: ""
+      selProgram: "MA"
+      txtDateOfService: "12/01/2020"
 ##################### Custom properties for MEMEX ###########################################
   memex.webpage.mimetype: "text/html"
 

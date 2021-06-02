@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by karanjeetsingh on 10/22/16.
@@ -34,6 +35,8 @@ public class Resource implements Serializable {
     @Field private String hostname;
     @Field private String parent;
     @Field("dedupe_id") private String dedupeId;
+    @Field("http_method") private String httpMethod;
+    @Field("jobmeta") private String metadata;
 
     public Resource() {
     }
@@ -63,7 +66,7 @@ public class Resource implements Serializable {
     }
 
     public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status,
-        String parent, Map<String, Double> score) throws MalformedURLException {
+        String parent, Map<String, Double> score, String metadata, String httpMethod) throws MalformedURLException {
         this(url, new URL(url).getHost(), sparklerJob);
         this.indexedAt = new Date();
         this.id = resourceId(url, sparklerJob, this.indexedAt);
@@ -71,6 +74,8 @@ public class Resource implements Serializable {
         this.status = status.toString();
         this.parent = parent;
         this.score = score;
+        this.httpMethod = httpMethod;
+        this.metadata = metadata;
     }
 
     public Resource(String url, Integer discoverDepth, JobContext sparklerJob, ResourceStatus status,
@@ -93,6 +98,7 @@ public class Resource implements Serializable {
 
         this(url, discoverDepth, sparklerJob, status, fetchTimestamp, parent);
         this.score = score;
+        
     }
 
     @Override
@@ -107,7 +113,10 @@ public class Resource implements Serializable {
     }
 
     public static String resourceId(String url, JobContext job, Date timestamp) {
-        return StringUtil.sha256hash(String.format("%s-%s-%s", job.getId(), url, timestamp.getTime()));
+        Random rand = new Random();
+        int int_random = rand.nextInt(10000000);
+
+        return StringUtil.sha256hash(String.format("%s-%s-%s-%s", job.getId(), url, timestamp.getTime(), int_random));
     }
 
     // Getters & Setters
@@ -183,4 +192,15 @@ public class Resource implements Serializable {
         return hm;
     }
 
+    public String getHttpMethod(){
+        if(this.httpMethod == null || this.httpMethod.equals("")){
+            return "GET";
+        } else{
+            return this.httpMethod;
+        }
+    }
+
+    public String getMetadata(){
+        return this.metadata;
+    }
 }

@@ -33,8 +33,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -96,7 +96,7 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
         super.init(context, pluginId);
         try {
             SparklerConfiguration config = jobContext.getConfiguration();
-            LinkedHashMap pluginConfig = config.getPluginConfiguration(pluginId);
+            Map pluginConfig = config.getPluginConfiguration(pluginId);
             Reader reader = getRulesReader(pluginConfig);
             this.rules = readRules(reader);
         } catch (IOException e) {
@@ -138,7 +138,7 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
      *          is the current configuration.
      * @return the name of the resource containing the rules to use.
      */
-    protected abstract Reader getRulesReader(LinkedHashMap pluginConfig) throws IOException;
+    protected abstract Reader getRulesReader(Map pluginConfig) throws IOException;
 
 
     public boolean filter(String url, String parent) {
