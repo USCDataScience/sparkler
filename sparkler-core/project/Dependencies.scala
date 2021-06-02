@@ -22,6 +22,7 @@ object Dependencies {
   lazy val banana = "com.lucidworks" % "banana" % "1.5.1" artifacts(Artifact("banana", "war", "war"))
   lazy val commonsValidator = "commons-validator" % "commons-validator" % "1.5.1"
   lazy val httpClient = "org.apache.httpcomponents" % "httpclient" % "4.5.2"
+  lazy val gson = "com.google.code.gson" % "gson" % "2.8.7"
   object Jackson {
     private val group = "com.fasterxml.jackson.core"
     private val version = "2.6.5"

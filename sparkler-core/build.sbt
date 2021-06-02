@@ -76,6 +76,7 @@ lazy val api = (project in file("sparkler-api"))
       Dependencies.nutch exclude("*", "*"),
       Dependencies.snakeYaml,
       Dependencies.Solr.solrj,
+      Dependencies.gson,
 
       // Test
       Dependencies.jUnit % Test,
