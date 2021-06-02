@@ -77,7 +77,7 @@ lazy val fetcherChrome = (project in file(s"$sparklerPlugins/fetcher-chrome"))
   )
   .dependsOn(api)
 
-lazy val fetcherHtmlUnit = (project in file(s"$sparklerPlugins/fetcher-htmlunit"))
+/*lazy val fetcherHtmlUnit = (project in file(s"$sparklerPlugins/fetcher-htmlunit"))
   .enablePlugins(JavaAppPackaging)
   .settings(
     Settings.plugin,
@@ -110,7 +110,7 @@ lazy val fetcherJBrowser = (project in file(s"$sparklerPlugins/fetcher-jbrowser"
       dependencies = List.empty
     )
   )
-  .dependsOn(api)
+  .dependsOn(api)*/
 
 lazy val scorerDdSvn = (project in file(s"$sparklerPlugins/scorer-dd-svn"))
   .enablePlugins(JavaAppPackaging)
