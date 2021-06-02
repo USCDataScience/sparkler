@@ -25,7 +25,6 @@ maintainer := Settings.projectMaintainer
 scalaVersion in ThisBuild := "2.12.12"
 javacOptions in (Compile, doc) in ThisBuild ++= Seq("-source", "13")
 javacOptions in (Compile, compile) ++= Seq("-target", "13")
-addSbtPlugin("org.xerial.sbt" % "sbt-pack" % "(version)")
 // Common dependencies
 libraryDependencies in ThisBuild ++= Seq(
   Dependencies.pf4j % "provided",
