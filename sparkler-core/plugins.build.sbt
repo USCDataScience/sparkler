@@ -27,8 +27,8 @@ lazy val plugins = (project in file(s"$sparklerPlugins"))
   )
   .aggregate(
     fetcherChrome,
-    fetcherHtmlUnit,
-    fetcherJBrowser,
+    /*fetcherHtmlUnit,
+    fetcherJBrowser,*/
     scorerDdSvn,
     urlFilterRegex,
     urlFilterSameHost,
