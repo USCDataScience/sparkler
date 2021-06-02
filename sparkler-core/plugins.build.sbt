@@ -67,6 +67,7 @@ lazy val fetcherChrome = (project in file(s"$sparklerPlugins/fetcher-chrome"))
       //FetcherChrome.Selenium.chromeDriver,
       FetcherChrome.Selenium.java,
       FetcherChrome.browserup,
+      FetcherChrome.seleniumscripter,
     ),
     Settings.pluginManifest(
       id = "fetcher-chrome",
