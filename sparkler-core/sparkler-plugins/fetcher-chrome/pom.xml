@@ -38,9 +38,8 @@
     </properties>
     <repositories>
         <repository>
-            <id>github</id>
-            <name>GitHub OWNER Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/sparkler-kythera/seleniumscripter</url>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.com/api/v4/projects/26391218/packages/maven</url>
         </repository>
     </repositories>
     <dependencies>
