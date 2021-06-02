@@ -76,6 +76,10 @@ object Settings {
   )
   lazy val plugin = assemblyProject ++ Seq(
     autoScalaLibrary := false,
+    assemblyMergeStrategy in assembly := {
+      case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+      case x => MergeStrategy.first
+    },
     assemblyOutputPath in assembly := file(".") / buildDir / pluginsDir / s"${name.value}-${(version in ThisBuild).value}.jar"
   )
 
