@@ -59,6 +59,7 @@ developers := List(
 
 
 resolvers += "Gitlab Spicule" at "https://gitlab.com/api/v4/projects/23300400/packages/maven"
+resolvers += "Gitlab Spicule 2" at "https://gitlab.com/api/v4/projects/26391218/packages/maven"
 
 
 
