@@ -20,4 +20,4 @@ jobs:
         distribution: 'adopt'
     - name: Run package
       run: sbt package
-
+      working-directory: sparkler-core

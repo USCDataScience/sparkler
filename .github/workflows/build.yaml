@@ -1,6 +1,9 @@
 name: Sparkler Build
 
-on: [push]
+on: 
+  push:
+    branches:
+       - '!mvn2sbt'
 
 jobs:
   build:
