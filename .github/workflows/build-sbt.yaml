@@ -24,7 +24,7 @@ jobs:
     - name: Install databricks
       run: pip install databricks-cli
     - name: Upload
-      run: /home/runner/.local/bin/databricks fs cp --overwrite build/ dbfs:/FileStore/sparkler-submit/
+      run: /home/runner/.local/bin/databricks fs cp --recursive --overwrite build/ dbfs:/FileStore/sparkler-submit/
       env:
         DATABRICKS_HOST: https://kli-mmit.cloud.databricks.com
         DATABRICKS_TOKEN: dapi686259bd2b151be0cb4a63c1f63cfd95
