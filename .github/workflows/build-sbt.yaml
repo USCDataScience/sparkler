@@ -22,11 +22,8 @@ jobs:
       run: sbt package
       working-directory: sparkler-core
     - name: Install databricks
-      run: pip install databricks-cli
-    - name: Upload
-      run: /home/runner/.local/bin/databricks fs cp --recursive --overwrite build/ dbfs:/FileStore/sparkler-submit/
+      run: ./deploy.sh
+      working-directory: sparkler-core
       env:
         DATABRICKS_HOST: https://kli-mmit.cloud.databricks.com
         DATABRICKS_TOKEN: dapi686259bd2b151be0cb4a63c1f63cfd95
-      working-directory: sparkler-core
-     
