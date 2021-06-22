@@ -60,8 +60,8 @@ object Dependencies {
   object Spark {
     private val group = "org.apache.spark"
     private val version = "3.0.1" // pre-built version available @ https://spark.apache.org/downloads.html
-    lazy val core = group %% "spark-core" % version
-    lazy val sql = group %% "spark-sql" % version
+    lazy val core = group %% "spark-core" % version % "provided"
+    lazy val sql = group %% "spark-sql" % version % "provided"
   }
-  lazy val tikaParsers = "org.apache.tika" % "tika-parsers" % "1.24"
+  lazy val tikaParsers = "org.apache.tika" % "tika-parsers" % "1.24" % "provided"
 }
