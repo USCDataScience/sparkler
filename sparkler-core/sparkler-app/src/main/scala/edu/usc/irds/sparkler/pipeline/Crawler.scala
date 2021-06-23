@@ -220,9 +220,9 @@ class Crawler extends CliTool {
 
       val rdd = new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
-        .groupByKey()
+        .groupByKey().repartition(50)
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer) }).repartition(50)
+          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer) })
         .persist()
 
       if (kafkaEnable) {
