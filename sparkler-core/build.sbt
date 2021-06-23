@@ -93,6 +93,7 @@ lazy val api = (project in file("sparkler-api"))
       case PathList("org", "cliffc", "high_scale_lib", xs@_*) => MergeStrategy.first
       case x => (assemblyMergeStrategy in assembly).value.apply(x)
     },
+    test in assembly := {},
     testOptions += Tests.Argument(TestFrameworks.JUnit,
       "--verbosity=1",
       "--run-listener=edu.usc.irds.sparkler.test.WebServerRunListener")
@@ -122,15 +123,19 @@ lazy val app = (project in file("sparkler-app"))
       case x if x.contains("io.netty.versions.properties") => MergeStrategy.first
       case x if x.contains("Log4j2Plugins.dat") => MergeStrategy.first
       case x if x.contains("module-info.class") => MergeStrategy.first
+      case x if x.contains("public-suffix-list.txt") => MergeStrategy.first
+      case x if x.contains("bus-extensions.txt") => MergeStrategy.first
+      case x if x.contains("blueprint.handlers") => MergeStrategy.first
       case PathList("org", "apache", "logging", "log4j", xs@_*) => MergeStrategy.first
       case PathList("org", "apache", "logging", xs@_*) => MergeStrategy.first
       case PathList("org", "apache", "log4j", xs@_*) => MergeStrategy.first
       case PathList("org", "apache", "commons", "logging", xs@_*) => MergeStrategy.first
       case PathList("org", "slf4j", "impl", xs@_*) => MergeStrategy.first
+      case PathList("com", "ctc", "wstx", xs@_*) => MergeStrategy.first
       case PathList("org", "cliffc", "high_scale_lib", xs@_*) => MergeStrategy.first
       case x => (assemblyMergeStrategy in assembly).value.apply(x)
     },
-    //assembly / assemblyJarName := "something.jar",
+    test in assembly := {},
     assemblyOutputPath in assembly := file(".") / "build" / s"${name.value}-${(version in ThisBuild).value}.jar",
     packageBin in Universal := {
       // Move sparkler-app & its dependencies to {Settings.buildDir}

@@ -63,5 +63,5 @@ object Dependencies {
     lazy val core = group %% "spark-core" % version % "provided"
     lazy val sql = group %% "spark-sql" % version % "provided"
   }
-  lazy val tikaParsers = "org.apache.tika" % "tika-parsers" % "1.24" % "provided"
+  lazy val tikaParsers = "org.apache.tika" % "tika-parsers" % "1.24"
 }

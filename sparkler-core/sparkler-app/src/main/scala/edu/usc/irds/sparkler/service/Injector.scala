@@ -18,7 +18,6 @@
 package edu.usc.irds.sparkler.service
 import java.io.File
 import java.util
-
 import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
@@ -30,8 +29,8 @@ import org.kohsuke.args4j.spi.StringArrayOptionHandler
 import scala.collection.JavaConversions._
 import scala.io.Source
 import java.nio.file.NotDirectoryException
-
 import org.apache.commons.validator.routines.UrlValidator
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable.Stack
 import scala.collection.mutable.ArrayBuffer
@@ -72,6 +71,14 @@ class Injector extends CliTool {
   var configOverride: Array[Any] = Array()
 
   override def run(): Unit = {
+    val sconf = new SparkConf().setAppName("sparkler-job")
+    val sc = new SparkContext(sconf)
+    val logFile = "/home/bugg/Projects/spark-3.0.2-bin-hadoop2.7/README.md"
+    val logData = sc.textFile(logFile, 2).cache()
+    val numAs = logData.filter(line => line.contains("a")).count()
+    val numBs = logData.filter(line => line.contains("b")).count()
+    println("Lines with a: %s, Lines with b: %s".format(numAs, numBs))
+    println("SU: " + seedUrls.mkString(","))
     if (configOverride != ""){
       conf.overloadConfig(configOverride.mkString(" "));
     }

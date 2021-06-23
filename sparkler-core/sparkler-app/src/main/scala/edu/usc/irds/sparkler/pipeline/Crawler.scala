@@ -136,7 +136,7 @@ class Crawler extends CliTool {
       this.outputPath = jobId
     }
     val conf = new SparkConf().setAppName(jobId)
-    if (!sparkMaster.isEmpty) {
+    if (sparkMaster != null && !sparkMaster.isEmpty) {
       conf.setMaster(sparkMaster)
     }
     if (!sparkStorage.isEmpty){
