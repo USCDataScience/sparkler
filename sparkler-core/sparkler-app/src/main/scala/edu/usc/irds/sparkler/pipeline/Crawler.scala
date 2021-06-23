@@ -220,7 +220,7 @@ class Crawler extends CliTool {
 
       val rdd = new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
-        .groupByKey().repartition(50)
+        .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
           FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer) })
         .persist()
@@ -249,7 +249,7 @@ class Crawler extends CliTool {
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(job, d))
 
-    val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.map(d => ScoreUpdateSolrTransformer(d))
+    val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.repartition(50).map(d => ScoreUpdateSolrTransformer(d))
     val scoreUpdateFunc = new SolrStatusUpdate(job)
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
 
