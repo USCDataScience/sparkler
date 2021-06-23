@@ -222,7 +222,7 @@ class Crawler extends CliTool {
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer) })
+          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer) }).repartition(50)
         .persist()
 
       if (kafkaEnable) {
