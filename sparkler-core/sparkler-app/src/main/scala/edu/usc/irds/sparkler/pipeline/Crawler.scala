@@ -253,7 +253,7 @@ class Crawler extends CliTool {
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(job, d))
 
-    val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.map(d => ScoreUpdateSolrTransformer(d))
+    val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.repartition(50).map(d => ScoreUpdateSolrTransformer(d))
     val scoreUpdateFunc = new SolrStatusUpdate(job)
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
 
