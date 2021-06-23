@@ -19,7 +19,7 @@ jobs:
         java-version: '8'
         distribution: 'adopt'
     - name: Run package
-      run: sbt package
+      run: sbt assembly
       working-directory: sparkler-core
     - name: Install databricks
       run: ./deploy.sh
