@@ -229,7 +229,7 @@ class Crawler extends CliTool with Serializable {
       val f = rdd.map(r => (r.getGroup, r))
         .groupByKey().repartition(50);
 
-      val c = f.getNumPartitions
+      //val c = f.getNumPartitions
 
       //val fetchedRdd = f.mapPartitions( x => mapCrawl(x))
       val rc = new RunCrawl
@@ -238,8 +238,8 @@ class Crawler extends CliTool with Serializable {
           FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq })
         .persist()*/
 
-      val coll = fetchedRdd.collect()
-      val d = fetchedRdd.getNumPartitions
+      //val coll = fetchedRdd.collect()
+      //val d = fetchedRdd.getNumPartitions
 
       if (kafkaEnable) {
         storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
@@ -265,7 +265,7 @@ class Crawler extends CliTool with Serializable {
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(job, d))
 
-    val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.repartition(50).map(d => ScoreUpdateSolrTransformer(d))
+    val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.map(d => ScoreUpdateSolrTransformer(d))
     val scoreUpdateFunc = new SolrStatusUpdate(job)
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
 
