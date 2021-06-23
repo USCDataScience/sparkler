@@ -226,17 +226,17 @@ class Crawler extends CliTool with Serializable {
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
       val rdd = new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
-      val f = rdd.map(r => (r.getGroup, r))
-        .groupByKey().repartition(50);
+      val f = rdd.map(r => ("id", r))
+        .groupByKey();
 
       //val c = f.getNumPartitions
 
       //val fetchedRdd = f.mapPartitions( x => mapCrawl(x))
       val rc = new RunCrawl
-      val fetchedRdd = rc.runCrawl(f, job)
-        /*val fetchedRdd = f.flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
+      //val fetchedRdd = rc.runCrawl(f, job)
+        val fetchedRdd = f.flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
           FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq })
-        .persist()*/
+        .persist()
 
       //val coll = fetchedRdd.collect()
       //val d = fetchedRdd.getNumPartitions
