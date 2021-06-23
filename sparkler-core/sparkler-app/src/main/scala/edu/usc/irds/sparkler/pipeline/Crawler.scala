@@ -47,7 +47,8 @@ import scala.io.Source
   *
   * @since 5/28/16
   */
-class Crawler extends CliTool {
+@SerialVersionUID(100L)
+class Crawler extends CliTool with Serializable {
 
   import Crawler._
 
@@ -165,6 +166,12 @@ class Crawler extends CliTool {
   //TODO: URL normalizers
   //TODO: Robots.txt
 
+  def mapCrawl(x: Iterator[(String, Iterable[Resource])]): Iterator[CrawlData] = {
+    val m = 1000
+    x.flatMap({case (grp, rs) => new FairFetcher(job, rs.iterator, m,
+      FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer)})
+  }
+
   override def run(): Unit = {
 
     //STEP : Initialize environment
@@ -223,10 +230,15 @@ class Crawler extends CliTool {
         .groupByKey().repartition(50);
 
       val c = f.getNumPartitions
-        val fetchedRdd = f.flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer) })
-        .persist()
 
+      //val fetchedRdd = f.mapPartitions( x => mapCrawl(x))
+      val rc = new RunCrawl
+      val fetchedRdd = rc.runCrawl(f, job)
+        /*val fetchedRdd = f.flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
+          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq })
+        .persist()*/
+
+      val coll = fetchedRdd.collect()
       val d = fetchedRdd.getNumPartitions
 
       if (kafkaEnable) {
