@@ -72,7 +72,7 @@ generate.sortby: "discover_depth asc, score asc"
 # Default is the "group" field which represent the hostnames of the URLs being fethced
 # Note: This field should match exactly the one specified in the SOLR schema
 # Type: String. Default: group
-generate.groupby: "group"
+generate.groupby: "id"
 
 ##################### Fetcher Properties ################################
 

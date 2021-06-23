@@ -19,13 +19,11 @@ package edu.usc.irds.sparkler.pipeline
 
 import java.io.File
 import java.util
-
 import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
-
-import edu.usc.irds.sparkler.storage.solr.{SolrProxy, SolrStatusUpdate, SolrUpsert, StatusUpdateSolrTransformer, ScoreUpdateSolrTransformer}
+import edu.usc.irds.sparkler.storage.solr.{ScoreUpdateSolrTransformer, SolrProxy, SolrStatusUpdate, SolrUpsert, StatusUpdateSolrTransformer}
 import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
@@ -35,10 +33,10 @@ import org.apache.solr.common.SolrInputDocument
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
-
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
+import java.util.UUID
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
@@ -47,8 +45,7 @@ import scala.io.Source
   *
   * @since 5/28/16
   */
-@SerialVersionUID(100L)
-class Crawler extends CliTool with Serializable {
+class Crawler extends CliTool {
 
   import Crawler._
 
@@ -172,6 +169,11 @@ class Crawler extends CliTool with Serializable {
       FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer)})
   }
 
+  def goup: String = {
+    val uuid = UUID.randomUUID
+    val uuidAsString = uuid.toString
+    uuidAsString
+  }
   override def run(): Unit = {
 
     //STEP : Initialize environment
@@ -184,7 +186,7 @@ class Crawler extends CliTool with Serializable {
     val job = this.job // local variable to bypass serialization
 
     for (_ <- 1 to iterations) {
-      var deepCrawlHosts: mutable.Set[String] = new mutable.HashSet[String]()
+      var deepCrawlHosts = new mutable.HashSet[String]()
       if(deepCrawlHostFile != null) {
         if(deepCrawlHostFile.isFile) {
           deepCrawlHosts ++= Source.fromFile(deepCrawlHostFile).getLines().toSet
@@ -226,10 +228,10 @@ class Crawler extends CliTool with Serializable {
       LOG.info(s"Starting the job:$jobId, task:$taskId")
 
       val rdd = new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
-      val f = rdd.map(r => ("id", r))
-        .groupByKey();
+      val f = rdd.map(r => (r.getDedupeId, r))
+        .groupByKey(100);
 
-      //val c = f.getNumPartitions
+      val c = f.getNumPartitions
 
       //val fetchedRdd = f.mapPartitions( x => mapCrawl(x))
       val rc = new RunCrawl
