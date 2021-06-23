@@ -247,7 +247,7 @@ class Crawler extends CliTool {
 
       //val fetchedRdd = f.mapPartitions( x => mapCrawl(x))
       //val fetchedRdd = rc.runCrawl(f, job)
-        val fetchedRdd = f.flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
+        val fetchedRdd = f.repartition(500).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
           FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq }).repartition(500)
         .persist()
 
