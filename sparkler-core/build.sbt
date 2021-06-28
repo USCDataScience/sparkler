@@ -121,7 +121,8 @@ lazy val app = (project in file("sparkler-app"))
       Dependencies.seleniumscripter,
       Dependencies.browserup,
       Dependencies.Selenium.java,
-      Dependencies.Selenium.chromeDriver
+      Dependencies.Selenium.chromeDriver,
+      Dependencies.Selenium.guava
     ),
     assemblyMergeStrategy in assembly := {
       case x if x.contains("io.netty.versions.properties") => MergeStrategy.first
