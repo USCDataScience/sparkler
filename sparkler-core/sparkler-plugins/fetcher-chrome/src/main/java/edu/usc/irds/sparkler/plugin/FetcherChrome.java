@@ -226,7 +226,7 @@ public class FetcherChrome extends FetcherDefault {
             if(pluginConfig.get("chrome.selenium.script") != null && pluginConfig.get("chrome.selenium.script") instanceof Map) {
                 Map<String, Object> map = (Map<String, Object>) pluginConfig.get("chrome.selenium.script");
                 try {
-                    scripter.runScript(map, null, null);
+                    scripter.runScript(map);
                 } catch (Exception ignored){
 
                 }
@@ -237,7 +237,7 @@ public class FetcherChrome extends FetcherDefault {
         if(json != null && json.containsKey("selenium")){
             if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
                 try {
-                    scripter.runScript((Map<String, Object>) json.get("selenium"), null, null);
+                    scripter.runScript((Map<String, Object>) json.get("selenium"));
                 } catch (Exception e){
                     Map<String, Object> tempmap = new HashMap<>();
                     tempmap.put("type", "file");
