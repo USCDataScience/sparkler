@@ -118,6 +118,10 @@ lazy val app = (project in file("sparkler-app"))
       Dependencies.Spark.core,
       Dependencies.Spark.sql,
       Dependencies.tikaParsers,
+      Dependencies.seleniumscripter,
+      Dependencies.browserup,
+      Dependencies.Selenium.java,
+      Dependencies.Selenium.chromeDriver
     ),
     assemblyMergeStrategy in assembly := {
       case x if x.contains("io.netty.versions.properties") => MergeStrategy.first
@@ -126,6 +130,7 @@ lazy val app = (project in file("sparkler-app"))
       case x if x.contains("public-suffix-list.txt") => MergeStrategy.first
       case x if x.contains("bus-extensions.txt") => MergeStrategy.first
       case x if x.contains("blueprint.handlers") => MergeStrategy.first
+      case x if x.contains("META-INF/versions/9/javax/xml/bind/") => MergeStrategy.first
       case PathList("org", "apache", "logging", "log4j", xs@_*) => MergeStrategy.first
       case PathList("org", "apache", "logging", xs@_*) => MergeStrategy.first
       case PathList("org", "apache", "log4j", xs@_*) => MergeStrategy.first
@@ -133,6 +138,12 @@ lazy val app = (project in file("sparkler-app"))
       case PathList("org", "slf4j", "impl", xs@_*) => MergeStrategy.first
       case PathList("com", "ctc", "wstx", xs@_*) => MergeStrategy.first
       case PathList("org", "cliffc", "high_scale_lib", xs@_*) => MergeStrategy.first
+      case PathList("javax.xml.bind", "jaxb-api", xs@_*) => MergeStrategy.first
+      case PathList("org", "hamcrest", xs@_*) => MergeStrategy.first
+      case PathList("javax", "xml", xs@_*) => MergeStrategy.first
+      case PathList("javax", "activation", xs@_*) => MergeStrategy.first
+      case PathList("io", "netty", xs@_*) => MergeStrategy.first
+
       case x => (assemblyMergeStrategy in assembly).value.apply(x)
     },
     test in assembly := {},
@@ -209,3 +220,4 @@ lazy val ui = (project in file("sparkler-ui"))
 /*enablePlugins(PackPlugin)
 
 packMain := Map("inject" -> "edu.usc.irds.sparkler.service.Injector")*/
+
