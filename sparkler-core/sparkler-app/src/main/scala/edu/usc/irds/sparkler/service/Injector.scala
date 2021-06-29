@@ -71,14 +71,14 @@ class Injector extends CliTool {
   var configOverride: Array[Any] = Array()
 
   override def run(): Unit = {
-    val sconf = new SparkConf().setAppName("sparkler-job")
-    val sc = new SparkContext(sconf)
-    val logFile = "/home/bugg/Projects/spark-3.0.2-bin-hadoop2.7/README.md"
-    val logData = sc.textFile(logFile, 2).cache()
-    val numAs = logData.filter(line => line.contains("a")).count()
-    val numBs = logData.filter(line => line.contains("b")).count()
-    println("Lines with a: %s, Lines with b: %s".format(numAs, numBs))
-    println("SU: " + seedUrls.mkString(","))
+    //val sconf = new SparkConf().setAppName("sparkler-job")
+    //val sc = new SparkContext(sconf)
+    //val logFile = "/home/bugg/Projects/spark-3.0.2-bin-hadoop2.7/README.md"
+    //val logData = sc.textFile(logFile, 2).cache()
+    //val numAs = logData.filter(line => line.contains("a")).count()
+    //val numBs = logData.filter(line => line.contains("b")).count()
+    //println("Lines with a: %s, Lines with b: %s".format(numAs, numBs))
+    //println("SU: " + seedUrls.mkString(","))
     if (configOverride != ""){
       conf.overloadConfig(configOverride.mkString(" "));
     }

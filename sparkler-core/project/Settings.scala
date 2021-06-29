@@ -77,8 +77,18 @@ object Settings {
   lazy val plugin = assemblyProject ++ Seq(
     autoScalaLibrary := false,
     assemblyMergeStrategy in assembly := {
-      case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-      case x => MergeStrategy.first
+      case x if x.contains("io.netty.versions.properties") => MergeStrategy.first
+      case x if x.contains("Log4j2Plugins.dat") => MergeStrategy.first
+      case x if x.contains("module-info.class") => MergeStrategy.first
+      case x if x.contains("public-suffix-list.txt") => MergeStrategy.first
+      case x if x.contains("bus-extensions.txt") => MergeStrategy.first
+      case x if x.contains("blueprint.handlers") => MergeStrategy.first
+      case x if x.contains("git.properties") => MergeStrategy.first
+      case x if x.contains("config.fmpp") => MergeStrategy.first
+      case x if x.contains("META-INF/versions/9/javax/xml/bind/") => MergeStrategy.first
+      case x if x.contains("MANIFEST.MF") => MergeStrategy.discard
+      case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+      case x => (assemblyMergeStrategy in assembly).value.apply(x)
     },
     assemblyOutputPath in assembly := file(".") / buildDir / pluginsDir / s"${name.value}-${(version in ThisBuild).value}.jar"
   )

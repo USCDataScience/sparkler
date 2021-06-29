@@ -64,10 +64,11 @@ lazy val fetcherChrome = (project in file(s"$sparklerPlugins/fetcher-chrome"))
     Settings.plugin,
     name := "fetcher-chrome",
     libraryDependencies ++= Seq(
-      //FetcherChrome.Selenium.chromeDriver,
-      FetcherChrome.Selenium.java,
-      FetcherChrome.browserup,
-      FetcherChrome.seleniumscripter,
+      FetcherChrome.Selenium.java exclude("org.slf4j", "slf4j-api"),
+      FetcherChrome.browserup exclude("com.fasterxml.jackson.core", "jackson-databind") exclude("org.slf4j", "slf4j-api"),
+      Dependencies.seleniumscripter exclude("org.slf4j", "slf4j-api"),
+      Dependencies.Selenium.chromeDriver exclude("org.slf4j", "slf4j-api"),
+      Dependencies.Selenium.guava exclude("org.slf4j", "slf4j-api")
     ),
     Settings.pluginManifest(
       id = "fetcher-chrome",
@@ -83,7 +84,7 @@ lazy val fetcherHtmlUnit = (project in file(s"$sparklerPlugins/fetcher-htmlunit"
     Settings.plugin,
     name := "fetcher-htmlunit",
     libraryDependencies ++= Seq(
-      FetcherHtmlUnit.htmlUnit,
+      FetcherHtmlUnit.htmlUnit exclude("org.slf4j", "slf4j-api"),
     ),
     Settings.pluginManifest(
       id = "fetcher-htmlunit",

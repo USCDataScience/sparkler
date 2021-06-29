@@ -37,7 +37,8 @@ elasticsearch.uri: http://localhost:9200
 
 # URL on which Apache Spark is running.
 # Type: String. Default is "local[*]" for local mode.
-spark.master: spark://DESKTOP-JIMKO29.localdomain:7077
+spark.master:
+  #local[*]
 databricks.enable: false
 
 ##################### Apache Kafka Properties ###########################

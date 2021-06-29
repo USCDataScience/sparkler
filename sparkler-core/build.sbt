@@ -100,12 +100,23 @@ lazy val api = (project in file("sparkler-api"))
   )
   .dependsOn(testsBase)
 
+val sparkprovided = System.getProperty("sparkprovided", "")
+
 lazy val app = (project in file("sparkler-app"))
   .enablePlugins(JavaAppPackaging)
   .settings(
     Settings.common,
     name := "sparkler-app",
     mainClass in (Compile, packageBin) := Some("edu.usc.irds.sparkler.Main"),
+    libraryDependencies ++= (
+      if(sparkprovided == "true") {
+        ("org.apache.spark" %% "spark-core" % "3.0.1" % "provided") :: Nil
+        ("org.apache.spark" %% "spark-sql" % "3.0.1" % "provided") :: Nil
+      } else {
+        ("org.apache.spark" %% "spark-core" % "3.0.1") :: Nil
+        ("org.apache.spark" %% "spark-sql" % "3.0.1") :: Nil
+      }
+    ),
     libraryDependencies ++= Seq(
       // TODO: Only keep necessary dependencies. Rest all should be included as plugin. Eg: extractors
       Dependencies.args4j,
@@ -115,14 +126,8 @@ lazy val app = (project in file("sparkler-app"))
       Dependencies.kafkaClients exclude("org.slf4j", "slf4j-api"),
       Dependencies.pf4j,
       Dependencies.Solr.core,
-      Dependencies.Spark.core,
-      Dependencies.Spark.sql,
       Dependencies.tikaParsers,
-      Dependencies.seleniumscripter,
-      Dependencies.browserup,
-      Dependencies.Selenium.java,
-      Dependencies.Selenium.chromeDriver,
-      Dependencies.Selenium.guava
+
     ),
     assemblyMergeStrategy in assembly := {
       case x if x.contains("io.netty.versions.properties") => MergeStrategy.first
@@ -131,6 +136,8 @@ lazy val app = (project in file("sparkler-app"))
       case x if x.contains("public-suffix-list.txt") => MergeStrategy.first
       case x if x.contains("bus-extensions.txt") => MergeStrategy.first
       case x if x.contains("blueprint.handlers") => MergeStrategy.first
+      case x if x.contains("git.properties") => MergeStrategy.first
+      case x if x.contains("config.fmpp") => MergeStrategy.first
       case x if x.contains("META-INF/versions/9/javax/xml/bind/") => MergeStrategy.first
       case PathList("org", "apache", "logging", "log4j", xs@_*) => MergeStrategy.first
       case PathList("org", "apache", "logging", xs@_*) => MergeStrategy.first
@@ -144,6 +151,15 @@ lazy val app = (project in file("sparkler-app"))
       case PathList("javax", "xml", xs@_*) => MergeStrategy.first
       case PathList("javax", "activation", xs@_*) => MergeStrategy.first
       case PathList("io", "netty", xs@_*) => MergeStrategy.first
+      case PathList("org", "aopalliance", "intercept", xs@_*) => MergeStrategy.first
+      case PathList("org", "aopalliance", "aop", xs@_*) => MergeStrategy.first
+      case PathList("org", "apache", "spark", xs@_*) => MergeStrategy.first
+      case PathList("org", "apache", "hadoop", xs@_*) => MergeStrategy.first
+      case PathList("net", "jpountz", xs@_*) => MergeStrategy.last
+      case PathList("net", "jcip", xs@_*) => MergeStrategy.first
+      case PathList("javax", "inject", xs@_*) => MergeStrategy.first
+      case PathList("javax", "annotation", xs@_*) => MergeStrategy.first
+      case PathList("com", "sun", xs@_*) => MergeStrategy.first
 
       case x => (assemblyMergeStrategy in assembly).value.apply(x)
     },

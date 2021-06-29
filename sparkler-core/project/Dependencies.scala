@@ -26,7 +26,7 @@ object Dependencies {
 
   object Jackson {
     private val group = "com.fasterxml.jackson.core"
-    private val version = "2.6.5"
+    private val version = "2.10.0"
     lazy val core = group % "jackson-core" % version
     lazy val databind = group % "jackson-databind" % version
   }
@@ -42,7 +42,7 @@ object Dependencies {
   lazy val jUnitInterface = "com.novocode" % "junit-interface" % "0.11"
   lazy val kafkaClients = "org.apache.kafka" % "kafka-clients" % "0.10.0.0"
   lazy val nutch = "org.apache.nutch" % "nutch" % "1.16"
-  lazy val pf4j = "org.pf4j" % "pf4j" % "2.6.0"
+  lazy val pf4j = "org.pf4j" % "pf4j" % "3.6.0"
   lazy val scalaMacrosParadise = "org.scalamacros" %% "paradise" % "2.1.1"
   object Slf4j {
     private val group = "org.slf4j"
@@ -58,6 +58,12 @@ object Dependencies {
     lazy val solrj = group % "solr-solrj" % version
   }
   object Spark {
+    private val group = "org.apache.spark"
+    private val version = "3.0.1" // pre-built version available @ https://spark.apache.org/downloads.html
+    lazy val core = group %% "spark-core" % version //% "provided"
+    lazy val sql = group %% "spark-sql" % version //% "provided"
+  }
+  object SparkProvided {
     private val group = "org.apache.spark"
     private val version = "3.0.1" // pre-built version available @ https://spark.apache.org/downloads.html
     lazy val core = group %% "spark-core" % version % "provided"
