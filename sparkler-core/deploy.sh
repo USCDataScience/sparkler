@@ -1,10 +1,10 @@
 #!/bin/bash
 
-standalone=$1
+method=$1
 
 pip install databricks-cli
 
-if [ "$standalone" = "true" ]; then
+if [ "$method" = "standalone" ]; then
   ls
   ~/.local/bin/databricks fs cp --recursive --overwrite build/ dbfs:/FileStore/sparkler-standalone/
 else
