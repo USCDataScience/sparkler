@@ -27,3 +27,12 @@ jobs:
       env:
         DATABRICKS_HOST: https://kli-mmit.cloud.databricks.com
         DATABRICKS_TOKEN: dapi88de017d8ab1fe80afe5691c1e786185
+    - name: Run package
+      run: sbt assembly -Dsparkprovided=false
+      working-directory: sparkler-core
+    - name: Install databricks
+      run: rm -rf build && ./deploy.sh standalone
+      working-directory: sparkler-core
+      env:
+        DATABRICKS_HOST: https://kli-mmit.cloud.databricks.com
+        DATABRICKS_TOKEN: dapi88de017d8ab1fe80afe5691c1e786185
