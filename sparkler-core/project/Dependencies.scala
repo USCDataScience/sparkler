@@ -77,7 +77,4 @@ object Dependencies {
     lazy val java = group % "selenium-java" % version
     lazy val guava  = "com.google.guava" % "guava" % "25.0-jre"
   }
-
-  lazy val browserup = "com.browserup" % "browserup-proxy-core" % "3.0.0-SNAPSHOT"
-  lazy val seleniumscripter = "com.kytheralabs" % "seleniumscripter" % "1.2"
 }
