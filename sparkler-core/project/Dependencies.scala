@@ -70,11 +70,4 @@ object Dependencies {
     lazy val sql = group %% "spark-sql" % version % "provided"
   }
   lazy val tikaParsers = "org.apache.tika" % "tika-parsers" % "1.24"
-  object Selenium {
-    private val group = "org.seleniumhq.selenium"
-    private val version = "3.141.59"
-    lazy val chromeDriver = group % "selenium-chrome-driver" % version
-    lazy val java = group % "selenium-java" % version
-    lazy val guava  = "com.google.guava" % "guava" % "25.0-jre"
-  }
 }

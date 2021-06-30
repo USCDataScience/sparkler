@@ -66,9 +66,9 @@ lazy val fetcherChrome = (project in file(s"$sparklerPlugins/fetcher-chrome"))
     libraryDependencies ++= Seq(
       FetcherChrome.Selenium.java exclude("org.slf4j", "slf4j-api"),
       FetcherChrome.browserup exclude("com.fasterxml.jackson.core", "jackson-databind") exclude("org.slf4j", "slf4j-api"),
-      Dependencies.seleniumscripter exclude("org.slf4j", "slf4j-api"),
-      Dependencies.Selenium.chromeDriver exclude("org.slf4j", "slf4j-api"),
-      Dependencies.Selenium.guava exclude("org.slf4j", "slf4j-api")
+      FetcherChrome.seleniumscripter exclude("org.slf4j", "slf4j-api"),
+      FetcherChrome.Selenium.chromeDriver exclude("org.slf4j", "slf4j-api"),
+      //FetcherChrome.Selenium.guava exclude("org.slf4j", "slf4j-api")
     ),
     Settings.pluginManifest(
       id = "fetcher-chrome",
