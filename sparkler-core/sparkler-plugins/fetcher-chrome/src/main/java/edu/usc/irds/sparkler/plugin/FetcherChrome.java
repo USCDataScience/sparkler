@@ -47,6 +47,7 @@ import java.util.Map;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import com.browserup.bup.BrowserUpProxy;
@@ -237,7 +238,9 @@ public class FetcherChrome extends FetcherDefault {
         if(json != null && json.containsKey("selenium")){
             if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
                 try {
-                    scripter.runScript((Map<String, Object>) json.get("selenium"));
+                    Map m = (Map<String, Object>) json.get("selenium");
+                    Map json = new TreeMap(m);
+                    scripter.runScript(json);
                 } catch (Exception e){
                     Map<String, Object> tempmap = new HashMap<>();
                     tempmap.put("type", "file");
