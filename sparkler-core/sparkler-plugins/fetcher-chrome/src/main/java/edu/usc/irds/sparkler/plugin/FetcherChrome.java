@@ -239,8 +239,8 @@ public class FetcherChrome extends FetcherDefault {
             if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
                 try {
                     Map m = (Map<String, Object>) json.get("selenium");
-                    Map json = new TreeMap(m);
-                    scripter.runScript(json);
+                    Map jsonmap = new TreeMap(m);
+                    scripter.runScript(jsonmap);
                 } catch (Exception e){
                     Map<String, Object> tempmap = new HashMap<>();
                     tempmap.put("type", "file");
