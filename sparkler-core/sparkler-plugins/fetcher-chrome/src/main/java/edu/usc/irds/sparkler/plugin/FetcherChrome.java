@@ -144,6 +144,20 @@ public class FetcherChrome extends FetcherDefault {
             chromeOptions.addArguments("--ignore-certificate-errors");
             chromeOptions.addArguments("--incognito");
             chromeOptions.addArguments("--window-size=1920,1080");
+            chromeOptions.addArguments("--proxy-server='direct://");
+            chromeOptions.addArguments("--proxy-bypass-list=*");
+            chromeOptions.addArguments("--disable-background-networking");
+            chromeOptions.addArguments("--safebrowsing-disable-auto-update");
+            chromeOptions.addArguments("--disable-sync");
+            chromeOptions.addArguments("--metrics-recording-only");
+            chromeOptions.addArguments("--disable-default-apps");
+            chromeOptions.addArguments("--no-first-run");
+            chromeOptions.addArguments("--disable-setuid-sandbox");
+            chromeOptions.addArguments("--hide-scrollbars");
+            chromeOptions.addArguments("--no-zygote");
+            chromeOptions.addArguments("--disable-notifications");
+            chromeOptions.addArguments("--disable-logging");
+            chromeOptions.addArguments("--disable-permissions-api");
 
             chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
             //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
