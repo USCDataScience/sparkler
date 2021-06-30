@@ -18,19 +18,19 @@ jobs:
       with:
         java-version: '8'
         distribution: 'adopt'
-    - name: Run package
+    - name: Run submit package
       run: sbt assembly -Dsparkprovided=true
       working-directory: sparkler-core
-    - name: Install databricks
+    - name: Deploy Submit to Databricks
       run: ./deploy.sh
       working-directory: sparkler-core
       env:
         DATABRICKS_HOST: https://kli-mmit.cloud.databricks.com
         DATABRICKS_TOKEN: dapi88de017d8ab1fe80afe5691c1e786185
-    - name: Run package
+    - name: Run full package
       run: sbt clean assembly -Dsparkprovided=false
       working-directory: sparkler-core
-    - name: Install databricks
+    - name: Deploy to databricks
       run: ./deploy.sh standalone
       working-directory: sparkler-core
       env:
