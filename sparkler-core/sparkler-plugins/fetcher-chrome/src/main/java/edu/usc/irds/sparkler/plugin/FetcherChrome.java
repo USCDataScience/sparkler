@@ -188,7 +188,7 @@ public class FetcherChrome extends FetcherDefault {
          * using default Fetcher
          */
         if (!isWebPage(resource.getUrl())) {
-            LOG.debug("{} not a html. Falling back to default fetcher.", resource.getUrl());
+            LOG.info("{} not a html. Falling back to default fetcher.", resource.getUrl());
             // This should be true for all URLS ending with 4 character file extension
             // return new FetchedData("".getBytes(), "application/html", ERROR_CODE) ;
             return super.fetch(resource);
@@ -252,6 +252,7 @@ public class FetcherChrome extends FetcherDefault {
         if(json != null && json.containsKey("selenium")){
             if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
                 try {
+                    LOG.info("Running Selenium Script");
                     Map m = (Map<String, Object>) json.get("selenium");
                     Map jsonmap = new TreeMap(m);
                     scripter.runScript(jsonmap);
@@ -260,7 +261,7 @@ public class FetcherChrome extends FetcherDefault {
                     tempmap.put("type", "file");
                     tempmap.put("targetdir", pluginConfig.getOrDefault("chrome.selenium.screenshotdir","/dbfs/FileStore/screenshots/")+resource.getCrawlId()+System.currentTimeMillis());
                     scripter.screenshotOperation(tempmap);
-                    e.printStackTrace();
+                    LOG.info(e.getMessage());
                 }
                 List<String> snapshots = scripter.getSnapshots();
                 html = String.join(",", snapshots);
@@ -273,7 +274,7 @@ public class FetcherChrome extends FetcherDefault {
 
         LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
 
-        System.out.println("LATEST STATUS: "+latestStatus);
+        LOG.info("LATEST STATUS: "+latestStatus);
         /*if (!(latestStatus >= 200 && latestStatus < 300) && latestStatus != 0) {
             // If not fetched through plugin successfully
             // Falling back to default fetcher
