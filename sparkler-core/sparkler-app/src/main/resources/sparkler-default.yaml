@@ -32,6 +32,7 @@ solr.uri: http://ec2-35-174-200-133.compute-1.amazonaws.com:8983/solr/crawldb
 # elasticsearch settings
 elasticsearch.uri: http://localhost:9200
 
+crawl.repartition: 500
 
 ##################### Apache Spark Properties ###########################
 
@@ -142,6 +143,28 @@ plugins:
     #chrome.selenium.script.keys: "COR"
     #chrome.selenium.script.click: "id:btnSearch" 
     #chrome.proxy.address: 127.0.0.1:9998
+    chrome.options:
+      - "--no-sandbox"
+      - "--headless"
+      - "--disable-gpu"
+      - "--disable-extensions"
+      - "--ignore-certificate-errors"
+      - "--incognito"
+      - "--window-size=1920,1080"
+      - "--proxy-server='direct://"
+      - "--proxy-bypass-list=*"
+      - "--disable-background-networking"
+      - "--safebrowsing-disable-auto-update"
+      - "--disable-sync"
+      - "--metrics-recording-only"
+      - "--disable-default-apps"
+      - "--no-first-run"
+      - "--disable-setuid-sandbox"
+      - "--hide-scrollbars"
+      - "--no-zygote"
+      - "--disable-notifications"
+      - "--disable-logging"
+      - "--disable-permissions-api"
   url.injector:
     mode: selenium # currently only compatible with the fetcher-chrome plugin
     #mode: replace
