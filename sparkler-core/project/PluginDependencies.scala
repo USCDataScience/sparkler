@@ -28,7 +28,7 @@ object FetcherChrome {
     lazy val java = group % "selenium-java" % version
   }
   lazy val browserup = "com.browserup" % "browserup-proxy-core" % "3.0.0-SNAPSHOT"
-  lazy val seleniumscripter = "com.kytheralabs" % "seleniumscripter" % "1.3-20210701.125932-13"
+  lazy val seleniumscripter = "com.kytheralabs" % "seleniumscripter" % "1.3-20210702.233545-14"
 }
 
 object FetcherHtmlUnit {
