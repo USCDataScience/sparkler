@@ -41,6 +41,7 @@ spark.master:
   #local[*]
 databricks.enable: false
 
+crawl.repartition: 500
 ##################### Apache Kafka Properties ###########################
 # Enable Kafka Dump
 # Type: Boolean. Default is "false"
@@ -137,6 +138,28 @@ plugins:
     #What type of element, class, name, id
     chrome.wait.type: "class"
     chrome.dns: "http://localhost:3000/webdriver"
+    chrome.options:
+        - "--no-sandbox" 
+        - "--headless" 
+        - "--disable-gpu" 
+        - "--disable-extensions" 
+        - "--ignore-certificate-errors" 
+        - "--incognito" 
+        - "--window-size=1920,1080" 
+        - "--proxy-server='direct://" 
+        - "--proxy-bypass-list=*" 
+        - "--disable-background-networking"
+        - "--safebrowsing-disable-auto-update"
+        - "--disable-sync"
+        - "--metrics-recording-only"
+        - "--disable-default-apps"
+        - "--no-first-run"
+        - "--disable-setuid-sandbox"
+        - "--hide-scrollbars"
+        - "--no-zygote"
+        - "--disable-notifications"
+        - "--disable-logging"
+        - "--disable-permissions-api"
     #chrome.selenium.enabled: "true"
     #chrome.selenium.script.click: "id:txtName"
     #chrome.selenium.script.keys: "COR"

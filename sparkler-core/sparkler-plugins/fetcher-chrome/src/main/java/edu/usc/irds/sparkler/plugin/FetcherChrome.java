@@ -41,13 +41,10 @@ import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import com.browserup.bup.BrowserUpProxy;
@@ -137,27 +134,16 @@ public class FetcherChrome extends FetcherDefault {
 
             DesiredCapabilities capabilities = DesiredCapabilities.chrome();
             final ChromeOptions chromeOptions = new ChromeOptions();
-            chromeOptions.addArguments("--no-sandbox");
-            chromeOptions.addArguments("--headless");
-            chromeOptions.addArguments("--disable-gpu");
-            chromeOptions.addArguments("--disable-extensions");
-            chromeOptions.addArguments("--ignore-certificate-errors");
-            chromeOptions.addArguments("--incognito");
-            chromeOptions.addArguments("--window-size=1920,1080");
-            chromeOptions.addArguments("--proxy-server='direct://");
-            chromeOptions.addArguments("--proxy-bypass-list=*");
-            chromeOptions.addArguments("--disable-background-networking");
-            chromeOptions.addArguments("--safebrowsing-disable-auto-update");
-            chromeOptions.addArguments("--disable-sync");
-            chromeOptions.addArguments("--metrics-recording-only");
-            chromeOptions.addArguments("--disable-default-apps");
-            chromeOptions.addArguments("--no-first-run");
-            chromeOptions.addArguments("--disable-setuid-sandbox");
-            chromeOptions.addArguments("--hide-scrollbars");
-            chromeOptions.addArguments("--no-zygote");
-            chromeOptions.addArguments("--disable-notifications");
-            chromeOptions.addArguments("--disable-logging");
-            chromeOptions.addArguments("--disable-permissions-api");
+
+            List<String> chromedefaults = Arrays.asList("--no-sandbox", "--headless", "--disable-gpu", "--disable-extensions",
+                    "--ignore-certificate-errors",  "--incognito", "--window-size=1920,1080", "--proxy-server='direct://",
+                    "--proxy-bypass-list=*", "--disable-background-networking", "--safebrowsing-disable-auto-update",
+                    "--disable-sync", "--metrics-recording-only", "--disable-default-apps", "--no-first-run",
+                    "--disable-setuid-sandbox", "--hide-scrollbars", "--no-zygote", "--disable-notifications",
+                    "--disable-logging", "--disable-permissions-api");
+
+            List<String> vals = (List<String>) (pluginConfig.getOrDefault("chrome.options", chromedefaults));
+            chromeOptions.addArguments(vals);
 
             chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
             //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
@@ -314,7 +300,7 @@ public class FetcherChrome extends FetcherDefault {
             CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             String contentType = conn.getHeaderField("Content-Type");
-            return contentType.contains("text") || contentType.contains("ml") || conn.getResponseCode() == 302;
+            return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml") || conn.getResponseCode() == 302;
         } catch (Exception e) {
             LOG.debug(e.getMessage(), e);
         }
