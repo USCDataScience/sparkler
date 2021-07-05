@@ -247,7 +247,7 @@ public class FetcherChrome extends FetcherDefault {
                     tempmap.put("type", "file");
                     tempmap.put("targetdir", pluginConfig.getOrDefault("chrome.selenium.screenshotdir","/dbfs/FileStore/screenshots/")+resource.getCrawlId()+System.currentTimeMillis());
                     scripter.screenshotOperation(tempmap);
-                    LOG.info(e.getMessage());
+                    LOG.error("Scripter Exception", e);
                 }
                 List<String> snapshots = scripter.getSnapshots();
                 html = String.join(",", snapshots);
