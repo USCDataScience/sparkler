@@ -160,6 +160,7 @@ lazy val app = (project in file("sparkler-app"))
       case PathList("javax", "inject", xs@_*) => MergeStrategy.first
       case PathList("javax", "annotation", xs@_*) => MergeStrategy.first
       case PathList("com", "sun", xs@_*) => MergeStrategy.first
+      case PathList("javax", "activation", xs@_*) => MergeStrategy.first
 
       case x => (assemblyMergeStrategy in assembly).value.apply(x)
     },

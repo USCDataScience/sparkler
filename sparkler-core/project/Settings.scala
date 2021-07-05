@@ -88,6 +88,9 @@ object Settings {
       case x if x.contains("META-INF/versions/9/javax/xml/bind/") => MergeStrategy.first
       case x if x.contains("MANIFEST.MF") => MergeStrategy.discard
       case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+      case PathList("javax", "activation", xs@_*) => MergeStrategy.first
+      case PathList("io", "netty", xs@_*) => MergeStrategy.first
+
       case x => (assemblyMergeStrategy in assembly).value.apply(x)
     },
     assemblyOutputPath in assembly := file(".") / buildDir / pluginsDir / s"${name.value}-${(version in ThisBuild).value}.jar"
