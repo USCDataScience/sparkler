@@ -35,8 +35,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +130,6 @@ public class FetcherChrome extends FetcherDefault {
             // seleniumProxy.setHttpProxy("172.17.146.238:"+Integer.toString(port));
             // seleniumProxy.setSslProxy("172.17.146.238:"+Integer.toString(port));
 
-            DesiredCapabilities capabilities = DesiredCapabilities.chrome();
             final ChromeOptions chromeOptions = new ChromeOptions();
 
             List<String> chromedefaults = Arrays.asList("--no-sandbox", "--headless", "--disable-gpu", "--disable-extensions",
@@ -147,13 +144,12 @@ public class FetcherChrome extends FetcherDefault {
 
             chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
             //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
-            capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
 
             if(loc.equals("local")){
-                driver = new ChromeDriver(capabilities);
+                driver = new ChromeDriver(chromeOptions);
                 driver.manage().timeouts().pageLoadTimeout(3600, TimeUnit.SECONDS);
             } else{
-                driver = new RemoteWebDriver(new URL(loc), capabilities);
+                driver = new RemoteWebDriver(new URL(loc), chromeOptions);
             }
 
             driver.manage().window().setSize(new Dimension(1920, 1080));
@@ -197,7 +193,7 @@ public class FetcherChrome extends FetcherDefault {
         }
         driver.get(resource.getUrl());
 
-        int waittimeout = (int) pluginConfig.getOrDefault("chrome.wait.timeout", "-1");
+/*        int waittimeout = (int) pluginConfig.getOrDefault("chrome.wait.timeout", "-1");
         String waittype = (String) pluginConfig.getOrDefault("chrome.wait.type", "");
         String waitelement = (String) pluginConfig.getOrDefault("chrome.wait.element", "");
 
@@ -219,11 +215,11 @@ public class FetcherChrome extends FetcherDefault {
                     wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
                     break;
             }
-        }
+        }*/
         SeleniumScripter scripter = new SeleniumScripter(driver);
         String seleniumenabled = (String) pluginConfig.getOrDefault("chrome.selenium.enabled", "false");
         String html = null;
-        if (seleniumenabled.equals("true")) {
+/*        if (seleniumenabled.equals("true")) {
             if(pluginConfig.get("chrome.selenium.script") != null && pluginConfig.get("chrome.selenium.script") instanceof Map) {
                 Map<String, Object> map = (Map<String, Object>) pluginConfig.get("chrome.selenium.script");
                 try {
@@ -234,7 +230,7 @@ public class FetcherChrome extends FetcherDefault {
                 List<String> snapshots = scripter.getSnapshots();
                 html = String.join(",", snapshots);
             }
-        }
+        }*/
         if(json != null && json.containsKey("selenium")){
             if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
                 try {

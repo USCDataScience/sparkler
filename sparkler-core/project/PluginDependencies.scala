@@ -23,12 +23,12 @@ object PluginDependencies {}
 object FetcherChrome {
   object Selenium {
     private val group = "org.seleniumhq.selenium"
-    private val version = "3.141.59"
+    private val version = "4.0.0-beta-4"
     lazy val chromeDriver = group % "selenium-chrome-driver" % version
     lazy val java = group % "selenium-java" % version
   }
   lazy val browserup = "com.browserup" % "browserup-proxy-core" % "3.0.0-SNAPSHOT"
-  lazy val seleniumscripter = "com.kytheralabs" % "seleniumscripter" % "1.3-20210705.130945-26"
+  lazy val seleniumscripter = "com.kytheralabs" % "seleniumscripter" % "1.3-20210705.194205-28"
 }
 
 object FetcherHtmlUnit {
