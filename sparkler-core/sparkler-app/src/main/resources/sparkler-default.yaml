@@ -138,6 +138,7 @@ plugins:
     #What type of element, class, name, id
     chrome.wait.type: "class"
     chrome.dns: "http://localhost:3000/webdriver"
+    chrome.selenium.screenshotdir: "/dbfs/FileStore/screenshots/"
     #chrome.selenium.enabled: "true"
     #chrome.selenium.script.click: "id:txtName"
     #chrome.selenium.script.keys: "COR"
