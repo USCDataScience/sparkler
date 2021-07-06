@@ -130,7 +130,7 @@ public class FetcherChrome extends FetcherDefault {
 
             final ChromeOptions chromeOptions = new ChromeOptions();
 
-            List<String> chromedefaults = Arrays.asList("--no-sandbox", "--headless", "--disable-gpu", "--disable-extensions",
+            List<String> chromedefaults = Arrays.asList("--no-sandbox", "--disable-gpu", "--disable-extensions",
                     "--ignore-certificate-errors",  "--incognito", "--window-size=1920,1080", "--proxy-server='direct://",
                     "--proxy-bypass-list=*", "--disable-background-networking", "--safebrowsing-disable-auto-update",
                     "--disable-sync", "--metrics-recording-only", "--disable-default-apps", "--no-first-run",

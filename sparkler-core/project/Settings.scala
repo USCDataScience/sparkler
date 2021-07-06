@@ -87,8 +87,10 @@ object Settings {
       case x if x.contains("config.fmpp") => MergeStrategy.first
       case x if x.contains("META-INF/versions/9/javax/xml/bind/") => MergeStrategy.first
       case x if x.contains("MANIFEST.MF") => MergeStrategy.discard
+      case x if x.contains("ExtensionModule") => MergeStrategy.first
       case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
       case PathList("javax", "activation", xs@_*) => MergeStrategy.first
+
       //case PathList("io", "netty", xs@_*) => MergeStrategy.last
 
       case x => (assemblyMergeStrategy in assembly).value.apply(x)
