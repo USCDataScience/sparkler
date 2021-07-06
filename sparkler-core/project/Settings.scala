@@ -77,7 +77,7 @@ object Settings {
   lazy val plugin = assemblyProject ++ Seq(
     autoScalaLibrary := false,
     assemblyMergeStrategy in assembly := {
-      case x if x.contains("io.netty.versions.properties") => MergeStrategy.first
+      case x if x.contains("io.netty.versions.properties") => MergeStrategy.last
       case x if x.contains("Log4j2Plugins.dat") => MergeStrategy.first
       case x if x.contains("module-info.class") => MergeStrategy.first
       case x if x.contains("public-suffix-list.txt") => MergeStrategy.first
@@ -89,7 +89,7 @@ object Settings {
       case x if x.contains("MANIFEST.MF") => MergeStrategy.discard
       case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
       case PathList("javax", "activation", xs@_*) => MergeStrategy.first
-      case PathList("io", "netty", xs@_*) => MergeStrategy.first
+      //case PathList("io", "netty", xs@_*) => MergeStrategy.last
 
       case x => (assemblyMergeStrategy in assembly).value.apply(x)
     },

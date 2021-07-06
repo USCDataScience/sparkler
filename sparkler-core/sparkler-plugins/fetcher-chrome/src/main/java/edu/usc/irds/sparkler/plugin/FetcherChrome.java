@@ -33,7 +33,6 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
@@ -45,14 +44,13 @@ import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.util.concurrent.TimeUnit;
 
-import com.browserup.bup.BrowserUpProxy;
+/*import com.browserup.bup.BrowserUpProxy;
 import com.browserup.bup.BrowserUpProxyServer;
 import com.browserup.bup.client.ClientUtil;
 import com.browserup.bup.filters.ResponseFilter;
 import com.browserup.bup.proxy.CaptureType;
 import com.browserup.bup.util.HttpMessageContents;
-import com.browserup.bup.util.HttpMessageInfo;
-import io.netty.handler.codec.http.HttpResponse;
+import com.browserup.bup.util.HttpMessageInfo;*/
 
 @Extension
 public class FetcherChrome extends FetcherDefault {
@@ -100,7 +98,7 @@ public class FetcherChrome extends FetcherDefault {
         if (loc.equals("")) {
             driver = new ChromeDriver();
         } else {
-            BrowserUpProxy proxy = new BrowserUpProxyServer();
+            /*BrowserUpProxy proxy = new BrowserUpProxyServer();
             proxy.setTrustAllServers(true);
 
             proxy.enableHarCaptureTypes(CaptureType.REQUEST_CONTENT, CaptureType.RESPONSE_CONTENT);
@@ -125,7 +123,7 @@ public class FetcherChrome extends FetcherDefault {
                     InetSocketAddress addr = new InetSocketAddress(InetAddress.getByName(s[0]), Integer.parseInt(s[1]));
                     seleniumProxy = ClientUtil.createSeleniumProxy(addr);
                 }
-            }
+            }*/
 
             // seleniumProxy.setHttpProxy("172.17.146.238:"+Integer.toString(port));
             // seleniumProxy.setSslProxy("172.17.146.238:"+Integer.toString(port));

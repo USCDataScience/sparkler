@@ -139,6 +139,7 @@ lazy val app = (project in file("sparkler-app"))
       case x if x.contains("git.properties") => MergeStrategy.first
       case x if x.contains("config.fmpp") => MergeStrategy.first
       case x if x.contains("META-INF/versions/9/javax/xml/bind/") => MergeStrategy.first
+      case x if x.contains("META-INF/native-image/io.netty") => MergeStrategy.first
       case PathList("org", "apache", "logging", "log4j", xs@_*) => MergeStrategy.first
       case PathList("org", "apache", "logging", xs@_*) => MergeStrategy.first
       case PathList("org", "apache", "log4j", xs@_*) => MergeStrategy.first
@@ -160,7 +161,6 @@ lazy val app = (project in file("sparkler-app"))
       case PathList("javax", "inject", xs@_*) => MergeStrategy.first
       case PathList("javax", "annotation", xs@_*) => MergeStrategy.first
       case PathList("com", "sun", xs@_*) => MergeStrategy.first
-      case PathList("javax", "activation", xs@_*) => MergeStrategy.first
 
       case x => (assemblyMergeStrategy in assembly).value.apply(x)
     },
@@ -234,8 +234,4 @@ lazy val ui = (project in file("sparkler-ui"))
     }
   )
 
-
-/*enablePlugins(PackPlugin)
-
-packMain := Map("inject" -> "edu.usc.irds.sparkler.service.Injector")*/
 

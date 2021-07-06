@@ -28,12 +28,12 @@ lazy val plugins = (project in file(s"$sparklerPlugins"))
   .aggregate(
     fetcherChrome,
     fetcherHtmlUnit,
-    fetcherJBrowser,
+
     scorerDdSvn,
     urlFilterRegex,
     urlFilterSameHost,
   )
-
+//fetcherJBrowser,
 /**
  * ================ PLUGINS ================
  */
@@ -65,10 +65,9 @@ lazy val fetcherChrome = (project in file(s"$sparklerPlugins/fetcher-chrome"))
     name := "fetcher-chrome",
     libraryDependencies ++= Seq(
       FetcherChrome.Selenium.java exclude("org.slf4j", "slf4j-api"),
-      FetcherChrome.browserup exclude("com.fasterxml.jackson.core", "jackson-databind") exclude("org.slf4j", "slf4j-api"),
-      FetcherChrome.seleniumscripter exclude("org.slf4j", "slf4j-api"),
       FetcherChrome.Selenium.chromeDriver exclude("org.slf4j", "slf4j-api"),
-      //FetcherChrome.Selenium.guava exclude("org.slf4j", "slf4j-api")
+      //FetcherChrome.browserup exclude("com.fasterxml.jackson.core", "jackson-databind") exclude("org.slf4j", "slf4j-api") exclude("io.netty", "netty-all"),
+      FetcherChrome.seleniumscripter exclude("org.slf4j", "slf4j-api"),
     ),
     Settings.pluginManifest(
       id = "fetcher-chrome",
@@ -97,7 +96,7 @@ lazy val fetcherHtmlUnit = (project in file(s"$sparklerPlugins/fetcher-htmlunit"
   )
   .dependsOn(api)
 
-lazy val fetcherJBrowser = (project in file(s"$sparklerPlugins/fetcher-jbrowser"))
+/*lazy val fetcherJBrowser = (project in file(s"$sparklerPlugins/fetcher-jbrowser"))
   .enablePlugins(JavaAppPackaging)
   .settings(
     Settings.plugin,
@@ -111,7 +110,7 @@ lazy val fetcherJBrowser = (project in file(s"$sparklerPlugins/fetcher-jbrowser"
       dependencies = List.empty
     )
   )
-  .dependsOn(api)
+  .dependsOn(api)*/
 
 lazy val scorerDdSvn = (project in file(s"$sparklerPlugins/scorer-dd-svn"))
   .enablePlugins(JavaAppPackaging)
