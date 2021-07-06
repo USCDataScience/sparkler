@@ -69,13 +69,13 @@ public class FetcherChrome extends FetcherDefault {
         // TODO should change everywhere
         pluginConfig = config.getPluginConfiguration(pluginId);
 
-        try {
+        /*try {
             System.out.println("Initializing Chrome Driver");
             startDriver(true);
         } catch (UnknownHostException | MalformedURLException e) {
             e.printStackTrace();
             System.out.println("Failed to init Chrome Session");
-        }
+        }*/
     }
 
     private void checkSession() {
@@ -130,7 +130,7 @@ public class FetcherChrome extends FetcherDefault {
 
             final ChromeOptions chromeOptions = new ChromeOptions();
 
-            List<String> chromedefaults = Arrays.asList("--no-sandbox", "--disable-gpu", "--disable-extensions",
+            List<String> chromedefaults = Arrays.asList("--headless", "--no-sandbox", "--disable-gpu", "--disable-extensions",
                     "--ignore-certificate-errors",  "--incognito", "--window-size=1920,1080", "--proxy-server='direct://",
                     "--proxy-bypass-list=*", "--disable-background-networking", "--safebrowsing-disable-auto-update",
                     "--disable-sync", "--metrics-recording-only", "--disable-default-apps", "--no-first-run",
@@ -162,6 +162,12 @@ public class FetcherChrome extends FetcherDefault {
         LOG.info("Chrome FETCHER {}", resource.getUrl());
         FetchedData fetchedData;
         JSONObject json = null;
+        try {
+            checkSession();
+        } catch (Exception e){
+            System.out.println("failed to start selenium session");
+        }
+
         /*
          * In this plugin we will work on only HTML data If data is of any other data
          * type like image, pdf etc plugin will return client error so it can be fetched
@@ -184,11 +190,7 @@ public class FetcherChrome extends FetcherDefault {
         // This will block for the page load and any
         // associated AJAX requests
 
-        try {
-            checkSession();
-        } catch (Exception e){
-            System.out.println("failed to start selenium session");
-        }
+
         driver.get(resource.getUrl());
 
 /*        int waittimeout = (int) pluginConfig.getOrDefault("chrome.wait.timeout", "-1");
