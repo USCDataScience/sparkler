@@ -229,7 +229,7 @@ public class FetcherChrome extends FetcherDefault {
                         LOG.info(logentry.getMessage());
                     }
                     if(pluginConfig.containsKey("chrome.selenium.screenshotdir")) {
-                    Map<String, Object> tempmap = new HashMap<>();
+                        Map<String, Object> tempmap = new HashMap<>();
                         tempmap.put("type", "file");
                         Path path = Paths.get(pluginConfig.get("chrome.selenium.screenshotdir").toString(), jobContext.getId());
                         File f = path.toFile();
