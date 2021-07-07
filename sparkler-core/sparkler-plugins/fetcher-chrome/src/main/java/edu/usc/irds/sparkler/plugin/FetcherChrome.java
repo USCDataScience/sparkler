@@ -222,6 +222,8 @@ public class FetcherChrome extends FetcherDefault {
                     Map m = (Map<String, Object>) json.get("selenium");
                     Map jsonmap = new TreeMap(m);
                     scripter.runScript(jsonmap);
+
+                    resource.setStatus(ResourceStatus.FETCHED.toString());
                 } catch (Exception e){
                     LogEntries logs = driver.manage().logs().get(LogType.BROWSER);
                     List<LogEntry> alllogs = logs.getAll();
@@ -238,7 +240,9 @@ public class FetcherChrome extends FetcherDefault {
                         tempmap.put("targetdir", filepath.toString());
                         scripter.screenshotOperation(tempmap);
                     }
-                    LOG.error("Scripter Exception", e);
+                    LOG.error("Caught an exception in  Selenium Scripter: " + e);
+
+                    resource.setStatus(ResourceStatus.ERROR.toString());
                 }
                 List<String> snapshots = scripter.getSnapshots();
                 html = String.join(",", snapshots);
@@ -249,9 +253,12 @@ public class FetcherChrome extends FetcherDefault {
             html = driver.getPageSource();
         }
 
+        fetchedData = new FetchedData(html.getBytes(), "text/html", latestStatus);
+        fetchedData.setResource(resource);
+
         LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
 
-        LOG.info("LATEST STATUS: "+latestStatus);
+        LOG.info("LATEST STATUS: " + latestStatus);
         /*if (!(latestStatus >= 200 && latestStatus < 300) && latestStatus != 0) {
             // If not fetched through plugin successfully
             // Falling back to default fetcher
@@ -259,11 +266,9 @@ public class FetcherChrome extends FetcherDefault {
             return super.fetch(resource);
         }*/
 
-        fetchedData = new FetchedData(html.getBytes(), "text/html", latestStatus);
-        resource.setStatus(ResourceStatus.FETCHED.toString());
-        fetchedData.setResource(resource);
         driver.quit();
         driver = null;
+
         return fetchedData;
     }
 
