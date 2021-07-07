@@ -222,8 +222,12 @@ public class FetcherChrome extends FetcherDefault {
                     Map m = (Map<String, Object>) json.get("selenium");
                     Map jsonmap = new TreeMap(m);
                     scripter.runScript(jsonmap);
-
                 } catch (Exception e){
+                    LogEntries logs = driver.manage().logs().get(LogType.BROWSER);
+                    List<LogEntry> alllogs = logs.getAll();
+                    for(LogEntry logentry: alllogs){
+                        LOG.info(logentry.getMessage());
+                    }
                     if(pluginConfig.containsKey("chrome.selenium.screenshotdir")) {
                     Map<String, Object> tempmap = new HashMap<>();
                         tempmap.put("type", "file");
