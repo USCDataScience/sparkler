@@ -9,6 +9,7 @@ import edu.usc.irds.sparkler.SparklerException;
 import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,9 +22,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -169,6 +170,15 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             }
             bufferOutStream.flush();
             byte[] rawData = bufferOutStream.toByteArray();
+            if(jobContext.getConfiguration().containsKey("fetcher.persist.content.location")){
+                File outputDirectory = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId()).toFile();
+                File outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), FilenameUtils.getName(resource.getUrl())).toFile();
+                outputDirectory.mkdirs();
+                try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+                    outputStream.write(rawData);
+                }
+            }
+
             IOUtils.closeQuietly(bufferOutStream);
             FetchedData fetchedData = new FetchedData(rawData, urlConn.getContentType(), responseCode);
             resource.setStatus(ResourceStatus.FETCHED.toString());

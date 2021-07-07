@@ -37,7 +37,11 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
 import java.net.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.net.CookieHandler;
 import java.net.CookieManager;
@@ -193,29 +197,6 @@ public class FetcherChrome extends FetcherDefault {
 
         driver.get(resource.getUrl());
 
-/*        int waittimeout = (int) pluginConfig.getOrDefault("chrome.wait.timeout", "-1");
-        String waittype = (String) pluginConfig.getOrDefault("chrome.wait.type", "");
-        String waitelement = (String) pluginConfig.getOrDefault("chrome.wait.element", "");
-
-        if (waittimeout > -1) {
-            LOG.debug("Waiting {} seconds for element {} of type {} to become visible", waittimeout, waitelement,
-                    waittype);
-            WebDriverWait wait = new WebDriverWait(driver, waittimeout);
-            switch (waittype) {
-                case "class":
-                    LOG.debug("waiting for class...");
-                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(waitelement)));
-                    break;
-                case "name":
-                    LOG.debug("waiting for name...");
-                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.name(waitelement)));
-                    break;
-                case "id":
-                    LOG.debug("waiting for id...");
-                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
-                    break;
-            }
-        }*/
         SeleniumScripter scripter = new SeleniumScripter(driver);
         String seleniumenabled = (String) pluginConfig.getOrDefault("chrome.selenium.enabled", "false");
         String html = null;
@@ -242,7 +223,11 @@ public class FetcherChrome extends FetcherDefault {
                     if(pluginConfig.containsKey("chrome.selenium.screenshotdir")) {
                     Map<String, Object> tempmap = new HashMap<>();
                         tempmap.put("type", "file");
-                        tempmap.put("targetdir", pluginConfig.get("chrome.selenium.screenshotdir")+resource.getCrawlId()+System.currentTimeMillis());
+                        Path path = Paths.get(pluginConfig.get("chrome.selenium.screenshotdir").toString(), jobContext.getId());
+                        File f = path.toFile();
+                        f.mkdirs();
+                        Path filepath = Paths.get(pluginConfig.get("chrome.selenium.screenshotdir").toString(), jobContext.getId(), resource.getCrawlId()+System.currentTimeMillis()+".png");
+                        tempmap.put("targetdir", filepath.toString());
                         scripter.screenshotOperation(tempmap);
                     }
                     LOG.error("Scripter Exception", e);

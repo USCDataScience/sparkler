@@ -87,6 +87,7 @@ fetcher.headers:
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
   Accept-Language: "en-US,en"
 
+fetcher.persist.content.location: /dbfs/FileStore/bcf/content/
 # Rotating agents file.
 # File should contain a list of agents which will be used to override the default agent string
 # This is an unbounded list, it can take any number of agents you wish.
@@ -131,12 +132,6 @@ plugins:
     #socket.timeout: 3000
     #connect.timeout: 3000
   fetcher.chrome:
-    #Set timeout to > -1 to enable the wait for element visibility for some ajax sites.
-    chrome.wait.timeout: -1
-    #Element name
-    chrome.wait.element: "some element"
-    #What type of element, class, name, id
-    chrome.wait.type: "class"
     chrome.dns: "http://localhost:3000/webdriver"
     chrome.selenium.screenshotdir: "/dbfs/FileStore/screenshots/"
     chrome.options:
@@ -161,10 +156,6 @@ plugins:
         - "--disable-notifications"
         - "--disable-logging"
         - "--disable-permissions-api"
-    #chrome.selenium.enabled: "true"
-    #chrome.selenium.script.click: "id:txtName"
-    #chrome.selenium.script.keys: "COR"
-    #chrome.selenium.script.click: "id:btnSearch" 
     #chrome.proxy.address: 127.0.0.1:9998
   url.injector:
     mode: selenium # currently only compatible with the fetcher-chrome plugin
