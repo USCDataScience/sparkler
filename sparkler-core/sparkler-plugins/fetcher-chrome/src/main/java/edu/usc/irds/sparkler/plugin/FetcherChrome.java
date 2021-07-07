@@ -36,6 +36,8 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
@@ -50,6 +52,7 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /*import com.browserup.bup.BrowserUpProxy;
 import com.browserup.bup.BrowserUpProxyServer;
@@ -144,6 +147,10 @@ public class FetcherChrome extends FetcherDefault {
                     "--disable-setuid-sandbox", "--hide-scrollbars", "--no-zygote", "--disable-notifications",
                     "--disable-logging", "--disable-permissions-api");
 
+            LoggingPreferences logPrefs = new LoggingPreferences();
+            logPrefs.enable(LogType.BROWSER, Level.ALL);
+            chromeOptions.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
+            chromeOptions.setCapability("goog:loggingPrefs", logPrefs);
             List<String> vals = (List<String>) (pluginConfig.getOrDefault("chrome.options", chromedefaults));
             chromeOptions.addArguments(vals);
 

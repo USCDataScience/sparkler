@@ -250,7 +250,7 @@ class Crawler extends CliTool {
 
 
       var fetchedRdd: RDD[CrawlData] = null
-      val rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Double].toInt
+      val rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
       if (rep > 0) {
         fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
           FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
