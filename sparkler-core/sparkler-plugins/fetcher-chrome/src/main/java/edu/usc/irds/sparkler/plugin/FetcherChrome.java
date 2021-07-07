@@ -33,6 +33,9 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
@@ -134,7 +137,7 @@ public class FetcherChrome extends FetcherDefault {
 
             final ChromeOptions chromeOptions = new ChromeOptions();
 
-            List<String> chromedefaults = Arrays.asList("--headless", "--no-sandbox", "--disable-gpu", "--disable-extensions",
+            List<String> chromedefaults = Arrays.asList("--auto-open-devtools-for-tabs", "--headless", "--no-sandbox", "--disable-gpu", "--disable-extensions",
                     "--ignore-certificate-errors",  "--incognito", "--window-size=1920,1080", "--proxy-server='direct://",
                     "--proxy-bypass-list=*", "--disable-background-networking", "--safebrowsing-disable-auto-update",
                     "--disable-sync", "--metrics-recording-only", "--disable-default-apps", "--no-first-run",
@@ -219,6 +222,7 @@ public class FetcherChrome extends FetcherDefault {
                     Map m = (Map<String, Object>) json.get("selenium");
                     Map jsonmap = new TreeMap(m);
                     scripter.runScript(jsonmap);
+
                 } catch (Exception e){
                     if(pluginConfig.containsKey("chrome.selenium.screenshotdir")) {
                     Map<String, Object> tempmap = new HashMap<>();
