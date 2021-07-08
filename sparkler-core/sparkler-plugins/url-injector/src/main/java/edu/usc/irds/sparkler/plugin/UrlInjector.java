@@ -100,6 +100,7 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
             String u = iterator.next();
             for (String temp : tokens) {
                 String rep = u.replace("${token}", temp);
+                rep = rep.replace("__token__", temp);
                 String method = getHTTPMethod(rep);
                 rep = trimHTTPMethod(rep);
                 root.put("TAG", temp);
@@ -162,6 +163,7 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
                     root.put("TAG", temp);
                     String json = root.toString();
                     json = json.replace("${token}", temp);
+                    json = json.replace("__token__", temp);
                     UrlInjectorObj o = new UrlInjectorObj(u, json, method);
                     fixedUrls.add(o);
                 }
