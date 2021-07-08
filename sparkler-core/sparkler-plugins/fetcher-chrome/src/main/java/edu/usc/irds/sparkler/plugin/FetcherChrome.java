@@ -237,6 +237,16 @@ public class FetcherChrome extends FetcherDefault {
                     for(LogEntry logentry: alllogs){
                         LOG.info(logentry.getMessage());
                     }
+                    logs = driver.manage().logs().get(LogType.PERFORMANCE);
+                    alllogs = logs.getAll();
+                    for(LogEntry logentry: alllogs){
+                        LOG.info(logentry.getMessage());
+                    }
+                    logs = driver.manage().logs().get(LogType.PROFILER);
+                    alllogs = logs.getAll();
+                    for(LogEntry logentry: alllogs){
+                        LOG.info(logentry.getMessage());
+                    }
                     if(pluginConfig.containsKey("chrome.selenium.screenshotdir")) {
                         Map<String, Object> tempmap = new HashMap<>();
                         tempmap.put("type", "file");
