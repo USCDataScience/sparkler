@@ -26,7 +26,7 @@ services:
       - 4041:4041
     volumes:
       - type: bind
-        source: .
+        source: ../../../
         target: /data/sparkler-core
   elasticsearch:
     container_name: elasticsearch

@@ -17,22 +17,19 @@
 
 package edu.usc.irds.sparkler.storage
 
-import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
+import edu.usc.irds.sparkler.base.Loggable
+import edu.usc.irds.sparkler.Constants
+import edu.usc.irds.sparkler.model.ResourceStatus
 
 /**
   *
-  * @since 3/2/2021
+  * @since 4/3/2021
   */
-abstract class StorageProxy() {
+abstract class StorageRDD() extends Loggable {
 
-  def getClient(): Any
-
-  def addResourceDocs(docs: java.util.Iterator[Map[String, Object]]): Unit
-  def addResources(beans: java.util.Iterator[Resource]): Unit
-  def addResource(doc: Map[String, Object]): Unit
-
-  def commitCrawlDb(): Unit
-  def close(): Unit
+  val DEFAULT_ORDER = Constants.storage.DISCOVER_DEPTH + " asc," + Constants.storage.SCORE + " desc"
+  val DEFAULT_FILTER_QRY = Constants.storage.STATUS + ":" + ResourceStatus.UNFETCHED
+  val DEFAULT_GROUPS = 1000
+  val DEFAULT_TOPN = 1000
 
 }
-

@@ -17,22 +17,16 @@
 
 package edu.usc.irds.sparkler.storage
 
-import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
+import edu.usc.irds.sparkler.base.Loggable
+import edu.usc.irds.sparkler.model.CrawlData
 
 /**
   *
-  * @since 3/2/2021
+  * @since 4/18/2021
   */
-abstract class StorageProxy() {
+trait StatusUpdateTransformer extends (CrawlData => Map[String, Object] ) with Serializable with Loggable {
 
-  def getClient(): Any
-
-  def addResourceDocs(docs: java.util.Iterator[Map[String, Object]]): Unit
-  def addResources(beans: java.util.Iterator[Resource]): Unit
-  def addResource(doc: Map[String, Object]): Unit
-
-  def commitCrawlDb(): Unit
-  def close(): Unit
+  def apply(data: CrawlData): Map[String, Object]
 
 }
 

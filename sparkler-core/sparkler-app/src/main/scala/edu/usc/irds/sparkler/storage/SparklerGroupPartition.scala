@@ -17,22 +17,12 @@
 
 package edu.usc.irds.sparkler.storage
 
-import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
+import org.apache.spark.Partition
 
 /**
-  *
-  * @since 3/2/2021
+  * Created by thammegr on 6/7/16.
   */
-abstract class StorageProxy() {
-
-  def getClient(): Any
-
-  def addResourceDocs(docs: java.util.Iterator[Map[String, Object]]): Unit
-  def addResources(beans: java.util.Iterator[Resource]): Unit
-  def addResource(doc: Map[String, Object]): Unit
-
-  def commitCrawlDb(): Unit
-  def close(): Unit
-
+class SparklerGroupPartition(val indx: Int, val group: String, val start: Int = 0,
+                         val end: Int = Int.MaxValue) extends Partition {
+  override def index: Int = indx
 }
-

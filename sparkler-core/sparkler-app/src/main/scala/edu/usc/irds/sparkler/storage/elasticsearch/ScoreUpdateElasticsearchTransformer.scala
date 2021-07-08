@@ -15,27 +15,28 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.storage.solr
+package edu.usc.irds.sparkler.storage.elasticsearch
 
-import SolrStatusUpdate.LOG
+import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.model.SparklerJob
-import org.apache.spark.TaskContext
-import org.apache.solr.common.SolrInputDocument
+import edu.usc.irds.sparkler.model.CrawlData
+import edu.usc.irds.sparkler.storage.ScoreUpdateTransformer
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
- * Created by karanjeets on 6/11/16
- */
-class SolrStatusUpdate(job: SparklerJob) extends ((TaskContext, Iterator[SolrInputDocument]) => Any) with Serializable {
+  * Created by thammegr on 6/7/16.
+  * Modified by karanjeets
+  */
+object ScoreUpdateElasticsearchTransformer extends (CrawlData => Map[String, Object]) with Serializable with Loggable with ScoreUpdateTransformer {
 
-  override def apply(context: TaskContext, docs: Iterator[SolrInputDocument]): Any = {
-    LOG.debug("Updating document status into CrawlDb")
-    val solrClient = job.newStorageProxy()
-    solrClient.addResourceDocs(docs)
-    solrClient.close()
+  override def apply(data: CrawlData): Map[String, Object] = {
+
+    val toUpdate : Map[String, Object] = Map(
+      Constants.storage.ID -> data.fetchedData.getResource.getId,
+      Constants.storage.GENERATE_SCORE -> data.fetchedData.getResource.getGenerateScore()
+    )
+
+    toUpdate
   }
 }
-
-object SolrStatusUpdate extends Loggable;
