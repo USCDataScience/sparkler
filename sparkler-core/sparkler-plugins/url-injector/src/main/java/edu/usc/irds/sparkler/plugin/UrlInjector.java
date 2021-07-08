@@ -77,6 +77,7 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
                     root.put("TAG", temp);
                     String json = root.toString();
                     json = json.replace("${token}", temp);
+                    json = json.replace("__token__", temp);
                     UrlInjectorObj o = new UrlInjectorObj(u, json, method);
                     fixedUrls.add(o);
                 }
