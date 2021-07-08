@@ -149,6 +149,8 @@ public class FetcherChrome extends FetcherDefault {
 
             LoggingPreferences logPrefs = new LoggingPreferences();
             logPrefs.enable(LogType.BROWSER, Level.ALL);
+            logPrefs.enable(LogType.PROFILER, Level.ALL);
+            logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
             chromeOptions.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
             chromeOptions.setCapability("goog:loggingPrefs", logPrefs);
             List<String> vals = (List<String>) (pluginConfig.getOrDefault("chrome.options", chromedefaults));
