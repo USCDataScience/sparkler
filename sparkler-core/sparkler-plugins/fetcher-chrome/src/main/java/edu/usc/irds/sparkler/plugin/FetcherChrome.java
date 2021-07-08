@@ -39,6 +39,7 @@ import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -209,22 +210,17 @@ public class FetcherChrome extends FetcherDefault {
 
 
         driver.get(resource.getUrl());
-
         SeleniumScripter scripter = new SeleniumScripter(driver);
-        String seleniumenabled = (String) pluginConfig.getOrDefault("chrome.selenium.enabled", "false");
-        String html = null;
-/*        if (seleniumenabled.equals("true")) {
-            if(pluginConfig.get("chrome.selenium.script") != null && pluginConfig.get("chrome.selenium.script") instanceof Map) {
-                Map<String, Object> map = (Map<String, Object>) pluginConfig.get("chrome.selenium.script");
-                try {
-                    scripter.runScript(map);
-                } catch (Exception ignored){
+        String waitforready = pluginConfig.getOrDefault("chrome.selenium.javascriptready", "false").toString();
 
-                }
-                List<String> snapshots = scripter.getSnapshots();
-                html = String.join(",", snapshots);
-            }
-        }*/
+        if(waitforready.equals("true")){
+            new WebDriverWait(driver, 60)
+                    .until((driver) -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
+                            .toString()
+                            .equals("complete"));
+        }
+
+        String html = null;
         if(json != null && json.containsKey("selenium")){
             if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
                 try {
