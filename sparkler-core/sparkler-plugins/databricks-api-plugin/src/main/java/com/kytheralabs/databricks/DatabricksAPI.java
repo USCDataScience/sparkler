@@ -15,12 +15,7 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
 
     @Override
     public void executeProcess(GenericProcess.Event event) throws Exception {
-
-
-
-
-        if(event == Event.SHUTDOWN){
-            if(pluginConfig.containsKey("databricks.api.events.shutdown")){
+        if(pluginConfig.containsKey("databricks.api.events."+event.toString().toLowerCase())){
                 Map<String, Object> m = (Map<String, Object>) pluginConfig.get("databricks.api.events.shutdown");
                 for (Map.Entry<String,Object> entry : m.entrySet()) {
                     if(entry.getKey().equals("triggerjob")){
@@ -30,7 +25,6 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
                     }
                 }
             }
-        }
     }
 
     private void triggerJob(Map<String, Object> map){
