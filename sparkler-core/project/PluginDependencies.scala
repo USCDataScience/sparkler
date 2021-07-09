@@ -45,5 +45,5 @@ object ScorerDdSvn {
 
 
 object Databricks {
-  lazy val wrapper = "default.webcrawlerwrapper_2" % "12" % "0.1-SNAPSHOT"
+  lazy val wrapper = "com.kytheralabs" % "webcrawlerwrapper" % "2_12" % "0.1-SNAPSHOT"
 }
