@@ -280,7 +280,8 @@ class Crawler extends CliTool {
     }
     storageProxy.close()
     //PluginService.shutdown(job)
-    GenericFunction(job, GenericProcess.Event.SHUTDOWN)
+    import org.apache.spark.sql.SQLContext
+    GenericFunction(job, GenericProcess.Event.SHUTDOWN,new SQLContext(sc).sparkSession)
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
   }

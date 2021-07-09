@@ -101,6 +101,7 @@ object Settings {
       case PathList("org", "aopalliance", xs@_*) => MergeStrategy.first
 
       case PathList("org", "apache", "spark", "unused", xs@_*) => MergeStrategy.first
+      case PathList("org", "apache", "spark", xs@_*) => MergeStrategy.discard
 
       case PathList("org", "apache", "commons", xs@_*) => MergeStrategy.first
       //case PathList("io", "netty", xs@_*) => MergeStrategy.last

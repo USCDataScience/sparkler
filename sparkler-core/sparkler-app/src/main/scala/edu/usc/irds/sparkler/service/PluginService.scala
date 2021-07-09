@@ -36,7 +36,7 @@ import scala.collection.JavaConversions._
 class PluginService(job:SparklerJob) {
   import PluginService._
 
-  val pluginManager = CustomerPluginManager.getPluginManager
+  val pluginManager = new DefaultPluginManager
 
 
   // This map keeps cache of all active instances

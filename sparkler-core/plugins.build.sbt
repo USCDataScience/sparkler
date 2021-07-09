@@ -91,7 +91,7 @@ lazy val databricks = (project in file(s"$sparklerPlugins/databricks-api-plugin"
     Settings.plugin,
     name := "databricks-api",
     libraryDependencies ++= Seq(
-      Databricks.wrapper
+      Databricks.wrapper exclude("org.apache", "spark-core") exclude("org.apache", "spark-sql")
     ),
     Settings.pluginManifest(
       id = "databricks-api",

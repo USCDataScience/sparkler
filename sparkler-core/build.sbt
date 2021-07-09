@@ -73,11 +73,20 @@ lazy val api = (project in file("sparkler-api"))
   .settings(
     Settings.common,
     name := "sparkler-api",
+    /*libraryDependencies ++= (
+      if(sparkprovided == "true") {
+        ("org.apache.spark" %% "spark-core" % "3.1.0" % "provided") :: Nil
+        ("org.apache.spark" %% "spark-sql" % "3.1.0" % "provided") :: Nil
+      } else {
+        ("org.apache.spark" %% "spark-core" % "3.1.0" % "provided") :: Nil
+        ("org.apache.spark" %% "spark-sql" % "3.1.0" % "provided") :: Nil
+      }
+      ),*/
     libraryDependencies ++= Seq(
       Dependencies.jsonSimple exclude("junit", "junit"),
       Dependencies.nutch exclude("*", "*"),
       Dependencies.snakeYaml,
-      Dependencies.Solr.solrj,
+      Dependencies.Solr.solrj exclude("org.apache.spark", "spark-sql"),
       Dependencies.gson,
 
       // Test
@@ -88,12 +97,38 @@ lazy val api = (project in file("sparkler-api"))
       case x if x.contains("io.netty.versions.properties") => MergeStrategy.first
       case x if x.contains("Log4j2Plugins.dat") => MergeStrategy.first
       case x if x.contains("module-info.class") => MergeStrategy.first
-      case PathList("org", "apache", "logging", xs@_*) => MergeStrategy.first
+      case x if x.contains("public-suffix-list.txt") => MergeStrategy.first
+      case x if x.contains("bus-extensions.txt") => MergeStrategy.first
+      case x if x.contains("blueprint.handlers") => MergeStrategy.first
+      case x if x.contains("git.properties") => MergeStrategy.first
+      case x if x.contains("overview.html") => MergeStrategy.first
+      case x if x.contains("config.fmpp") => MergeStrategy.first
+      case x if x.contains("META-INF/versions/9/javax/xml/bind/") => MergeStrategy.first
+      case x if x.contains("META-INF/native-image/io.netty") => MergeStrategy.first
       case PathList("org", "apache", "logging", "log4j", xs@_*) => MergeStrategy.first
-      case PathList("org", "apache", "commons", "logging", xs@_*) => MergeStrategy.first
+      case PathList("org", "apache", "logging", xs@_*) => MergeStrategy.first
       case PathList("org", "apache", "log4j", xs@_*) => MergeStrategy.first
+      case PathList("org", "apache", "commons", "logging", xs@_*) => MergeStrategy.first
       case PathList("org", "slf4j", "impl", xs@_*) => MergeStrategy.first
+      case PathList("com", "ctc", "wstx", xs@_*) => MergeStrategy.first
       case PathList("org", "cliffc", "high_scale_lib", xs@_*) => MergeStrategy.first
+      case PathList("javax.xml.bind", "jaxb-api", xs@_*) => MergeStrategy.first
+      case PathList("org", "hamcrest", xs@_*) => MergeStrategy.first
+      case PathList("javax", "xml", xs@_*) => MergeStrategy.first
+      case PathList("javax", "activation", xs@_*) => MergeStrategy.first
+      case PathList("io", "netty", xs@_*) => MergeStrategy.first
+      case PathList("org", "aopalliance", "intercept", xs@_*) => MergeStrategy.first
+      case PathList("org", "aopalliance", "aop", xs@_*) => MergeStrategy.first
+      case PathList("org", "apache", "spark", xs@_*) => MergeStrategy.first
+      case PathList("org", "apache", "hadoop", xs@_*) => MergeStrategy.first
+      case PathList("net", "jpountz", xs@_*) => MergeStrategy.last
+      case PathList("net", "jcip", xs@_*) => MergeStrategy.first
+      case PathList("javax", "inject", xs@_*) => MergeStrategy.first
+      case PathList("javax", "annotation", xs@_*) => MergeStrategy.first
+      case PathList("com", "sun", xs@_*) => MergeStrategy.first
+      case PathList("org", "apache", "commons", xs@_*) => MergeStrategy.first
+      case PathList("javax", "servlet", xs@_*) => MergeStrategy.first
+
       case x => (assemblyMergeStrategy in assembly).value.apply(x)
     },
     test in assembly := {},
@@ -117,11 +152,11 @@ lazy val app = (project in file("sparkler-app"))
     mainClass in (Compile, packageBin) := Some("edu.usc.irds.sparkler.Main"),
     libraryDependencies ++= (
       if(sparkprovided == "true") {
-        ("org.apache.spark" %% "spark-core" % "3.0.1" % "provided") :: Nil
-        ("org.apache.spark" %% "spark-sql" % "3.0.1" % "provided") :: Nil
+        ("org.apache.spark" %% "spark-core" % "3.1.0" % "provided") :: Nil
+        ("org.apache.spark" %% "spark-sql" % "3.1.0" % "provided") :: Nil
       } else {
-        ("org.apache.spark" %% "spark-core" % "3.0.1") :: Nil
-        ("org.apache.spark" %% "spark-sql" % "3.0.1") :: Nil
+        ("org.apache.spark" %% "spark-core" % "3.1.0") :: Nil
+        ("org.apache.spark" %% "spark-sql" % "3.1.0") :: Nil
       }
     ),
     libraryDependencies ++= Seq(
@@ -168,6 +203,7 @@ lazy val app = (project in file("sparkler-app"))
       case PathList("javax", "inject", xs@_*) => MergeStrategy.first
       case PathList("javax", "annotation", xs@_*) => MergeStrategy.first
       case PathList("com", "sun", xs@_*) => MergeStrategy.first
+      case PathList("javax", "servlet", xs@_*) => MergeStrategy.first
 
       case x => (assemblyMergeStrategy in assembly).value.apply(x)
     },

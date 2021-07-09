@@ -1,3 +1,4 @@
+/*
 package edu.usc.irds.sparkler.service;
 
 import org.pf4j.*;
@@ -17,3 +18,4 @@ public class CustomerPluginManager {
         };
     }
 }
+*/
