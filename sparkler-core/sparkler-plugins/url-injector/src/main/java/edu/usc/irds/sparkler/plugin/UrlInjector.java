@@ -5,7 +5,6 @@ import edu.usc.irds.sparkler.Config;
 import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
 import edu.usc.irds.sparkler.UrlInjectorObj;
-import io.netty.handler.codec.json.JsonObjectDecoder;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;

@@ -158,7 +158,7 @@ lazy val urlInjector = (project in file(s"$sparklerPlugins/url-injector"))
     name := "url-injector",
     Settings.pluginManifest(
       id = "url-injector",
-      className = "edu.usc.irds.sparkler.plugin.UrlInjector",
+      className = "edu.usc.irds.sparkler.plugin.UrlInjectorActivator",
       dependencies = List.empty
     ),
   )
