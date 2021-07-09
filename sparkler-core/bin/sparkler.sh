@@ -35,5 +35,6 @@ JAR=`echo $DIR/../sparkler-app-*/lib`
 #    exit 2
 #fi
 # run
+# debugging lines
 # -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005
 java -Xms1g -cp $DIR/../conf:$JAR/* -Dpf4j.pluginsDir=$DIR/../plugins edu.usc.irds.sparkler.Main $@
