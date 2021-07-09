@@ -19,7 +19,7 @@ jobs:
         java-version: '8'
         distribution: 'adopt'
     - name: Run submit package
-      run: sbt assembly -Dsparkprovided=true
+      run: sbt package assembly -Dsparkprovided=true
       working-directory: sparkler-core
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -30,7 +30,7 @@ jobs:
         DATABRICKS_HOST: https://kli-mmit.cloud.databricks.com
         DATABRICKS_TOKEN: dapi88de017d8ab1fe80afe5691c1e786185
     - name: Run full package
-      run: sbt clean assembly -Dsparkprovided=false
+      run: sbt clean package assembly -Dsparkprovided=false
       working-directory: sparkler-core
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
