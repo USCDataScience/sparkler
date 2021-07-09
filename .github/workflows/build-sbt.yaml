@@ -32,6 +32,8 @@ jobs:
     - name: Run full package
       run: sbt clean assembly -Dsparkprovided=false
       working-directory: sparkler-core
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Deploy to databricks
       run: ./deploy.sh standalone
       working-directory: sparkler-core
