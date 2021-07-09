@@ -37,8 +37,7 @@ elasticsearch.uri: http://localhost:9200
 
 # URL on which Apache Spark is running.
 # Type: String. Default is "local[*]" for local mode.
-spark.master:
-  #local[*]
+spark.master: local[*]
 databricks.enable: false
 
 crawl.repartition: 500
