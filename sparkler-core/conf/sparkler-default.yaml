@@ -157,7 +157,7 @@ plugins:
         - "--disable-permissions-api"
     #chrome.proxy.address: 127.0.0.1:9998
   url.injector:
-    mode: selenium # currently only compatible with the fetcher-chrome plugin
+    # mode: selenium # currently only compatible with the fetcher-chrome plugin
     #mode: replace
     #mode: json
     #mode: form
