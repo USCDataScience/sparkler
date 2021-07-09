@@ -24,8 +24,6 @@ lazy val plugins = (project in file(s"$sparklerPlugins"))
   .settings(
     Settings.common,
     name := "sparkler-plugins",
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
-
   )
 
   .aggregate(
@@ -54,7 +52,6 @@ lazy val templatePlugin = (project in file(s"$sparklerPlugins/template-plugin"))
       className = "edu.usc.irds.sparkler.plugin.MyPluginActivator",
       dependencies = List.empty
     ),
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
 
   )
   .dependsOn(api)
@@ -80,7 +77,6 @@ lazy val fetcherChrome = (project in file(s"$sparklerPlugins/fetcher-chrome"))
       className = "edu.usc.irds.sparkler.plugin.FetcherChromeActivator",
       dependencies = List.empty
     ),
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
 
   )
   .dependsOn(api)
@@ -98,7 +94,6 @@ lazy val databricks = (project in file(s"$sparklerPlugins/databricks-api-plugin"
       className = "com.kytheralabs.databricks.DatabricksAPIActivator",
       dependencies = List.empty
     ),
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
 
   )
   .dependsOn(api)
@@ -119,7 +114,6 @@ lazy val fetcherHtmlUnit = (project in file(s"$sparklerPlugins/fetcher-htmlunit"
     testOptions += Tests.Argument(TestFrameworks.JUnit,
       "--verbosity=1",
       "--run-listener=edu.usc.irds.sparkler.test.WebServerRunListener"),
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
 
   )
   .dependsOn(api)
@@ -153,8 +147,6 @@ lazy val scorerDdSvn = (project in file(s"$sparklerPlugins/scorer-dd-svn"))
       className = "edu.usc.irds.sparkler.plugin.DdSvnScorerActivator",
       dependencies = List.empty
     ),
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
-
   )
   .dependsOn(api)
 
@@ -168,8 +160,6 @@ lazy val urlFilterRegex = (project in file(s"$sparklerPlugins/urlfilter-regex"))
       className = "edu.usc.irds.sparkler.plugin.RegexURLFilterActivator",
       dependencies = List.empty
     ),
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
-
   )
   .dependsOn(api)
 
@@ -183,7 +173,5 @@ lazy val urlFilterSameHost = (project in file(s"$sparklerPlugins/urlfilter-sameh
       className = "edu.usc.irds.sparkler.plugin.UrlFilterSameHostActivator",
       dependencies = List.empty
     ),
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
-
   )
   .dependsOn(api)

@@ -4,8 +4,6 @@ package com.kytheralabs.databricks;
 import edu.usc.irds.sparkler.AbstractExtensionPoint;
 import edu.usc.irds.sparkler.GenericProcess;
 import edu.usc.irds.sparkler.SparklerConfiguration;
-import com.kytheralabs.management.jobutils.JobAPI;
-import org.apache.spark.sql.SparkSession;
 import org.json.simple.JSONObject;
 import org.pf4j.Extension;
 import scala.Option;
@@ -32,7 +30,7 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
                     } else if(entry.getKey().equals("updateeventlog")){
                         updateEventLog((Map<String, Object>) entry.getValue());
                     } else if(entry.getKey().equals("persistdata")){
-                        persistData((Map<String, Object>) entry.getValue(), (SparkSession) spark);
+                        persistData((Map<String, Object>) entry.getValue());
                     }
                 }
             }
@@ -71,11 +69,8 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
 
     }
 
-    private void persistData(Map<String, Object> map, SparkSession spark){
-        Persistence p = new Persistence();
+    private void persistData(Map<String, Object> map){
 
-        p.persistResults(this.jobContext.getId(), this.jobContext.getId(), "warehouse_sandbox",
-               spark, "http://ec2-35-174-200-133.compute-1.amazonaws.com:8983/solr/crawldb");
     }
 
 

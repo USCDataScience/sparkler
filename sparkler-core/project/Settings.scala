@@ -64,7 +64,7 @@ object Settings {
       "Scala-Tools Snapshots" at "https://scala-tools.org/repo-snapshots/",
       "Gitlab Spicule 2" at "https://gitlab.com/api/v4/projects/26391218/packages/maven",
       "Gitlab Spicule" at "https://gitlab.com/api/v4/projects/23300400/packages/maven",
-      "Private Github" at "https://maven.pkg.github.com/spicule-kythera/webcrawlerwrapper/"
+      "Private Github" at "https://gitlab.com/api/v4/projects/28025579/packages/maven"
     )
 
 

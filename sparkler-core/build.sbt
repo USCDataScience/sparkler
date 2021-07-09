@@ -16,7 +16,7 @@
  */
 
 import scala.sys.process._
-
+import com.gilcloud.sbt.gitlab.{GitlabCredentials,GitlabPlugin}
 organization := Settings.projectOrganization
 maintainer := Settings.projectMaintainer
 
@@ -29,7 +29,8 @@ javacOptions in (Compile, compile) ++= Seq("-target", "13")
 libraryDependencies in ThisBuild ++= Seq(
   Dependencies.pf4j % "provided",
 )
-
+ThisBuild / useCoursier := false
+GitlabPlugin.autoImport.gitlabCredentials :=  Some(GitlabCredentials("Private-Token","_5w57W4QPjWFeKezV91y"))
 
 developers := List(
   // In alphabetic order
@@ -64,7 +65,6 @@ lazy val root = (project in file("."))
     Settings.common,
     name := "sparkler",
     mainClass in Compile := Some("edu.usc.irds.sparkler.Main"),
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN")
 
   )
   .aggregate(api, app, plugins, ui)
@@ -73,15 +73,6 @@ lazy val api = (project in file("sparkler-api"))
   .settings(
     Settings.common,
     name := "sparkler-api",
-    /*libraryDependencies ++= (
-      if(sparkprovided == "true") {
-        ("org.apache.spark" %% "spark-core" % "3.1.0" % "provided") :: Nil
-        ("org.apache.spark" %% "spark-sql" % "3.1.0" % "provided") :: Nil
-      } else {
-        ("org.apache.spark" %% "spark-core" % "3.1.0" % "provided") :: Nil
-        ("org.apache.spark" %% "spark-sql" % "3.1.0" % "provided") :: Nil
-      }
-      ),*/
     libraryDependencies ++= Seq(
       Dependencies.jsonSimple exclude("junit", "junit"),
       Dependencies.nutch exclude("*", "*"),
@@ -135,7 +126,6 @@ lazy val api = (project in file("sparkler-api"))
     testOptions += Tests.Argument(TestFrameworks.JUnit,
       "--verbosity=1",
       "--run-listener=edu.usc.irds.sparkler.test.WebServerRunListener"),
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN")
 
 
   )
@@ -223,7 +213,6 @@ lazy val app = (project in file("sparkler-app"))
 
       buildLocation
     },
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN")
 
   )
   .dependsOn(api)
@@ -239,7 +228,6 @@ lazy val testsBase = (project in file("sparkler-tests-base"))
       Dependencies.Slf4j.api,
       Dependencies.Slf4j.log4j12,
     ),
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
 
   )
 
@@ -279,7 +267,6 @@ lazy val ui = (project in file("sparkler-ui"))
       IO.move(packageFile, buildLocation)
       buildLocation
     },
-    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN")
 
   )
 
