@@ -16,7 +16,6 @@
  */
 
 import scala.sys.process._
-import com.gilcloud.sbt.gitlab.{GitlabCredentials,GitlabPlugin}
 organization := Settings.projectOrganization
 maintainer := Settings.projectMaintainer
 
@@ -29,8 +28,6 @@ javacOptions in (Compile, compile) ++= Seq("-target", "13")
 libraryDependencies in ThisBuild ++= Seq(
   Dependencies.pf4j % "provided",
 )
-ThisBuild / useCoursier := false
-GitlabPlugin.autoImport.gitlabCredentials :=  Some(GitlabCredentials("Private-Token","_5w57W4QPjWFeKezV91y"))
 
 developers := List(
   // In alphabetic order
