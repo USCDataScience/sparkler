@@ -189,6 +189,24 @@ plugins:
       selTC: ""
       selProgram: "MA"
       txtDateOfService: "12/01/2020"
+  databricks.api.events:
+    startup:
+      updateeventlog:
+        sql: xxx
+    iteration_complete:
+       updateeventlog:
+         sql: xxx
+    shutdown:
+      triggerjob:
+        notebook: xxx
+        sparkversion: xxx
+        clustertype: xxx
+        clustersize: xxx
+        parameters:
+          abc: xxx
+          def: xxx
+
+
 ##################### Custom properties for MEMEX ###########################################
   memex.webpage.mimetype: "text/html"
 

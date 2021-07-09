@@ -280,6 +280,7 @@ class Crawler extends CliTool {
     }
     storageProxy.close()
     //PluginService.shutdown(job)
+    GenericFunction(job, GenericProcess.Event.SHUTDOWN)
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
   }

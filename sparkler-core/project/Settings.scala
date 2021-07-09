@@ -63,8 +63,11 @@ object Settings {
       "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
       "Scala-Tools Snapshots" at "https://scala-tools.org/repo-snapshots/",
       "Gitlab Spicule 2" at "https://gitlab.com/api/v4/projects/26391218/packages/maven",
-      "Gitlab Spicule" at "https://gitlab.com/api/v4/projects/23300400/packages/maven"
+      "Gitlab Spicule" at "https://gitlab.com/api/v4/projects/23300400/packages/maven",
+      "Private Github" at "https://maven.pkg.github.com/spicule-kythera/webcrawlerwrapper/"
     )
+
+
   )
   lazy val assemblyProject = common ++ baseAssemblySettings ++ Seq(
     test in assembly := {},
@@ -80,6 +83,7 @@ object Settings {
       case x if x.contains("io.netty.versions.properties") => MergeStrategy.last
       case x if x.contains("Log4j2Plugins.dat") => MergeStrategy.first
       case x if x.contains("module-info.class") => MergeStrategy.first
+      case x if x.contains("jetty-dir.css") => MergeStrategy.first
       case x if x.contains("public-suffix-list.txt") => MergeStrategy.first
       case x if x.contains("bus-extensions.txt") => MergeStrategy.first
       case x if x.contains("blueprint.handlers") => MergeStrategy.first
@@ -90,12 +94,20 @@ object Settings {
       case x if x.contains("ExtensionModule") => MergeStrategy.first
       case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
       case PathList("javax", "activation", xs@_*) => MergeStrategy.first
+      case PathList("javax", "inject", xs@_*) => MergeStrategy.first
+      case PathList("javax", "xml", xs@_*) => MergeStrategy.first
+      case PathList("javax", "servlet", xs@_*) => MergeStrategy.first
+      case PathList("com", "sun", xs@_*) => MergeStrategy.first
+      case PathList("org", "aopalliance", xs@_*) => MergeStrategy.first
 
+      case PathList("org", "apache", "spark", "unused", xs@_*) => MergeStrategy.first
+
+      case PathList("org", "apache", "commons", xs@_*) => MergeStrategy.first
       //case PathList("io", "netty", xs@_*) => MergeStrategy.last
 
       case x => (assemblyMergeStrategy in assembly).value.apply(x)
     },
-    assemblyOutputPath in assembly := file(".") / buildDir / pluginsDir / s"${name.value}-${(version in ThisBuild).value}.jar"
+      assemblyOutputPath in assembly := file(".") / buildDir / pluginsDir / s"${name.value}-${(version in ThisBuild).value}.jar"
   )
 
   def pluginManifest(id: String, className: String,

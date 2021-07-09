@@ -21,6 +21,8 @@ jobs:
     - name: Run submit package
       run: sbt assembly -Dsparkprovided=true
       working-directory: sparkler-core
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Deploy Submit to Databricks
       run: ./deploy.sh
       working-directory: sparkler-core

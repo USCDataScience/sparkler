@@ -42,3 +42,8 @@ object FetcherJBrowser {
 object ScorerDdSvn {
   lazy val httpClient = "org.apache.httpcomponents" % "httpclient" % "4.3.6"
 }
+
+
+object Databricks {
+  lazy val wrapper = "default" % "webcrawlerwrapper_2.12" % "0.1"
+}

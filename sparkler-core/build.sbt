@@ -30,6 +30,7 @@ libraryDependencies in ThisBuild ++= Seq(
   Dependencies.pf4j % "provided",
 )
 
+
 developers := List(
   // In alphabetic order
   Developer("chrismattmann",
@@ -63,6 +64,8 @@ lazy val root = (project in file("."))
     Settings.common,
     name := "sparkler",
     mainClass in Compile := Some("edu.usc.irds.sparkler.Main"),
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN")
+
   )
   .aggregate(api, app, plugins, ui)
 
@@ -96,9 +99,13 @@ lazy val api = (project in file("sparkler-api"))
     test in assembly := {},
     testOptions += Tests.Argument(TestFrameworks.JUnit,
       "--verbosity=1",
-      "--run-listener=edu.usc.irds.sparkler.test.WebServerRunListener")
+      "--run-listener=edu.usc.irds.sparkler.test.WebServerRunListener"),
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN")
+
+
   )
   .dependsOn(testsBase)
+
 
 val sparkprovided = System.getProperty("sparkprovided", "")
 
@@ -179,7 +186,9 @@ lazy val app = (project in file("sparkler-app"))
       IO.copyDirectory(file(".") / Settings.binDir, file(".") / Settings.buildDir / Settings.binDir)
 
       buildLocation
-    }
+    },
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN")
+
   )
   .dependsOn(api)
 
@@ -193,7 +202,9 @@ lazy val testsBase = (project in file("sparkler-tests-base"))
       Dependencies.jUnit,
       Dependencies.Slf4j.api,
       Dependencies.Slf4j.log4j12,
-    )
+    ),
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
+
   )
 
 
@@ -231,7 +242,9 @@ lazy val ui = (project in file("sparkler-ui"))
       val packageFile: File = (packageBin in Universal).value
       IO.move(packageFile, buildLocation)
       buildLocation
-    }
+    },
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN")
+
   )
 
 

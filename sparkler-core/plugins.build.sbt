@@ -23,8 +23,11 @@ lazy val plugins = (project in file(s"$sparklerPlugins"))
   .enablePlugins(JavaAppPackaging)
   .settings(
     Settings.common,
-    name := "sparkler-plugins"
+    name := "sparkler-plugins",
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
+
   )
+
   .aggregate(
     fetcherChrome,
     fetcherHtmlUnit,
@@ -32,6 +35,7 @@ lazy val plugins = (project in file(s"$sparklerPlugins"))
     scorerDdSvn,
     urlFilterRegex,
     urlFilterSameHost,
+    databricks,
   )
 //fetcherJBrowser,
 /**
@@ -49,7 +53,9 @@ lazy val templatePlugin = (project in file(s"$sparklerPlugins/template-plugin"))
       id = "template-plugin",
       className = "edu.usc.irds.sparkler.plugin.MyPluginActivator",
       dependencies = List.empty
-    )
+    ),
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
+
   )
   .dependsOn(api)
 
@@ -74,6 +80,26 @@ lazy val fetcherChrome = (project in file(s"$sparklerPlugins/fetcher-chrome"))
       className = "edu.usc.irds.sparkler.plugin.FetcherChromeActivator",
       dependencies = List.empty
     ),
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
+
+  )
+  .dependsOn(api)
+
+lazy val databricks = (project in file(s"$sparklerPlugins/databricks-api-plugin"))
+  .enablePlugins(JavaAppPackaging)
+  .settings(
+    Settings.plugin,
+    name := "databricks-api",
+    libraryDependencies ++= Seq(
+      Databricks.wrapper
+    ),
+    Settings.pluginManifest(
+      id = "databricks-api",
+      className = "com.kytheralabs.databricks.DatabricksAPIActivator",
+      dependencies = List.empty
+    ),
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
+
   )
   .dependsOn(api)
 
@@ -92,7 +118,9 @@ lazy val fetcherHtmlUnit = (project in file(s"$sparklerPlugins/fetcher-htmlunit"
     ),
     testOptions += Tests.Argument(TestFrameworks.JUnit,
       "--verbosity=1",
-      "--run-listener=edu.usc.irds.sparkler.test.WebServerRunListener")
+      "--run-listener=edu.usc.irds.sparkler.test.WebServerRunListener"),
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
+
   )
   .dependsOn(api)
 
@@ -124,7 +152,9 @@ lazy val scorerDdSvn = (project in file(s"$sparklerPlugins/scorer-dd-svn"))
       id = "scorer-dd-svn",
       className = "edu.usc.irds.sparkler.plugin.DdSvnScorerActivator",
       dependencies = List.empty
-    )
+    ),
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
+
   )
   .dependsOn(api)
 
@@ -137,7 +167,9 @@ lazy val urlFilterRegex = (project in file(s"$sparklerPlugins/urlfilter-regex"))
       id = "urlfilter-regex",
       className = "edu.usc.irds.sparkler.plugin.RegexURLFilterActivator",
       dependencies = List.empty
-    )
+    ),
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
+
   )
   .dependsOn(api)
 
@@ -150,6 +182,8 @@ lazy val urlFilterSameHost = (project in file(s"$sparklerPlugins/urlfilter-sameh
       id = "urlfilter-samehost",
       className = "edu.usc.irds.sparkler.plugin.UrlFilterSameHostActivator",
       dependencies = List.empty
-    )
+    ),
+    githubTokenSource := TokenSource.GitConfig("github.token") || TokenSource.Environment("GITHUB_TOKEN"),
+
   )
   .dependsOn(api)
