@@ -1,10 +1,10 @@
 name: Scala CI
 
-on:
-  push:
-    branches: [ mvn2sbt ]
-  pull_request:
-    branches: [ mvn2sbt ]
+#on:
+#  push:
+#    branches: [ mvn2sbt ]
+#  pull_request:
+#    branches: [ mvn2sbt ]
 
 jobs:
   build:
@@ -27,8 +27,13 @@ jobs:
       run: ./deploy.sh
       working-directory: sparkler-core
       env:
-        DATABRICKS_HOST: https://kli-mmit.cloud.databricks.com
-        DATABRICKS_TOKEN: dapi88de017d8ab1fe80afe5691c1e786185
+        DEV_DATABRICKS_HOST: https://kli-mmit.cloud.databricks.com
+        DEV_DATABRICKS_TOKEN: dapi88de017d8ab1fe80afe5691c1e786185
+        NEWDEV_DATABRICKS_HOST: https://wayfinder-mmit-dev.cloud.databricks.com
+        NEWDEV_DATABRICKS_TOKEN: dapi37db0d0c0a9997dd315af28eb82f6acc
+        TEST_DATABRICKS_HOST: https://wayfinder-mmit-test.cloud.databricks.com
+        TEST_DATABRICKS_TOKEN: dapiad20608bca91d571d58e06c4f7dba4d9 
+
     - name: Run full package
       run: sbt clean package assembly -Dsparkprovided=false
       working-directory: sparkler-core
@@ -38,5 +43,9 @@ jobs:
       run: ./deploy.sh standalone
       working-directory: sparkler-core
       env:
-        DATABRICKS_HOST: https://kli-mmit.cloud.databricks.com
-        DATABRICKS_TOKEN: dapi88de017d8ab1fe80afe5691c1e786185
+        DEV_DATABRICKS_HOST: https://kli-mmit.cloud.databricks.com
+        DEV_DATABRICKS_TOKEN: dapi88de017d8ab1fe80afe5691c1e786185
+        NEWDEV_DATABRICKS_HOST: https://wayfinder-mmit-dev.cloud.databricks.com
+        NEWDEV_DATABRICKS_TOKEN: dapi37db0d0c0a9997dd315af28eb82f6acc
+        TEST_DATABRICKS_HOST: https://wayfinder-mmit-test.cloud.databricks.com
+        TEST_DATABRICKS_TOKEN: dapiad20608bca91d571d58e06c4f7dba4d9
