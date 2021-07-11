@@ -51,8 +51,8 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
         }
 
         String params = "{}";
-        if(map.containsKey("params")){
-            JSONObject j = new JSONObject((Map) map.get("params"));
+        if(map.containsKey("parameters")){
+            JSONObject j = new JSONObject((Map) map.get("parameters"));
             params = j.toJSONString();
         }
 
