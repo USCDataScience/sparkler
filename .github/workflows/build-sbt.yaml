@@ -1,10 +1,7 @@
 name: Scala CI
 
-#on:
-#  push:
-#    branches: [ mvn2sbt ]
-#  pull_request:
-#    branches: [ mvn2sbt ]
+on:
+  push:
 
 jobs:
   build:
