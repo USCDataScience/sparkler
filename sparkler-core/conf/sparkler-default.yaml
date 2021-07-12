@@ -40,7 +40,7 @@ elasticsearch.uri: http://localhost:9200
 spark.master: local[*]
 databricks.enable: false
 
-crawl.repartition: 500
+crawl.repartition: 1
 ##################### Apache Kafka Properties ###########################
 # Enable Kafka Dump
 # Type: Boolean. Default is "false"
