@@ -117,6 +117,11 @@ class Crawler extends CliTool {
     usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
   var configOverride: Array[Any] = Array()
 
+  @Option(name = "-co64", aliases = Array("--config-override-encoded"),
+    handler = classOf[StringArrayOptionHandler],
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var configOverrideEncoded: String = ""
+
   /* Generator options, currently not exposed via the CLI
      and only accessible through the config yaml file
    */
@@ -130,6 +135,14 @@ class Crawler extends CliTool {
     if (configOverride != ""){
       sparklerConf.overloadConfig(configOverride.mkString(" "));
     }
+    if(configOverrideEncoded != ""){
+      import java.util.Base64
+      import java.nio.charset.StandardCharsets
+      val decoded = Base64.getDecoder().decode(configOverrideEncoded)
+      val str = new String(decoded, StandardCharsets.UTF_8)
+      sparklerConf.overloadConfig(str)
+    }
+
     if (this.outputPath.isEmpty) {
       this.outputPath = jobId
     }

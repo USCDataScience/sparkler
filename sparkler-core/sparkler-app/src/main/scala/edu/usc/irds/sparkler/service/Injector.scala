@@ -69,9 +69,21 @@ class Injector extends CliTool {
     usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
   var configOverride: Array[Any] = Array()
 
+  @Option(name = "-co64", aliases = Array("--config-override-encoded"),
+    handler = classOf[StringArrayOptionHandler],
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var configOverrideEncoded: String = ""
+
   override def run(): Unit = {
     if (configOverride != ""){
       conf.overloadConfig(configOverride.mkString(" "));
+    }
+    if(configOverrideEncoded != ""){
+      import java.util.Base64
+      import java.nio.charset.StandardCharsets
+      val decoded = Base64.getDecoder().decode(configOverrideEncoded)
+      val str = new String(decoded, StandardCharsets.UTF_8)
+      conf.overloadConfig(str)
     }
     if (!sparkStorage.isEmpty) {
       val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
