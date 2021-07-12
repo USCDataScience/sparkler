@@ -32,7 +32,7 @@ solr.uri: http://ec2-35-174-200-133.compute-1.amazonaws.com:8983/solr/crawldb
 # elasticsearch settings
 elasticsearch.uri: http://localhost:9200
 
-crawl.repartition: 500
+crawl.repartition: 1
 
 ##################### Apache Spark Properties ###########################
 
