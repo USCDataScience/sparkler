@@ -40,6 +40,8 @@ import java.util.UUID
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
+import java.util.Base64
+import java.nio.charset.StandardCharsets
 
 /**
   *
@@ -122,6 +124,11 @@ class Crawler extends CliTool {
     usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
   var configOverrideEncoded: String = ""
 
+  @Option(name = "-dq", aliases = Array("--default-query"),
+    handler = classOf[StringArrayOptionHandler],
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var defaultquery: String = ""
+
   /* Generator options, currently not exposed via the CLI
      and only accessible through the config yaml file
    */
@@ -136,8 +143,6 @@ class Crawler extends CliTool {
       sparklerConf.overloadConfig(configOverride.mkString(" "));
     }
     if(configOverrideEncoded != ""){
-      import java.util.Base64
-      import java.nio.charset.StandardCharsets
       val decoded = Base64.getDecoder().decode(configOverrideEncoded)
       val str = new String(decoded, StandardCharsets.UTF_8)
       sparklerConf.overloadConfig(str)
@@ -176,21 +181,6 @@ class Crawler extends CliTool {
   //TODO: URL normalizers
   //TODO: Robots.txt
 
-  def mapCrawl(x: Iterator[(String, Iterable[Resource])]): Iterator[CrawlData] = {
-    val m = 1000
-    x.flatMap({case (grp, rs) => new FairFetcher(job, rs.iterator, m,
-      FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer)})
-  }
-
-  def goup: String = {
-    val uuid = UUID.randomUUID
-    val uuidAsString = uuid.toString
-    uuidAsString
-  }
-
-  def maplogic: Unit = {
-
-  }
   override def run(): Unit = {
 
     //STEP : Initialize environment
@@ -245,7 +235,12 @@ class Crawler extends CliTool {
       LOG.info(s"Starting the job:$jobId, task:$taskId")
       val rc = new RunCrawl
 
-      val rdd = new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
+      val rdd = if(defaultquery != "" && !defaultquery.isEmpty){
+        new MemexCrawlDbRDD(sc, job, generateQry= defaultquery, maxGroups = topG, topN = topN)
+      } else{
+        new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
+      }
+
       //TODO RESTORE THIS HACK
       val f = rc.map(rdd)
       /*val f = rdd.map(r => (r.getDedupeId, r))
