@@ -138,6 +138,9 @@ public class FetcherChrome extends FetcherDefault {
             final ChromeOptions chromeOptions = new ChromeOptions();
             chromeOptions.addArguments("--no-sandbox");
             chromeOptions.addArguments("--headless");
+            chromeOptions.addArguments("--proxy-server='direct://'");
+            chromeOptions.addArguments("--proxy-bypass-list=*");
+            chromeOptions.addArguments("--blink-settings=imagesEnabled=false");
             chromeOptions.addArguments("--disable-gpu");
             chromeOptions.addArguments("--disable-extensions");
             chromeOptions.addArguments("--ignore-certificate-errors");
@@ -195,7 +198,12 @@ public class FetcherChrome extends FetcherDefault {
             System.out.println("failed to start selenium session");
         }
         driver.get(resource.getUrl());
-
+        if(resource.getUrl().contains("cms.gov")){
+            Cookie ck = new Cookie("mcdReportTourFinished", "true");
+            driver.manage().addCookie(ck);
+            driver.get(resource.getUrl());
+            //driver.navigate().refresh();
+        }
         int waittimeout = (int) pluginConfig.getOrDefault("chrome.wait.timeout", "-1");
         String waittype = (String) pluginConfig.getOrDefault("chrome.wait.type", "");
         String waitelement = (String) pluginConfig.getOrDefault("chrome.wait.element", "");
@@ -216,6 +224,10 @@ public class FetcherChrome extends FetcherDefault {
                 case "id":
                     LOG.debug("waiting for id...");
                     wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(waitelement)));
+                    break;
+                case "xpath":
+                    LOG.debug("waiting for xpath...");
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(waitelement)));
                     break;
             }
         }
