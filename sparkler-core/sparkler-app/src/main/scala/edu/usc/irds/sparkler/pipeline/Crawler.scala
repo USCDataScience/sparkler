@@ -230,7 +230,7 @@ class Crawler extends CliTool {
         storageProxy.commitCrawlDb()
       }
 
-      var taskId = JobUtil.newSegmentId(true)
+      val taskId = JobUtil.newSegmentId(true)
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
       val rc = new RunCrawl
@@ -258,21 +258,13 @@ class Crawler extends CliTool {
 
 
       var fetchedRdd: RDD[CrawlData] = null
-      val rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
-      if (rep > 0) {
-        fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
-        }).repartition(rep)
-          .persist()
-      } else {
-         fetchedRdd = f.repartition(1).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
-        }).repartition(1)
-          .persist()
+      var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
+      if(rep <= 0){
+        rep = 1
       }
-
-      //val coll = fetchedRdd.collect()
-      //val d = fetchedRdd.getNumPartitions
+      fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
+          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
+        }).persist()
 
       if (kafkaEnable) {
         storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
