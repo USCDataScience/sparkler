@@ -37,6 +37,7 @@ public class Resource implements Serializable {
     @Field("dedupe_id") private String dedupeId;
     @Field("http_method") private String httpMethod;
     @Field("jobmeta") private String metadata;
+    @Field("contenthash")private String contenthash;
 
     public Resource() {
     }
@@ -202,5 +203,13 @@ public class Resource implements Serializable {
 
     public String getMetadata(){
         return this.metadata;
+    }
+
+    public void setContentHash(String md5hash) {
+        this.contenthash = md5hash;
+    }
+
+    public String getContentHash(){
+        return this.contenthash;
     }
 }

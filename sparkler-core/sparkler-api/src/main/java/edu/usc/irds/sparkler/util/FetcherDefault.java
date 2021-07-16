@@ -19,10 +19,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -170,9 +172,19 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             }
             bufferOutStream.flush();
             byte[] rawData = bufferOutStream.toByteArray();
+            byte[] md5hash = MessageDigest.getInstance("MD5").digest(rawData);
+            resource.setContentHash(new String(md5hash, StandardCharsets.UTF_8));
             if(jobContext.getConfiguration().containsKey("fetcher.persist.content.location")){
                 File outputDirectory = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId()).toFile();
-                File outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), FilenameUtils.getName(resource.getUrl())).toFile();
+                File outputFile;
+                URI uri = new URI(resource.getUrl());
+                String domain = uri.getHost();
+                if(jobContext.getConfiguration().get("fetcher.persist.content.filename").toString().equals("hash")){
+                    String ext = FilenameUtils.getExtension(resource.getUrl());
+                    outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, new String(md5hash, StandardCharsets.UTF_8)+ext).toFile();
+                } else{
+                    outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, FilenameUtils.getName(resource.getUrl())).toFile();
+                }
                 outputDirectory.mkdirs();
                 try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
                     outputStream.write(rawData);

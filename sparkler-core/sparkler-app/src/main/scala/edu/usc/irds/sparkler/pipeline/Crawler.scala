@@ -286,7 +286,6 @@ class Crawler extends CliTool {
     sc.stop()
   }
 
-
   def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
     val job = this.job.asInstanceOf[SparklerJob]
 
