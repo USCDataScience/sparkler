@@ -105,7 +105,7 @@ public class Resource implements Serializable {
     @Override
     public String toString() {
         return String.format("Resource(%s, %s, %s, %d, %f, %s)",
-                id, group, fetchTimestamp, discoverDepth, score, status);
+                id, group, fetchTimestamp, discoverDepth, 0.0, status);
                 //id, group, fetchTimestamp, numTries, numFetches, discoverDepth, score, status);
     }
 

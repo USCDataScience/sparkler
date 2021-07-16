@@ -25,13 +25,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -173,7 +167,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             bufferOutStream.flush();
             byte[] rawData = bufferOutStream.toByteArray();
             byte[] md5hash = MessageDigest.getInstance("MD5").digest(rawData);
-            resource.setContentHash(new String(md5hash, StandardCharsets.UTF_8));
+            resource.setContentHash(Base64.getEncoder().encodeToString(md5hash));
             if(jobContext.getConfiguration().containsKey("fetcher.persist.content.location")){
                 File outputDirectory = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId()).toFile();
                 File outputFile;
