@@ -166,22 +166,26 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             }
             bufferOutStream.flush();
             byte[] rawData = bufferOutStream.toByteArray();
-            byte[] md5hash = MessageDigest.getInstance("MD5").digest(rawData);
-            resource.setContentHash(Base64.getEncoder().encodeToString(md5hash));
-            if(jobContext.getConfiguration().containsKey("fetcher.persist.content.location")){
-                URI uri = new URI(resource.getUrl());
-                String domain = uri.getHost();
-                File outputDirectory = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain).toFile();
-                File outputFile;
-                if(jobContext.getConfiguration().get("fetcher.persist.content.filename").toString().equals("hash")){
-                    String ext = FilenameUtils.getExtension(resource.getUrl());
-                    outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, Base64.getEncoder().encodeToString(md5hash)+"."+ext).toFile();
-                } else{
-                    outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, FilenameUtils.getName(resource.getUrl())).toFile();
-                }
-                outputDirectory.mkdirs();
-                try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
-                    outputStream.write(rawData);
+            String contentHash = null;
+            if(rawData.length>0) {
+                byte[] md5hash = MessageDigest.getInstance("MD5").digest(rawData);
+                contentHash = Base64.getEncoder().encodeToString(md5hash);
+                resource.setContentHash(contentHash);
+                if (jobContext.getConfiguration().containsKey("fetcher.persist.content.location")) {
+                    URI uri = new URI(resource.getUrl());
+                    String domain = uri.getHost();
+                    File outputDirectory = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain).toFile();
+                    File outputFile;
+                    if (jobContext.getConfiguration().get("fetcher.persist.content.filename").toString().equals("hash")) {
+                        String ext = FilenameUtils.getExtension(resource.getUrl());
+                        outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, contentHash + "." + ext).toFile();
+                    } else {
+                        outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, FilenameUtils.getName(resource.getUrl())).toFile();
+                    }
+                    outputDirectory.mkdirs();
+                    try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+                        outputStream.write(rawData);
+                    }
                 }
             }
 
@@ -190,6 +194,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             resource.setStatus(ResourceStatus.FETCHED.toString());
             fetchedData.setResource(resource);
             fetchedData.setHeaders(urlConn.getHeaderFields());
+            fetchedData.setContenthash(contentHash);
             if (truncated) {
                 fetchedData.getHeaders().put(TRUNCATED, Collections.singletonList(Boolean.TRUE.toString()));
             }

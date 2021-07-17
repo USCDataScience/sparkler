@@ -146,6 +146,7 @@ public interface Constants {
         String MD_SUFFIX = "_md";
         String HDR_SUFFIX = "_hd";
         String SEGMENT = "segment";
+        String CONTENTHASH = "contenthash";
         String RAW_CONTENT = "raw_content";
         String WEBPAGE_MIMETYPE = "text/html";
         String JSON_MIMETYPE = "application/json";

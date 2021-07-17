@@ -83,6 +83,7 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
       parseData.outlinks ++= redirectUrls.asScala.filter(u => u != null && !u.isEmpty)
     }
     parseData.headers = parseHeaders(headers)
+    parseData.contentHash = data.fetchedData.getContenthash
     parseData
   }
 

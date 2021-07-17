@@ -34,6 +34,16 @@ public class FetchedData implements Serializable {
     private int responseCode;
     private long responseTime = -1;
 
+    public String getContenthash() {
+        return contenthash;
+    }
+
+    public void setContenthash(String contenthash) {
+        this.contenthash = contenthash;
+    }
+
+    private String contenthash;
+
     private String segment;
 
     public FetchedData() {
