@@ -202,6 +202,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
         }
     }
 
+
     @Override
     public FetchedData apply(Resource resource) {
         try {

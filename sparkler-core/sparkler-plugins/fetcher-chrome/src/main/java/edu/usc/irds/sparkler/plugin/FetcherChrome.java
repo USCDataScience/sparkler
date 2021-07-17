@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -178,13 +179,13 @@ public class FetcherChrome extends FetcherDefault {
     public FetchedData fetch(Resource resource) throws Exception {
         startDriver(false);
         LOG.info("Chrome FETCHER {}", resource.getUrl());
-        FetchedData fetchedData;
-        JSONObject json = null;
         try {
             checkSession();
         } catch (Exception e){
             System.out.println("failed to start selenium session");
         }
+        long start = System.currentTimeMillis();
+        FetchedData fetchedData;
 
         /*
          * In this plugin we will work on only HTML data If data is of any other data
@@ -196,10 +197,34 @@ public class FetcherChrome extends FetcherDefault {
             // This should be true for all URLS ending with 4 character file extension
             // return new FetchedData("".getBytes(), "application/html", ERROR_CODE) ;
             return super.fetch(resource);
+        } else{
+            fetchedData = htmlFlow(resource, start);
         }
-        long start = System.currentTimeMillis();
+
+
+
+        LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
+
+        LOG.info("LATEST STATUS: " + latestStatus);
+
+
+        driver.quit();
+        driver = null;
+
+        return fetchedData;
+    }
+
+    public FetchedData dataFlow(Resource resource, long start){
+
+        return null;
+    }
+
+    public FetchedData htmlFlow(Resource resource, long start) throws IOException, java.text.ParseException {
+        FetchedData fetchedData;
+
 
         LOG.debug("Time taken to create driver- {}", (System.currentTimeMillis() - start));
+        JSONObject json = null;
 
         if(resource.getMetadata()!=null && !resource.getMetadata().equals("")){
             json = processMetadata(resource.getMetadata());
@@ -272,19 +297,6 @@ public class FetcherChrome extends FetcherDefault {
         fetchedData = new FetchedData(html.getBytes(), "text/html", latestStatus);
         fetchedData.setResource(resource);
 
-        LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
-
-        LOG.info("LATEST STATUS: " + latestStatus);
-        /*if (!(latestStatus >= 200 && latestStatus < 300) && latestStatus != 0) {
-            // If not fetched through plugin successfully
-            // Falling back to default fetcher
-            LOG.info("{} Failed to fetch the page. Falling back to default fetcher.", resource.getUrl());
-            return super.fetch(resource);
-        }*/
-
-        driver.quit();
-        driver = null;
-
         return fetchedData;
     }
 
@@ -312,7 +324,10 @@ public class FetcherChrome extends FetcherDefault {
             CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             String contentType = conn.getHeaderField("Content-Type");
-            return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml") || conn.getResponseCode() == 302;
+            if(contentType == null && conn.getResponseCode() == 302){
+                return isWebPage(conn.getHeaderField("Location"));
+            }
+            return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml");
         } catch (Exception e) {
             LOG.debug(e.getMessage(), e);
         }
