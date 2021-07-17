@@ -169,13 +169,13 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             byte[] md5hash = MessageDigest.getInstance("MD5").digest(rawData);
             resource.setContentHash(Base64.getEncoder().encodeToString(md5hash));
             if(jobContext.getConfiguration().containsKey("fetcher.persist.content.location")){
-                File outputDirectory = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId()).toFile();
-                File outputFile;
                 URI uri = new URI(resource.getUrl());
                 String domain = uri.getHost();
+                File outputDirectory = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain).toFile();
+                File outputFile;
                 if(jobContext.getConfiguration().get("fetcher.persist.content.filename").toString().equals("hash")){
                     String ext = FilenameUtils.getExtension(resource.getUrl());
-                    outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, new String(md5hash, StandardCharsets.UTF_8)+ext).toFile();
+                    outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, Base64.getEncoder().encodeToString(md5hash)+"."+ext).toFile();
                 } else{
                     outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, FilenameUtils.getName(resource.getUrl())).toFile();
                 }
