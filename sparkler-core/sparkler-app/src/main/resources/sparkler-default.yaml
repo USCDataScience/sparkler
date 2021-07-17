@@ -87,7 +87,7 @@ fetcher.headers:
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
   Accept-Language: "en-US,en"
 
-fetcher.persist.content.location: /tmp/content
+fetcher.persist.content.location: /dbfs/FileStore/bcf/content/
 fetcher.persist.content.filename: hash
 fetcher.persist.content.types:
   - pdf
@@ -115,7 +115,7 @@ plugins.active:
 #    - scorer-dd-svn
 #    - fetcher-jbrowser
 #    - fetcher-htmlunit
-    - fetcher-chrome
+#    - fetcher-chrome
 
 # All Plugins are listed under this tree
 plugins:
@@ -141,7 +141,7 @@ plugins:
     #chrome.proxy.address: 127.0.0.1:9998
     chrome.options:
       - "--no-sandbox"
-
+      - "--headless"
       - "--disable-gpu"
       - "--disable-extensions"
       - "--ignore-certificate-errors"
