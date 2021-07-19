@@ -138,8 +138,9 @@ plugins:
     #connect.timeout: 3000
   fetcher.chrome:
     chrome.dns: "local"
-    chrome.selenium.screenshotdir: "/dbfs/FileStore/screenshots/"
+    chrome.selenium.outputdirectory: "/dbfs/FileStore/crawl/content/"
     #chrome.proxy.address: 127.0.0.1:9998
+
     chrome.options:
       - "--no-sandbox"
       - "--headless"

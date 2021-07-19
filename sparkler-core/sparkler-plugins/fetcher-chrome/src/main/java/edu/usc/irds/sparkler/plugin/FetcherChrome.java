@@ -56,13 +56,6 @@ import java.net.CookiePolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-/*import com.browserup.bup.BrowserUpProxy;
-import com.browserup.bup.BrowserUpProxyServer;
-import com.browserup.bup.client.ClientUtil;
-import com.browserup.bup.filters.ResponseFilter;
-import com.browserup.bup.proxy.CaptureType;
-import com.browserup.bup.util.HttpMessageContents;
-import com.browserup.bup.util.HttpMessageInfo;*/
 
 @Extension
 public class FetcherChrome extends FetcherDefault {
@@ -110,36 +103,6 @@ public class FetcherChrome extends FetcherDefault {
         if (loc.equals("")) {
             driver = new ChromeDriver();
         } else {
-            /*BrowserUpProxy proxy = new BrowserUpProxyServer();
-            proxy.setTrustAllServers(true);
-
-            proxy.enableHarCaptureTypes(CaptureType.REQUEST_CONTENT, CaptureType.RESPONSE_CONTENT);
-            proxy.addResponseFilter(new ResponseFilter() {
-                @Override
-                public void filterResponse(HttpResponse response, HttpMessageContents contents,
-                                           HttpMessageInfo messageInfo) {
-                    latestStatus = response.getStatus().code();
-                }
-            });
-
-            String paddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "auto");
-
-            if (paddress.equals("auto")) {
-                proxy.start();
-                int port = proxy.getPort();
-                seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
-            } else {
-                if(restartproxy) {
-                    String[] s = paddress.split(":");
-                    proxy.start(Integer.parseInt(s[1]));
-                    InetSocketAddress addr = new InetSocketAddress(InetAddress.getByName(s[0]), Integer.parseInt(s[1]));
-                    seleniumProxy = ClientUtil.createSeleniumProxy(addr);
-                }
-            }*/
-
-            // seleniumProxy.setHttpProxy("172.17.146.238:"+Integer.toString(port));
-            // seleniumProxy.setSslProxy("172.17.146.238:"+Integer.toString(port));
-
             final ChromeOptions chromeOptions = new ChromeOptions();
 
             List<String> chromedefaults = Arrays.asList("--auto-open-devtools-for-tabs", "--headless", "--no-sandbox", "--disable-gpu", "--disable-extensions",
@@ -160,7 +123,6 @@ public class FetcherChrome extends FetcherDefault {
             chromeOptions.addArguments(vals);
 
             chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
-            //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
 
             if(loc.equals("local")){
                 driver = new ChromeDriver(chromeOptions);
@@ -246,51 +208,41 @@ public class FetcherChrome extends FetcherDefault {
         }
 
         String html = null;
-        if(json != null && json.containsKey("selenium")){
+        String globalscript = pluginConfig.getOrDefault("chrome.selenium.script", "").toString();
+
+        if(!globalscript.equals("")){
+            Map m = (Map<String, Object>) json.get("chrome.selenium.script");
+            Map jsonmap = new TreeMap(m);
+
+            executeSeleniumScript(jsonmap, scripter, resource);
+
+            List<String> snapshots = scripter.getSnapshots();
+            html = String.join(",", snapshots);
+        } else if(json != null && json.containsKey("selenium")){
             if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
-                try {
-                    LOG.info("Running Selenium Script");
-                    Map m = (Map<String, Object>) json.get("selenium");
-                    Map jsonmap = new TreeMap(m);
-                    scripter.runScript(jsonmap);
+                Map m = (Map<String, Object>) json.get("selenium");
+                Map jsonmap = new TreeMap(m);
 
-                    resource.setStatus(ResourceStatus.FETCHED.toString());
-                } catch (Exception e){
-                    LogEntries logs = driver.manage().logs().get(LogType.BROWSER);
-                    List<LogEntry> alllogs = logs.getAll();
-                    for(LogEntry logentry: alllogs){
-                        LOG.info(logentry.getMessage());
-                    }
-                    logs = driver.manage().logs().get(LogType.PERFORMANCE);
-                    alllogs = logs.getAll();
-                    for(LogEntry logentry: alllogs){
-                        LOG.info(logentry.getMessage());
-                    }
-                    logs = driver.manage().logs().get(LogType.PROFILER);
-                    alllogs = logs.getAll();
-                    for(LogEntry logentry: alllogs){
-                        LOG.info(logentry.getMessage());
-                    }
-                    if(pluginConfig.containsKey("chrome.selenium.screenshotdir")) {
-                        Map<String, Object> tempmap = new HashMap<>();
-                        tempmap.put("type", "file");
-                        Path path = Paths.get(pluginConfig.get("chrome.selenium.screenshotdir").toString(), jobContext.getId());
-                        File f = path.toFile();
-                        f.mkdirs();
-                        Path filepath = Paths.get(pluginConfig.get("chrome.selenium.screenshotdir").toString(), jobContext.getId(), resource.getCrawlId()+System.currentTimeMillis()+".png");
-                        tempmap.put("targetdir", filepath.toString());
-                        scripter.screenshotOperation(tempmap);
-                    }
-                    LOG.error("Caught an exception in  Selenium Scripter: " + e);
+                executeSeleniumScript(jsonmap, scripter, resource);
 
-                    resource.setStatus(ResourceStatus.ERROR.toString());
-                }
                 List<String> snapshots = scripter.getSnapshots();
                 html = String.join(",", snapshots);
             }
         }
 
         if(html == null) {
+            String screenshotcapture = pluginConfig.getOrDefault("chrome.selenium.screenshotoncapture", "false").toString();
+            if(screenshotcapture.equals("true")){
+                Map<String, Object> tempmap = new HashMap<>();
+                tempmap.put("type", "file");
+                Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "screencaptures");
+                File f = path.toFile();
+                f.mkdirs();
+                Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "screencaptures");
+                tempmap.put("targetdir", filepath.toString());
+                scripter.setOutputPath("");
+                scripter.screenshotOperation(tempmap);
+            }
             html = driver.getPageSource();
         }
 
@@ -300,6 +252,46 @@ public class FetcherChrome extends FetcherDefault {
         return fetchedData;
     }
 
+    private void executeSeleniumScript(Map jsonmap, SeleniumScripter scripter, Resource resource) throws IOException, java.text.ParseException {
+        try {
+            LOG.info("Running Selenium Script");
+            Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId());
+            scripter.setOutputPath(filepath.toString());
+            scripter.runScript(jsonmap);
+
+            resource.setStatus(ResourceStatus.FETCHED.toString());
+        } catch (Exception e){
+            LogEntries logs = driver.manage().logs().get(LogType.BROWSER);
+            List<LogEntry> alllogs = logs.getAll();
+            for(LogEntry logentry: alllogs){
+                LOG.info(logentry.getMessage());
+            }
+            logs = driver.manage().logs().get(LogType.PERFORMANCE);
+            alllogs = logs.getAll();
+            for(LogEntry logentry: alllogs){
+                LOG.info(logentry.getMessage());
+            }
+            logs = driver.manage().logs().get(LogType.PROFILER);
+            alllogs = logs.getAll();
+            for(LogEntry logentry: alllogs){
+                LOG.info(logentry.getMessage());
+            }
+            if(pluginConfig.containsKey("chrome.selenium.screenshotdir")) {
+                Map<String, Object> tempmap = new HashMap<>();
+                tempmap.put("type", "file");
+                Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "errors");
+                File f = path.toFile();
+                f.mkdirs();
+                Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "errors");
+                tempmap.put("targetdir", filepath.toString());
+                scripter.screenshotOperation(tempmap);
+            }
+            LOG.error("Caught an exception in  Selenium Scripter: " + e);
+
+            resource.setStatus(ResourceStatus.ERROR.toString());
+        }
+
+    }
     private JSONObject processMetadata(String metadata) {
         if(metadata != null){
             JSONParser parser = new JSONParser();
