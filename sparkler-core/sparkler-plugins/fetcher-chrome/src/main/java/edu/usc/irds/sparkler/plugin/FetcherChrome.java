@@ -246,6 +246,9 @@ public class FetcherChrome extends FetcherDefault {
             html = driver.getPageSource();
         }
 
+        if(!resource.getStatus().equals(ResourceStatus.ERROR.toString())){
+            resource.setStatus(ResourceStatus.FETCHED.toString());
+        }
         fetchedData = new FetchedData(html.getBytes(), "text/html", latestStatus);
         fetchedData.setResource(resource);
 
