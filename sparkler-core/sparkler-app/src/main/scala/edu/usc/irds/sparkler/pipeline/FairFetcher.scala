@@ -18,9 +18,9 @@
 package edu.usc.irds.sparkler.pipeline
 
 import java.util.concurrent.atomic.AtomicLong
-
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model._
+import edu.usc.irds.sparkler.util.HealthChecks
 import org.apache.solr.common.SolrInputDocument
 
 /**
@@ -39,38 +39,47 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
   var lastHit: String = ""
   val fetchedData: Iterator[FetchedData] = fetchFunc(job, resources)
 
-  override def hasNext: Boolean = fetchedData.hasNext
+  override def hasNext: Boolean = {
+    if(!HealthChecks.checkFailureRate(job)) {
+      fetchedData.hasNext
+    } else{
+      false
+    }
+  }
 
   override def next(): CrawlData = {
-
     val data = new CrawlData()
-    val nextFetch = hitCounter.get() + delay
-    val waitTime = nextFetch - System.currentTimeMillis()
-    if (waitTime > 0) {
-      LOG.debug("    Waiting for {} ms", waitTime)
-      Thread.sleep(waitTime)
-    }
-    //STEP: Fetch
-    val startTime = System.currentTimeMillis()
-    data.fetchedData = fetchedData.next
-    val endTime = System.currentTimeMillis()
-    data.fetchedData.getResource.setFetchTimestamp(data.fetchedData.getFetchedAt)
-    data.fetchedData.setSegment(job.currentTask)
-    lastHit = data.fetchedData.getResource.getUrl
-    if (data.fetchedData.getResponseTime < 0) {
-      data.fetchedData.setResponseTime(endTime - startTime)
-    }
-    hitCounter.set(System.currentTimeMillis())
 
-    //STEP: Parse
-    data.parsedData = parseFunc(data)
+      val nextFetch = hitCounter.get() + delay
+      val waitTime = nextFetch - System.currentTimeMillis()
+      if (waitTime > 0) {
+        LOG.debug("    Waiting for {} ms", waitTime)
+        Thread.sleep(waitTime)
+      }
+      //STEP: Fetch
+      val startTime = System.currentTimeMillis()
+      data.fetchedData = fetchedData.next
+      val endTime = System.currentTimeMillis()
+      data.fetchedData.getResource.setFetchTimestamp(data.fetchedData.getFetchedAt)
+      data.fetchedData.setSegment(job.currentTask)
+      lastHit = data.fetchedData.getResource.getUrl
+      if (data.fetchedData.getResponseTime < 0) {
+        data.fetchedData.setResponseTime(endTime - startTime)
+      }
+      hitCounter.set(System.currentTimeMillis())
 
-    //STEP: URL Filter
-    data.parsedData.outlinks = outLinkFilterFunc(job, data)
-    val doc = solrUpdateFunction(data)
-    LOG.info("Adding doc to SOLR")
-    job.newStorageProxy().addResource(doc)
+      //STEP: Parse
+      data.parsedData = parseFunc(data)
+
+      //STEP: URL Filter
+      data.parsedData.outlinks = outLinkFilterFunc(job, data)
+      val doc = solrUpdateFunction(data)
+      LOG.info("Adding doc to SOLR")
+      job.newStorageProxy().addResource(doc)
+
+
     data
+
   }
 }
 

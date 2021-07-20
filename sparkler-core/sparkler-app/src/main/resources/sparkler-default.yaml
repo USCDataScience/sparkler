@@ -87,6 +87,7 @@ fetcher.headers:
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
   Accept-Language: "en-US,en"
 
+fetcher.kill.failure.percent: 3.5
 fetcher.persist.content.location: /dbfs/FileStore/bcf/content/
 fetcher.persist.content.filename: hash
 fetcher.persist.content.types:
@@ -136,9 +137,10 @@ plugins:
     #socket.timeout: 3000
     #connect.timeout: 3000
   fetcher.chrome:
-    chrome.dns: "http://localhost:3000/webdriver"
-    chrome.selenium.screenshotdir: "/dbfs/FileStore/screenshots/"
+    chrome.dns: "local"
+    chrome.selenium.outputdirectory: "/dbfs/FileStore/crawl/content/"
     #chrome.proxy.address: 127.0.0.1:9998
+
     chrome.options:
       - "--no-sandbox"
       - "--headless"

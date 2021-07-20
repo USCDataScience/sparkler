@@ -88,7 +88,7 @@ fetcher.headers:
 
 fetcher.persist.content.location: /dbfs/FileStore/bcf/content/
 fetcher.persist.content.filename: hash
-
+fetcher.kill.failure.percent: 3.5
 # Rotating agents file.
 # File should contain a list of agents which will be used to override the default agent string
 # This is an unbounded list, it can take any number of agents you wish.
@@ -133,11 +133,11 @@ plugins:
     #socket.timeout: 3000
     #connect.timeout: 3000
   fetcher.chrome:
-    chrome.dns: "http://localhost:3000/webdriver"
-    chrome.selenium.screenshotdir: "/dbfs/FileStore/screenshots/"
+    chrome.dns: "local"
+    chrome.selenium.outputdirectory: "/dbfs/FileStore/crawl/content/"
     chrome.options:
         - "--no-sandbox" 
-        - "--headless" 
+        - "--headless"
         - "--disable-gpu" 
         - "--disable-extensions" 
         - "--ignore-certificate-errors" 

@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,13 +56,6 @@ import java.net.CookiePolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-/*import com.browserup.bup.BrowserUpProxy;
-import com.browserup.bup.BrowserUpProxyServer;
-import com.browserup.bup.client.ClientUtil;
-import com.browserup.bup.filters.ResponseFilter;
-import com.browserup.bup.proxy.CaptureType;
-import com.browserup.bup.util.HttpMessageContents;
-import com.browserup.bup.util.HttpMessageInfo;*/
 
 @Extension
 public class FetcherChrome extends FetcherDefault {
@@ -69,8 +63,6 @@ public class FetcherChrome extends FetcherDefault {
     private static final Logger LOG = LoggerFactory.getLogger(FetcherChrome.class);
     private Map<String, Object> pluginConfig;
     private WebDriver driver;
-    private int latestStatus;
-    private Proxy seleniumProxy;
 
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
@@ -80,13 +72,6 @@ public class FetcherChrome extends FetcherDefault {
         // TODO should change everywhere
         pluginConfig = config.getPluginConfiguration(pluginId);
 
-        /*try {
-            System.out.println("Initializing Chrome Driver");
-            startDriver(true);
-        } catch (UnknownHostException | MalformedURLException e) {
-            e.printStackTrace();
-            System.out.println("Failed to init Chrome Session");
-        }*/
     }
 
     private void checkSession() {
@@ -103,42 +88,26 @@ public class FetcherChrome extends FetcherDefault {
             }
         }
     }
+    /**
+     * Gets a user agent from a list of configured values, rotates the list for each call
+     * @return get a user agent string from the list of configured values
+     */
+    public String getUserAgent(){
+        if (userAgents == null || userAgents.isEmpty()){
+            return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
+        }
+        String agent = userAgents.get(userAgentIndex);
+        synchronized (this) { // rotate index
+            userAgentIndex = (userAgentIndex + 1) % userAgents.size();
+        }
+        return agent;
+    }
 
     private void startDriver(Boolean restartproxy) throws UnknownHostException, MalformedURLException {
         String loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
         if (loc.equals("")) {
             driver = new ChromeDriver();
         } else {
-            /*BrowserUpProxy proxy = new BrowserUpProxyServer();
-            proxy.setTrustAllServers(true);
-
-            proxy.enableHarCaptureTypes(CaptureType.REQUEST_CONTENT, CaptureType.RESPONSE_CONTENT);
-            proxy.addResponseFilter(new ResponseFilter() {
-                @Override
-                public void filterResponse(HttpResponse response, HttpMessageContents contents,
-                                           HttpMessageInfo messageInfo) {
-                    latestStatus = response.getStatus().code();
-                }
-            });
-
-            String paddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "auto");
-
-            if (paddress.equals("auto")) {
-                proxy.start();
-                int port = proxy.getPort();
-                seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
-            } else {
-                if(restartproxy) {
-                    String[] s = paddress.split(":");
-                    proxy.start(Integer.parseInt(s[1]));
-                    InetSocketAddress addr = new InetSocketAddress(InetAddress.getByName(s[0]), Integer.parseInt(s[1]));
-                    seleniumProxy = ClientUtil.createSeleniumProxy(addr);
-                }
-            }*/
-
-            // seleniumProxy.setHttpProxy("172.17.146.238:"+Integer.toString(port));
-            // seleniumProxy.setSslProxy("172.17.146.238:"+Integer.toString(port));
-
             final ChromeOptions chromeOptions = new ChromeOptions();
 
             List<String> chromedefaults = Arrays.asList("--auto-open-devtools-for-tabs", "--headless", "--no-sandbox", "--disable-gpu", "--disable-extensions",
@@ -155,11 +124,10 @@ public class FetcherChrome extends FetcherDefault {
             chromeOptions.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
             chromeOptions.setCapability("goog:loggingPrefs", logPrefs);
             List<String> vals = (List<String>) (pluginConfig.getOrDefault("chrome.options", chromedefaults));
-            vals.add("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+            vals.add("--user-agent="+getUserAgent());
             chromeOptions.addArguments(vals);
 
             chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
-            //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
 
             if(loc.equals("local")){
                 driver = new ChromeDriver(chromeOptions);
@@ -178,13 +146,13 @@ public class FetcherChrome extends FetcherDefault {
     public FetchedData fetch(Resource resource) throws Exception {
         startDriver(false);
         LOG.info("Chrome FETCHER {}", resource.getUrl());
-        FetchedData fetchedData;
-        JSONObject json = null;
         try {
             checkSession();
         } catch (Exception e){
             System.out.println("failed to start selenium session");
         }
+        long start = System.currentTimeMillis();
+        FetchedData fetchedData;
 
         /*
          * In this plugin we will work on only HTML data If data is of any other data
@@ -196,10 +164,32 @@ public class FetcherChrome extends FetcherDefault {
             // This should be true for all URLS ending with 4 character file extension
             // return new FetchedData("".getBytes(), "application/html", ERROR_CODE) ;
             return super.fetch(resource);
+        } else{
+            fetchedData = htmlFlow(resource, start);
         }
-        long start = System.currentTimeMillis();
+
+
+
+        LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
+
+
+        driver.quit();
+        driver = null;
+
+        return fetchedData;
+    }
+
+    public FetchedData dataFlow(Resource resource, long start){
+
+        return null;
+    }
+
+    public FetchedData htmlFlow(Resource resource, long start) throws IOException, java.text.ParseException {
+        FetchedData fetchedData;
+
 
         LOG.debug("Time taken to create driver- {}", (System.currentTimeMillis() - start));
+        JSONObject json = null;
 
         if(resource.getMetadata()!=null && !resource.getMetadata().equals("")){
             json = processMetadata(resource.getMetadata());
@@ -221,73 +211,93 @@ public class FetcherChrome extends FetcherDefault {
         }
 
         String html = null;
-        if(json != null && json.containsKey("selenium")){
+        String globalscript = pluginConfig.getOrDefault("chrome.selenium.script", "").toString();
+
+        if(!globalscript.equals("")){
+            Map m = (Map<String, Object>) json.get("chrome.selenium.script");
+            Map jsonmap = new TreeMap(m);
+
+            executeSeleniumScript(jsonmap, scripter, resource);
+
+            List<String> snapshots = scripter.getSnapshots();
+            html = String.join(",", snapshots);
+        } else if(json != null && json.containsKey("selenium")){
             if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
-                try {
-                    LOG.info("Running Selenium Script");
-                    Map m = (Map<String, Object>) json.get("selenium");
-                    Map jsonmap = new TreeMap(m);
-                    scripter.runScript(jsonmap);
+                Map m = (Map<String, Object>) json.get("selenium");
+                Map jsonmap = new TreeMap(m);
 
-                    resource.setStatus(ResourceStatus.FETCHED.toString());
-                } catch (Exception e){
-                    LogEntries logs = driver.manage().logs().get(LogType.BROWSER);
-                    List<LogEntry> alllogs = logs.getAll();
-                    for(LogEntry logentry: alllogs){
-                        LOG.info(logentry.getMessage());
-                    }
-                    logs = driver.manage().logs().get(LogType.PERFORMANCE);
-                    alllogs = logs.getAll();
-                    for(LogEntry logentry: alllogs){
-                        LOG.info(logentry.getMessage());
-                    }
-                    logs = driver.manage().logs().get(LogType.PROFILER);
-                    alllogs = logs.getAll();
-                    for(LogEntry logentry: alllogs){
-                        LOG.info(logentry.getMessage());
-                    }
-                    if(pluginConfig.containsKey("chrome.selenium.screenshotdir")) {
-                        Map<String, Object> tempmap = new HashMap<>();
-                        tempmap.put("type", "file");
-                        Path path = Paths.get(pluginConfig.get("chrome.selenium.screenshotdir").toString(), jobContext.getId());
-                        File f = path.toFile();
-                        f.mkdirs();
-                        Path filepath = Paths.get(pluginConfig.get("chrome.selenium.screenshotdir").toString(), jobContext.getId(), resource.getCrawlId()+System.currentTimeMillis()+".png");
-                        tempmap.put("targetdir", filepath.toString());
-                        scripter.screenshotOperation(tempmap);
-                    }
-                    LOG.error("Caught an exception in  Selenium Scripter: " + e);
+                executeSeleniumScript(jsonmap, scripter, resource);
 
-                    resource.setStatus(ResourceStatus.ERROR.toString());
-                }
                 List<String> snapshots = scripter.getSnapshots();
                 html = String.join(",", snapshots);
             }
         }
 
         if(html == null) {
+            String screenshotcapture = pluginConfig.getOrDefault("chrome.selenium.screenshotoncapture", "false").toString();
+            if(screenshotcapture.equals("true")){
+                Map<String, Object> tempmap = new HashMap<>();
+                tempmap.put("type", "file");
+                Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "screencaptures");
+                File f = path.toFile();
+                f.mkdirs();
+                Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "screencaptures");
+                tempmap.put("targetdir", filepath.toString());
+                scripter.setOutputPath("");
+                scripter.screenshotOperation(tempmap);
+            }
             html = driver.getPageSource();
         }
 
-        fetchedData = new FetchedData(html.getBytes(), "text/html", latestStatus);
+        if(!resource.getStatus().equals(ResourceStatus.ERROR.toString())){
+            resource.setStatus(ResourceStatus.FETCHED.toString());
+        }
+        fetchedData = new FetchedData(html.getBytes(), "text/html", 200);
         fetchedData.setResource(resource);
-
-        LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
-
-        LOG.info("LATEST STATUS: " + latestStatus);
-        /*if (!(latestStatus >= 200 && latestStatus < 300) && latestStatus != 0) {
-            // If not fetched through plugin successfully
-            // Falling back to default fetcher
-            LOG.info("{} Failed to fetch the page. Falling back to default fetcher.", resource.getUrl());
-            return super.fetch(resource);
-        }*/
-
-        driver.quit();
-        driver = null;
 
         return fetchedData;
     }
 
+    private void executeSeleniumScript(Map jsonmap, SeleniumScripter scripter, Resource resource) throws IOException, java.text.ParseException {
+        try {
+            LOG.info("Running Selenium Script");
+            Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId());
+            scripter.setOutputPath(filepath.toString());
+            scripter.runScript(jsonmap, null);
+
+            resource.setStatus(ResourceStatus.FETCHED.toString());
+        } catch (Exception e){
+            LogEntries logs = driver.manage().logs().get(LogType.BROWSER);
+            List<LogEntry> alllogs = logs.getAll();
+            for(LogEntry logentry: alllogs){
+                LOG.info(logentry.getMessage());
+            }
+            logs = driver.manage().logs().get(LogType.PERFORMANCE);
+            alllogs = logs.getAll();
+            for(LogEntry logentry: alllogs){
+                LOG.info(logentry.getMessage());
+            }
+            logs = driver.manage().logs().get(LogType.PROFILER);
+            alllogs = logs.getAll();
+            for(LogEntry logentry: alllogs){
+                LOG.info(logentry.getMessage());
+            }
+            if(pluginConfig.containsKey("chrome.selenium.screenshotdir")) {
+                Map<String, Object> tempmap = new HashMap<>();
+                tempmap.put("type", "file");
+                Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "errors");
+                File f = path.toFile();
+                f.mkdirs();
+                Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "errors");
+                tempmap.put("targetdir", filepath.toString());
+                scripter.screenshotOperation(tempmap);
+            }
+            LOG.error("Caught an exception in  Selenium Scripter: " + e);
+
+            resource.setStatus(ResourceStatus.ERROR.toString());
+        }
+
+    }
     private JSONObject processMetadata(String metadata) {
         if(metadata != null){
             JSONParser parser = new JSONParser();
@@ -312,7 +322,10 @@ public class FetcherChrome extends FetcherDefault {
             CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             String contentType = conn.getHeaderField("Content-Type");
-            return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml") || conn.getResponseCode() == 302;
+            if(contentType == null && conn.getResponseCode() == 302){
+                return isWebPage(conn.getHeaderField("Location"));
+            }
+            return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml");
         } catch (Exception e) {
             LOG.debug(e.getMessage(), e);
         }

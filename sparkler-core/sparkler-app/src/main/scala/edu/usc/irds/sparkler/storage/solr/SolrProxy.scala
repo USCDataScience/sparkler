@@ -78,7 +78,7 @@ class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Clo
   private var crawlDb = newClient(config.getDatabaseURI())
 
   def getClient(): SolrClient = {
-    return crawlDb
+    crawlDb
   }
 
   def addResourceDocs(docs: java.util.Iterator[SolrInputDocument]): Unit = {

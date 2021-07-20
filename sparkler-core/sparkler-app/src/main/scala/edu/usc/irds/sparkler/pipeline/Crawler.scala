@@ -23,6 +23,7 @@ import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
+import edu.usc.irds.sparkler.storage.StorageProxy
 import edu.usc.irds.sparkler.storage.solr.{ScoreUpdateSolrTransformer, SolrProxy, SolrStatusUpdate, SolrUpsert, StatusUpdateSolrTransformer}
 import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
@@ -138,7 +139,7 @@ class Crawler extends CliTool {
   var job: SparklerJob = _
   var sc: SparkContext = _
 
-  def init(): Unit = {
+  def setConfig(): Unit ={
     if (configOverride != ""){
       sparklerConf.overloadConfig(configOverride.mkString(" "));
     }
@@ -147,7 +148,9 @@ class Crawler extends CliTool {
       val str = new String(decoded, StandardCharsets.UTF_8)
       sparklerConf.overloadConfig(str)
     }
-
+  }
+  def init(): Unit = {
+    setConfig()
     if (this.outputPath.isEmpty) {
       this.outputPath = jobId
     }
@@ -175,8 +178,6 @@ class Crawler extends CliTool {
     }
     LOG.info("Setting local job: " + sparklerConf.get("fetcher.headers"))
     job = new SparklerJob(jobId, sparklerConf, "")
-    //FetchFunction.init(job)
-
   }
   //TODO: URL normalizers
   //TODO: Robots.txt
@@ -202,32 +203,8 @@ class Crawler extends CliTool {
       else if (deepCrawlHostnames.length > 0) {
         deepCrawlHosts ++= deepCrawlHostnames.toSet
       }
-      if (deepCrawlHosts.size > 0) {
-        LOG.info(s"Deep crawling hosts ${deepCrawlHosts.toString}")
-        var taskId = JobUtil.newSegmentId(true)
-        job.currentTask = taskId
-        val deepRdd = new MemexDeepCrawlDbRDD(sc, job, maxGroups = topG, topN = topN,
-          deepCrawlHosts = deepCrawlHostnames)
-        val fetchedRdd = deepRdd.map(r => (r.getGroup, r))
-          .groupByKey()
-          .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-            FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer)
-          })
-          .persist()
-
-
-        if (kafkaEnable) {
-          storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
-        }
-
-        val scoredRdd = score(fetchedRdd)
-        //Step: Store these to nutch segments
-        val outputPath = this.outputPath + "/" + taskId
-
-        storeContent(outputPath, scoredRdd)
-
-        LOG.info("Committing crawldb..")
-        storageProxy.commitCrawlDb()
+      if (deepCrawlHosts.nonEmpty) {
+        deepCrawl(deepCrawlHosts.toString(), localFetchDelay, storageProxy)
       }
 
       val taskId = JobUtil.newSegmentId(true)
@@ -235,7 +212,7 @@ class Crawler extends CliTool {
       LOG.info(s"Starting the job:$jobId, task:$taskId")
       val rc = new RunCrawl
 
-      val rdd = if(defaultquery != "" && !defaultquery.isEmpty){
+      val rdd = if(defaultquery != "" && defaultquery.nonEmpty){
         new MemexCrawlDbRDD(sc, job, generateQry= defaultquery, maxGroups = topG, topN = topN)
       } else{
         new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
@@ -246,37 +223,15 @@ class Crawler extends CliTool {
       /*val f = rdd.map(r => (r.getDedupeId, r))
         .groupByKey()*/
 
-
-      //val l = f.glom().map(_.length).collect()
-
-      //print(l.min, l.max, l.sum/l.length, l.length)
-
-      //val c = f.getNumPartitions
-
-      //val fetchedRdd = f.mapPartitions( x => mapCrawl(x))
-      //val fetchedRdd = rc.runCrawl(f, job)
-
-
       var fetchedRdd: RDD[CrawlData] = null
       var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
       if(rep <= 0){
         rep = 1
       }
       fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
-        }).persist()
-
-      if (kafkaEnable) {
-        storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
-      }
-      val scoredRdd = score(fetchedRdd)
-      //Step: Store these to nutch segments
-      val outputPath = this.outputPath + "/" + taskId
-
-      storeContent(outputPath, scoredRdd)
-
-      LOG.info("Committing crawldb..")
-      storageProxy.commitCrawlDb()
+        FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
+      }).persist()
+      scoreAndStore(fetchedRdd, taskId, storageProxy)
     }
     storageProxy.close()
     //PluginService.shutdown(job)
@@ -284,6 +239,48 @@ class Crawler extends CliTool {
     GenericFunction(job, GenericProcess.Event.SHUTDOWN,new SQLContext(sc).sparkSession)
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
+  }
+
+  def scoreAndStore(fetchedRdd: RDD[CrawlData], taskId: String, storageProxy: StorageProxy): Unit ={
+    if (kafkaEnable) {
+      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
+    }
+    val scoredRdd = score(fetchedRdd)
+    //Step: Store these to nutch segments
+    val outputPath = this.outputPath + "/" + taskId
+
+    storeContent(outputPath, scoredRdd)
+
+    LOG.info("Committing crawldb..")
+    storageProxy.commitCrawlDb()
+  }
+
+  def deepCrawl(deepCrawlHosts: String, localFetchDelay: Long, storageProxy: StorageProxy): Unit ={
+    LOG.info(s"Deep crawling hosts ${deepCrawlHosts}")
+    var taskId = JobUtil.newSegmentId(true)
+    job.currentTask = taskId
+    val deepRdd = new MemexDeepCrawlDbRDD(sc, job, maxGroups = topG, topN = topN,
+      deepCrawlHosts = deepCrawlHostnames)
+    val fetchedRdd = deepRdd.map(r => (r.getGroup, r))
+      .groupByKey()
+      .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
+        FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer)
+      })
+      .persist()
+
+
+    if (kafkaEnable) {
+      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
+    }
+
+    val scoredRdd = score(fetchedRdd)
+    //Step: Store these to nutch segments
+    val outputPath = this.outputPath + "/" + taskId
+
+    storeContent(outputPath, scoredRdd)
+
+    LOG.info("Committing crawldb..")
+    storageProxy.commitCrawlDb()
   }
 
   def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
@@ -339,7 +336,7 @@ object OutLinkUpsert extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) wi
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
-      parent.getFetchTimestamp, parent.getId, parent.getScore) }) //create a new resource
+        parent.getFetchTimestamp, parent.getId, parent.getScore) }) //create a new resource
   }
 }
 
@@ -359,14 +356,14 @@ object Crawler extends Loggable with Serializable{
   }
 
   /**
-   * Used to send crawl dumps to the Kafka Messaging System.
-   * There is a sparklerProducer instantiated per partition and
-   * used to send all crawl data in a partition to Kafka.
-   *
-   * @param listeners list of listeners example : host1:9092,host2:9093,host3:9094
-   * @param topic the kafka topic to use
-   * @param rdd the input RDD consisting of the CrawlData
-   */
+    * Used to send crawl dumps to the Kafka Messaging System.
+    * There is a sparklerProducer instantiated per partition and
+    * used to send all crawl data in a partition to Kafka.
+    *
+    * @param listeners list of listeners example : host1:9092,host2:9093,host3:9094
+    * @param topic the kafka topic to use
+    * @param rdd the input RDD consisting of the CrawlData
+    */
   def storeContentKafka(listeners: String, topic: String, rdd:RDD[CrawlData]): Unit = {
     rdd.foreachPartition(crawlData_iter => {
       val sparklerProducer = new SparklerProducer(listeners, topic)

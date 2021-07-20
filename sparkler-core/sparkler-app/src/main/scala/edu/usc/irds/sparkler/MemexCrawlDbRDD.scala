@@ -3,7 +3,7 @@ package edu.usc.irds.sparkler
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.storage.solr.SolrGroupPartition
-import edu.usc.irds.sparkler.util.SolrResultIterator
+import edu.usc.irds.sparkler.util.{HealthChecks, SolrResultIterator}
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.solr.client.solrj.util.ClientUtils.escapeQueryChars
 import org.apache.spark.{Partition, SparkContext, TaskContext}
