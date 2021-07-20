@@ -34,7 +34,7 @@ jobs:
         databricks fs cp --recursive --overwrite sparkler.zip dbfs:/FileStore/sparkler-standalone/
       working-directory: sparkler-core
       env:
-        DATABRICKS_HOST: https://wayfinder-mmit-dev.cloud.databricks.com
+        DATABRICKS_HOST: https://wayfinder-mmit-test.cloud.databricks.com
         DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TEST_TOKEN }}
 
     - name: Build "Submit" package
@@ -49,5 +49,5 @@ jobs:
         databricks fs cp --recursive --overwrite build/ dbfs:/FileStore/sparkler-submit/
       working-directory: sparkler-core
       env:
-        DATABRICKS_HOST: https://wayfinder-mmit-dev.cloud.databricks.com
+        DATABRICKS_HOST: https://wayfinder-mmit-test.cloud.databricks.com
         DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TEST_TOKEN }}
