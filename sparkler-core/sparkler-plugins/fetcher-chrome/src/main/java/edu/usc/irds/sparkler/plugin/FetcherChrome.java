@@ -63,8 +63,6 @@ public class FetcherChrome extends FetcherDefault {
     private static final Logger LOG = LoggerFactory.getLogger(FetcherChrome.class);
     private Map<String, Object> pluginConfig;
     private WebDriver driver;
-    private int latestStatus;
-    private Proxy seleniumProxy;
 
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
@@ -74,13 +72,6 @@ public class FetcherChrome extends FetcherDefault {
         // TODO should change everywhere
         pluginConfig = config.getPluginConfiguration(pluginId);
 
-        /*try {
-            System.out.println("Initializing Chrome Driver");
-            startDriver(true);
-        } catch (UnknownHostException | MalformedURLException e) {
-            e.printStackTrace();
-            System.out.println("Failed to init Chrome Session");
-        }*/
     }
 
     private void checkSession() {
@@ -96,6 +87,20 @@ public class FetcherChrome extends FetcherDefault {
                 }
             }
         }
+    }
+    /**
+     * Gets a user agent from a list of configured values, rotates the list for each call
+     * @return get a user agent string from the list of configured values
+     */
+    public String getUserAgent(){
+        if (userAgents == null || userAgents.isEmpty()){
+            return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
+        }
+        String agent = userAgents.get(userAgentIndex);
+        synchronized (this) { // rotate index
+            userAgentIndex = (userAgentIndex + 1) % userAgents.size();
+        }
+        return agent;
     }
 
     private void startDriver(Boolean restartproxy) throws UnknownHostException, MalformedURLException {
@@ -119,7 +124,7 @@ public class FetcherChrome extends FetcherDefault {
             chromeOptions.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
             chromeOptions.setCapability("goog:loggingPrefs", logPrefs);
             List<String> vals = (List<String>) (pluginConfig.getOrDefault("chrome.options", chromedefaults));
-            vals.add("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+            vals.add("--user-agent="+getUserAgent());
             chromeOptions.addArguments(vals);
 
             chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
