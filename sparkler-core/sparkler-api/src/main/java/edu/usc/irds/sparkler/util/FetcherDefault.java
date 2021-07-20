@@ -126,16 +126,16 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
         urlConn.setRequestMethod(resource.getHttpMethod());
         if(resource.getMetadata()!=null && !resource.getMetadata().equals("")){
             JSONObject json = processMetadata(resource.getMetadata());
-    
+
             if (json.containsKey("form")) {
                 urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 urlConn.setRequestProperty( "charset", "utf-8");
                 byte[] postData = processForm((JSONObject) json.get("form"));
-                urlConn.setRequestProperty( "Content-Length", Integer.toString( postData.length ));    
+                urlConn.setRequestProperty( "Content-Length", Integer.toString( postData.length ));
                 urlConn.setDoOutput(true);
                 try( DataOutputStream wr = new DataOutputStream( urlConn.getOutputStream())) {
                     wr.write( postData );
-                 }
+                }
             } else if (json.containsKey("JSON")) {
                 //processJson((JSONObject) json.get("json"), connection);
                 urlConn.setRequestProperty("Content-Type", "application/json");
@@ -262,7 +262,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             try {
                 json = (JSONObject) parser.parse(metadata);
                 return json;
-                
+
             } catch (ParseException e) {
                 e.printStackTrace();
             }

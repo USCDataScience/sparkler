@@ -229,8 +229,8 @@ class Crawler extends CliTool {
         rep = 1
       }
       fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
-        }).persist()
+        FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
+      }).persist()
       scoreAndStore(fetchedRdd, taskId, storageProxy)
     }
     storageProxy.close()
@@ -336,7 +336,7 @@ object OutLinkUpsert extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) wi
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
-      parent.getFetchTimestamp, parent.getId, parent.getScore) }) //create a new resource
+        parent.getFetchTimestamp, parent.getId, parent.getScore) }) //create a new resource
   }
 }
 
@@ -356,14 +356,14 @@ object Crawler extends Loggable with Serializable{
   }
 
   /**
-   * Used to send crawl dumps to the Kafka Messaging System.
-   * There is a sparklerProducer instantiated per partition and
-   * used to send all crawl data in a partition to Kafka.
-   *
-   * @param listeners list of listeners example : host1:9092,host2:9093,host3:9094
-   * @param topic the kafka topic to use
-   * @param rdd the input RDD consisting of the CrawlData
-   */
+    * Used to send crawl dumps to the Kafka Messaging System.
+    * There is a sparklerProducer instantiated per partition and
+    * used to send all crawl data in a partition to Kafka.
+    *
+    * @param listeners list of listeners example : host1:9092,host2:9093,host3:9094
+    * @param topic the kafka topic to use
+    * @param rdd the input RDD consisting of the CrawlData
+    */
   def storeContentKafka(listeners: String, topic: String, rdd:RDD[CrawlData]): Unit = {
     rdd.foreachPartition(crawlData_iter => {
       val sparklerProducer = new SparklerProducer(listeners, topic)
