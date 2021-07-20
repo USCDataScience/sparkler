@@ -260,7 +260,7 @@ public class FetcherChrome extends FetcherDefault {
             LOG.info("Running Selenium Script");
             Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId());
             scripter.setOutputPath(filepath.toString());
-            scripter.runScript(jsonmap);
+            scripter.runScript(jsonmap, null);
 
             resource.setStatus(ResourceStatus.FETCHED.toString());
         } catch (Exception e){
