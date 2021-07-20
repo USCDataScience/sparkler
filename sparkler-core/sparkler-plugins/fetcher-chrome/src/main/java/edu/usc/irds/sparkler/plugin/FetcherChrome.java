@@ -172,8 +172,6 @@ public class FetcherChrome extends FetcherDefault {
 
         LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
 
-        LOG.info("LATEST STATUS: " + latestStatus);
-
 
         driver.quit();
         driver = null;
@@ -254,7 +252,7 @@ public class FetcherChrome extends FetcherDefault {
         if(!resource.getStatus().equals(ResourceStatus.ERROR.toString())){
             resource.setStatus(ResourceStatus.FETCHED.toString());
         }
-        fetchedData = new FetchedData(html.getBytes(), "text/html", latestStatus);
+        fetchedData = new FetchedData(html.getBytes(), "text/html", 200);
         fetchedData.setResource(resource);
 
         return fetchedData;
