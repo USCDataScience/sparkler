@@ -33,6 +33,7 @@ lazy val plugins = (project in file(s"$sparklerPlugins"))
     scorerDdSvn,
     urlFilterRegex,
     urlFilterSameHost,
+    urlInjector,
     databricks,
   )
 //fetcherJBrowser,
@@ -145,6 +146,19 @@ lazy val scorerDdSvn = (project in file(s"$sparklerPlugins/scorer-dd-svn"))
     Settings.pluginManifest(
       id = "scorer-dd-svn",
       className = "edu.usc.irds.sparkler.plugin.DdSvnScorerActivator",
+      dependencies = List.empty
+    ),
+  )
+  .dependsOn(api)
+
+lazy val urlInjector = (project in file(s"$sparklerPlugins/url-injector"))
+  .enablePlugins(JavaAppPackaging)
+  .settings(
+    Settings.plugin,
+    name := "url-injector",
+    Settings.pluginManifest(
+      id = "url-injector",
+      className = "edu.usc.irds.sparkler.plugin.UrlInjectorActivator",
       dependencies = List.empty
     ),
   )

@@ -32,7 +32,7 @@ solr.uri: http://ec2-35-174-200-133.compute-1.amazonaws.com:8983/solr/crawldb
 # elasticsearch settings
 elasticsearch.uri: http://localhost:9200
 
-crawl.repartition: 500
+crawl.repartition: 1
 
 ##################### Apache Spark Properties ###########################
 
@@ -88,6 +88,10 @@ fetcher.headers:
   Accept-Language: "en-US,en"
 
 fetcher.persist.content.location: /dbfs/FileStore/bcf/content/
+fetcher.persist.content.filename: hash
+fetcher.persist.content.types:
+  - pdf
+  - doc
 # Rotating agents file.
 # File should contain a list of agents which will be used to override the default agent string
 # This is an unbounded list, it can take any number of agents you wish.

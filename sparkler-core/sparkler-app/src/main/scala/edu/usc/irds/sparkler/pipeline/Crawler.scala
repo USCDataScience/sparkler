@@ -40,6 +40,8 @@ import java.util.UUID
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
+import java.util.Base64
+import java.nio.charset.StandardCharsets
 
 /**
   *
@@ -117,6 +119,16 @@ class Crawler extends CliTool {
     usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
   var configOverride: Array[Any] = Array()
 
+  @Option(name = "-co64", aliases = Array("--config-override-encoded"),
+    handler = classOf[StringArrayOptionHandler],
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var configOverrideEncoded: String = ""
+
+  @Option(name = "-dq", aliases = Array("--default-query"),
+    handler = classOf[StringArrayOptionHandler],
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var defaultquery: String = ""
+
   /* Generator options, currently not exposed via the CLI
      and only accessible through the config yaml file
    */
@@ -130,6 +142,12 @@ class Crawler extends CliTool {
     if (configOverride != ""){
       sparklerConf.overloadConfig(configOverride.mkString(" "));
     }
+    if(configOverrideEncoded != ""){
+      val decoded = Base64.getDecoder().decode(configOverrideEncoded)
+      val str = new String(decoded, StandardCharsets.UTF_8)
+      sparklerConf.overloadConfig(str)
+    }
+
     if (this.outputPath.isEmpty) {
       this.outputPath = jobId
     }
@@ -163,21 +181,6 @@ class Crawler extends CliTool {
   //TODO: URL normalizers
   //TODO: Robots.txt
 
-  def mapCrawl(x: Iterator[(String, Iterable[Resource])]): Iterator[CrawlData] = {
-    val m = 1000
-    x.flatMap({case (grp, rs) => new FairFetcher(job, rs.iterator, m,
-      FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer)})
-  }
-
-  def goup: String = {
-    val uuid = UUID.randomUUID
-    val uuidAsString = uuid.toString
-    uuidAsString
-  }
-
-  def maplogic: Unit = {
-
-  }
   override def run(): Unit = {
 
     //STEP : Initialize environment
@@ -227,12 +230,17 @@ class Crawler extends CliTool {
         storageProxy.commitCrawlDb()
       }
 
-      var taskId = JobUtil.newSegmentId(true)
+      val taskId = JobUtil.newSegmentId(true)
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
       val rc = new RunCrawl
 
-      val rdd = new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
+      val rdd = if(defaultquery != "" && !defaultquery.isEmpty){
+        new MemexCrawlDbRDD(sc, job, generateQry= defaultquery, maxGroups = topG, topN = topN)
+      } else{
+        new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
+      }
+
       //TODO RESTORE THIS HACK
       val f = rc.map(rdd)
       /*val f = rdd.map(r => (r.getDedupeId, r))
@@ -250,21 +258,13 @@ class Crawler extends CliTool {
 
 
       var fetchedRdd: RDD[CrawlData] = null
-      val rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
-      if (rep > 0) {
-        fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
-        }).repartition(rep)
-          .persist()
-      } else {
-         fetchedRdd = f.repartition(1).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
-        }).repartition(1)
-          .persist()
+      var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
+      if(rep <= 0){
+        rep = 1
       }
-
-      //val coll = fetchedRdd.collect()
-      //val d = fetchedRdd.getNumPartitions
+      fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
+          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
+        }).persist()
 
       if (kafkaEnable) {
         storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
@@ -285,7 +285,6 @@ class Crawler extends CliTool {
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
   }
-
 
   def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
     val job = this.job.asInstanceOf[SparklerJob]

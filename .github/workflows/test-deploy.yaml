@@ -1,0 +1,53 @@
+name: Databricks-Test-Environment-Deploy
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up JDK 8
+      uses: actions/setup-java@v2
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+
+    - name: Install Databricks CLI
+      run: pip install databricks-cli
+
+    - name: Build "Standalone" package
+      run: sbt package assembly -Dsparkprovided=true
+      working-directory: sparkler-core
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Deploy "Standalone" to Databricks
+      run: |
+        rm -rf build/sparkler-app-0.3.1-SNAPSHOT
+        mv build sparkler
+        zip -r sparkler.zip sparkler
+        databricks fs cp --recursive --overwrite sparkler.zip dbfs:/FileStore/sparkler-standalone/
+      working-directory: sparkler-core
+      env:
+        DATABRICKS_HOST: https://wayfinder-mmit-dev.cloud.databricks.com
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TEST_TOKEN }}
+
+    - name: Build "Submit" package
+      run: sbt clean package assembly -Dsparkprovided=false
+      working-directory: sparkler-core
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Deploy "Submit" to Databricks
+      run: |
+        rm -rf build/sparkler-app-0.3.1-SNAPSHOT
+        databricks fs cp --recursive --overwrite build/ dbfs:/FileStore/sparkler-submit/
+      working-directory: sparkler-core
+      env:
+        DATABRICKS_HOST: https://wayfinder-mmit-dev.cloud.databricks.com
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TEST_TOKEN }}

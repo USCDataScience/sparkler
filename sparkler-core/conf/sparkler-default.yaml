@@ -37,11 +37,10 @@ elasticsearch.uri: http://localhost:9200
 
 # URL on which Apache Spark is running.
 # Type: String. Default is "local[*]" for local mode.
-spark.master:
-  #local[*]
+spark.master: local[*]
 databricks.enable: false
 
-crawl.repartition: 500
+crawl.repartition: 1
 ##################### Apache Kafka Properties ###########################
 # Enable Kafka Dump
 # Type: Boolean. Default is "false"
@@ -88,6 +87,8 @@ fetcher.headers:
   Accept-Language: "en-US,en"
 
 fetcher.persist.content.location: /dbfs/FileStore/bcf/content/
+fetcher.persist.content.filename: hash
+
 # Rotating agents file.
 # File should contain a list of agents which will be used to override the default agent string
 # This is an unbounded list, it can take any number of agents you wish.
@@ -158,7 +159,7 @@ plugins:
         - "--disable-permissions-api"
     #chrome.proxy.address: 127.0.0.1:9998
   url.injector:
-    mode: selenium # currently only compatible with the fetcher-chrome plugin
+    # mode: selenium # currently only compatible with the fetcher-chrome plugin
     #mode: replace
     #mode: json
     #mode: form
@@ -166,45 +167,46 @@ plugins:
     #  - "\"COR\""
     #  - "\"VEN\""
     #  - "\"SOM\""
-    values:
-      - Acitretin
-      - Adempas
-      - Actiq
-    selenium:
-      1:
-        operation: click
-        value: id:some-id
-      2:
-        operation: keys
-        value: "id:some-input-id:${token}"
-      3:
-        operation: click
-        value: "id:some-id" 
-    json: "{ \"name\":\"John\", \"age\":${token}, \"car\":null }"
-    form:
-      hdnField: "submit"
-      txtRequired: ""
-      radSearchBy: "drugname"
-      txtName: "${token}"
-      selTC: ""
-      selProgram: "MA"
-      txtDateOfService: "12/01/2020"
-  databricks.api.events:
-    startup:
-      updateeventlog:
-        sql: xxx
-    iteration_complete:
-       updateeventlog:
-         sql: xxx
-    shutdown:
-      triggerjob:
-        notebook: xxx
-        sparkversion: xxx
-        clustertype: xxx
-        clustersize: xxx
-        parameters:
-          abc: xxx
-          def: xxx
+#    values:
+#      - Acitretin
+#      - Adempas
+#      - Actiq
+#    selenium:
+#      1:
+#        operation: click
+#        value: id:some-id
+#      2:
+#        operation: keys
+#        value: "id:some-input-id:${token}"
+#      3:
+#        operation: click
+#        value: "id:some-id"
+#    json: "{ \"name\":\"John\", \"age\":${token}, \"car\":null }"
+#    form:
+#      hdnField: "submit"
+#      txtRequired: ""
+#      radSearchBy: "drugname"
+#      txtName: "${token}"
+#      selTC: ""
+#      selProgram: "MA"
+#      txtDateOfService: "12/01/2020"
+#  databricks.api:
+#     events:
+#      startup:
+#        updateeventlog:
+#          sql: xxx
+#      iteration_complete:
+#         updateeventlog:
+#           sql: xxx
+#      shutdown:
+#        triggerjob:
+#          notebook: xxx
+#          sparkversion: xxx
+#          instancetype: xxx
+#          clustersize: xxx
+#          parameters:
+#            abc: xxx
+#            def: xxx
 
 
 ##################### Custom properties for MEMEX ###########################################
