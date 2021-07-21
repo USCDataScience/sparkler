@@ -194,7 +194,8 @@ plugins:
 #     events:
 #      startup:
 #        updateeventlog:
-#          sql: xxx
+#          sql: "INSERT INTO warehouse.crawl_events VALUES('$crawlid', 'JOB ID', '$sparkvariable', current_timestamp())"
+#          sparkvariable: spark.databricks.clusterUsageTags.clusterName
 #          logger:
 #            event: Job
 #            message: Job id

@@ -1,7 +1,6 @@
 package com.kytheralabs.databricks;
 
 
-import com.kytheralabs.management.GenericLogger;
 import com.kytheralabs.management.jobutils.JobAPI;
 import edu.usc.irds.sparkler.AbstractExtensionPoint;
 import edu.usc.irds.sparkler.GenericProcess;
@@ -77,18 +76,20 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
     }
 
 
-    private void updateEventLog(Map<String, Object> map, SparkSession spark, String jobid){
-
-        if(map.getOrDefault("updateeventlog", "logger").equals("logger")){
-            GenericLogger glog = new GenericLogger(spark);
-            String eventinfo = (String) map.get("message");
-            if(map.containsKey("sparkvariable")){
-                eventinfo = eventinfo + " " + spark.conf().get((String) map.get("sparkvariable"));
+    private void updateEventLog(Map<String, Object> map, SparkSession spark, String jobid) {
+        if(!map.getOrDefault("sql", "").equals("")){
+            String s= map.get("sql").toString();
+            s = s.replace("$crawlid", jobid);
+            if(!map.getOrDefault("sparkvariable", "").equals("")){
+                if(spark.conf().contains(map.get("sparkvariable").toString())) {
+                    s = s.replace("$sparkvariable", spark.conf().get(map.get("sparkvariable").toString()));
+                }
             }
-            glog.logAdditionalCrawlEvent(jobid, (String) map.get("event"), eventinfo);
-        } else{
-
+            System.out.println("SQL STATEMENT: "+s);
+            spark.sql(s);
         }
+
+
     }
 
     private Number parseNumber(String number) throws ParseException {

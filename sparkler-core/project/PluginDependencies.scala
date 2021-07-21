@@ -29,7 +29,7 @@ object FetcherChrome {
   }
   lazy val browserup = "com.browserup" % "browserup-proxy-core" % "3.0.0-SNAPSHOT"
   lazy val seleniumscripter = "com.kytheralabs" % "seleniumscripter" % "1.7.2-SNAPSHOT"
-  lazy val ashot = "ru.yandex.qatools.ashot" % "ashot" % "1.5.4"
+  //lazy val ashot = "ru.yandex.qatools.ashot" % "ashot" % "1.5.4"
 }
 
 object FetcherHtmlUnit {
