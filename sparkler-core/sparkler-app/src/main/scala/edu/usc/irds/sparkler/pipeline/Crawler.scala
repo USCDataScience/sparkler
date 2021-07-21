@@ -18,7 +18,8 @@
 package edu.usc.irds.sparkler.pipeline
 
 import java.io.File
-import java.util
+
+import org.apache.spark.sql.SQLContext
 import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
@@ -37,9 +38,7 @@ import org.apache.spark.sql.SparkSession
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
-import java.util.UUID
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 import scala.io.Source
 import java.util.Base64
 import java.nio.charset.StandardCharsets
@@ -192,6 +191,7 @@ class Crawler extends CliTool {
     storageProxy.commitCrawlDb()
     val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
+    GenericFunction(job, GenericProcess.Event.STARTUP,new SQLContext(sc).sparkSession)
 
     for (_ <- 1 to iterations) {
       var deepCrawlHosts = new mutable.HashSet[String]()
@@ -235,7 +235,6 @@ class Crawler extends CliTool {
     }
     storageProxy.close()
     //PluginService.shutdown(job)
-    import org.apache.spark.sql.SQLContext
     GenericFunction(job, GenericProcess.Event.SHUTDOWN,new SQLContext(sc).sparkSession)
     LOG.info("Shutting down Spark CTX..")
     sc.stop()

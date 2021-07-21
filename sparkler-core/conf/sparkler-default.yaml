@@ -195,6 +195,10 @@ plugins:
 #      startup:
 #        updateeventlog:
 #          sql: xxx
+#          logger:
+#            event: Job
+#            message: Job id
+#            sparkvariable: spark.databricks.clusterUsageTags.clusterName
 #      iteration_complete:
 #         updateeventlog:
 #           sql: xxx
