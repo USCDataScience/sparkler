@@ -21,7 +21,7 @@ jobs:
       run: pip install databricks-cli
 
     - name: Build "Standalone" package
-      run: sbt package assembly -Dsparkprovided=true
+      run: sbt package assembly -Dsparkprovided=false
       working-directory: sparkler-core
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -38,7 +38,7 @@ jobs:
         DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TEST_TOKEN }}
 
     - name: Build "Submit" package
-      run: sbt clean package assembly -Dsparkprovided=false
+      run: sbt clean package assembly -Dsparkprovided=true
       working-directory: sparkler-core
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
