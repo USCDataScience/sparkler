@@ -1,10 +1,12 @@
 package com.kytheralabs.databricks;
 
 
+import com.kytheralabs.management.GenericLogger;
 import com.kytheralabs.management.jobutils.JobAPI;
 import edu.usc.irds.sparkler.AbstractExtensionPoint;
 import edu.usc.irds.sparkler.GenericProcess;
 import edu.usc.irds.sparkler.SparklerConfiguration;
+import org.apache.spark.sql.SparkSession;
 import org.json.simple.JSONObject;
 import org.pf4j.Extension;
 import scala.Option;
@@ -29,7 +31,7 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
                     if(entry.getKey().equals("triggerjob")){
                         triggerJob((Map<String, Object>) entry.getValue());
                     } else if(entry.getKey().equals("updateeventlog")){
-                        updateEventLog((Map<String, Object>) entry.getValue());
+                        updateEventLog((Map<String, Object>) entry.getValue(), (SparkSession) spark, this.jobContext.getId());
                     } else if(entry.getKey().equals("persistdata")){
                         persistData((Map<String, Object>) entry.getValue());
                     }
@@ -75,8 +77,18 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
     }
 
 
-    private void updateEventLog(Map<String, Object> map){
+    private void updateEventLog(Map<String, Object> map, SparkSession spark, String jobid){
 
+        if(map.getOrDefault("updateeventlog", "logger").equals("logger")){
+            GenericLogger glog = new GenericLogger(spark);
+            String eventinfo = (String) map.get("message");
+            if(map.containsKey("sparkvariable")){
+                eventinfo = eventinfo + " " + spark.conf().get((String) map.get("sparkvariable"));
+            }
+            glog.logAdditionalCrawlEvent(jobid, (String) map.get("event"), eventinfo);
+        } else{
+
+        }
     }
 
     private Number parseNumber(String number) throws ParseException {
