@@ -11,6 +11,7 @@ import org.pf4j.Extension;
 import scala.Option;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -78,15 +79,21 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
 
     private void updateEventLog(Map<String, Object> map, SparkSession spark, String jobid) {
         if(!map.getOrDefault("sql", "").equals("")){
-            String s= map.get("sql").toString();
-            s = s.replace("$crawlid", jobid);
-            if(!map.getOrDefault("sparkvariable", "").equals("")){
-                if(spark.conf().contains(map.get("sparkvariable").toString())) {
-                    s = s.replace("$sparkvariable", spark.conf().get(map.get("sparkvariable").toString()));
+            ArrayList<Map<String, String>> s= (ArrayList<Map<String, String>>) map.get("sql");
+
+            for(Map<String, String> statement : s){
+                String sql = statement.get("statement");
+                sql = sql.replace("$crawlid", jobid);
+                if(statement.containsKey("sparkvariable")){
+                    if(spark.conf().contains(statement.get("sparkvariable"))) {
+                        sql = sql.replace("$sparkvariable", spark.conf().get(statement.get("sparkvariable")));
+                    } else{
+                        sql = sql.replace("$sparkvariable", "Variable not found");
+                    }
                 }
+                System.out.println("SQL STATEMENT: "+sql);
+                spark.sql(sql);
             }
-            System.out.println("SQL STATEMENT: "+s);
-            spark.sql(s);
         }
 
 
