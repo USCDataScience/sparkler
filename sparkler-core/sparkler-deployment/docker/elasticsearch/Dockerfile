@@ -18,7 +18,7 @@
 
 # Pull base image.
 
-FROM openjdk:13
+FROM openjdk:8
 
 # Setting Maven Version that needs to be installed
 ARG MAVEN_VERSION=3.6.3

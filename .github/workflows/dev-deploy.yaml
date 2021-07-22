@@ -1,53 +1,89 @@
-name: Databricks-Development-Environment-Deploy
+name: dev-deploy
 
 on:
   push:
     branches: [ master ]
 
+env:
+  PKG_NAME: sparkler-app
+  PKG_VERSION: N/A
+  PKG_PATH: sparkler-core
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DATABRICKS_HOST: https://wayfinder-mmit-dev.cloud.databricks.com
+  DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_DEV_TOKEN }}
+  DATABRICKS_RELEASE_PATH: dbfs:/FileStore/release
+
 jobs:
-  build:
+  standalone:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up JDK 8
-      uses: actions/setup-java@v2
-      with:
-        java-version: '8'
-        distribution: 'adopt'
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: adopt
 
-    - name: Install Databricks CLI
-      run: pip install databricks-cli
+      - name: Install Databricks CLI
+        run: pip install databricks-cli
 
-    - name: Build "Standalone" package
-      run: sbt package assembly -Dsparkprovided=false
-      working-directory: sparkler-core
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create the release folder
+        run: databricks fs mkdirs ${{ env.DATABRICKS_RELEASE_PATH }}
 
-    - name: Deploy "Standalone" to Databricks
-      run: |
-        rm -rf build/sparkler-app-0.3.1-SNAPSHOT
-        mv build sparkler
-        zip -r sparkler.zip sparkler
-        databricks fs cp --recursive --overwrite sparkler.zip dbfs:/FileStore/sparkler-standalone/
-      working-directory: sparkler-core
-      env:
-        DATABRICKS_HOST: https://wayfinder-mmit-dev.cloud.databricks.com
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_DEV_TOKEN }}
+      - name: Set package version
+        run: echo "PKG_VERSION=$(grep version version.sbt | cut -d'"' -f2)" >> $GITHUB_ENV
+        working-directory: ${{ env.PKG_PATH }}
 
-    - name: Build "Submit" package
-      run: sbt clean package assembly -Dsparkprovided=true
-      working-directory: sparkler-core
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build "Standalone" package
+        run: sbt package assembly -Dsparkprovided=false -Dmaven.javadoc.skip=true
+        working-directory: ${{ env.PKG_PATH }}
 
-    - name: Deploy "Submit" to Databricks
-      run: |
-        rm -rf build/sparkler-app-0.3.1-SNAPSHOT
-        databricks fs cp --recursive --overwrite build/ dbfs:/FileStore/sparkler-submit/
-      working-directory: sparkler-core
-      env:
-        DATABRICKS_HOST: https://wayfinder-mmit-dev.cloud.databricks.com
-        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_DEV_TOKEN }}
+      - name: Remove library jars
+        run: rm -r build/${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}
+        working-directory: ${{ env.PKG_PATH }}
+
+      - name: Zip the Sparkler build
+        run: zip -r ${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}.zip *
+        working-directory: ${{ env.PKG_PATH }}/build
+
+      - name: Deploy "Standalone" to Databricks
+        run: databricks fs cp ${{ env.SRC_ZIP }} ${{ env.DEST_ZIP }}
+        working-directory: ${{ env.PKG_PATH }}/build
+        env:
+          SRC_ZIP: ${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}.zip
+          DEST_ZIP: ${{ env.DATABRICKS_RELEASE_PATH }}/${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}-${{ env.GITHUB_SHA }}.zip
+
+  submit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: adopt
+
+      - name: Install Databricks CLI
+        run: pip install databricks-cli
+
+      - name: Create the release folder
+        run: databricks fs mkdirs ${{ env.DATABRICKS_RELEASE_PATH }}
+
+      - name: Set package version
+        run: echo "PKG_VERSION=$(grep version version.sbt | cut -d'"' -f2)" >> $GITHUB_ENV
+        working-directory: ${{ env.PKG_PATH }}
+
+      - name: Build "Submit" package
+        run: sbt clean package assembly -Dsparkprovided=true -Dmaven.javadoc.skip=true
+        working-directory: ${{ env.PKG_PATH }}
+
+      - name: Deploy "Submit" to Databricks
+        run: databricks fs cp ${{ env.SRC_JAR }} ${{ env.DEST_JAR }}
+        working-directory: ${{ env.PKG_PATH }}
+        env:
+          SRC_JAR: build/${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}.jar
+          DEST_JAR: ${{ env.DATABRICKS_RELEASE_PATH }}/${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}-${{ env.GITHUB_SHA }}.jar
