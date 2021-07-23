@@ -53,7 +53,7 @@ jobs:
         working-directory: ${{ env.PKG_PATH }}/build
         env:
           SRC_ZIP: ${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}.zip
-          DEST_ZIP: ${{ env.DATABRICKS_RELEASE_PATH }}/${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}-${{ env.GITHUB_SHA }}.zip
+          DEST_ZIP: ${{ env.DATABRICKS_RELEASE_PATH }}/${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}-$GITHUB_SHA.zip
 
   submit:
     runs-on: ubuntu-latest
@@ -86,4 +86,4 @@ jobs:
         working-directory: ${{ env.PKG_PATH }}
         env:
           SRC_JAR: build/${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}.jar
-          DEST_JAR: ${{ env.DATABRICKS_RELEASE_PATH }}/${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}-${{ env.GITHUB_SHA }}.jar
+          DEST_JAR: ${{ env.DATABRICKS_RELEASE_PATH }}/${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}-$GITHUB_SHA.jar
