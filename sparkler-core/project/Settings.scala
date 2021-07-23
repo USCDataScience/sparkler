@@ -16,7 +16,6 @@
  */
 
 import java.nio.file.Files
-
 import com.typesafe.sbt.SbtNativePackager.autoImport._
 import com.typesafe.sbt.packager.archetypes.scripts.BashStartScriptPlugin.autoImport._
 import com.typesafe.sbt.packager.archetypes.scripts.BatStartScriptPlugin.autoImport._
@@ -70,7 +69,7 @@ object Settings {
 
 
   )
-  lazy val assemblyProject = common ++ baseAssemblySettings ++ Seq(
+  lazy val assemblyProject: Seq[Def.Setting[_]] = common ++ baseAssemblySettings ++ Seq(
     test in assembly := {},
     mappings in Universal := {
       val universalMappings = (mappings in Universal).value
@@ -78,7 +77,7 @@ object Settings {
       universalMappings :+ (fatJar -> ("lib/" + fatJar.getName))
     }
   )
-  lazy val plugin = assemblyProject ++ Seq(
+  lazy val plugin: Seq[Def.Setting[_]] = assemblyProject ++ Seq(
     autoScalaLibrary := false,
     assemblyMergeStrategy in assembly := {
       case x if x.contains("io.netty.versions.properties") => MergeStrategy.last
@@ -105,6 +104,7 @@ object Settings {
       case PathList("org", "apache", "spark", xs@_*) => MergeStrategy.discard
 
       case PathList("org", "apache", "commons", xs@_*) => MergeStrategy.first
+      case PathList("org", "slf4j", "impl", xs@_*) => MergeStrategy.first
       //case PathList("io", "netty", xs@_*) => MergeStrategy.last
 
       case x => (assemblyMergeStrategy in assembly).value.apply(x)

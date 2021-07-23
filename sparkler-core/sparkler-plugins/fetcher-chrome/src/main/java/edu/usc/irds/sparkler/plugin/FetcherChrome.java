@@ -243,6 +243,7 @@ public class FetcherChrome extends FetcherDefault {
                 f.mkdirs();
                 Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "screencaptures");
                 tempmap.put("targetdir", filepath.toString());
+                tempmap.put("tag", resource.getId());
                 scripter.setOutputPath("");
                 scripter.screenshotOperation(tempmap);
             }
@@ -282,7 +283,7 @@ public class FetcherChrome extends FetcherDefault {
             for(LogEntry logentry: alllogs){
                 LOG.info(logentry.getMessage());
             }
-            if(pluginConfig.containsKey("chrome.selenium.screenshotdir")) {
+            if(pluginConfig.containsKey("chrome.selenium.outputdirectory")) {
                 Map<String, Object> tempmap = new HashMap<>();
                 tempmap.put("type", "file");
                 Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "errors");
