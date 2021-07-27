@@ -178,6 +178,10 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
                     File outputFile;
                     if (jobContext.getConfiguration().get("fetcher.persist.content.filename").toString().equals("hash")) {
                         String ext = FilenameUtils.getExtension(resource.getUrl());
+                        if(ext.contains("#") || ext.contains("?")){
+                            String[] splits = ext.split("[#?]");
+                            ext = splits[0];
+                        }
                         outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, contentHash + "." + ext).toFile();
                     } else {
                         outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, FilenameUtils.getName(resource.getUrl())).toFile();
