@@ -77,6 +77,9 @@ jobs:
         run: echo "PKG_VERSION=$(grep version version.sbt | cut -d'"' -f2)" >> $GITHUB_ENV
         working-directory: ${{ env.PKG_PATH }}
 
+      - name: Create the plugins folder
+        run: databricks fs mkdirs ${{ env.DATABRICKS_RELEASE_PATH }}/plugins/plugins-${{ env.PKG_VERSION }}
+
       - name: Build "Submit" package
         run: sbt clean package assembly -Dsparkprovided=true -Dmaven.javadoc.skip=true
         working-directory: ${{ env.PKG_PATH }}
@@ -87,3 +90,10 @@ jobs:
         env:
           SRC_JAR: build/${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}.jar
           DEST_JAR: ${{ env.DATABRICKS_RELEASE_PATH }}/${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}-$GITHUB_SHA.jar
+
+      - name: Deploy plugins to Databricks
+        run: databricks fs cp --recursive ${{ env.SRC_JARS }} ${{ env.DEST_DIR }}
+        working-directory: ${{ env.PKG_PATH }}
+        env:
+          SRC_JARS: build/plugins/
+          DEST_DIR: ${{ env.DATABRICKS_RELEASE_PATH }}/plugins/plugins-${{ env.PKG_VERSION }}/
