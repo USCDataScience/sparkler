@@ -4,7 +4,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR="$DIR/.."
 
-JAR=`echo $DIR/sparkler-app-*-SNAPSHOT.jar`
+JAR=`echo $DIR/sparkler-app-*.jar`
 if [ -f "$JAR" ]
  then
     # run
