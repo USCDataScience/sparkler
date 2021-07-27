@@ -200,7 +200,6 @@ public class FetcherChrome extends FetcherDefault {
 
 
         driver.get(resource.getUrl());
-        SeleniumScripter scripter = new SeleniumScripter(driver);
         String waitforready = pluginConfig.getOrDefault("chrome.selenium.javascriptready", "false").toString();
 
         if(waitforready.equals("true")){
@@ -214,6 +213,8 @@ public class FetcherChrome extends FetcherDefault {
         String globalscript = pluginConfig.getOrDefault("chrome.selenium.script", "").toString();
 
         if(!globalscript.equals("")){
+            SeleniumScripter scripter = new SeleniumScripter(driver);
+
             Map m = (Map<String, Object>) json.get("chrome.selenium.script");
             Map jsonmap = new TreeMap(m);
 
@@ -223,6 +224,8 @@ public class FetcherChrome extends FetcherDefault {
             html = String.join(",", snapshots);
         } else if(json != null && json.containsKey("selenium")){
             if(json.get("selenium") != null && json.get("selenium") instanceof Map) {
+                SeleniumScripter scripter = new SeleniumScripter(driver);
+
                 Map m = (Map<String, Object>) json.get("selenium");
                 Map jsonmap = new TreeMap(m);
 
@@ -236,6 +239,8 @@ public class FetcherChrome extends FetcherDefault {
         if(html == null) {
             String screenshotcapture = pluginConfig.getOrDefault("chrome.selenium.screenshotoncapture", "false").toString();
             if(screenshotcapture.equals("true")){
+                SeleniumScripter htmlscripter = new SeleniumScripter(driver);
+
                 Map<String, Object> tempmap = new HashMap<>();
                 tempmap.put("type", "file");
                 Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "screencaptures");
@@ -244,8 +249,8 @@ public class FetcherChrome extends FetcherDefault {
                 Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "screencaptures");
                 tempmap.put("targetdir", filepath.toString());
                 tempmap.put("tag", resource.getId());
-                scripter.setOutputPath("");
-                scripter.screenshotOperation(tempmap);
+                htmlscripter.setOutputPath("");
+                htmlscripter.screenshotOperation(tempmap);
             }
             html = driver.getPageSource();
         }
@@ -289,8 +294,7 @@ public class FetcherChrome extends FetcherDefault {
                 Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "errors");
                 File f = path.toFile();
                 f.mkdirs();
-                Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(), "errors");
-                tempmap.put("targetdir", filepath.toString());
+                tempmap.put("targetdir", "errors");
                 scripter.screenshotOperation(tempmap);
             }
             LOG.error("Caught an exception in  Selenium Scripter: " + e);
