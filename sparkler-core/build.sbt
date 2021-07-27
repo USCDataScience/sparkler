@@ -21,9 +21,8 @@ maintainer := Settings.projectMaintainer
 
 // Scala/Java Build Options
 // spark 3.0.1 now come pre-build with scala 2.12 @ https://spark.apache.org/downloads.html
-scalaVersion in ThisBuild := "2.12.12"
-javacOptions in (Compile, doc) in ThisBuild ++= Seq("-source", "13")
-javacOptions in (Compile, compile) ++= Seq("-target", "13")
+javacOptions in (Compile, doc) in ThisBuild ++= Seq("-source", "8")
+javacOptions in (Compile, compile) ++= Seq("-target", "8")
 // Common dependencies
 libraryDependencies in ThisBuild ++= Seq(
   Dependencies.pf4j % "provided",

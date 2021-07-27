@@ -21,7 +21,7 @@
 # Build command:
 #    docker build -t sparkler-local -f sparkler-deployment/docker/Dockerfile .
 
-FROM openjdk:13
+FROM openjdk:8
 
 RUN groupadd --gid 1000 sparkler && \
    useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
