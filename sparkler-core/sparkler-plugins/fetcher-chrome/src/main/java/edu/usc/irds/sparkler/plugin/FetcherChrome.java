@@ -328,6 +328,8 @@ public class FetcherChrome extends FetcherDefault {
                 return isWebPage(conn.getHeaderField("Location"));
             }
             LOG.info("DETECTED CONTENT TYPE: "+ contentType);
+            LOG.info("DETECTED RESPONSE CODE: "+ conn.getResponseCode());
+            LOG.info("DETECTED RESPONSE MSG: "+ conn.getResponseMessage());
             return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml");
         } catch (Exception e) {
             LOG.debug(e.getMessage(), e);
