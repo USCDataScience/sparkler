@@ -168,11 +168,8 @@ public class FetcherChrome extends FetcherDefault {
             fetchedData = htmlFlow(resource, start);
         }
 
-
-
         LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
-
-
+        
         driver.quit();
         driver = null;
 
@@ -330,6 +327,7 @@ public class FetcherChrome extends FetcherDefault {
             if(contentType == null && conn.getResponseCode() == 302){
                 return isWebPage(conn.getHeaderField("Location"));
             }
+            LOG.info("DETECTED CONTENT TYPE: "+ contentType);
             return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml");
         } catch (Exception e) {
             LOG.debug(e.getMessage(), e);
