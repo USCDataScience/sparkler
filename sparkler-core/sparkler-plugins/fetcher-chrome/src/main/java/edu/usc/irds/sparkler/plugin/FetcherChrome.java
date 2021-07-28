@@ -338,7 +338,7 @@ public class FetcherChrome extends FetcherDefault {
         try {
             SSLContext sc = SSLContext.getInstance("SSL");
             sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory())
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
             URL url = new URL(webUrl);
             CookieManager cm = new java.net.CookieManager();
             CookieHandler.setDefault(cm);
