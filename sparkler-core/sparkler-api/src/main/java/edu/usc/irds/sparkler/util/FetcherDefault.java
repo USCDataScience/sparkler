@@ -169,7 +169,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             String contentHash = null;
             if(rawData.length>0) {
                 byte[] md5hash = MessageDigest.getInstance("MD5").digest(rawData);
-                contentHash = Base64.getEncoder().encodeToString(md5hash);
+                contentHash = toHexString(md5hash);
                 resource.setContentHash(contentHash);
                 if (jobContext.getConfiguration().containsKey("fetcher.persist.content.location")) {
                     URI uri = new URI(resource.getUrl());
@@ -204,6 +204,19 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             }
             return fetchedData;
         }
+    }
+    private static String toHexString(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+
+        for (int i = 0; i < bytes.length; i++) {
+            String hex = Integer.toHexString(0xFF & bytes[i]);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+
+        return hexString.toString();
     }
 
 
