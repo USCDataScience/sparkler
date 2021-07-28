@@ -44,6 +44,10 @@ import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
@@ -118,9 +122,9 @@ public class FetcherChrome extends FetcherDefault {
                     "--disable-logging", "--disable-permissions-api");
 
             LoggingPreferences logPrefs = new LoggingPreferences();
-            logPrefs.enable(LogType.BROWSER, Level.ALL);
+            /*logPrefs.enable(LogType.BROWSER, Level.ALL);
             logPrefs.enable(LogType.PROFILER, Level.ALL);
-            logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
+            logPrefs.enable(LogType.PERFORMANCE, Level.ALL);*/
             chromeOptions.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
             chromeOptions.setCapability("goog:loggingPrefs", logPrefs);
             List<String> vals = (List<String>) (pluginConfig.getOrDefault("chrome.options", chromedefaults));
@@ -316,8 +320,25 @@ public class FetcherChrome extends FetcherDefault {
 
     }
 
+
     private boolean isWebPage(String webUrl) {
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+                    public void checkClientTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                    public void checkServerTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
         try {
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory())
             URL url = new URL(webUrl);
             CookieManager cm = new java.net.CookieManager();
             CookieHandler.setDefault(cm);
@@ -332,7 +353,7 @@ public class FetcherChrome extends FetcherDefault {
             LOG.info("DETECTED RESPONSE MSG: "+ conn.getResponseMessage());
             return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml");
         } catch (Exception e) {
-            LOG.info(e.getMessage(), e);
+            LOG.debug(e.getMessage(), e);
         }
         return false;
     }
