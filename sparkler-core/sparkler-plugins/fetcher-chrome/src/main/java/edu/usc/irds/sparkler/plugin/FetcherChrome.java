@@ -160,7 +160,7 @@ public class FetcherChrome extends FetcherDefault {
          * using default Fetcher
          */
         if (!isWebPage(resource.getUrl())) {
-            LOG.info("{} not a html. Falling back to default fetcher.", resource.getUrl());
+            LOG.info("{} not a html page. Falling back to default fetcher.", resource.getUrl());
             // This should be true for all URLS ending with 4 character file extension
             // return new FetchedData("".getBytes(), "application/html", ERROR_CODE) ;
             return super.fetch(resource);
@@ -332,7 +332,7 @@ public class FetcherChrome extends FetcherDefault {
             LOG.info("DETECTED RESPONSE MSG: "+ conn.getResponseMessage());
             return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml");
         } catch (Exception e) {
-            LOG.debug(e.getMessage(), e);
+            LOG.info(e.getMessage(), e);
         }
         return false;
     }
