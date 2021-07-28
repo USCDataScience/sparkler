@@ -44,10 +44,7 @@ import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
@@ -344,15 +341,28 @@ public class FetcherChrome extends FetcherDefault {
             CookieManager cm = new java.net.CookieManager();
             CookieHandler.setDefault(cm);
             CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
-            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-            String contentType = conn.getHeaderField("Content-Type");
-            if(contentType == null && conn.getResponseCode() == 302){
-                return isWebPage(conn.getHeaderField("Location"));
+            if(webUrl.startsWith("https")){
+                HttpsURLConnection conn = (HttpsURLConnection)url.openConnection();
+                conn.setHostnameVerifier((arg0, arg1) -> true);
+                String contentType = conn.getHeaderField("Content-Type");
+                if (contentType == null && conn.getResponseCode() == 302) {
+                    return isWebPage(conn.getHeaderField("Location"));
+                }
+                LOG.info("DETECTED CONTENT TYPE: " + contentType);
+                LOG.info("DETECTED RESPONSE CODE: " + conn.getResponseCode());
+                LOG.info("DETECTED RESPONSE MSG: " + conn.getResponseMessage());
+                return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml");
+            } else {
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                String contentType = conn.getHeaderField("Content-Type");
+                if (contentType == null && conn.getResponseCode() == 302) {
+                    return isWebPage(conn.getHeaderField("Location"));
+                }
+                LOG.info("DETECTED CONTENT TYPE: " + contentType);
+                LOG.info("DETECTED RESPONSE CODE: " + conn.getResponseCode());
+                LOG.info("DETECTED RESPONSE MSG: " + conn.getResponseMessage());
+                return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml");
             }
-            LOG.info("DETECTED CONTENT TYPE: "+ contentType);
-            LOG.info("DETECTED RESPONSE CODE: "+ conn.getResponseCode());
-            LOG.info("DETECTED RESPONSE MSG: "+ conn.getResponseMessage());
-            return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml");
         } catch (Exception e) {
             LOG.info(e.getMessage(), e);
         }
