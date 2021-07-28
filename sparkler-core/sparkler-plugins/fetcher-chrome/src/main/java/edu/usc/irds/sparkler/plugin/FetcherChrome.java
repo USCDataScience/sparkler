@@ -336,6 +336,7 @@ public class FetcherChrome extends FetcherDefault {
                 }
         };
         try {
+
             SSLContext sc = SSLContext.getInstance("SSL");
             sc.init(null, trustAllCerts, new java.security.SecureRandom());
             HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
@@ -353,7 +354,7 @@ public class FetcherChrome extends FetcherDefault {
             LOG.info("DETECTED RESPONSE MSG: "+ conn.getResponseMessage());
             return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml");
         } catch (Exception e) {
-            LOG.debug(e.getMessage(), e);
+            LOG.info(e.getMessage(), e);
         }
         return false;
     }
