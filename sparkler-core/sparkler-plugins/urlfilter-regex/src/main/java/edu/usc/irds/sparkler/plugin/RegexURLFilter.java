@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-
 /**
  * Filters URLs based on a file of regular expressions using the
  * {@link java.util.regex Java Regex implementation}.
