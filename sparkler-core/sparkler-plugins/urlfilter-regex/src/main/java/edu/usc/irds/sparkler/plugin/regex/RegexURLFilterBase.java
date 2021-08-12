@@ -22,6 +22,8 @@ import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
 import edu.usc.irds.sparkler.URLFilter;
 import edu.usc.irds.sparkler.util.URLUtil;
+import edu.usc.irds.sparkler.ConfigKey;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +59,9 @@ import java.util.Map;
  */
 public abstract class RegexURLFilterBase extends AbstractExtensionPoint implements URLFilter {
 
+    @ConfigKey
+    public static final String URLFILTER_REGEX_ITEMS = "urlfilter.regex.items";
+
     /** My logger */
     private final static Logger LOG = LoggerFactory.getLogger(RegexURLFilterBase.class);
 
@@ -76,7 +81,7 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
      *          is the name of rules file.
      */
     public RegexURLFilterBase(File filename) throws IOException,
-            IllegalArgumentException {
+            IllegalArgumentException, SparklerException {
         this(new FileReader(filename));
     }
 
@@ -87,7 +92,7 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
      *          is a reader of rules.
      */
     public RegexURLFilterBase(Reader reader) throws IOException,
-            IllegalArgumentException {
+            IllegalArgumentException, SparklerException {
         rules = readRules(reader);
     }
 
@@ -180,26 +185,11 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
    * ------------------------------ * </implementation:Configurable> *
    * ------------------------------
    */
+  String hostOrDomain = null;
 
-    /**
-     * Read the specified file of rules.
-     *
-     * @param reader
-     *          is a reader of regular expressions rules.
-     * @return the corresponding {@RegexRule rules}.
-     */
-    private List<RegexRule> readRules(Reader reader) throws IOException,
-            IllegalArgumentException {
+    private RegexRule readRule(String line) throws IOException{
 
-        BufferedReader in = new BufferedReader(reader);
-        List<RegexRule> rules = new ArrayList<RegexRule>();
-        String line;
-        String hostOrDomain = null;
 
-        while ((line = in.readLine()) != null) {
-            if (line.length() == 0) {
-                continue;
-            }
             char first = line.charAt(0);
             boolean sign = false;
             switch (first) {
@@ -212,24 +202,65 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
                 case ' ':
                 case '\n':
                 case '#': // skip blank & comment lines
-                    continue;
+                    return null;
                 case '>':
                     hostOrDomain = line.substring(1).trim();
-                    continue;
+                    return null;
                 case '<':
                     hostOrDomain = null;
-                    continue;
+                    return null;
                 default:
                     throw new IOException("Invalid first character: " + line);
             }
-
             String regex = line.substring(1);
             if (LOG.isTraceEnabled()) {
                 LOG.trace("Adding rule [" + regex + "] for " + hostOrDomain);
             }
             RegexRule rule = createRule(sign, regex, hostOrDomain);
-            rules.add(rule);
+            return rule;
+
+    }
+    /**
+     * Read the specified file of rules.
+     *
+     * @param reader
+     *          is a reader of regular expressions rules.
+     * @return the corresponding {@RegexRule rules}.
+     */
+    private List<RegexRule> readRules(Reader reader) throws IOException,
+            IllegalArgumentException, SparklerException {
+        List<RegexRule> rules = new ArrayList<RegexRule>();
+
+        SparklerConfiguration config = jobContext.getConfiguration();
+        Map pluginConfig = config.getPluginConfiguration(pluginId);
+
+        List<String> regexList = (List<String>) pluginConfig.get(URLFILTER_REGEX_ITEMS);
+
+        if(regexList != null) {
+            for (String oline : regexList) {
+                if (oline.length() == 0) {
+                    continue;
+                }
+                RegexRule rule = readRule(oline);
+                if (rule != null) {
+                    rules.add(rule);
+                }
+            }
         }
+
+        BufferedReader in = new BufferedReader(reader);
+
+        String line;
+        while ((line = in.readLine()) != null) {
+            if (line.length() == 0) {
+                continue;
+            }
+            RegexRule rule = readRule(line);
+            if(rule != null) {
+                rules.add(rule);
+            }
+        }
+
         return rules;
     }
 
