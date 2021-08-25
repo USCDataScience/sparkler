@@ -17,8 +17,8 @@
 
 package edu.usc.irds.sparkler.plugin;
 
-import uk.co.spicule.magnesium_script.MagnesiumScript;
 import com.kytheralabs.SeleniumScripter;
+import uk.co.spicule.magnesium_script.MagnesiumScript;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
@@ -44,6 +44,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang.NotImplementedException;
+import java.net.MalformedURLException;
 
 import javax.net.ssl.*;
 import java.io.File;
@@ -60,350 +62,416 @@ import java.util.logging.Level;
 
 @Extension
 public class FetcherChrome extends FetcherDefault {
-  enum ScriptType {
-    SELENIUM, MAGNESIUM
-  }
-
-  private static final Logger LOG = LoggerFactory.getLogger(FetcherChrome.class);
-  private Map<String, Object> pluginConfig;
-  private WebDriver driver;
-  private ScriptType type;
-
-  @Override
-  public void init(JobContext context, String pluginId) throws SparklerException {
-    super.init(context, pluginId);
-
-    SparklerConfiguration config = jobContext.getConfiguration();
-    // TODO should change everywhere
-    pluginConfig = config.getPluginConfiguration(pluginId);
-
-  }
-
-  private void checkSession() {
-    for (int retryloop = 0; retryloop < 10; retryloop++) {
-      try {
-        driver.getCurrentUrl();
-      } catch (Exception e) {
-        System.out.println("Failed session, restarting");
-        try {
-          startDriver(false);
-        } catch (UnknownHostException | MalformedURLException unknownHostException) {
-          unknownHostException.printStackTrace();
-        }
-      }
-    }
-  }
-
-  /**
-   * Gets a user agent from a list of configured values, rotates the list for each
-   * call
-   *
-   * @return get a user agent string from the list of configured values
-   */
-  public String getUserAgent() {
-    if (userAgents == null || userAgents.isEmpty()) {
-      return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
-    }
-    String agent = userAgents.get(userAgentIndex);
-    synchronized (this) { // rotate index
-      userAgentIndex = (userAgentIndex + 1) % userAgents.size();
-    }
-    return agent;
-  }
-
-  private void startDriver(Boolean restartproxy) throws UnknownHostException, MalformedURLException {
-    String loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
-    if (loc.equals("")) {
-      driver = new ChromeDriver();
-    } else {
-      final ChromeOptions chromeOptions = new ChromeOptions();
-
-      List<String> chromedefaults = Arrays.asList("--auto-open-devtools-for-tabs", "--headless", "--no-sandbox",
-          "--disable-gpu", "--disable-extensions", "--ignore-certificate-errors", "--incognito",
-          "--window-size=1920,1080", "--proxy-server='direct://", "--proxy-bypass-list=*",
-          "--disable-background-networking", "--safebrowsing-disable-auto-update", "--disable-sync",
-          "--metrics-recording-only", "--disable-default-apps", "--no-first-run", "--disable-setuid-sandbox",
-          "--hide-scrollbars", "--no-zygote", "--disable-notifications", "--disable-logging",
-          "--disable-permissions-api");
-
-      LoggingPreferences logPrefs = new LoggingPreferences();
-      /*
-       * logPrefs.enable(LogType.BROWSER, Level.ALL);
-       * logPrefs.enable(LogType.PROFILER, Level.ALL);
-       * logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
-       */
-      chromeOptions.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
-      chromeOptions.setCapability("goog:loggingPrefs", logPrefs);
-      List<String> vals = (List<String>) (pluginConfig.getOrDefault("chrome.options", chromedefaults));
-      vals.add("--user-agent=" + getUserAgent());
-      chromeOptions.addArguments(vals);
-
-      chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
-
-      if (loc.equals("local")) {
-        driver = new ChromeDriver(chromeOptions);
-        driver.manage().timeouts().pageLoadTimeout(3600, TimeUnit.SECONDS);
-      } else {
-        driver = new RemoteWebDriver(new URL(loc), chromeOptions);
-      }
-
-      driver.manage().window().setSize(new Dimension(1920, 1080));
-      driver.manage().window().maximize();
-      LOG.info("The Chrome Window size is: " + driver.manage().window().getSize());
+    enum ScriptType {
+        SELENIUM, MAGNESIUM
     }
 
-  }
+    private static final Logger LOG = LoggerFactory.getLogger(FetcherChrome.class);
+    private Map<String, Object> pluginConfig;
+    private WebDriver driver;
+    private ScriptType type;
+    private HashMap<String, String> contentMap = new HashMap<>();
 
-  @Override
-  public FetchedData fetch(Resource resource) throws Exception {
-    startDriver(false);
-    LOG.info("Chrome FETCHER {}", resource.getUrl());
-    try {
-      checkSession();
-    } catch (Exception e) {
-      System.out.println("failed to start selenium session");
+    @Override
+    public void init(JobContext context, String pluginId) throws SparklerException {
+        super.init(context, pluginId);
+
+        contentMap.put("application/json", "json");
+        contentMap.put("text/html", "html");
+
+        SparklerConfiguration config = jobContext.getConfiguration();
+        // TODO should change everywhere
+        pluginConfig = config.getPluginConfiguration(pluginId);
+
     }
-    long start = System.currentTimeMillis();
-    FetchedData fetchedData;
 
-    /*
-     * In this plugin we will work on only HTML data If data is of any other data
-     * type like image, pdf etc plugin will return client error so it can be fetched
-     * using default Fetcher
+    /**
+     * Dumps the driver logs into the current stack trace
      */
-    if (!isWebPage(resource.getUrl())) {
-      LOG.info("{} not a html page. Falling back to default fetcher.", resource.getUrl());
-      // This should be true for all URLS ending with 4 character file extension
-      // return new FetchedData("".getBytes(), "application/html", ERROR_CODE) ;
-      return super.fetch(resource);
-    } else {
-      fetchedData = htmlFlow(resource, start);
+    private void dumpLogs() {
+        LogEntries logs = driver.manage().logs().get(LogType.BROWSER);
+        List<LogEntry> alllogs = logs.getAll();
+        for (LogEntry logentry : alllogs) {
+            LOG.info(logentry.getMessage());
+        }
+        logs = driver.manage().logs().get(LogType.PERFORMANCE);
+        alllogs = logs.getAll();
+        for (LogEntry logentry : alllogs) {
+            LOG.info(logentry.getMessage());
+        }
+        logs = driver.manage().logs().get(LogType.PROFILER);
+        alllogs = logs.getAll();
+        for (LogEntry logentry : alllogs) {
+            LOG.info(logentry.getMessage());
+        }
     }
 
-    LOG.debug("Time taken to load {} - {} ", resource.getUrl(), (System.currentTimeMillis() - start));
-
-    driver.quit();
-    driver = null;
-
-    return fetchedData;
-  }
-
-  public FetchedData dataFlow(Resource resource, long start) {
-
-    return null;
-  }
-
-  public FetchedData htmlFlow(Resource resource, long start) throws IOException, java.text.ParseException {
-    FetchedData fetchedData;
-
-    LOG.debug("Time taken to create driver- {}", (System.currentTimeMillis() - start));
-    JSONObject json = null;
-
-    if (resource.getMetadata() != null && !resource.getMetadata().equals("")) {
-      json = processMetadata(resource.getMetadata());
-
-    }
-    // This will block for the page load and any
-    // associated AJAX requests
-
-    driver.get(resource.getUrl());
-    String waitforready = pluginConfig.getOrDefault("chrome.selenium.javascriptready", "false").toString();
-
-    if (waitforready.equals("true")) {
-      new WebDriverWait(driver, 60).until((driver) -> ((JavascriptExecutor) driver)
-          .executeScript("return document.readyState").toString().equals("complete"));
+    /**
+     * Gets a user agent from a list of configured values, rotates the list for each
+     * call
+     *
+     * @return get a user agent string from the list of configured values
+     */
+    public String getUserAgent() {
+        if (userAgents == null || userAgents.isEmpty()) {
+            return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
+        }
+        String agent = userAgents.get(userAgentIndex);
+        synchronized (this) { // rotate index
+            userAgentIndex = (userAgentIndex + 1) % userAgents.size();
+        }
+        return agent;
     }
 
-    String html = null;
-    String globalscript = pluginConfig.getOrDefault("chrome.selenium.script", "").toString();
+    /**
+     * Start the Selenium web driver
+     *
+     * @throws UnknownHostException  Occurs when the host was not resolved
+     * @throws MalformedURLException Occurs when the URI given is invalid
+     */
+    private void startDriver() throws UnknownHostException, MalformedURLException {
+        String loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
 
-    // Convert the raw JSONObject
-    Map<String, Object> tokens = (Map<String, Object>) json.get("chrome.selenium.script");
-    Map script = new TreeMap(tokens);
+        if (loc.equals("")) {
+            driver = new ChromeDriver();
+        } else {
+            final ChromeOptions chromeOptions = new ChromeOptions();
 
-    // Determine the script type
-    String versionToken = tokens.getOrDefault("version", "magnesium").toString().toUpperCase();
-    try {
-      type = ScriptType.valueOf(versionToken);
-    } catch (IllegalArgumentException e) {
-      LOG.error("Invalid version: `" + versionToken + "`!");
-      LOG.errerror("Exiting with null fetched results...");
-      return null;
+            List<String> chromedefaults = Arrays.asList("--auto-open-devtools-for-tabs", "--headless", "--no-sandbox",
+                    "--disable-gpu", "--disable-extensions", "--ignore-certificate-errors", "--incognito",
+                    "--window-size=1920,1080", "--proxy-server='direct://", "--proxy-bypass-list=*",
+                    "--disable-background-networking", "--safebrowsing-disable-auto-update", "--disable-sync",
+                    "--metrics-recording-only", "--disable-default-apps", "--no-first-run", "--disable-setuid-sandbox",
+                    "--hide-scrollbars", "--no-zygote", "--disable-notifications", "--disable-logging",
+                    "--disable-permissions-api");
+
+            LoggingPreferences logPrefs = new LoggingPreferences();
+            /*
+             * logPrefs.enable(LogType.BROWSER, Level.ALL);
+             * logPrefs.enable(LogType.PROFILER, Level.ALL);
+             * logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
+             */
+            chromeOptions.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
+            chromeOptions.setCapability("goog:loggingPrefs", logPrefs);
+
+            List<String> vals = (List<String>) (pluginConfig.getOrDefault("chrome.options", chromedefaults));
+            vals.add("--user-agent=" + getUserAgent());
+            chromeOptions.addArguments(vals);
+
+            chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
+
+            if (loc.equals("local")) {
+                driver = new ChromeDriver(chromeOptions);
+                driver.manage().timeouts().pageLoadTimeout(3600, TimeUnit.SECONDS);
+            } else {
+                driver = new RemoteWebDriver(new URL(loc), chromeOptions);
+            }
+
+            driver.manage().window().setSize(new Dimension(1920, 1080));
+            driver.manage().window().maximize();
+            LOG.info("The window size is: " + driver.manage().window().getSize());
+        }
+
     }
 
-    if (!tokens.containsKey("version")) {
-      LOG.warn("No version was specified, type `MAGNESIUM` will be infered!");
+    /**
+     * Attempts starting the web driver a fixed number of times
+     *
+     * @@param attempts Max number of times to retry
+     * @return boolean Whether or not the web driver succesfully started
+     */
+    private boolean startDriver(int attempts) {
+        for (int i = 0; i < attempts; ++i) {
+            LOG.info("Attempt #" + i + ": Starting web driver...");
+            try {
+                startDriver();
+                return driver.getCurrentUrl() != null;
+            } catch (UnknownHostException | MalformedURLException e) {
+                LOG.warn("Intercepted the following error when attempting to start the web driver:");
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
-    // Build the script interpreter
-    Object interpreter;
-    switch (type) {
-    case SELENIUM:
-      interpreter = new SeleniumScripter(driver);
-      break;
-    case MAGNESIUM:
-      interpreter = new MagnesiumScript(driver, LOG);
-    default:
-      throw new IllegalArgumentException("");
+    private boolean takeScreenshot() {
+        return Boolean.parseBoolean(pluginConfig.getOrDefault("chrome.selenium.screenshotoncapture", "false").toString());
     }
 
-    if (!globalscript.equals("")) {
-      executeScriptGuarded(script, interpreter, resource);
+    /**
+     * Run a crawl of the given resource
+     *
+     * @param resource The resource which directs what URI to start crawling from,
+     *                 and a few other crawl-based configs
+     * @return FetchedData a stack of content succesfully fetched from the URI
+     */
+    @Override
+    public FetchedData fetch(Resource resource) throws Exception {
+        long start = System.currentTimeMillis();
+        if (!startDriver(10)) {
+            throw new RuntimeException("Failed to start the web driver! FetcherChrome cannot continue!");
+        }
+        LOG.info("Chrome FETCHER {}", resource.getUrl());
 
-      List<String> snapshots = scripter.getSnapshots();
-      html = String.join(",", snapshots);
-    } else if (json != null && json.containsKey("selenium")) {
-      if (json.get("selenium") != null && json.get("selenium") instanceof Map) {
-        executeScriptGuarded(script, interpreter, resource);
+        float elapsed = (System.currentTimeMillis() - start) / 1000;
+        LOG.info("Web driver created in " + elapsed + "s!");
 
-        List<String> snapshots = scripter.getSnapshots();
-        html = String.join(",", snapshots);
-      }
+        FetchedData data = null;
+
+        try {
+            /*
+             * In this plugin we will work on only HTML data If data is of any other data
+             * type like image, pdf etc plugin will return client error so it can be fetched
+             * using default Fetcher
+             */
+            String mimeType = contentType(resource.getUrl());
+            if (mimeType.contains("application/json")) {
+                data = jsonCrawl(resource);
+            } else if (mimeType.contains("text/html")) {
+                data = htmlCrawl(resource);
+            } else {
+                LOG.warn("The mime type `" + mimeType + "` is not supported for crawling!");
+                data = super.fetch(resource);
+            }
+
+            // Bind the crawl config to the reuslts
+            data.setResource(resource);
+        } finally {
+            driver.quit();
+            driver = null;
+
+            return data;
+        }
     }
 
-    if (html == null) {
-      String screenshotcapture = pluginConfig.getOrDefault("chrome.selenium.screenshotoncapture", "false").toString();
-      if (screenshotcapture.equals("true")) {
-        SeleniumScripter htmlscripter = new SeleniumScripter(driver);
-
-        Map<String, Object> tempmap = new HashMap<>();
-        tempmap.put("type", "file");
-        Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(),
-            "screencaptures");
-        File f = path.toFile();
-        f.mkdirs();
-        Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(),
-            "screencaptures");
-        tempmap.put("targetdir", filepath.toString());
-        tempmap.put("tag", resource.getId());
-        htmlscripter.setOutputPath("");
-        htmlscripter.screenshotOperation(tempmap);
-      }
-      html = driver.getPageSource();
+    public FetchedData jsonCrawl(Resource resource) {
+        throw new NotImplementedException();
     }
 
-    if (!resource.getStatus().equals(ResourceStatus.ERROR.toString())) {
-      resource.setStatus(ResourceStatus.FETCHED.toString());
-    }
-    fetchedData = new FetchedData(html.getBytes(), "text/html", 200);
-    fetchedData.setResource(resource);
+    public FetchedData htmlCrawl(Resource resource) throws IOException, java.text.ParseException {
+        JSONObject json = null;
 
-    return fetchedData;
-  }
+        if (resource.getMetadata() != null && !resource.getMetadata().equals("")) {
+            json = processMetadata(resource.getMetadata());
 
-  private void executeScriptGuarded(Map script, Object interpCastable, Resource resource)
-      throws IOException, java.text.ParseException {
-    try {
-      LOG.info("Running Selenium Script");
-      Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId());
+        }
+        // This will block for the page load and any
+        // associated AJAX requests
 
-      // Cast the correct interpreter type and feed the script into said interpreter
-      if (type == ScriptType.SELENIUM) {
-        SeleniumScripter interpreter = (SeleniumScripter) interpCastable;
-        interpreter.setOutputPath(filepath.toString());
-        interpreter.runScript(script);
-      } else if (type == ScriptType.MAGNESIUM) {
-        MagnesiumScript interpreter = (MagnesiumScript) interpCastable;
-        interpreter.interpret(script);
-      }
+        driver.get(resource.getUrl());
+        String waitforready = pluginConfig.getOrDefault("chrome.selenium.javascriptready", "false").toString();
 
-      resource.setStatus(ResourceStatus.FETCHED.toString());
-    } catch (Exception e) {
-      LogEntries logs = driver.manage().logs().get(LogType.BROWSER);
-      List<LogEntry> alllogs = logs.getAll();
-      for (LogEntry logentry : alllogs) {
-        LOG.info(logentry.getMessage());
-      }
-      logs = driver.manage().logs().get(LogType.PERFORMANCE);
-      alllogs = logs.getAll();
-      for (LogEntry logentry : alllogs) {
-        LOG.info(logentry.getMessage());
-      }
-      logs = driver.manage().logs().get(LogType.PROFILER);
-      alllogs = logs.getAll();
-      for (LogEntry logentry : alllogs) {
-        LOG.info(logentry.getMessage());
-      }
-      if (pluginConfig.containsKey("chrome.selenium.outputdirectory")) {
-        Map<String, Object> tempmap = new HashMap<>();
-        tempmap.put("type", "file");
-        Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(), jobContext.getId(),
-            "errors");
-        File f = path.toFile();
-        f.mkdirs();
-        tempmap.put("targetdir", "errors");
-        interpreter.screenshotOperation(tempmap);
-      }
-      LOG.error("Caught an exception in  Selenium Scripter: " + e);
+        if (waitforready.equals("true")) {
+            new WebDriverWait(driver, 60).until((driver) -> ((JavascriptExecutor) driver)
+                    .executeScript("return document.readyState").toString().equals("complete"));
+        }
 
-      resource.setStatus(ResourceStatus.ERROR.toString());
+        // Convert the raw JSONObject
+        Map<String, Object> tokens = (Map<String, Object>) json.get("chrome.selenium.script");
+        Map script = new TreeMap(tokens);
+
+        // Determine the script type
+        String versionToken = tokens.get("version").toString();
+        if (versionToken == null) {
+            LOG.warn("No `version` tag was specified, so `version: magnesium` will be infered!");
+
+            versionToken = "magnesium";
+        }
+        versionToken = versionToken.toString().toLowerCase();
+
+        try {
+            type = ScriptType.valueOf(versionToken);
+        } catch (IllegalArgumentException e) {
+            LOG.error("Invalid version: `" + versionToken + "`!");
+            LOG.error("Exiting with null fetched results...");
+            return null;
+        }
+
+        // Build the interpreter and run the script
+        String snapshots;
+        if(type == ScriptType.SELENIUM) {
+            SeleniumScripter interpreter = new SeleniumScripter(driver);
+            return runGuardedInterpreter(script, interpreter, resource);
+        } else if (type == ScriptType.MAGNESIUM) {
+            MagnesiumScript interpreter = new MagnesiumScript(driver, LOG);
+            return runGuardedInterpreter(script, interpreter, resource);
+        } else {
+            throw new IllegalArgumentException("The version `" + type + "` is invalid! Must be one of: " + Arrays.toString(ScriptType.values()));
+        }
     }
 
-  }
+    /**
+     * Feed a script into an interpreter and execute it.
+     *
+     * @param script      The script to run
+     * @param interpreter The interpreter to use
+     * @param resource    The crawl status tracker and configs
+     */
+    private FetchedData runGuardedInterpreter(Map script, SeleniumScripter interpreter, Resource resource) {
+        LOG.info("Executing script with Ss interpreter: " + script);
+        try {
+            Path filepath = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(),
+                    jobContext.getId());
 
-  private JSONObject processMetadata(String metadata) {
-    if (metadata != null) {
-      JSONParser parser = new JSONParser();
-      JSONObject json;
-      try {
-        json = (JSONObject) parser.parse(metadata);
-        return json;
+            interpreter.setOutputPath(filepath.toString());
+            interpreter.runScript(script);
 
-      } catch (ParseException e) {
-        e.printStackTrace();
-      }
+            resource.setStatus(ResourceStatus.FETCHED.toString());
+        } catch (Exception e) {
+            // Print the original error
+            LOG.error("Intercepted the following interpreter exception!");
+            e.printStackTrace();
+
+            // Dump all of the interpreter logs into the current stacktrace
+            dumpLogs();
+
+            // Write all of the screenshots to persistence
+            screenshot(interpreter);
+
+            // Set the crawl status as errored
+            resource.setStatus(ResourceStatus.ERROR.toString());
+        }
+
+        // Get the snapshots, if any, otherwise grap the current DOM content
+        List<String> snapshots = interpreter.getSnapshots();
+        if(snapshots.size() <= 0) {
+            if(takeScreenshot()) {
+                screenshot(interpreter);
+            }
+            snapshots.add(driver.getPageSource());
+        }
+
+        // Rasterize to a string and return it as FetchedData
+        String rasterizedSnapshots = String.join(",", snapshots);
+        return new FetchedData(rasterizedSnapshots.getBytes(), "text/html", 200);
     }
-    return null;
 
-  }
+    /**
+     * Feed a script into an interpreter and execute it.
+     *
+     * @param script      The script to run
+     * @param interpreter The interpreter to use
+     * @param resource    The crawl status tracker and configs
+     */
+    private FetchedData runGuardedInterpreter(Map script, MagnesiumScript interpreter, Resource resource) {
+        LOG.info("Executing script with Ms interpreter: " + script);
+        try {
+            interpreter.interpret(script);
 
-  private boolean isWebPage(String webUrl) {
-    TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-      public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            resource.setStatus(ResourceStatus.FETCHED.toString());
+        } catch (Exception e) {
+            // Print the original error
+            LOG.error("Intercepted the following interpreter exception!");
+            e.printStackTrace();
+
+            // Dump all of the interpreter logs into the current stacktrace
+            dumpLogs();
+
+            // Write all of the screenshots to persistence
+            screenshot(interpreter);
+
+            // Set the crawl status as errored
+            resource.setStatus(ResourceStatus.ERROR.toString());
+        }
+
+        // Get the snapshots, if any, otherwise grap the current DOM content
+        List<String> snapshots = interpreter.getSnapshots();
+        if(snapshots.size() <= 0) {
+            if(takeScreenshot()) {
+                screenshot(interpreter);
+            }
+            snapshots.add(driver.getPageSource());
+        }
+
+        // Rasterize to a string and return it as FetchedData
+        String rasterizedSnapshots = String.join(",", snapshots);
+        return new FetchedData(rasterizedSnapshots.getBytes(), "text/html", 200);
+    }
+
+    /**
+     * Takes a screenshot with a SeleniumScripter interpreter. The plugin config
+     * `chrome.selenium.outputdirectory` must have a value for the screenshot
+     * operation to be enabled
+     *
+     * @param interpreter The interpreter to take the screenshot with
+     * @return boolean Whether or not a screenshot was succesfully taken
+     */
+    private boolean screenshot(SeleniumScripter interpreter) {
+        try {
+            if (pluginConfig.containsKey("chrome.selenium.outputdirectory")) {
+                // Guarnetee the path to file exists and is open for writing
+                Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(),
+                        jobContext.getId(), "errors");
+                File f = path.toFile();
+                f.mkdirs();
+
+                // Take the screenshot
+                Map<String, Object> screenshotOperation = new HashMap<>();
+                screenshotOperation.put("targetdir", "errors");
+                interpreter.screenshotOperation(screenshotOperation);
+
+                return true;
+            }
+
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Takes a screenshot with a MagnesiumScript interpreter. The plugin config
+     * `chrome.selenium.outputdirectory` must have a value for the screenshot
+     * operation to be enabled
+     *
+     * @param interpreter The interpreter to take the screenshot with
+     * @return boolean Whether or not a screenshot was succesfully taken
+     */
+    private boolean screenshot(MagnesiumScript interpreter) {
+        try {
+            if (pluginConfig.containsKey("chrome.selenium.outputdirectory")) {
+                // Guarnetee the path to file exists and is open for writing
+                Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(),
+                        jobContext.getId(), "errors");
+                File f = path.toFile();
+                f.mkdirs();
+
+                // Take the screenshot
+                LOG.warn("Screenshot for Ms not implemented!");
+
+                return false;
+            }
+
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private JSONObject processMetadata(String metadata) {
+        if (metadata != null) {
+            JSONParser parser = new JSONParser();
+            JSONObject json;
+            try {
+                json = (JSONObject) parser.parse(metadata);
+                return json;
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
         return null;
-      }
-
-      public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-      }
-
-      public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-      }
-    } };
-    try {
-
-      SSLContext sc = SSLContext.getInstance("SSL");
-      sc.init(null, trustAllCerts, new java.security.SecureRandom());
-      HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-      URL url = new URL(webUrl);
-      CookieManager cm = new java.net.CookieManager();
-      CookieHandler.setDefault(cm);
-      CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
-      if (webUrl.startsWith("https")) {
-        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-        conn.setHostnameVerifier((arg0, arg1) -> true);
-        String contentType = conn.getHeaderField("Content-Type");
-        if (contentType == null && conn.getResponseCode() == 302) {
-          return isWebPage(conn.getHeaderField("Location"));
-        }
-        LOG.info("DETECTED CONTENT TYPE: " + contentType);
-        LOG.info("DETECTED RESPONSE CODE: " + conn.getResponseCode());
-        LOG.info("DETECTED RESPONSE MSG: " + conn.getResponseMessage());
-        return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml");
-      } else {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        String contentType = conn.getHeaderField("Content-Type");
-        if (contentType == null && conn.getResponseCode() == 302) {
-          return isWebPage(conn.getHeaderField("Location"));
-        }
-        LOG.info("DETECTED CONTENT TYPE: " + contentType);
-        LOG.info("DETECTED RESPONSE CODE: " + conn.getResponseCode());
-        LOG.info("DETECTED RESPONSE MSG: " + conn.getResponseMessage());
-        return contentType.contains("json") || contentType.contains("text") || contentType.contains("ml");
-      }
-    } catch (Exception e) {
-      LOG.info(e.getMessage(), e);
     }
-    return false;
-  }
 
+    /**
+     * Gets the content type of the given URI
+     *
+     * @param uri The URI to get the content type of
+     * @return String the raw mime type of the given URI
+     */
+    private String contentType(String uri) throws MalformedURLException, IOException {
+        return new URL(uri).openConnection().getContentType().toLowerCase();
+    }
 }

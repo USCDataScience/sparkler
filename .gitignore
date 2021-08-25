@@ -13,6 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Custom
+.bloop
+**/scalastyle-config
+**/.scalafmt.conf
+**/.metals
+**/.bsp
+
+# Standard Java
 *.class
 *.log
 *.jar

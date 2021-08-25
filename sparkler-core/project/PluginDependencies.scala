@@ -29,7 +29,7 @@ object FetcherChrome {
   }
   lazy val browserup = "com.browserup" % "browserup-proxy-core" % "3.0.0-SNAPSHOT"
   lazy val seleniumscripter = "com.kytheralabs" % "seleniumscripter" % "1.7.7"
-  lazy val magnesium_script = "uk.co.spicule" % "magnesium-script" % "0.0.2-SNAPSHOT"
+  lazy val magnesium_script = "uk.co.spicule" % "magnesium-script" % "0.0.5"
 }
 
 object FetcherHtmlUnit {
@@ -43,7 +43,6 @@ object FetcherJBrowser {
 object ScorerDdSvn {
   lazy val httpClient = "org.apache.httpcomponents" % "httpclient" % "4.3.6"
 }
-
 
 object Databricks {
   lazy val wrapper = "com.kytheralabs" % "webcrawlerwrapper_2.12" % "0.1-SNAPSHOT"
