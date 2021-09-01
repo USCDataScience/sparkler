@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-lazy val api = ProjectRef(file("./"), "api") % "provided;test->test"// % "compile->compile;test->test"
+lazy val api = ProjectRef(file("./"), "api") % "provided;test->test" // % "compile->compile;test->test"
 
 lazy val sparklerPlugins = "sparkler-plugins"
 
@@ -23,24 +23,21 @@ lazy val plugins = (project in file(s"$sparklerPlugins"))
   .enablePlugins(JavaAppPackaging)
   .settings(
     Settings.common,
-    name := "sparkler-plugins",
+    name := "sparkler-plugins"
   )
-
   .aggregate(
     fetcherChrome,
     fetcherHtmlUnit,
-
     scorerDdSvn,
     urlFilterRegex,
     urlFilterSameHost,
     urlInjector,
-    databricks,
+    databricks
   )
 //fetcherJBrowser,
 /**
- * ================ PLUGINS ================
- */
-
+  * ================ PLUGINS ================
+  */
 // ------------- Template Plugin -------------
 
 lazy val templatePlugin = (project in file(s"$sparklerPlugins/template-plugin"))
@@ -52,72 +49,73 @@ lazy val templatePlugin = (project in file(s"$sparklerPlugins/template-plugin"))
       id = "template-plugin",
       className = "edu.usc.irds.sparkler.plugin.MyPluginActivator",
       dependencies = List.empty
-    ),
-
+    )
   )
   .dependsOn(api)
 
 // -------------------------------------------
 
-
 // ---------------- Plugin Builds -------------
 
 lazy val fetcherChrome = (project in file(s"$sparklerPlugins/fetcher-chrome"))
   .enablePlugins(JavaAppPackaging)
+  .enablePlugins(UniversalPlugin)
   .settings(
     Settings.plugin,
     name := "fetcher-chrome",
     libraryDependencies ++= Seq(
-      FetcherChrome.Selenium.java exclude("org.slf4j", "slf4j-api"),
-      FetcherChrome.Selenium.chromeDriver exclude("org.slf4j", "slf4j-api"),
+      FetcherChrome.Selenium.java exclude ("org.slf4j", "slf4j-api"),
+      FetcherChrome.Selenium.chromeDriver exclude ("org.slf4j", "slf4j-api"),
       //FetcherChrome.browserup exclude("com.fasterxml.jackson.core", "jackson-databind") exclude("org.slf4j", "slf4j-api") exclude("io.netty", "netty-all"),
-      FetcherChrome.seleniumscripter exclude("org.slf4j", "slf4j-api"),
+      FetcherChrome.seleniumscripter exclude ("org.slf4j", "slf4j-api"),
+      FetcherChrome.magnesium_script exclude ("org.slf4j", "slf4j-api")
     ),
     Settings.pluginManifest(
       id = "fetcher-chrome",
       className = "edu.usc.irds.sparkler.plugin.FetcherChromeActivator",
       dependencies = List.empty
-    ),
-
+    )
   )
   .dependsOn(api)
 
-lazy val databricks = (project in file(s"$sparklerPlugins/databricks-api-plugin"))
-  .enablePlugins(JavaAppPackaging)
-  .settings(
-    Settings.plugin,
-    name := "databricks-api",
-    libraryDependencies ++= Seq(
-      Databricks.wrapper exclude("org.apache", "spark-core") exclude("org.apache", "spark-sql")
-    ),
-    Settings.pluginManifest(
-      id = "databricks-api",
-      className = "com.kytheralabs.databricks.DatabricksAPIActivator",
-      dependencies = List.empty
-    ),
+lazy val databricks =
+  (project in file(s"$sparklerPlugins/databricks-api-plugin"))
+    .enablePlugins(JavaAppPackaging)
+    .settings(
+      Settings.plugin,
+      name := "databricks-api",
+      libraryDependencies ++= Seq(
+        Databricks.wrapper exclude ("org.apache", "spark-core") exclude ("org.apache", "spark-sql")
+      ),
+      Settings.pluginManifest(
+        id = "databricks-api",
+        className = "com.kytheralabs.databricks.DatabricksAPIActivator",
+        dependencies = List.empty
+      )
+    )
+    .dependsOn(api)
 
-  )
-  .dependsOn(api)
-
-lazy val fetcherHtmlUnit = (project in file(s"$sparklerPlugins/fetcher-htmlunit"))
-  .enablePlugins(JavaAppPackaging)
-  .settings(
-    Settings.plugin,
-    name := "fetcher-htmlunit",
-    libraryDependencies ++= Seq(
-      FetcherHtmlUnit.htmlUnit exclude("org.slf4j", "slf4j-api"),
-    ),
-    Settings.pluginManifest(
-      id = "fetcher-htmlunit",
-      className = "edu.usc.irds.sparkler.plugin.HtmlUnitFetcherActivator",
-      dependencies = List.empty
-    ),
-    testOptions += Tests.Argument(TestFrameworks.JUnit,
-      "--verbosity=1",
-      "--run-listener=edu.usc.irds.sparkler.test.WebServerRunListener"),
-
-  )
-  .dependsOn(api)
+lazy val fetcherHtmlUnit =
+  (project in file(s"$sparklerPlugins/fetcher-htmlunit"))
+    .enablePlugins(JavaAppPackaging)
+    .settings(
+      Settings.plugin,
+      name := "fetcher-htmlunit",
+      libraryDependencies ++= Seq(
+        FetcherHtmlUnit.htmlUnit exclude ("org.slf4j", "slf4j-api")
+      ),
+      Settings.pluginManifest(
+        id = "fetcher-htmlunit",
+        className = "edu.usc.irds.sparkler.plugin.HtmlUnitFetcherActivator",
+        dependencies = List.empty
+      ),
+      testOptions += Tests.Argument(
+        TestFrameworks.JUnit,
+        "--verbosity=1",
+        "--run-listener=edu.usc.irds.sparkler.test.WebServerRunListener"
+      )
+    )
+    .dependsOn(api)
 
 /*lazy val fetcherJBrowser = (project in file(s"$sparklerPlugins/fetcher-jbrowser"))
   .enablePlugins(JavaAppPackaging)
@@ -147,7 +145,7 @@ lazy val scorerDdSvn = (project in file(s"$sparklerPlugins/scorer-dd-svn"))
       id = "scorer-dd-svn",
       className = "edu.usc.irds.sparkler.plugin.DdSvnScorerActivator",
       dependencies = List.empty
-    ),
+    )
   )
   .dependsOn(api)
 
@@ -160,7 +158,7 @@ lazy val urlInjector = (project in file(s"$sparklerPlugins/url-injector"))
       id = "url-injector",
       className = "edu.usc.irds.sparkler.plugin.UrlInjectorActivator",
       dependencies = List.empty
-    ),
+    )
   )
   .dependsOn(api)
 
@@ -173,19 +171,21 @@ lazy val urlFilterRegex = (project in file(s"$sparklerPlugins/urlfilter-regex"))
       id = "urlfilter-regex",
       className = "edu.usc.irds.sparkler.plugin.RegexURLFilterActivator",
       dependencies = List.empty
-    ),
+    )
   )
   .dependsOn(api)
 
-lazy val urlFilterSameHost = (project in file(s"$sparklerPlugins/urlfilter-samehost"))
-  .enablePlugins(JavaAppPackaging)
-  .settings(
-    Settings.plugin,
-    name := "urlfilter-samehost",
-    Settings.pluginManifest(
-      id = "urlfilter-samehost",
-      className = "edu.usc.irds.sparkler.plugin.UrlFilterSameHostActivator",
-      dependencies = List.empty
-    ),
-  )
-  .dependsOn(api)
+lazy val urlFilterSameHost =
+  (project in file(s"$sparklerPlugins/urlfilter-samehost"))
+    .enablePlugins(JavaAppPackaging)
+    .settings(
+      Settings.plugin,
+      name := "urlfilter-samehost",
+      Settings.pluginManifest(
+        id = "urlfilter-samehost",
+        className = "edu.usc.irds.sparkler.plugin.UrlFilterSameHostActivator",
+        dependencies = List.empty
+      )
+    )
+    .dependsOn(api)
+    .dependsOn(api)
