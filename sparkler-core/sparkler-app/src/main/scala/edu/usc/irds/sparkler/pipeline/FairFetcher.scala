@@ -17,11 +17,19 @@
 
 package edu.usc.irds.sparkler.pipeline
 
+import edu.usc.irds.sparkler.SparklerConfiguration
+
 import java.util.concurrent.atomic.AtomicLong
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model._
 import edu.usc.irds.sparkler.util.HealthChecks
+import org.apache.commons.io.FilenameUtils
 import org.apache.solr.common.SolrInputDocument
+import org.apache.tika.mime.{MimeType, MimeTypes}
+
+import java.io.{File, FileOutputStream}
+import java.net.URI
+import java.nio.file.Paths
 
 /**
   * Created by thammegr on 6/7/16.
@@ -44,6 +52,40 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
       fetchedData.hasNext
     } else{
       false
+    }
+  }
+
+  def persistDocument(data: CrawlData, jobContext: SparklerConfiguration): Unit = {
+    if (jobContext.containsKey("fetcher.persist.content.location")) {
+      val uri = new URI(data.fetchedData.getResource.getUrl)
+      val domain = uri.getHost
+      val outputDirectory = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
+        data.fetchedData.getResource.getId, domain).toFile
+      var outputFile :File = null
+      if (jobContext.get("fetcher.persist.content.filename").toString == "hash") {
+        var ext = FilenameUtils.getExtension(data.fetchedData.getResource.getUrl)
+        if (ext.contains("#") || ext.contains("?")) {
+          val splits = ext.split("[#?]")
+          ext = splits(0)
+        }
+        if (ext == "") {
+          val allTypes = MimeTypes.getDefaultMimeTypes
+          val ctype = allTypes.forName(data.fetchedData.getContentType)
+          ext = ctype.getExtension
+        }
+        outputFile = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
+          data.fetchedData.getResource.getId, domain, data.fetchedData.getContenthash + "." + ext).toFile
+      }
+      else {
+        outputFile = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
+          data.fetchedData.getResource.getId, domain, FilenameUtils.getName(data.fetchedData.getResource.getUrl)).toFile
+      }
+      outputDirectory.mkdirs
+      try {
+        val outputStream = new FileOutputStream(outputFile)
+        try outputStream.write(data.fetchedData.getContent)
+        finally if (outputStream != null) outputStream.close()
+      }
     }
   }
 
@@ -73,6 +115,7 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
 
       //STEP: URL Filter
       data.parsedData.outlinks = outLinkFilterFunc(job, data)
+      persistDocument(data, job.getConfiguration)
       val doc = solrUpdateFunction(data)
       LOG.info("Adding doc to SOLR")
       job.newStorageProxy().addResource(doc)
