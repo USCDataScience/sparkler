@@ -1,15 +1,9 @@
 package edu.usc.irds.sparkler.util;
 
-import edu.usc.irds.sparkler.AbstractExtensionPoint;
-import edu.usc.irds.sparkler.Constants;
-import edu.usc.irds.sparkler.Fetcher;
-import edu.usc.irds.sparkler.JobContext;
-import edu.usc.irds.sparkler.SparklerConfiguration;
-import edu.usc.irds.sparkler.SparklerException;
+import edu.usc.irds.sparkler.*;
 import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -19,11 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.function.Function;
@@ -171,26 +163,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
                 byte[] md5hash = MessageDigest.getInstance("MD5").digest(rawData);
                 contentHash = toHexString(md5hash);
                 resource.setContentHash(contentHash);
-                if (jobContext.getConfiguration().containsKey("fetcher.persist.content.location")) {
-                    URI uri = new URI(resource.getUrl());
-                    String domain = uri.getHost();
-                    File outputDirectory = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain).toFile();
-                    File outputFile;
-                    if (jobContext.getConfiguration().get("fetcher.persist.content.filename").toString().equals("hash")) {
-                        String ext = FilenameUtils.getExtension(resource.getUrl());
-                        if(ext.contains("#") || ext.contains("?")){
-                            String[] splits = ext.split("[#?]");
-                            ext = splits[0];
-                        }
-                        outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, contentHash + "." + ext).toFile();
-                    } else {
-                        outputFile = Paths.get(jobContext.getConfiguration().get("fetcher.persist.content.location").toString(), jobContext.getId(), domain, FilenameUtils.getName(resource.getUrl())).toFile();
-                    }
-                    outputDirectory.mkdirs();
-                    try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
-                        outputStream.write(rawData);
-                    }
-                }
+
             }
 
             IOUtils.closeQuietly(bufferOutStream);
