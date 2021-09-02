@@ -61,7 +61,7 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
       val uri = new URI(data.fetchedData.getResource.getUrl)
       val domain = uri.getHost
       val outputDirectory = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
-        data.fetchedData.getResource.getId, domain).toFile
+        data.fetchedData.getResource.getCrawlId, domain).toFile
       var outputFile :File = null
       if (jobContext.get("fetcher.persist.content.filename").toString == "hash") {
         val allTypes = MimeTypes.getDefaultMimeTypes
