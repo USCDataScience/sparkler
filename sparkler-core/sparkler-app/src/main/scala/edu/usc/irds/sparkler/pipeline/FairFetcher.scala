@@ -78,7 +78,7 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
 
         if(data.fetchedData.getContenthash == null){
           outputFile = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
-            data.fetchedData.getResource.getId, domain, data.fetchedData.getResource.getDedupeId + ext).toFile
+            data.fetchedData.getResource.getCrawlId, domain, data.fetchedData.getResource.getDedupeId + ext).toFile
         } else{
           outputFile = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
             data.fetchedData.getResource.getCrawlId, domain, data.fetchedData.getContenthash + ext).toFile
