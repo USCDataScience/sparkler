@@ -265,38 +265,42 @@ public class FetcherChrome extends FetcherDefault {
             new WebDriverWait(driver, 60).until((driver) -> ((JavascriptExecutor) driver)
                     .executeScript("return document.readyState").toString().equals("complete"));
         }
+        Map<String, Object> tokens = null;
+        Map script = null;
+        if(pluginConfig.get("chrome.selenium.script") != null && pluginConfig.get("chrome.selenium.script") instanceof Map) {
+            // Convert the raw JSONObject
+            tokens = (Map<String, Object>) json.get("chrome.selenium.script");
+            script = new TreeMap(tokens);
+            // Determine the script type
+            String versionToken = tokens.get("version").toString();
+            if (versionToken == null) {
+                LOG.warn("No `version` tag was specified, so `version: magnesium` will be infered!");
 
-        // Convert the raw JSONObject
-        Map<String, Object> tokens = (Map<String, Object>) json.get("chrome.selenium.script");
-        Map script = new TreeMap(tokens);
+                versionToken = "magnesium";
+            }
+            versionToken = versionToken.toString().toLowerCase();
 
-        // Determine the script type
-        String versionToken = tokens.get("version").toString();
-        if (versionToken == null) {
-            LOG.warn("No `version` tag was specified, so `version: magnesium` will be infered!");
+            try {
+                type = ScriptType.valueOf(versionToken);
+            } catch (IllegalArgumentException e) {
+                LOG.error("Invalid version: `" + versionToken + "`!");
+                LOG.error("Exiting with null fetched results...");
+                return null;
+            }
 
-            versionToken = "magnesium";
-        }
-        versionToken = versionToken.toString().toLowerCase();
-
-        try {
-            type = ScriptType.valueOf(versionToken);
-        } catch (IllegalArgumentException e) {
-            LOG.error("Invalid version: `" + versionToken + "`!");
-            LOG.error("Exiting with null fetched results...");
-            return null;
-        }
-
-        // Build the interpreter and run the script
-        String snapshots;
-        if(type == ScriptType.SELENIUM) {
-            SeleniumScripter interpreter = new SeleniumScripter(driver);
-            return runGuardedInterpreter(script, interpreter, resource);
-        } else if (type == ScriptType.MAGNESIUM) {
-            MagnesiumScript interpreter = new MagnesiumScript(driver, LOG);
-            return runGuardedInterpreter(script, interpreter, resource);
-        } else {
-            throw new IllegalArgumentException("The version `" + type + "` is invalid! Must be one of: " + Arrays.toString(ScriptType.values()));
+            // Build the interpreter and run the script
+            String snapshots;
+            if (type == ScriptType.SELENIUM) {
+                SeleniumScripter interpreter = new SeleniumScripter(driver);
+                return runGuardedInterpreter(script, interpreter, resource);
+            } else if (type == ScriptType.MAGNESIUM) {
+                MagnesiumScript interpreter = new MagnesiumScript(driver, LOG);
+                return runGuardedInterpreter(script, interpreter, resource);
+            } else {
+                throw new IllegalArgumentException("The version `" + type + "` is invalid! Must be one of: " + Arrays.toString(ScriptType.values()));
+            }
+        } else{
+            return new FetchedData(driver.getPageSource().getBytes(), "text/html", 200);
         }
     }
 
