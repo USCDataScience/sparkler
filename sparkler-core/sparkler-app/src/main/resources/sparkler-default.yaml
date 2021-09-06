@@ -164,7 +164,7 @@ plugins:
       - "--disable-logging"
       - "--disable-permissions-api"
   url.injector:
-    mode: selenium # currently only compatible with the fetcher-chrome plugin
+    #mode: selenium # currently only compatible with the fetcher-chrome plugin
     #mode: replace
     #mode: json
     #mode: form
@@ -172,29 +172,29 @@ plugins:
     #  - "\"COR\""
     #  - "\"VEN\""
     #  - "\"SOM\""
-    values:
-      - Acitretin
-      - Adempas
-      - Actiq
-    selenium:
-      1:
-        operation: click
-        value: id:some-id
-      2:
-        operation: keys
-        value: "id:some-input-id:${token}"
-      3:
-        operation: click
-        value: "id:some-id" 
-    json: "{ \"name\":\"John\", \"age\":${token}, \"car\":null }"
-    form:
-      hdnField: "submit"
-      txtRequired: ""
-      radSearchBy: "drugname"
-      txtName: "${token}"
-      selTC: ""
-      selProgram: "MA"
-      txtDateOfService: "12/01/2020"
+#    values:
+#      - Acitretin
+#      - Adempas
+#      - Actiq
+#    selenium:
+#      1:
+#        operation: click
+#        value: id:some-id
+#      2:
+#        operation: keys
+#        value: "id:some-input-id:${token}"
+#      3:
+#        operation: click
+#        value: "id:some-id"
+#    json: "{ \"name\":\"John\", \"age\":${token}, \"car\":null }"
+#    form:
+#      hdnField: "submit"
+#      txtRequired: ""
+#      radSearchBy: "drugname"
+#      txtName: "${token}"
+#      selTC: ""
+#      selProgram: "MA"
+#      txtDateOfService: "12/01/2020"
 ##################### Custom properties for MEMEX ###########################################
   memex.webpage.mimetype: "text/html"
 
