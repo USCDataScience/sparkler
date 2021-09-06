@@ -283,8 +283,7 @@ public class FetcherChrome extends FetcherDefault {
             // Determine the script type
             String versionToken = null;
             if(tokens.containsKey("version")){
-                JSONObject obj = (JSONObject) tokens.get("version");
-                versionToken = obj.get("version").toString();
+                versionToken = tokens.get("version").toString();
             }
             if (versionToken == null) {
                 LOG.warn("No `version` tag was specified, so `version: magnesium` will be infered!");
