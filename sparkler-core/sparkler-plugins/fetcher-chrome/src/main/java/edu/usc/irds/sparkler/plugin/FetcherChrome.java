@@ -17,6 +17,7 @@
 
 package edu.usc.irds.sparkler.plugin;
 
+import com.google.gson.JsonObject;
 import com.kytheralabs.SeleniumScripter;
 import uk.co.spicule.magnesium_script.MagnesiumScript;
 import edu.usc.irds.sparkler.JobContext;
@@ -240,8 +241,9 @@ public class FetcherChrome extends FetcherDefault {
             driver.quit();
             driver = null;
 
-            return data;
         }
+        return data;
+
     }
 
     public FetchedData jsonCrawl(Resource resource) {
@@ -267,18 +269,28 @@ public class FetcherChrome extends FetcherDefault {
         }
         Map<String, Object> tokens = null;
         Map script = null;
-        if(pluginConfig.get("chrome.selenium.script") != null && pluginConfig.get("chrome.selenium.script") instanceof Map) {
+        if((pluginConfig.get("chrome.selenium.script") != null && pluginConfig.get("chrome.selenium.script") instanceof Map) ||
+        json != null && json.containsKey("selenium")) {
             // Convert the raw JSONObject
-            tokens = (Map<String, Object>) json.get("chrome.selenium.script");
+
+            if((pluginConfig.get("chrome.selenium.script") != null)){
+                tokens = (Map<String, Object>) pluginConfig.get("chrome.selenium.script");
+            } else {
+                tokens = (Map<String, Object>) json.get("selenium");
+            }
             script = new TreeMap(tokens);
+
             // Determine the script type
-            String versionToken = tokens.get("version").toString();
+            String versionToken = null;
+            if(tokens.containsKey("version")){
+                versionToken = tokens.get("version").toString();
+            }
             if (versionToken == null) {
                 LOG.warn("No `version` tag was specified, so `version: magnesium` will be infered!");
 
                 versionToken = "magnesium";
             }
-            versionToken = versionToken.toString().toLowerCase();
+            versionToken = versionToken.toUpperCase();
 
             try {
                 type = ScriptType.valueOf(versionToken);
@@ -327,7 +339,7 @@ public class FetcherChrome extends FetcherDefault {
             e.printStackTrace();
 
             // Dump all of the interpreter logs into the current stacktrace
-            dumpLogs();
+            //dumpLogs();
 
             // Write all of the screenshots to persistence
             screenshot(interpreter);
@@ -369,7 +381,7 @@ public class FetcherChrome extends FetcherDefault {
             e.printStackTrace();
 
             // Dump all of the interpreter logs into the current stacktrace
-            dumpLogs();
+            //dumpLogs();
 
             // Write all of the screenshots to persistence
             screenshot(interpreter);
