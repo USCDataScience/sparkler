@@ -89,7 +89,8 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
         outputFile = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
           data.fetchedData.getResource.getCrawlId, domain, FilenameUtils.getName(data.fetchedData.getResource.getUrl)).toFile
       }
-      outputDirectory.mkdirs
+      LOG.info("Creating directory: " + outputFile.toPath.getParent.toString)
+      outputFile.toPath.getParent.toFile.mkdirs()
       try {
         LOG.info("Writing to: " + outputFile.toString)
         val outputStream = new FileOutputStream(outputFile)
