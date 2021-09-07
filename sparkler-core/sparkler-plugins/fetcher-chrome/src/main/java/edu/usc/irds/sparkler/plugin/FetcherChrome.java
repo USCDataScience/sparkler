@@ -237,7 +237,10 @@ public class FetcherChrome extends FetcherDefault {
 
             // Bind the crawl config to the reuslts
             data.setResource(resource);
-        } finally {
+        } catch (Exception e){
+            LOG.error(e.getMessage());
+        }
+        finally {
             driver.quit();
             driver = null;
 
@@ -487,7 +490,20 @@ public class FetcherChrome extends FetcherDefault {
      * @param uri The URI to get the content type of
      * @return String the raw mime type of the given URI
      */
-    private String contentType(String uri) throws MalformedURLException, IOException {
-        return new URL(uri).openConnection().getContentType().toLowerCase();
+    private String contentType(String uri)  {
+        try {
+            URLConnection u = new URL(uri).openConnection();
+            String ct = u.getContentType();
+            if(ct != null) {
+                return ct.toLowerCase();
+            } else if(uri.endsWith(".html") || uri.endsWith(".html")){
+                return "text/html";
+            } else if(uri.endsWith(".json")){
+                return "application/json";
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
