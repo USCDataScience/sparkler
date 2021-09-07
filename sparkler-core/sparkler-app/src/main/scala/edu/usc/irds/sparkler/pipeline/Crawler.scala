@@ -124,6 +124,11 @@ class Crawler extends CliTool {
     usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
   var configOverrideEncoded: String = ""
 
+  @Option(name = "-cof", aliases = Array("--config-override-file"),
+    handler = classOf[StringArrayOptionHandler],
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var configOverrideFile: String = ""
+
   @Option(name = "-dq", aliases = Array("--default-query"),
     handler = classOf[StringArrayOptionHandler],
     usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
@@ -146,6 +151,10 @@ class Crawler extends CliTool {
       val decoded = Base64.getDecoder().decode(configOverrideEncoded)
       val str = new String(decoded, StandardCharsets.UTF_8)
       sparklerConf.overloadConfig(str)
+    }
+    if(configOverrideFile!= ""){
+      val fileContents = Source.fromFile(configOverrideFile).getLines.mkString
+      sparklerConf.overloadConfig(fileContents)
     }
   }
   def init(): Unit = {
