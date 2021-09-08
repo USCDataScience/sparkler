@@ -230,6 +230,9 @@ public class FetcherChrome extends FetcherDefault {
                 data = jsonCrawl(resource);
             } else if (mimeType.contains("text/html")) {
                 data = htmlCrawl(resource);
+            } else if(mimeType.contains("text/plain")){
+                //Some websites are junk and return text plain.
+                data = htmlCrawl(resource);
             } else {
                 LOG.warn("The mime type `" + mimeType + "` is not supported for crawling!");
                 data = super.fetch(resource);
