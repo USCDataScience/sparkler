@@ -1,7 +1,7 @@
 package com.kytheralabs.databricks;
 
 
-import com.kytheralabs.management.jobutils.JobAPI;
+//import com.kytheralabs.management.jobutils.JobAPI;
 import edu.usc.irds.sparkler.AbstractExtensionPoint;
 import edu.usc.irds.sparkler.GenericProcess;
 import edu.usc.irds.sparkler.SparklerConfiguration;
@@ -68,7 +68,7 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
             keyValue = Option.apply(map.get("key").toString());
         }
 
-        JobAPI.runSingle(notebook, sparkversion, clusterType, clusterSize.intValue(), crawlid, params, urlValue, keyValue);
+        //JobAPI.runSingle(notebook, sparkversion, clusterType, clusterSize.intValue(), crawlid, params, urlValue, keyValue);
 
     }
 
