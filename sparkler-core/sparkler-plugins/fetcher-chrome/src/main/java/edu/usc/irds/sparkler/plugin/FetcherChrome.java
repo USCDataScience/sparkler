@@ -20,6 +20,8 @@ package edu.usc.irds.sparkler.plugin;
 import com.google.gson.JsonObject;
 import com.kytheralabs.SeleniumScripter;
 import uk.co.spicule.magnesium_script.MagnesiumScript;
+import uk.co.spicule.magnesium_script.Program;
+import uk.co.spicule.magnesium_script.expressions.Screenshot;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
@@ -377,8 +379,9 @@ public class FetcherChrome extends FetcherDefault {
      */
     private FetchedData runGuardedInterpreter(Map script, MagnesiumScript interpreter, Resource resource) {
         LOG.info("Executing script with Ms interpreter: " + script);
+        Program program = null;
         try {
-            interpreter.interpret(script);
+            program = interpreter.interpret(script);
 
             resource.setStatus(ResourceStatus.FETCHED.toString());
         } catch (Exception e) {
@@ -397,7 +400,7 @@ public class FetcherChrome extends FetcherDefault {
         }
 
         // Get the snapshots, if any, otherwise grap the current DOM content
-        List<String> snapshots = interpreter.getSnapshots();
+        List<String> snapshots = program.getSnapshots();
         if(snapshots.size() <= 0) {
             if(takeScreenshot()) {
                 screenshot(interpreter);
@@ -452,20 +455,8 @@ public class FetcherChrome extends FetcherDefault {
      */
     private boolean screenshot(MagnesiumScript interpreter) {
         try {
-            if (pluginConfig.containsKey("chrome.selenium.outputdirectory")) {
-                // Guarnetee the path to file exists and is open for writing
-                Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(),
-                        jobContext.getId(), "errors");
-                File f = path.toFile();
-                f.mkdirs();
-
-                // Take the screenshot
-                LOG.warn("Screenshot for Ms not implemented!");
-
-                return false;
-            }
-
-            return false;
+            new Screenshot(driver, null, pluginConfig.get("chrome.selenium.outputdirectory").toString(), null).execute();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
