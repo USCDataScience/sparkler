@@ -314,7 +314,7 @@ public class FetcherChrome extends FetcherDefault {
                 SeleniumScripter interpreter = new SeleniumScripter(driver);
                 return runGuardedInterpreter(script, interpreter, resource);
             } else if (type == ScriptType.MAGNESIUM) {
-                MagnesiumScript interpreter = new MagnesiumScript(driver, LOG);
+                MagnesiumScript interpreter = new MagnesiumScript(driver);
                 return runGuardedInterpreter(script, interpreter, resource);
             } else {
                 throw new IllegalArgumentException("The version `" + type + "` is invalid! Must be one of: " + Arrays.toString(ScriptType.values()));
