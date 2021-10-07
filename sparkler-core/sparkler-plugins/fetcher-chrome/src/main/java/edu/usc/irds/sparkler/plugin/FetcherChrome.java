@@ -18,7 +18,7 @@
 package edu.usc.irds.sparkler.plugin;
 
 import com.google.gson.JsonObject;
-import com.kytheralabs.SeleniumScripter;
+import uk.co.spicule.seleniumscripter.SeleniumScripter;
 import uk.co.spicule.magnesium_script.MagnesiumScript;
 import uk.co.spicule.magnesium_script.Program;
 import uk.co.spicule.magnesium_script.expressions.Screenshot;
@@ -86,6 +86,16 @@ public class FetcherChrome extends FetcherDefault {
         // TODO should change everywhere
         pluginConfig = config.getPluginConfiguration(pluginId);
 
+        // Default to Error log-level
+        setLogLevel("Error");
+    }
+
+    /**
+     * Set the sl4j log level
+     * @param level
+     */
+    public void setLogLevel(String level) {
+        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, level);
     }
 
     /**
