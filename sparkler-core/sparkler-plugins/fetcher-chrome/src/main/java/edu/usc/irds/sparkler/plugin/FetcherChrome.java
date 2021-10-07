@@ -18,10 +18,8 @@
 package edu.usc.irds.sparkler.plugin;
 
 import com.google.gson.JsonObject;
-import uk.co.spicule.seleniumscripter.SeleniumScripter;
+import com.kytheralabs.SeleniumScripter;
 import uk.co.spicule.magnesium_script.MagnesiumScript;
-import uk.co.spicule.magnesium_script.Program;
-import uk.co.spicule.magnesium_script.expressions.Screenshot;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
@@ -86,16 +84,6 @@ public class FetcherChrome extends FetcherDefault {
         // TODO should change everywhere
         pluginConfig = config.getPluginConfiguration(pluginId);
 
-        // Default to Error log-level
-        setLogLevel("Error");
-    }
-
-    /**
-     * Set the sl4j log level
-     * @param level
-     */
-    public void setLogLevel(String level) {
-        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, level);
     }
 
     /**
@@ -242,9 +230,6 @@ public class FetcherChrome extends FetcherDefault {
                 data = jsonCrawl(resource);
             } else if (mimeType.contains("text/html")) {
                 data = htmlCrawl(resource);
-            } else if(mimeType.contains("text/plain")){
-                //Some websites are junk and return text plain.
-                data = htmlCrawl(resource);
             } else {
                 LOG.warn("The mime type `" + mimeType + "` is not supported for crawling!");
                 data = super.fetch(resource);
@@ -324,7 +309,7 @@ public class FetcherChrome extends FetcherDefault {
                 SeleniumScripter interpreter = new SeleniumScripter(driver);
                 return runGuardedInterpreter(script, interpreter, resource);
             } else if (type == ScriptType.MAGNESIUM) {
-                MagnesiumScript interpreter = new MagnesiumScript(driver);
+                MagnesiumScript interpreter = new MagnesiumScript(driver, LOG);
                 return runGuardedInterpreter(script, interpreter, resource);
             } else {
                 throw new IllegalArgumentException("The version `" + type + "` is invalid! Must be one of: " + Arrays.toString(ScriptType.values()));
@@ -389,9 +374,8 @@ public class FetcherChrome extends FetcherDefault {
      */
     private FetchedData runGuardedInterpreter(Map script, MagnesiumScript interpreter, Resource resource) {
         LOG.info("Executing script with Ms interpreter: " + script);
-        Program program = null;
         try {
-            program = interpreter.interpret(script);
+            interpreter.interpret(script);
 
             resource.setStatus(ResourceStatus.FETCHED.toString());
         } catch (Exception e) {
@@ -410,7 +394,7 @@ public class FetcherChrome extends FetcherDefault {
         }
 
         // Get the snapshots, if any, otherwise grap the current DOM content
-        List<String> snapshots = program.getSnapshots();
+        List<String> snapshots = interpreter.getSnapshots();
         if(snapshots.size() <= 0) {
             if(takeScreenshot()) {
                 screenshot(interpreter);
@@ -465,8 +449,20 @@ public class FetcherChrome extends FetcherDefault {
      */
     private boolean screenshot(MagnesiumScript interpreter) {
         try {
-            new Screenshot(driver, null, pluginConfig.get("chrome.selenium.outputdirectory").toString(), null).execute();
-            return true;
+            if (pluginConfig.containsKey("chrome.selenium.outputdirectory")) {
+                // Guarnetee the path to file exists and is open for writing
+                Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(),
+                        jobContext.getId(), "errors");
+                File f = path.toFile();
+                f.mkdirs();
+
+                // Take the screenshot
+                LOG.warn("Screenshot for Ms not implemented!");
+
+                return false;
+            }
+
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -511,3 +507,4 @@ public class FetcherChrome extends FetcherDefault {
         return null;
     }
 }
+
