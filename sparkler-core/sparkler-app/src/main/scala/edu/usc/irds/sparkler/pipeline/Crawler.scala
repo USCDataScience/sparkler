@@ -200,7 +200,7 @@ class Crawler extends CliTool {
     storageProxy.commitCrawlDb()
     val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
-    GenericFunction(job, GenericProcess.Event.STARTUP,new SQLContext(sc).sparkSession)
+    GenericFunction(job, GenericProcess.Event.STARTUP,new SQLContext(sc).sparkSession, null)
 
     for (_ <- 1 to iterations) {
       var deepCrawlHosts = new mutable.HashSet[String]()
@@ -240,11 +240,12 @@ class Crawler extends CliTool {
       fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
         FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
       }).persist()
+      GenericFunction(job, GenericProcess.Event.ITERATION_COMPLETE,new SQLContext(sc).sparkSession, fetchedRdd)
       scoreAndStore(fetchedRdd, taskId, storageProxy)
     }
     storageProxy.close()
     //PluginService.shutdown(job)
-    GenericFunction(job, GenericProcess.Event.SHUTDOWN,new SQLContext(sc).sparkSession)
+    GenericFunction(job, GenericProcess.Event.SHUTDOWN,new SQLContext(sc).sparkSession, null)
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
   }
@@ -298,6 +299,7 @@ class Crawler extends CliTool {
 
     val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.map(d => ScoreUpdateSolrTransformer(d))
     val scoreUpdateFunc = new SolrStatusUpdate(job)
+    scoreUpdateRdd.checkpoint()
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
 
     //TODO (was OutlinkUpsert)
