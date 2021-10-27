@@ -1,13 +1,9 @@
 package com.kytheralabs.databricks;
 
-
-//import com.kytheralabs.management.jobutils.JobAPI;
-import com.google.common.base.Function;
-import com.kytheralabs.management.Crawl;
 import edu.usc.irds.sparkler.AbstractExtensionPoint;
 import edu.usc.irds.sparkler.GenericProcess;
 import edu.usc.irds.sparkler.SparklerConfiguration;
-import edu.usc.irds.sparkler.model.CrawlData;
+//import edu.usc.irds.sparkler.model.CrawlData;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.SparkSession;
@@ -29,7 +25,7 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
         SparklerConfiguration config = this.jobContext.getConfiguration();
         Map<String, Object> pluginConfig = config.getPluginConfiguration(pluginId);
 
-        JavaRDD<CrawlData> crawldata = null;
+        /*JavaRDD<CrawlData> crawldata = null;
         if(fetchedRDDs != null){
             crawldata = ((RDD<CrawlData>) fetchedRDDs).toJavaRDD();
         }
@@ -37,7 +33,7 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
         List<CrawlData> cd = crawldata.collect();
         for(CrawlData c :cd ){
             c.fetchedData().getMetadata().get("jobmeta");
-        }
+        }*/
         if(pluginConfig.containsKey("events")) {
             Map<String,Object> o = (Map<String, Object>) pluginConfig.get("events");
             if(o.containsKey(event.toString().toLowerCase())){
