@@ -17,7 +17,7 @@ object GenericFunction
       try {
         genericProc match {
           case Some(genericProc) =>
-            genericProc.executeProcess(event, spark)
+            genericProc.executeProcess(event, spark, null)
             LOG.info(s"Executing Event Process $event")
             event
           case None =>
