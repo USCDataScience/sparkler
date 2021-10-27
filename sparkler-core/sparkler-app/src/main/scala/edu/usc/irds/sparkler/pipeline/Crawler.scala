@@ -143,10 +143,6 @@ class Crawler extends CliTool {
   var job: SparklerJob = _
   var sc: SparkContext = _
 
-  import java.nio.file.Files
-  val tempDir: File = Files.createTempDirectory("checkpoints").toFile
-  sc.setCheckpointDir(tempDir.getPath)
-
   def setConfig(): Unit ={
     if (configOverride != ""){
       sparklerConf.overloadConfig(configOverride.mkString(" "));
@@ -188,6 +184,10 @@ class Crawler extends CliTool {
     else if(!jarPath.isEmpty) {
       sc.getConf.setJars(jarPath)
     }
+    import java.nio.file.Files
+    val tempDir: File = Files.createTempDirectory("checkpoints").toFile
+    sc.setCheckpointDir(tempDir.getPath)
+
     LOG.info("Setting local job: " + sparklerConf.get("fetcher.headers"))
     job = new SparklerJob(jobId, sparklerConf, "")
   }
