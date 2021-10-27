@@ -8,5 +8,5 @@ public interface GenericProcess extends ExtensionPoint{
         STARTUP,
         ITERATION_COMPLETE,
     }
-    void executeProcess(Event e, Object spark) throws Exception;
+    void executeProcess(Event e, Object spark, Object fetchedRdds) throws Exception;
 }

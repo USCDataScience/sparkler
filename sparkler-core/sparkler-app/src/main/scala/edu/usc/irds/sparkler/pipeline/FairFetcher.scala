@@ -57,46 +57,50 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
 
   def persistDocument(data: CrawlData, jobContext: SparklerConfiguration): Unit = {
     LOG.info("Persisting Document")
-    if (jobContext.containsKey("fetcher.persist.content.location")) {
-      val uri = new URI(data.fetchedData.getResource.getUrl)
-      val domain = uri.getHost
-      val outputDirectory = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
-        data.fetchedData.getResource.getCrawlId, domain).toFile
-      var outputFile :File = null
-      if (jobContext.get("fetcher.persist.content.filename").toString == "hash") {
-        val allTypes = MimeTypes.getDefaultMimeTypes
-        val ctype = allTypes.forName(data.fetchedData.getContentType)
-        val ext = ctype.getExtension
-        if(ext == null || ext == "") {
-          var ext = FilenameUtils.getExtension(data.fetchedData.getResource.getUrl)
-          if (ext.contains("#") || ext.contains("?")) {
-            val splits = ext.split("[#?]")
-            ext = splits(0)
+    try {
+      if (jobContext.containsKey("fetcher.persist.content.location")) {
+
+        val uri = new URI(data.fetchedData.getResource.getUrl)
+        val domain = uri.getHost
+        val outputDirectory = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
+          data.fetchedData.getResource.getCrawlId, domain).toFile
+        var outputFile: File = null
+        if (jobContext.get("fetcher.persist.content.filename").toString == "hash") {
+          val allTypes = MimeTypes.getDefaultMimeTypes
+          val ctype = allTypes.forName(data.fetchedData.getContentType)
+          val ext = ctype.getExtension
+          if (ext == null || ext == "") {
+            var ext = FilenameUtils.getExtension(data.fetchedData.getResource.getUrl)
+            if (ext.contains("#") || ext.contains("?")) {
+              val splits = ext.split("[#?]")
+              ext = splits(0)
+            }
+            ext = "." + ext
           }
-          ext = "." + ext
-        }
 
-        if(data.fetchedData.getContenthash == null){
-          outputFile = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
-            data.fetchedData.getResource.getCrawlId, domain, data.fetchedData.getResource.getDedupeId + ext).toFile
-        } else{
-          outputFile = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
-            data.fetchedData.getResource.getCrawlId, domain, data.fetchedData.getContenthash + ext).toFile
+          if (data.fetchedData.getContenthash == null) {
+            outputFile = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
+              data.fetchedData.getResource.getCrawlId, domain, data.fetchedData.getResource.getDedupeId + ext).toFile
+          } else {
+            outputFile = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
+              data.fetchedData.getResource.getCrawlId, domain, data.fetchedData.getContenthash + ext).toFile
+          }
         }
-
+        else {
+          outputFile = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
+            data.fetchedData.getResource.getCrawlId, domain, FilenameUtils.getName(data.fetchedData.getResource.getUrl)).toFile
+        }
+        LOG.info("Creating directory: " + outputFile.toPath.getParent.toString)
+        outputFile.toPath.getParent.toFile.mkdirs()
+        try {
+          LOG.info("Writing to: " + outputFile.toString)
+          val outputStream = new FileOutputStream(outputFile)
+          try outputStream.write(data.fetchedData.getContent)
+          finally if (outputStream != null) outputStream.close()
+        }
       }
-      else {
-        outputFile = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
-          data.fetchedData.getResource.getCrawlId, domain, FilenameUtils.getName(data.fetchedData.getResource.getUrl)).toFile
-      }
-      LOG.info("Creating directory: " + outputFile.toPath.getParent.toString)
-      outputFile.toPath.getParent.toFile.mkdirs()
-      try {
-        LOG.info("Writing to: " + outputFile.toString)
-        val outputStream = new FileOutputStream(outputFile)
-        try outputStream.write(data.fetchedData.getContent)
-        finally if (outputStream != null) outputStream.close()
-      }
+    } catch {
+      case e : Throwable => println("Could not persist data to file system." + e.printStackTrace)
     }
   }
 
