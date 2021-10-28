@@ -92,7 +92,7 @@ jobs:
           DEST_JAR: ${{ env.DATABRICKS_RELEASE_PATH }}/${{ env.PKG_NAME }}-${{ env.PKG_VERSION }}-$GITHUB_SHA.jar
 
       - name: Deploy plugins to Databricks
-        run: databricks fs cp --recursive ${{ env.SRC_JARS }} ${{ env.DEST_DIR }}
+        run: databricks fs cp --overwrite --recursive ${{ env.SRC_JARS }} ${{ env.DEST_DIR }}
         working-directory: ${{ env.PKG_PATH }}
         env:
           SRC_JARS: build/plugins/
