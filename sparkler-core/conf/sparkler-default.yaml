@@ -142,7 +142,7 @@ plugins:
         - "--disable-extensions" 
         - "--ignore-certificate-errors" 
         - "--incognito" 
-        - "--window-size=1920,1080" 
+        - "--window-size=1920,1080"
         - "--disable-background-networking"
         - "--safebrowsing-disable-auto-update"
         - "--disable-sync"
