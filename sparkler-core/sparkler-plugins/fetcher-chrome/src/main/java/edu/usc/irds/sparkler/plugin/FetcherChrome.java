@@ -151,6 +151,7 @@ public class FetcherChrome extends FetcherDefault {
         } else {
             final ChromeOptions chromeOptions = new ChromeOptions();
             if(proxyaddress != ""){
+                System.out.println("Setting up proxy: "+proxyaddress);
                 Proxy proxyObj = new Proxy();
                 proxyObj.setHttpProxy(proxyaddress);
                 proxyObj.setSslProxy(proxyaddress);
@@ -160,7 +161,7 @@ public class FetcherChrome extends FetcherDefault {
 
             List<String> chromedefaults = Arrays.asList("--auto-open-devtools-for-tabs", "--headless", "--no-sandbox",
                     "--disable-gpu", "--disable-extensions", "--ignore-certificate-errors", "--incognito",
-                    "--window-size=1920,1080", "--proxy-server='direct://", "--proxy-bypass-list=*",
+                    "--window-size=1920,1080",
                     "--disable-background-networking", "--safebrowsing-disable-auto-update", "--disable-sync",
                     "--metrics-recording-only", "--disable-default-apps", "--no-first-run", "--disable-setuid-sandbox",
                     "--hide-scrollbars", "--no-zygote", "--disable-notifications", "--disable-logging",
@@ -175,10 +176,11 @@ public class FetcherChrome extends FetcherDefault {
             chromeOptions.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
             chromeOptions.setCapability("goog:loggingPrefs", logPrefs);
 
+
             List<String> vals = (List<String>) (pluginConfig.getOrDefault("chrome.options", chromedefaults));
             vals.add("--user-agent=" + getUserAgent());
             chromeOptions.addArguments(vals);
-
+            System.out.println("Launching Chrome with these options: "+ vals);
             chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 
             if (loc.equals("local")) {
