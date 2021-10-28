@@ -144,11 +144,19 @@ public class FetcherChrome extends FetcherDefault {
      */
     private void startDriver() throws UnknownHostException, MalformedURLException {
         String loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
+        String proxyaddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "");
 
         if (loc.equals("")) {
             driver = new ChromeDriver();
         } else {
             final ChromeOptions chromeOptions = new ChromeOptions();
+            if(proxyaddress != ""){
+                Proxy proxyObj = new Proxy();
+                proxyObj.setHttpProxy(proxyaddress);
+                proxyObj.setSslProxy(proxyaddress);
+                chromeOptions.setCapability("proxy", proxyObj);
+            }
+
 
             List<String> chromedefaults = Arrays.asList("--auto-open-devtools-for-tabs", "--headless", "--no-sandbox",
                     "--disable-gpu", "--disable-extensions", "--ignore-certificate-errors", "--incognito",
