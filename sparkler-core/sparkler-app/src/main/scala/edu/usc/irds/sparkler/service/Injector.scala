@@ -16,23 +16,21 @@
  */
 
 package edu.usc.irds.sparkler.service
-import java.io.File
-import java.util
-import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.pipeline.UrlInjectorFunction
 import edu.usc.irds.sparkler.util.JobUtil
+import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
+import org.apache.commons.validator.routines.UrlValidator
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
-import scala.collection.JavaConversions._
-import scala.io.Source
+import java.io.File
 import java.nio.file.NotDirectoryException
-import org.apache.commons.validator.routines.UrlValidator
-
-import scala.collection.mutable.Stack
-import scala.collection.mutable.ArrayBuffer
+import java.util
+import scala.collection.JavaConversions._
+import scala.collection.mutable.{ArrayBuffer, Stack}
+import scala.io.Source
 
 /**
   *
@@ -85,8 +83,8 @@ class Injector extends CliTool {
       conf.overloadConfig(configOverride.mkString(" "));
     }
     if(configOverrideEncoded != ""){
-      import java.util.Base64
       import java.nio.charset.StandardCharsets
+      import java.util.Base64
       val decoded = Base64.getDecoder().decode(configOverrideEncoded)
       val str = new String(decoded, StandardCharsets.UTF_8)
       conf.overloadConfig(str)
@@ -179,6 +177,7 @@ object Injector extends Loggable {
   val SEED_SCORE = new java.util.HashMap[String,java.lang.Double](SMAP)
   def main(args: Array[String]): Unit = {
     val injector = new Injector()
+    setLogLevel()
     injector.run(args)
     println(s">>jobId = ${injector.jobId}")
   }
