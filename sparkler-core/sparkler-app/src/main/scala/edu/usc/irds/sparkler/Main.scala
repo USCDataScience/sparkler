@@ -55,9 +55,14 @@ object Main extends Loggable {
        */
       val llIndex : Integer = cliArgs.indexOf("-ll")
       val llValIndex = llIndex + 1
-      selectedLogLevel = if(llIndex < 0) "INFO" else cliArgs(llValIndex)
+      try {
+        selectedLogLevel = if(llIndex < 0) "INFO" else cliArgs(llValIndex)
+        cliArgs = cliArgs.patch(llIndex, Nil, 2)
+      }
+      catch {
+        case _ : ArrayIndexOutOfBoundsException => selectedLogLevel = "INFO"
+      }
       setLogLevel()
-      cliArgs = cliArgs.patch(llIndex, Nil, 2)
 
       if (subCommands.contains(args(0))){
         val method = subCommands(args(0))._1.getMethod("main", args.getClass)
