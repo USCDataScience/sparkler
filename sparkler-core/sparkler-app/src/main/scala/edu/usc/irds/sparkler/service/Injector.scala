@@ -176,8 +176,8 @@ object Injector extends Loggable {
 
   val SEED_SCORE = new java.util.HashMap[String,java.lang.Double](SMAP)
   def main(args: Array[String]): Unit = {
-    val injector = new Injector()
     setLogLevel()
+    val injector = new Injector()
     injector.run(args)
     println(s">>jobId = ${injector.jobId}")
   }

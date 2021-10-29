@@ -42,10 +42,8 @@ trait Loggable {
       case "INFO" => Level.INFO
       case _ => throw new IllegalArgumentException("Invalid log level provided")
     }
-
     LOG.setLevel(newLevel)
   }
-
 }
 
 object Loggable {
