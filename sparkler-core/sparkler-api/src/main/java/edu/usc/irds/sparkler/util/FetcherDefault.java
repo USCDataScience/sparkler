@@ -5,16 +5,34 @@ import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.*;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.*;
@@ -43,10 +61,22 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
 
     public FetcherDefault(){}
 
+    String proxyurl = null;
+    String proxyport = null;
+    String proxyscheme = null;
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
         super.init(context, pluginId);
         SparklerConfiguration conf = context.getConfiguration();
+        if (conf.containsKey("fetcher.proxy.url")){
+            proxyurl = (String) conf.get("fetcher.proxy.url");
+        }
+        if (conf.containsKey("fetcher.proxy.port")){
+            proxyport = (String) conf.get("fetcher.proxy.port");
+        }
+        if (conf.containsKey("fetcher.proxy.scheme")){
+            proxyscheme = (String) conf.get("fetcher.proxy.scheme");
+        }
         if (conf.containsKey(Constants.key.FETCHER_USER_AGENTS)) {
             Object agents = conf.get(Constants.key.FETCHER_USER_AGENTS);
             if (agents instanceof String) { // it is a file name
@@ -97,53 +127,74 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
     }
 
     public FetchedData fetch(Resource resource) throws Exception {
+
+
         LOG.info("DEFAULT FETCHER {}", resource.getUrl());
-        HttpURLConnection urlConn = (HttpURLConnection) new URL(resource.getUrl()).openConnection();
+        HttpClientBuilder httpClient = HttpClients.custom();
+        RequestConfig.Builder requestConfig = RequestConfig.custom();
+        if(proxyurl != null && !proxyurl.equals("")){
+            HttpHost proxy = new HttpHost("us-wa.proxymesh.com", 31280);
+            DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+            httpClient.setRoutePlanner(routePlanner);
+            requestConfig.setProxy(proxy);
+        }
+
         if (httpHeaders != null){
-            httpHeaders.forEach(urlConn::setRequestProperty);
+            List<Header> headers = new ArrayList<>();
+            for (Map.Entry<String, String> entry : httpHeaders.entrySet()) {
+                Header header = new BasicHeader(entry.getKey(), entry.getValue());
+                headers.add(header);
+            }
+            httpClient.setDefaultHeaders(headers);
             LOG.debug("Adding headers:{}", httpHeaders.keySet());
         } else {
             LOG.debug("No headers are available");
         }
         String userAgentValue = getUserAgent();
+
         if (userAgentValue != null) {
             LOG.debug(USER_AGENT + ": " + userAgentValue);
-            urlConn.setRequestProperty(USER_AGENT, userAgentValue);
+            httpClient.setUserAgent(userAgentValue);
         } else {
             LOG.debug("No rotating agents are available");
         }
 
-        urlConn.setConnectTimeout(CONNECT_TIMEOUT);
-        urlConn.setReadTimeout(READ_TIMEOUT);
-        urlConn.setRequestMethod(resource.getHttpMethod());
+        requestConfig.setConnectTimeout(CONNECT_TIMEOUT);
+        requestConfig.setConnectionRequestTimeout(READ_TIMEOUT);
+        requestConfig.setSocketTimeout(CONNECT_TIMEOUT);
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        cm.setDefaultSocketConfig(SocketConfig.custom().setSoTimeout(30000).build());
+        httpClient.setConnectionManager(cm);
+        HttpRequestBase http = null;
+        if(resource.getHttpMethod().equalsIgnoreCase("GET")){
+            // TODO FIX FOR NON PROXY
+            http = new HttpGet(resource.getUrl());
+        } else if(resource.getHttpMethod().equalsIgnoreCase("POST")){
+            // TODO FIX FOR NON PROXY
+            http = new HttpPost(resource.getUrl());
+        }
         if(resource.getMetadata()!=null && !resource.getMetadata().equals("")){
             JSONObject json = processMetadata(resource.getMetadata());
 
             if (json.containsKey("form")) {
-                urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                urlConn.setRequestProperty( "charset", "utf-8");
-                byte[] postData = processForm((JSONObject) json.get("form"));
-                urlConn.setRequestProperty( "Content-Length", Integer.toString( postData.length ));
-                urlConn.setDoOutput(true);
-                try( DataOutputStream wr = new DataOutputStream( urlConn.getOutputStream())) {
-                    wr.write( postData );
-                }
+                UrlEncodedFormEntity postData = processForm((JSONObject) json.get("form"));
+                ((HttpPost)http).setEntity(postData);
             } else if (json.containsKey("JSON")) {
-                //processJson((JSONObject) json.get("json"), connection);
-                urlConn.setRequestProperty("Content-Type", "application/json");
-                urlConn.setRequestProperty( "charset", "utf-8");
-                byte[] postData = processJson((JSONObject) json.get("JSON"), null);
-                urlConn.setRequestProperty( "Content-Length", Integer.toString( postData.length ));
-                urlConn.setDoOutput(true);
-                try( DataOutputStream wr = new DataOutputStream( urlConn.getOutputStream())) {
-                    wr.write( postData );
-                }
+                String postData = processJson((JSONObject) json.get("JSON"), null);
+                HttpEntity stringEntity = new StringEntity(postData, ContentType.APPLICATION_JSON);
+                ((HttpPost)http).setEntity(stringEntity);
             }
         }
-        int responseCode = ((HttpURLConnection)urlConn).getResponseCode();
+
+        RequestConfig r = requestConfig.build();
+        CloseableHttpResponse response2 = httpClient.setDefaultRequestConfig(r).build().execute(http);
+        int responseCode = response2.getStatusLine().getStatusCode();
         LOG.debug("STATUS CODE : " + responseCode + " " + resource.getUrl());
         boolean truncated = false;
-        try (InputStream inStream = urlConn.getInputStream()) {
+        String responseBody = EntityUtils.toString(response2.getEntity(), StandardCharsets.UTF_8);
+        HttpEntity entity = response2.getEntity();
+        InputStream targetStream = IOUtils.toInputStream(responseBody);
+        try (InputStream inStream = targetStream) {
             ByteArrayOutputStream bufferOutStream = new ByteArrayOutputStream();
             byte[] buffer = new byte[4096]; // 4kb buffer
             int read;
@@ -152,7 +203,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
                 if (bufferOutStream.size() >= CONTENT_LIMIT) {
                     truncated = true;
                     LOG.info("Content Truncated: {}, TotalSize={}, TruncatedSize={}", resource.getUrl(),
-                            urlConn.getContentLength(), bufferOutStream.size());
+                            entity.getContentLength(), bufferOutStream.size());
                     break;
                 }
             }
@@ -167,10 +218,19 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             }
 
             IOUtils.closeQuietly(bufferOutStream);
-            FetchedData fetchedData = new FetchedData(rawData, urlConn.getContentType(), responseCode);
+            FetchedData fetchedData = new FetchedData(rawData, entity.getContentType().getValue(), responseCode);
             resource.setStatus(ResourceStatus.FETCHED.toString());
             fetchedData.setResource(resource);
-            fetchedData.setHeaders(urlConn.getHeaderFields());
+            Header[] headers = response2.getAllHeaders();
+            Map<String, List<String>> headermap = new HashMap<>();
+            for (Header h : headers){
+                String name = h.getName();
+                String val = h.getValue();
+                List<String> l = new ArrayList<>();
+                l.add(val);
+                headermap.put(name, l);
+            }
+            fetchedData.setHeaders(headermap);
             fetchedData.setContenthash(contentHash);
             if (truncated) {
                 fetchedData.getHeaders().put(TRUNCATED, Collections.singletonList(Boolean.TRUE.toString()));
@@ -181,8 +241,8 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
     private static String toHexString(byte[] bytes) {
         StringBuilder hexString = new StringBuilder();
 
-        for (int i = 0; i < bytes.length; i++) {
-            String hex = Integer.toHexString(0xFF & bytes[i]);
+        for (byte aByte : bytes) {
+            String hex = Integer.toHexString(0xFF & aByte);
             if (hex.length() == 1) {
                 hexString.append('0');
             }
@@ -211,38 +271,21 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
         }
     }
 
-    private byte[] processJson(JSONObject object, HttpURLConnection conn) {
-
-        JSONParser parser = new JSONParser();
-        try {
-            //JSONObject json = (JSONObject) parser.parse(object.toString());
-            String s = object.toJSONString();
-            System.out.println("PROCESSED JSON: "+ s);
-            return object.toJSONString().getBytes("UTF-8");
-
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-
-        return null;
+    private String processJson(JSONObject object, HttpURLConnection conn) {
+        String s = object.toJSONString();
+        System.out.println("PROCESSED JSON: "+ s);
+        return object.toJSONString();
     }
 
-    private byte[] processForm(JSONObject object) {
+    private UrlEncodedFormEntity processForm(JSONObject object) {
+        List<NameValuePair> form = new ArrayList<>();
         Set keys = object.keySet();
-        Iterator keyIter = keys.iterator();
-        String content = "";
-        for (int i = 0; keyIter.hasNext(); i++) {
-            Object key = keyIter.next();
-            if (i != 0) {
-                content += "&";
-            }
-            try {
-                content += key + "=" + URLEncoder.encode((String) object.get(key), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+        for (Object o : keys) {
+            String key = (String) o;
+            String val = (String) object.get(key);
+            form.add(new BasicNameValuePair(key, val));
         }
-        return content.getBytes(StandardCharsets.UTF_8);
+        return new UrlEncodedFormEntity(form, Consts.UTF_8);
     }
 
     private JSONObject processMetadata(String metadata) {
