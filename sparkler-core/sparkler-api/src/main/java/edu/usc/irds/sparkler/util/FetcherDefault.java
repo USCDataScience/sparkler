@@ -62,7 +62,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
     public FetcherDefault(){}
 
     String proxyurl = null;
-    String proxyport = null;
+    Integer proxyport = null;
     String proxyscheme = null;
     @Override
     public void init(JobContext context, String pluginId) throws SparklerException {
@@ -72,7 +72,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
             proxyurl = (String) conf.get("fetcher.proxy.url");
         }
         if (conf.containsKey("fetcher.proxy.port")){
-            proxyport = (String) conf.get("fetcher.proxy.port");
+            proxyport = Integer.parseInt((String) conf.get("fetcher.proxy.port"));
         }
         if (conf.containsKey("fetcher.proxy.scheme")){
             proxyscheme = (String) conf.get("fetcher.proxy.scheme");
@@ -133,7 +133,13 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
         HttpClientBuilder httpClient = HttpClients.custom();
         RequestConfig.Builder requestConfig = RequestConfig.custom();
         if(proxyurl != null && !proxyurl.equals("")){
-            HttpHost proxy = new HttpHost("us-wa.proxymesh.com", 31280);
+            LOG.info("Setting up the Proxy: " + proxyurl + " " + proxyport + " " + proxyscheme);
+            HttpHost proxy;
+            if(proxyscheme == null) {
+                 proxy = new HttpHost(proxyurl, proxyport);
+            } else{
+                proxy = new HttpHost(proxyurl, proxyport, proxyscheme);
+            }
             DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
             httpClient.setRoutePlanner(routePlanner);
             requestConfig.setProxy(proxy);
@@ -180,7 +186,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
                 UrlEncodedFormEntity postData = processForm((JSONObject) json.get("form"));
                 ((HttpPost)http).setEntity(postData);
             } else if (json.containsKey("JSON")) {
-                String postData = processJson((JSONObject) json.get("JSON"), null);
+                String postData = processJson((JSONObject) json.get("JSON"));
                 HttpEntity stringEntity = new StringEntity(postData, ContentType.APPLICATION_JSON);
                 ((HttpPost)http).setEntity(stringEntity);
             }
@@ -271,7 +277,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
         }
     }
 
-    private String processJson(JSONObject object, HttpURLConnection conn) {
+    private String processJson(JSONObject object) {
         String s = object.toJSONString();
         System.out.println("PROCESSED JSON: "+ s);
         return object.toJSONString();
