@@ -340,6 +340,7 @@ public class FetcherChrome extends FetcherDefault {
                 throw new IllegalArgumentException("The version `" + type + "` is invalid! Must be one of: " + Arrays.toString(ScriptType.values()));
             }
         } else{
+            resource.setStatus(ResourceStatus.FETCHED.toString());
             return new FetchedData(driver.getPageSource().getBytes(), "text/html", 200);
         }
     }
