@@ -21,9 +21,14 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.LaxRedirectStrategy;
+import org.apache.http.ssl.SSLContextBuilder;
 import uk.co.spicule.magnesium_script.Program;
 import uk.co.spicule.seleniumscripter.SeleniumScripter;
 import uk.co.spicule.magnesium_script.MagnesiumScript;
@@ -60,6 +65,9 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -509,8 +517,11 @@ public class FetcherChrome extends FetcherDefault {
      */
     private String contentType(String uri)  {
         try {
-            HttpClient instance = HttpClientBuilder.create()
-                    .setRedirectStrategy(new LaxRedirectStrategy()).build();
+            CloseableHttpClient instance = HttpClients
+                    .custom().setRedirectStrategy(new LaxRedirectStrategy())
+                    .setSSLContext(new SSLContextBuilder().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build())
+                    .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                    .build();
             HttpGet g = new HttpGet(uri);
             HttpResponse response = instance.execute(g);
             HttpEntity entity = response.getEntity();
@@ -522,7 +533,7 @@ public class FetcherChrome extends FetcherDefault {
             } else if(uri.endsWith(".json")){
                 return "application/json";
             }
-        } catch (IOException e) {
+        } catch (IOException | KeyManagementException | KeyStoreException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
         return null;
