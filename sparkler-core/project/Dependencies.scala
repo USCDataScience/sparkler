@@ -47,6 +47,7 @@ object Dependencies {
   object Slf4j {
     private val group = "org.slf4j"
     private val version = "1.7.30"
+    lazy val logback = "ch.qos.logback" % "logback-classic" % "1.2.6"
     lazy val api = group % "slf4j-api" % version
     lazy val log4j12 = group % "slf4j-log4j12" % version
   }

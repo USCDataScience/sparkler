@@ -17,15 +17,12 @@
 
 package edu.usc.irds.sparkler.pipeline
 
-import java.io.File
-
-import org.apache.spark.sql.SQLContext
 import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.storage.StorageProxy
-import edu.usc.irds.sparkler.storage.solr.{ScoreUpdateSolrTransformer, SolrProxy, SolrStatusUpdate, SolrUpsert, StatusUpdateSolrTransformer}
+import edu.usc.irds.sparkler.storage.solr.{ScoreUpdateSolrTransformer, SolrStatusUpdate, SolrUpsert, StatusUpdateSolrTransformer}
 import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
@@ -33,15 +30,16 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat
 import org.apache.nutch.protocol
 import org.apache.solr.common.SolrInputDocument
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.SparkSession
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
+import java.io.File
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 import scala.collection.mutable
 import scala.io.Source
-import java.util.Base64
-import java.nio.charset.StandardCharsets
 
 /**
   *
@@ -388,6 +386,7 @@ object Crawler extends Loggable with Serializable{
   }
 
   def main(args: Array[String]): Unit = {
+    setLogLevel()
     new Crawler().run(args)
   }
 }

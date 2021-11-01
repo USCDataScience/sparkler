@@ -21,8 +21,8 @@ import java.io.ByteArrayInputStream
 import java.net.URL
 import java.nio.file.Paths
 import java.security.MessageDigest
-
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
+import edu.usc.irds.sparkler.service.Injector.setLogLevel
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
@@ -159,6 +159,7 @@ class Dumper extends CliTool with Loggable {
 
 object Dumper {
   def main(args: Array[String]): Unit = {
+    setLogLevel()
     new Dumper().run(args)
   }
 }
