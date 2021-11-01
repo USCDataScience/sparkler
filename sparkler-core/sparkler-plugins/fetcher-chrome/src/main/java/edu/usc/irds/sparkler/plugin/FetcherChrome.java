@@ -17,8 +17,15 @@
 
 package edu.usc.irds.sparkler.plugin;
 
-import com.google.gson.JsonObject;
-import com.kytheralabs.SeleniumScripter;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.LaxRedirectStrategy;
+import uk.co.spicule.magnesium_script.Program;
+import uk.co.spicule.seleniumscripter.SeleniumScripter;
 import uk.co.spicule.magnesium_script.MagnesiumScript;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerConfiguration;
@@ -48,18 +55,13 @@ import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.NotImplementedException;
 import java.net.MalformedURLException;
 
-import javax.net.ssl.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 @Extension
 public class FetcherChrome extends FetcherDefault {
@@ -236,9 +238,12 @@ public class FetcherChrome extends FetcherDefault {
              * using default Fetcher
              */
             String mimeType = contentType(resource.getUrl());
-            if (mimeType.contains("application/json")) {
+            if (mimeType != null && mimeType.contains("application/json")) {
                 data = jsonCrawl(resource);
-            } else if (mimeType.contains("text/html")) {
+            } else if (mimeType != null && mimeType.contains("text/html")) {
+                data = htmlCrawl(resource);
+            } else if(mimeType != null && mimeType.contains("text/plain")){
+                //Some websites are junk and return text plain.
                 data = htmlCrawl(resource);
             } else {
                 LOG.warn("The mime type `" + mimeType + "` is not supported for crawling!");
@@ -319,7 +324,7 @@ public class FetcherChrome extends FetcherDefault {
                 SeleniumScripter interpreter = new SeleniumScripter(driver);
                 return runGuardedInterpreter(script, interpreter, resource);
             } else if (type == ScriptType.MAGNESIUM) {
-                MagnesiumScript interpreter = new MagnesiumScript(driver, LOG);
+                MagnesiumScript interpreter = new MagnesiumScript(driver);
                 return runGuardedInterpreter(script, interpreter, resource);
             } else {
                 throw new IllegalArgumentException("The version `" + type + "` is invalid! Must be one of: " + Arrays.toString(ScriptType.values()));
@@ -385,8 +390,9 @@ public class FetcherChrome extends FetcherDefault {
      */
     private FetchedData runGuardedInterpreter(Map script, MagnesiumScript interpreter, Resource resource) {
         LOG.info("Executing script with Ms interpreter: " + script);
+        Program program = null;
         try {
-            interpreter.interpret(script);
+            program = interpreter.interpret(script);
 
             resource.setStatus(ResourceStatus.FETCHED.toString());
         } catch (Exception e) {
@@ -405,7 +411,7 @@ public class FetcherChrome extends FetcherDefault {
         }
 
         // Get the snapshots, if any, otherwise grap the current DOM content
-        List<String> snapshots = interpreter.getSnapshots();
+        List<String> snapshots = program.getSnapshots();
         if(snapshots.size() <= 0) {
             if(takeScreenshot()) {
                 screenshot(interpreter);
@@ -503,11 +509,15 @@ public class FetcherChrome extends FetcherDefault {
      */
     private String contentType(String uri)  {
         try {
-            URLConnection u = new URL(uri).openConnection();
-            String ct = u.getContentType();
+            HttpClient instance = HttpClientBuilder.create()
+                    .setRedirectStrategy(new LaxRedirectStrategy()).build();
+            HttpGet g = new HttpGet(uri);
+            HttpResponse response = instance.execute(g);
+            HttpEntity entity = response.getEntity();
+            ContentType ct = ContentType.getOrDefault(entity);
             if(ct != null) {
-                return ct.toLowerCase();
-            } else if(uri.endsWith(".html") || uri.endsWith(".html")){
+                return ct.getMimeType().toLowerCase();
+            } else if(uri.endsWith(".htm") || uri.endsWith(".html")){
                 return "text/html";
             } else if(uri.endsWith(".json")){
                 return "application/json";

@@ -17,6 +17,8 @@
 
 package edu.usc.irds.sparkler.base
 
+import ch.qos.logback.classic.{Level, Logger}
+import edu.usc.irds.sparkler.base.Loggable.selectedLogLevel
 import org.slf4j.LoggerFactory
 
 /**
@@ -24,5 +26,26 @@ import org.slf4j.LoggerFactory
   */
 trait Loggable {
 
-  lazy val LOG = LoggerFactory.getLogger(getClass)
+  val LOG = LoggerFactory.getLogger(getClass).asInstanceOf[Logger]
+
+  def setLogLevel(): Unit = {
+
+    val level = selectedLogLevel
+
+    val newLevel: Level = level match {
+      case "ALL" => Level.ALL
+      case "DEBUG" => Level.DEBUG
+      case "ERROR" => Level.ERROR
+      case "TRACE" => Level.TRACE
+      case "FATAL" => Level.WARN
+      case "OFF" => Level.OFF
+      case "INFO" => Level.INFO
+      case _ => throw new IllegalArgumentException("Invalid log level provided")
+    }
+    LOG.setLevel(newLevel)
+  }
+}
+
+object Loggable {
+  var selectedLogLevel = "INFO"
 }
