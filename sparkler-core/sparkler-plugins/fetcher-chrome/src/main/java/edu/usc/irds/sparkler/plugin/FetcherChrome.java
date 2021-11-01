@@ -17,7 +17,6 @@
 
 package edu.usc.irds.sparkler.plugin;
 
-import com.google.gson.JsonObject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -25,10 +24,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.LaxRedirectStrategy;
+import uk.co.spicule.magnesium_script.Program;
 import uk.co.spicule.seleniumscripter.SeleniumScripter;
 import uk.co.spicule.magnesium_script.MagnesiumScript;
-import uk.co.spicule.magnesium_script.Program;
-import uk.co.spicule.magnesium_script.expressions.Screenshot;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerConfiguration;
 import edu.usc.irds.sparkler.SparklerException;
@@ -57,18 +55,13 @@ import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.NotImplementedException;
 import java.net.MalformedURLException;
 
-import javax.net.ssl.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 @Extension
 public class FetcherChrome extends FetcherDefault {
@@ -93,16 +86,6 @@ public class FetcherChrome extends FetcherDefault {
         // TODO should change everywhere
         pluginConfig = config.getPluginConfiguration(pluginId);
 
-        // Default to Error log-level
-        setLogLevel("Error");
-    }
-
-    /**
-     * Set the sl4j log level
-     * @param level
-     */
-    public void setLogLevel(String level) {
-        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, level);
     }
 
     /**
@@ -483,8 +466,20 @@ public class FetcherChrome extends FetcherDefault {
      */
     private boolean screenshot(MagnesiumScript interpreter) {
         try {
-            new Screenshot(driver, null, pluginConfig.get("chrome.selenium.outputdirectory").toString(), null).execute();
-            return true;
+            if (pluginConfig.containsKey("chrome.selenium.outputdirectory")) {
+                // Guarnetee the path to file exists and is open for writing
+                Path path = Paths.get(pluginConfig.get("chrome.selenium.outputdirectory").toString(),
+                        jobContext.getId(), "errors");
+                File f = path.toFile();
+                f.mkdirs();
+
+                // Take the screenshot
+                LOG.warn("Screenshot for Ms not implemented!");
+
+                return false;
+            }
+
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -533,3 +528,4 @@ public class FetcherChrome extends FetcherDefault {
         return null;
     }
 }
+
