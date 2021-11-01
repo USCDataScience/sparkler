@@ -18,6 +18,13 @@
 package edu.usc.irds.sparkler.plugin;
 
 import com.google.gson.JsonObject;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import uk.co.spicule.seleniumscripter.SeleniumScripter;
 import uk.co.spicule.magnesium_script.MagnesiumScript;
 import uk.co.spicule.magnesium_script.Program;
@@ -248,11 +255,11 @@ public class FetcherChrome extends FetcherDefault {
              * using default Fetcher
              */
             String mimeType = contentType(resource.getUrl());
-            if (mimeType.contains("application/json")) {
+            if (mimeType != null && mimeType.contains("application/json")) {
                 data = jsonCrawl(resource);
-            } else if (mimeType.contains("text/html")) {
+            } else if (mimeType != null && mimeType.contains("text/html")) {
                 data = htmlCrawl(resource);
-            } else if(mimeType.contains("text/plain")){
+            } else if(mimeType != null && mimeType.contains("text/plain")){
                 //Some websites are junk and return text plain.
                 data = htmlCrawl(resource);
             } else {
@@ -507,11 +514,15 @@ public class FetcherChrome extends FetcherDefault {
      */
     private String contentType(String uri)  {
         try {
-            URLConnection u = new URL(uri).openConnection();
-            String ct = u.getContentType();
+            HttpClient instance = HttpClientBuilder.create()
+                    .setRedirectStrategy(new LaxRedirectStrategy()).build();
+            HttpGet g = new HttpGet(uri);
+            HttpResponse response = instance.execute(g);
+            HttpEntity entity = response.getEntity();
+            ContentType ct = ContentType.getOrDefault(entity);
             if(ct != null) {
-                return ct.toLowerCase();
-            } else if(uri.endsWith(".html") || uri.endsWith(".html")){
+                return ct.getMimeType().toLowerCase();
+            } else if(uri.endsWith(".htm") || uri.endsWith(".html")){
                 return "text/html";
             } else if(uri.endsWith(".json")){
                 return "application/json";
