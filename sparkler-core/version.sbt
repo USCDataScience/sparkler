@@ -1,3 +1,3 @@
 ThisBuild / organization := "com.kythera"
 ThisBuild / scalaVersion := "2.12.12"
-ThisBuild / version := "0.5.8"
+ThisBuild / version := "0.5.10-SNAPSHOT"
