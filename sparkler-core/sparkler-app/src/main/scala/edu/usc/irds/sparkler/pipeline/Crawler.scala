@@ -300,7 +300,7 @@ class Crawler extends CliTool {
   }
 
   def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
-    val job = this.job.asInstanceOf[SparklerJob]
+    val job = this.job
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(job, d))
 
@@ -308,13 +308,16 @@ class Crawler extends CliTool {
     val scoreUpdateFunc = new SolrStatusUpdate(job)
     scoreUpdateRdd.checkpoint()
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
-
+    var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
+    if(rep <= 0){
+      rep = 1
+    }
     //TODO (was OutlinkUpsert)
     val outlinksRdd = scoredRdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
-        parent.getFetchTimestamp, parent.getId, parent.getScoreAsMap) })
+        parent.getFetchTimestamp, parent.getId, parent.getScoreAsMap) }).repartition(rep)
     val upsertFunc = new SolrUpsert(job)
     sc.runJob(outlinksRdd, upsertFunc)
 
