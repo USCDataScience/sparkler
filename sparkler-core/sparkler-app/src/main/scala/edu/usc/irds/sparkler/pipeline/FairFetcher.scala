@@ -55,6 +55,24 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
     }
   }
 
+  def discoverMime(data: CrawlData): String ={
+    val allTypes = MimeTypes.getDefaultMimeTypes
+    var ctype : MimeType = null
+    if(data.fetchedData.getContentType != null || data.fetchedData.getContentType != "") {
+      ctype = allTypes.forName(data.fetchedData.getContentType)
+    }
+    val ext = ctype.getExtension
+    if (ext == null || ext == "") {
+      var ext = FilenameUtils.getExtension(data.fetchedData.getResource.getUrl)
+      if (ext.contains("#") || ext.contains("?")) {
+        val splits = ext.split("[#?]")
+        ext = splits(0)
+      }
+      ext = "." + ext
+    }
+    ext
+  }
+
   def persistDocument(data: CrawlData, jobContext: SparklerConfiguration): Unit = {
     LOG.info("Persisting Document")
     try {
@@ -66,18 +84,7 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
           data.fetchedData.getResource.getCrawlId, domain).toFile
         var outputFile: File = null
         if (jobContext.get("fetcher.persist.content.filename").toString == "hash") {
-          val allTypes = MimeTypes.getDefaultMimeTypes
-          val ctype = allTypes.forName(data.fetchedData.getContentType)
-          val ext = ctype.getExtension
-          if (ext == null || ext == "") {
-            var ext = FilenameUtils.getExtension(data.fetchedData.getResource.getUrl)
-            if (ext.contains("#") || ext.contains("?")) {
-              val splits = ext.split("[#?]")
-              ext = splits(0)
-            }
-            ext = "." + ext
-          }
-
+          val ext = discoverMime(data)
           if (data.fetchedData.getContenthash == null) {
             outputFile = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
               data.fetchedData.getResource.getCrawlId, domain, data.fetchedData.getResource.getDedupeId + ext).toFile
@@ -100,7 +107,11 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
         }
       }
     } catch {
-      case e : Throwable => println("Could not persist data to file system." + e.printStackTrace)
+      case e : Throwable => {
+        println("Could not persist data to file system." + e.getMessage)
+        println(e.getCause)
+        println(e.printStackTrace())
+      }
     }
   }
 

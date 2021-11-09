@@ -161,10 +161,10 @@ class Crawler extends CliTool {
       this.outputPath = jobId
     }
     val conf = new SparkConf().setAppName(jobId)
-    if (sparkMaster != null && !sparkMaster.isEmpty) {
+    if (sparkMaster != null && sparkMaster.nonEmpty) {
       conf.setMaster(sparkMaster)
     }
-    if (!sparkStorage.isEmpty){
+    if (sparkStorage.nonEmpty){
       sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put("crawldb.uri", sparkStorage)
     }
 
@@ -239,6 +239,7 @@ class Crawler extends CliTool {
       if(rep <= 0){
         rep = 1
       }
+      println("Number of partitions configured: " + rep)
       fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
         FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
       }).persist()
@@ -256,7 +257,11 @@ class Crawler extends CliTool {
     if (kafkaEnable) {
       storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
     }
-    val scoredRdd = score(fetchedRdd)
+    var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
+    if(rep <= 0){
+      rep = 1
+    }
+    val scoredRdd = score(fetchedRdd).repartition(rep)
     //Step: Store these to nutch segments
     val outputPath = this.outputPath + "/" + taskId
 
