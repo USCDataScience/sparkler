@@ -308,6 +308,7 @@ class Crawler extends CliTool {
     val scoreUpdateFunc = new SolrStatusUpdate(job)
     scoreUpdateRdd.checkpoint()
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
+    scoreUpdateRdd.checkpoint()
     var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
     if(rep <= 0){
       rep = 1
@@ -319,7 +320,9 @@ class Crawler extends CliTool {
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
         parent.getFetchTimestamp, parent.getId, parent.getScoreAsMap) }).repartition(rep)
     val upsertFunc = new SolrUpsert(job)
+    outlinksRdd.checkpoint()
     sc.runJob(outlinksRdd, upsertFunc)
+    outlinksRdd.checkpoint()
 
     scoredRdd
   }
