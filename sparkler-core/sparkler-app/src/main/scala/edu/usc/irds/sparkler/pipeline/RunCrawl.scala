@@ -20,7 +20,6 @@ class RunCrawl extends Serializable{
   }
 
   def maplogic(r: Resource): (String, Resource) = {
-    print("loop: "+i)
     i = i +1
     (r.getId, r)
   }

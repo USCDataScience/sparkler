@@ -52,8 +52,12 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
     try {
       // Parse OutLinks
       meta.set("resourceName", data.fetchedData.getResource.getUrl)
-      parser.parse(stream, linkHandler, meta)
-      parseData.outlinks = linkHandler.getLinks.asScala.map(_.getUri.trim).filter(!_.isEmpty).toSet
+      if(data.fetchedData.getContent.length>0) {
+        parser.parse(stream, linkHandler, meta)
+      } else{
+        LOG.warn("No data available")
+      }
+      parseData.outlinks = linkHandler.getLinks.asScala.map(_.getUri.trim).filter(_.nonEmpty).toSet
     } catch {
       case e: Throwable =>
         LOG.warn("PARSING-OUTLINKS-ERROR {}", data.fetchedData.getResource.getUrl)
@@ -65,13 +69,17 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
       meta = new Metadata
       meta.set("resourceName", data.fetchedData.getResource.getUrl)
       // Parse Text
-      stream = new ByteArrayInputStream(data.fetchedData.getContent)
+      if(data.fetchedData.getContent.length>0) {
+        stream = new ByteArrayInputStream(data.fetchedData.getContent)
+      } else{
+        LOG.warn("No data available")
+      }
       parser.parse(stream, contentHandler, meta)
       parseData.extractedText = outHandler.toString
       parseData.metadata = meta
     } catch {
       case e: Throwable =>
-        LOG.warn("PARSING-CONTENT-ERROR {}", data.fetchedData.getResource.getUrl + " " + e.getMessage())
+        LOG.warn("PARSING-CONTENT-ERROR {}", data.fetchedData.getResource.getUrl + " " + e.getMessage)
         LOG.debug(e.getMessage, e)
         parseData
     } finally { IOUtils.closeQuietly(stream) }
@@ -80,7 +88,7 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
     val headers = data.fetchedData.getHeaders
     if (headers.containsKey("Location")) {   // redirect
       val redirectUrls = headers.get("Location")
-      parseData.outlinks ++= redirectUrls.asScala.filter(u => u != null && !u.isEmpty)
+      parseData.outlinks ++= redirectUrls.asScala.filter(u => u != null && u.nonEmpty)
     }
     parseData.headers = parseHeaders(headers)
     parseData.contentHash = data.fetchedData.getContenthash
