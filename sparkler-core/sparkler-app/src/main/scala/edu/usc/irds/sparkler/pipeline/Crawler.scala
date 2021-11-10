@@ -240,6 +240,7 @@ class Crawler extends CliTool {
         rep = 1
       }
       println("Number of partitions configured: " + rep)
+      f.checkpoint()
       fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
         FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
       }).persist()
@@ -262,7 +263,9 @@ class Crawler extends CliTool {
       rep = 1
     }
     fetchedRdd.checkpoint()
-    val scoredRdd = score(fetchedRdd).repartition(rep)
+    val scoredRddPre = score(fetchedRdd)
+    scoredRddPre.checkpoint()
+    val scoredRdd = scoredRddPre.repartition(rep)
     scoredRdd.checkpoint()
     //Step: Store these to nutch segments
     val outputPath = this.outputPath + "/" + taskId
@@ -317,11 +320,14 @@ class Crawler extends CliTool {
       rep = 1
     }
     //TODO (was OutlinkUpsert)
-    val outlinksRdd = scoredRdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
+    val outlinksRddpre = scoredRdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
-        parent.getFetchTimestamp, parent.getId, parent.getScoreAsMap) }).repartition(rep)
+        parent.getFetchTimestamp, parent.getId, parent.getScoreAsMap) })
+
+    outlinksRddpre.checkpoint()
+    val outlinksRdd = outlinksRddpre.repartition(rep)
     val upsertFunc = new SolrUpsert(job)
     outlinksRdd.checkpoint()
     sc.runJob(outlinksRdd, upsertFunc)
