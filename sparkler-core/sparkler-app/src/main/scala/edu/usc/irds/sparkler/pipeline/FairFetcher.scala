@@ -58,7 +58,7 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
   def discoverMime(data: CrawlData): String ={
     val allTypes = MimeTypes.getDefaultMimeTypes
     var ctype : MimeType = null
-    if(data.fetchedData.getContentType != null || data.fetchedData.getContentType != "") {
+    if(data.fetchedData.getContentType != null && data.fetchedData.getContentType != "") {
       ctype = allTypes.forName(data.fetchedData.getContentType)
     }
     val ext = ctype.getExtension
