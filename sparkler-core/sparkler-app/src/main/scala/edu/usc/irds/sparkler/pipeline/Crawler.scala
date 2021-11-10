@@ -31,6 +31,7 @@ import org.apache.nutch.protocol
 import org.apache.solr.common.SolrInputDocument
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, SparkSession}
+import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{SparkConf, SparkContext}
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
@@ -244,7 +245,7 @@ class Crawler extends CliTool {
       f.checkpoint()
       fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
         FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
-      }).persist()
+      }).persist(StorageLevel.MEMORY_AND_DISK)
       GenericFunction(job, GenericProcess.Event.ITERATION_COMPLETE,new SQLContext(sc).sparkSession, fetchedRdd)
       scoreAndStore(fetchedRdd, taskId, storageProxy)
     }
@@ -291,7 +292,7 @@ class Crawler extends CliTool {
       .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
         FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer)
       })
-      .persist()
+      .persist(StorageLevel.MEMORY_AND_DISK)
 
 
     if (kafkaEnable) {
