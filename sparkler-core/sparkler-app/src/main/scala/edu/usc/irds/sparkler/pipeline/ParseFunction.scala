@@ -54,10 +54,10 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
       meta.set("resourceName", data.fetchedData.getResource.getUrl)
       if(data.fetchedData.getContent.length>0) {
         parser.parse(stream, linkHandler, meta)
+        parseData.outlinks = linkHandler.getLinks.asScala.map(_.getUri.trim).filter(_.nonEmpty).toSet
       } else{
         LOG.warn("No data available")
       }
-      parseData.outlinks = linkHandler.getLinks.asScala.map(_.getUri.trim).filter(_.nonEmpty).toSet
     } catch {
       case e: Throwable =>
         LOG.warn("PARSING-OUTLINKS-ERROR {}", data.fetchedData.getResource.getUrl)
@@ -71,17 +71,17 @@ object ParseFunction extends ((CrawlData) => (ParsedData)) with Serializable wit
       // Parse Text
       if(data.fetchedData.getContent.length>0) {
         stream = new ByteArrayInputStream(data.fetchedData.getContent)
+        parser.parse(stream, contentHandler, meta)
+        parseData.extractedText = outHandler.toString
+        parseData.metadata = meta
       } else{
         LOG.warn("No data available")
       }
-      parser.parse(stream, contentHandler, meta)
-      parseData.extractedText = outHandler.toString
-      parseData.metadata = meta
+
     } catch {
       case e: Throwable =>
         LOG.warn("PARSING-CONTENT-ERROR {}", data.fetchedData.getResource.getUrl + " " + e.getMessage)
         LOG.debug(e.getMessage, e)
-        parseData
     } finally { IOUtils.closeQuietly(stream) }
 
     // parse headers
