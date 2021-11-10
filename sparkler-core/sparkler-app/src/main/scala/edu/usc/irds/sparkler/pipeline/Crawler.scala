@@ -400,10 +400,14 @@ object Crawler extends Loggable with Serializable{
       val config:Configuration = new Configuration()
     }
 
-    rdd.filter(r => r.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
+    rdd.cache()
+    rdd.checkpoint()
+   val r = rdd.filter(r => r.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
       .map(d => (new Text(d.fetchedData.getResource.getUrl),
         NutchBridge.toNutchContent(d.fetchedData, ConfigHolder.config)))
-      .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
+    rdd.cache()
+    rdd.checkpoint()
+   r.saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
   }
 
   /**
