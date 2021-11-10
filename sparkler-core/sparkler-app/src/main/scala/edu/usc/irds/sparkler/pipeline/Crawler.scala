@@ -240,6 +240,7 @@ class Crawler extends CliTool {
         rep = 1
       }
       println("Number of partitions configured: " + rep)
+      f.cache()
       f.checkpoint()
       fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
         FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
@@ -262,10 +263,13 @@ class Crawler extends CliTool {
     if(rep <= 0){
       rep = 1
     }
+    fetchedRdd.cache()
     fetchedRdd.checkpoint()
     val scoredRddPre = score(fetchedRdd)
+    scoredRddPre.cache()
     scoredRddPre.checkpoint()
     val scoredRdd = scoredRddPre.repartition(rep)
+    scoredRdd.cache()
     scoredRdd.checkpoint()
     //Step: Store these to nutch segments
     val outputPath = this.outputPath + "/" + taskId
@@ -293,10 +297,12 @@ class Crawler extends CliTool {
     if (kafkaEnable) {
       storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
     }
+    fetchedRdd.cache()
     fetchedRdd.checkpoint()
     val scoredRdd = score(fetchedRdd)
     //Step: Store these to nutch segments
     val outputPath = this.outputPath + "/" + taskId
+    scoredRdd.cache()
     scoredRdd.checkpoint()
 
     storeContent(outputPath, scoredRdd)
@@ -312,8 +318,10 @@ class Crawler extends CliTool {
 
     val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.map(d => ScoreUpdateSolrTransformer(d))
     val scoreUpdateFunc = new SolrStatusUpdate(job)
+    scoreUpdateRdd.cache()
     scoreUpdateRdd.checkpoint()
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
+    scoreUpdateRdd.cache()
     scoreUpdateRdd.checkpoint()
     var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
     if(rep <= 0){
@@ -326,11 +334,14 @@ class Crawler extends CliTool {
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
         parent.getFetchTimestamp, parent.getId, parent.getScoreAsMap) })
 
+    outlinksRddpre.cache()
     outlinksRddpre.checkpoint()
     val outlinksRdd = outlinksRddpre.repartition(rep)
     val upsertFunc = new SolrUpsert(job)
+    outlinksRdd.cache()
     outlinksRdd.checkpoint()
     sc.runJob(outlinksRdd, upsertFunc)
+    outlinksRdd.cache()
     outlinksRdd.checkpoint()
 
     scoredRdd
@@ -344,13 +355,16 @@ class Crawler extends CliTool {
 
     val job = this.job
     //Step: Index all new URLS
+    rdd.cache()
     rdd.checkpoint()
     sc.runJob(OutLinkUpsert(job, rdd), new SolrUpsert(job))
+    rdd.cache()
     rdd.checkpoint()
 
     //Step: Update status+score of fetched resources
     val statusUpdateRdd: RDD[SolrInputDocument] = rdd.map(d => StatusUpdateSolrTransformer(d))
     sc.runJob(statusUpdateRdd, new SolrStatusUpdate(job))
+    statusUpdateRdd.cache()
     statusUpdateRdd.checkpoint()
 
     //Step: Store these to nutch segments
