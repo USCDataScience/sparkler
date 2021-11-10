@@ -261,7 +261,9 @@ class Crawler extends CliTool {
     if(rep <= 0){
       rep = 1
     }
+    fetchedRdd.checkpoint()
     val scoredRdd = score(fetchedRdd).repartition(rep)
+    scoredRdd.checkpoint()
     //Step: Store these to nutch segments
     val outputPath = this.outputPath + "/" + taskId
 
@@ -288,10 +290,11 @@ class Crawler extends CliTool {
     if (kafkaEnable) {
       storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
     }
-
+    fetchedRdd.checkpoint()
     val scoredRdd = score(fetchedRdd)
     //Step: Store these to nutch segments
     val outputPath = this.outputPath + "/" + taskId
+    scoredRdd.checkpoint()
 
     storeContent(outputPath, scoredRdd)
 
@@ -335,15 +338,19 @@ class Crawler extends CliTool {
 
     val job = this.job
     //Step: Index all new URLS
+    rdd.checkpoint()
     sc.runJob(OutLinkUpsert(job, rdd), new SolrUpsert(job))
+    rdd.checkpoint()
 
     //Step: Update status+score of fetched resources
     val statusUpdateRdd: RDD[SolrInputDocument] = rdd.map(d => StatusUpdateSolrTransformer(d))
     sc.runJob(statusUpdateRdd, new SolrStatusUpdate(job))
+    statusUpdateRdd.checkpoint()
 
     //Step: Store these to nutch segments
     val outputPath = this.outputPath + "/" + job.currentTask
     //Step : write to FS
+
     storeContent(outputPath, rdd)
 
     rdd
@@ -369,7 +376,7 @@ object Crawler extends Loggable with Serializable{
     LOG.info(s"Storing output at $outputPath")
 
     object ConfigHolder extends Serializable {
-      var config:Configuration = new Configuration()
+      val config:Configuration = new Configuration()
     }
 
     rdd.filter(r => r.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
