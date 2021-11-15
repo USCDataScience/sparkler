@@ -2,5 +2,18 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - init: sbt setup
-  - command: cd sparkler-core && sbt assembly package
+  - init: |
+      sbt setup
+      sudo docker pull registry.gitlab.com/spiculedata/intellij-community-build-tools:latest
+      #sudo docker pull registry.jetbrains.team/p/prj/containers/projector-idea-u
+  - command: |      
+      cd sparkler-core && sbt assembly package
+      /onboarding.sh $GITPOD_REPO_ROOT
+      # Community Edition
+      sudo docker run --rm -p 8887:8887 -p 8080:8080 -v $GITPOD_REPO_ROOT:$GITPOD_REPO_ROOT -v "/data":/home/projector-user -it registry.gitlab.com/spiculedata/intellij-community-build-tools
+      # Ultimate Edition
+      #sudo docker run --rm -p 8887:8887 -p 8080:8080 -v /workspace/template-jetbrains-intellij-idea/.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-idea-u
+ports:
+  - port: 8887
+    visibility: public
+    onOpen: open-browser  

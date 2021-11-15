@@ -273,7 +273,20 @@ public class FetcherChrome extends FetcherDefault {
     }
 
     public FetchedData jsonCrawl(Resource resource) {
-        throw new NotImplementedException();
+        JSONObject json = null;
+
+        if (resource.getMetadata() != null && !resource.getMetadata().equals("")) {
+            json = processMetadata(resource.getMetadata());
+
+        }
+        // This will block for the page load and any
+        // associated AJAX requests
+
+        driver.get(resource.getUrl());
+    
+        resource.setStatus(ResourceStatus.FETCHED.toString());
+            return new FetchedData(driver.getPageSource().getBytes(), "application/json", 200);
+
     }
 
     public FetchedData htmlCrawl(Resource resource) throws IOException, java.text.ParseException {
