@@ -197,52 +197,53 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
         int responseCode = response2.getStatusLine().getStatusCode();
         LOG.debug("STATUS CODE : " + responseCode + " " + resource.getUrl());
         boolean truncated = false;
-        String responseBody = EntityUtils.toString(response2.getEntity(), StandardCharsets.UTF_8);
         HttpEntity entity = response2.getEntity();
-        InputStream targetStream = IOUtils.toInputStream(responseBody);
-        try (InputStream inStream = targetStream) {
-            ByteArrayOutputStream bufferOutStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[4096]; // 4kb buffer
-            int read;
-            while((read = inStream.read(buffer, 0, buffer.length)) != -1) {
-                bufferOutStream.write(buffer, 0, read);
-                if (bufferOutStream.size() >= CONTENT_LIMIT) {
-                    truncated = true;
-                    LOG.info("Content Truncated: {}, TotalSize={}, TruncatedSize={}", resource.getUrl(),
-                            entity.getContentLength(), bufferOutStream.size());
-                    break;
-                }
+        InputStream is = entity.getContent();
+        byte[] rawData = IOUtils.toByteArray(is);
+        ByteArrayOutputStream bufferOutStream = new ByteArrayOutputStream();
+        /*byte[] buffer = new byte[4096]; // 4kb buffer
+        int read;
+        while((read = inStream.read(buffer, 0, buffer.length)) != -1) {
+            bufferOutStream.write(buffer, 0, read);
+            if (bufferOutStream.size() >= CONTENT_LIMIT) {
+                truncated = true;
+                LOG.info("Content Truncated: {}, TotalSize={}, TruncatedSize={}", resource.getUrl(),
+                        entity.getContentLength(), bufferOutStream.size());
+                break;
             }
-            bufferOutStream.flush();
-            byte[] rawData = bufferOutStream.toByteArray();
-            String contentHash = null;
-            if(rawData.length>0) {
-                byte[] md5hash = MessageDigest.getInstance("MD5").digest(rawData);
-                contentHash = toHexString(md5hash);
-                resource.setContentHash(contentHash);
+        }*/
+        //bufferOutStream.flush();
+        //byte[] rawData = bufferOutStream.toByteArray();
 
-            }
 
-            IOUtils.closeQuietly(bufferOutStream);
-            FetchedData fetchedData = new FetchedData(rawData, entity.getContentType().getValue(), responseCode);
-            resource.setStatus(ResourceStatus.FETCHED.toString());
-            fetchedData.setResource(resource);
-            Header[] headers = response2.getAllHeaders();
-            Map<String, List<String>> headermap = new HashMap<>();
-            for (Header h : headers){
-                String name = h.getName();
-                String val = h.getValue();
-                List<String> l = new ArrayList<>();
-                l.add(val);
-                headermap.put(name, l);
-            }
-            fetchedData.setHeaders(headermap);
-            fetchedData.setContenthash(contentHash);
-            if (truncated) {
-                fetchedData.getHeaders().put(TRUNCATED, Collections.singletonList(Boolean.TRUE.toString()));
-            }
-            return fetchedData;
+        String contentHash = null;
+        if(rawData.length>0) {
+            byte[] md5hash = MessageDigest.getInstance("MD5").digest(rawData);
+            contentHash = toHexString(md5hash);
+            resource.setContentHash(contentHash);
+
         }
+
+        IOUtils.closeQuietly(bufferOutStream);
+        FetchedData fetchedData = new FetchedData(rawData, entity.getContentType().getValue(), responseCode);
+        resource.setStatus(ResourceStatus.FETCHED.toString());
+        fetchedData.setResource(resource);
+        Header[] headers = response2.getAllHeaders();
+        Map<String, List<String>> headermap = new HashMap<>();
+        for (Header h : headers){
+            String name = h.getName();
+            String val = h.getValue();
+            List<String> l = new ArrayList<>();
+            l.add(val);
+            headermap.put(name, l);
+        }
+        fetchedData.setHeaders(headermap);
+        fetchedData.setContenthash(contentHash);
+        if (truncated) {
+            fetchedData.getHeaders().put(TRUNCATED, Collections.singletonList(Boolean.TRUE.toString()));
+        }
+        return fetchedData;
+
     }
     private static String toHexString(byte[] bytes) {
         StringBuilder hexString = new StringBuilder();
