@@ -58,10 +58,10 @@ import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.NotImplementedException;
+
+import java.io.*;
 import java.net.MalformedURLException;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -73,6 +73,10 @@ import java.util.concurrent.TimeUnit;
 
 @Extension
 public class FetcherChrome extends FetcherDefault {
+    private List<String> proxyEndpoints;
+    private String loc;
+    private String proxyaddress;
+
     enum ScriptType {
         SELENIUM, MAGNESIUM
     }
@@ -93,7 +97,8 @@ public class FetcherChrome extends FetcherDefault {
         SparklerConfiguration config = jobContext.getConfiguration();
         // TODO should change everywhere
         pluginConfig = config.getPluginConfiguration(pluginId);
-
+        this.loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
+        this.proxyaddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "");
     }
 
     /**
@@ -134,6 +139,22 @@ public class FetcherChrome extends FetcherDefault {
         return agent;
     }
 
+    private String getProxyEndpoint() {
+
+        String selectedProxyEndpoint = null;
+        int totalEndpoints = proxyEndpoints.size();
+
+        if(totalEndpoints > 0) {
+
+            Random randomObj = new Random();
+            int endpointNumber = randomObj.nextInt(totalEndpoints);
+            selectedProxyEndpoint = proxyEndpoints.get(endpointNumber);
+
+            proxyEndpoints.remove(endpointNumber);
+        }
+
+        return selectedProxyEndpoint;
+    }
     /**
      * Start the Selenium web driver
      *
@@ -141,19 +162,16 @@ public class FetcherChrome extends FetcherDefault {
      * @throws MalformedURLException Occurs when the URI given is invalid
      */
     private void startDriver() throws UnknownHostException, MalformedURLException {
-        String loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
-        String proxyaddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "");
-
         if (loc.equals("")) {
             driver = new ChromeDriver();
         } else {
             final ChromeOptions chromeOptions = new ChromeOptions();
             if(proxyaddress != ""){
+                this.proxyEndpoints = Arrays.asList(proxyaddress.split(","));
+                String proxyEndpoint = getProxyEndpoint();
+                ProxySelector proxySelector = new ProxySelector(proxyEndpoint);
+                chromeOptions.setCapability("proxy", proxySelector.getProxy());
                 System.out.println("Setting up proxy: "+proxyaddress);
-                Proxy proxyObj = new Proxy();
-                proxyObj.setHttpProxy(proxyaddress);
-                proxyObj.setSslProxy(proxyaddress);
-                chromeOptions.setCapability("proxy", proxyObj);
             }
 
 
@@ -261,7 +279,12 @@ public class FetcherChrome extends FetcherDefault {
             // Bind the crawl config to the reuslts
             data.setResource(resource);
         } catch (Exception e){
+            Writer buffer = new StringWriter();
+            PrintWriter pw = new PrintWriter(buffer);
             LOG.error(e.getMessage());
+            e.printStackTrace(pw);
+            LOG.error(buffer.toString());
+            resource.setStatus(ResourceStatus.ERROR.toString());
         }
         finally {
             driver.quit();
@@ -281,15 +304,28 @@ public class FetcherChrome extends FetcherDefault {
         }
         // This will block for the page load and any
         // associated AJAX requests
+        do {
+            try {
+                driver.get(resource.getUrl());
+                break;
+            }
+            catch (Exception e){
+                try {
+                    this.startDriver();
+                } catch (UnknownHostException ex) {
+                    ex.printStackTrace();
+                } catch (MalformedURLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }while(this.proxyEndpoints.size() > 0);
 
-        driver.get(resource.getUrl());
-    
         resource.setStatus(ResourceStatus.FETCHED.toString());
             return new FetchedData(driver.getPageSource().getBytes(), "application/json", 200);
 
     }
 
-    public FetchedData htmlCrawl(Resource resource) throws IOException, java.text.ParseException {
+    public FetchedData htmlCrawl(Resource resource) {
         JSONObject json = null;
 
         if (resource.getMetadata() != null && !resource.getMetadata().equals("")) {
@@ -299,15 +335,30 @@ public class FetcherChrome extends FetcherDefault {
         // This will block for the page load and any
         // associated AJAX requests
 
-        driver.get(resource.getUrl());
+        do {
+            try {
+                driver.get(resource.getUrl());
+                break;
+            }
+            catch (Exception e){
+                try {
+                    this.startDriver();
+                } catch (UnknownHostException ex) {
+                    ex.printStackTrace();
+                } catch (MalformedURLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }while(this.proxyEndpoints.size() > 0);
+
         String waitforready = pluginConfig.getOrDefault("chrome.selenium.javascriptready", "false").toString();
 
         if (waitforready.equals("true")) {
             new WebDriverWait(driver, 60).until((driver) -> ((JavascriptExecutor) driver)
                     .executeScript("return document.readyState").toString().equals("complete"));
         }
-        Map<String, Object> tokens = null;
-        Map script = null;
+        Map<String, Object> tokens;
+        Map script;
         if((pluginConfig.get("chrome.selenium.script") != null && pluginConfig.get("chrome.selenium.script") instanceof Map) ||
         json != null && json.containsKey("selenium")) {
             // Convert the raw JSONObject

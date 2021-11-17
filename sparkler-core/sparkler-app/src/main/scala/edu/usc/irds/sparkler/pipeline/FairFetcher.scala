@@ -127,27 +127,34 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
       //STEP: Fetch
       val startTime = System.currentTimeMillis()
       data.fetchedData = fetchedData.next
-      val endTime = System.currentTimeMillis()
-      data.fetchedData.getResource.setFetchTimestamp(data.fetchedData.getFetchedAt)
-      data.fetchedData.setSegment(job.currentTask)
-      lastHit = data.fetchedData.getResource.getUrl
-      if (data.fetchedData.getResponseTime < 0) {
-        data.fetchedData.setResponseTime(endTime - startTime)
+      if(data.fetchedData != null) {
+        val endTime = System.currentTimeMillis()
+        data.fetchedData.getResource.setFetchTimestamp(data.fetchedData.getFetchedAt)
+        data.fetchedData.setSegment(job.currentTask)
+        lastHit = data.fetchedData.getResource.getUrl
+        if (data.fetchedData.getResponseTime < 0) {
+          data.fetchedData.setResponseTime(endTime - startTime)
+        }
+        hitCounter.set(System.currentTimeMillis())
+
+        //STEP: Parse
+        data.parsedData = parseFunc(data)
+
+        if(data.parsedData != null){
+          //STEP: URL Filter
+          data.parsedData.outlinks = outLinkFilterFunc(job, data);
+        } else{
+          LOG.info("Empty parsed data for: " + data.fetchedData.getResource.getUrl)
+        }
+
+      } else{
+        LOG.info("Empty fetched data")
       }
-      hitCounter.set(System.currentTimeMillis())
-
-      //STEP: Parse
-      data.parsedData = parseFunc(data)
-
-      //STEP: URL Filter
-      data.parsedData.outlinks = outLinkFilterFunc(job, data)
       persistDocument(data, job.getConfiguration)
       val doc = solrUpdateFunction(data)
       LOG.info("Adding doc to SOLR")
       job.newStorageProxy().addResource(doc)
-
-
-    data
+      data
 
   }
 }
