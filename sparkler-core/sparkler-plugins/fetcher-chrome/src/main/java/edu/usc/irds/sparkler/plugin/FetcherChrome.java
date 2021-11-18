@@ -163,16 +163,22 @@ public class FetcherChrome extends FetcherDefault {
         String loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
         String proxyaddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "");
 
+        LOG.info("DNS Location: " + loc);
+        LOG.info("Proxy URLs: " + proxyaddress);
         if (loc.equals("")) {
+            LOG.info("No DNS found, spinning up local chrome");
             driver = new ChromeDriver();
         } else {
             final ChromeOptions chromeOptions = new ChromeOptions();
             if(!proxyaddress.equals("")){
+                LOG.info("Configuring proxy");
                 this.proxyEndpoints = Arrays.asList(proxyaddress.split(","));
                 String proxyEndpoint = getProxyEndpoint();
                 ProxySelector proxySelector = new ProxySelector(proxyEndpoint);
-                chromeOptions.setCapability("proxy", proxySelector.getProxy());
-                System.out.println("Setting up proxy: "+proxyaddress);
+                Proxy p = proxySelector.getProxy();
+                chromeOptions.setCapability("proxy", p);
+                System.out.println("Setting up proxy: "+p.getHttpProxy());
+                LOG.info("Setting up proxy: "+p.getHttpProxy());
             }
 
 
