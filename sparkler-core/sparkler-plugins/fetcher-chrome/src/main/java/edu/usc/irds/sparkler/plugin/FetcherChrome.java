@@ -175,7 +175,7 @@ public class FetcherChrome extends FetcherDefault {
             final ChromeOptions chromeOptions = new ChromeOptions();
             if(!proxyaddress.equals("")){
                 LOG.info("Configuring proxy");
-                proxyEndpoints = Arrays.asList(proxyaddress.split(","));
+                proxyEndpoints = new LinkedList<>(Arrays.asList(proxyaddress.split(",")));
                 LOG.info("Proxies Available: " + proxyEndpoints.size());
                 String proxyEndpoint = getProxyEndpoint(proxyEndpoints);
                 LOG.info("Selected Endpoint: " + proxyEndpoint);
@@ -392,7 +392,7 @@ public class FetcherChrome extends FetcherDefault {
             versionToken = versionToken.toUpperCase();
 
             try {
-                type = ScriptType.valueOf(versionToken);
+                type = ScriptType.valueOf(￿versionToken);
             } catch (IllegalArgumentException e) {
                 LOG.error("Invalid version: `" + versionToken + "`!");
                 LOG.error("Exiting with null fetched results...");
