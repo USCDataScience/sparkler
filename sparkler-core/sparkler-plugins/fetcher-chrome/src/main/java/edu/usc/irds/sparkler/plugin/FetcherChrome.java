@@ -73,7 +73,7 @@ import java.util.concurrent.TimeUnit;
 
 @Extension
 public class FetcherChrome extends FetcherDefault {
-    private List<String> proxyEndpoints;
+    private List<String> proxyEndpoints = new ArrayList<>();
 
     enum ScriptType {
         SELENIUM, MAGNESIUM
@@ -149,8 +149,9 @@ public class FetcherChrome extends FetcherDefault {
             LOG.info("Random number is: " + endpointNumber);
             selectedProxyEndpoint = endpoints.get(endpointNumber);
             LOG.info("Selected endpoint: " + selectedProxyEndpoint);
-            //endpoints.remove(endpointNumber);
-            //LOG.info("Endpoint removed");
+            endpoints.remove(endpointNumber);
+            LOG.info("Endpoint removed");
+            proxyEndpoints = endpoints;
         }
 
         return selectedProxyEndpoint;
@@ -236,7 +237,7 @@ public class FetcherChrome extends FetcherDefault {
                 startDriver();
                 return driver.getCurrentUrl() != null;
             } catch (UnknownHostException | MalformedURLException e) {
-                LOG.warn("Intercepted the following error when attempting to start the web driver:");
+                LOG.info("Intercepted the following error when attempting to start the web driver:", e.getCause());
                 e.printStackTrace();
             }
         }
@@ -322,9 +323,7 @@ public class FetcherChrome extends FetcherDefault {
             catch (Exception e){
                 try {
                     this.startDriver();
-                } catch (UnknownHostException ex) {
-                    ex.printStackTrace();
-                } catch (MalformedURLException ex) {
+                } catch (UnknownHostException | MalformedURLException ex) {
                     ex.printStackTrace();
                 }
             }
