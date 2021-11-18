@@ -323,7 +323,8 @@ public class FetcherChrome extends FetcherDefault {
             catch (Exception e){
                 try {
                     this.startDriver();
-                } catch (UnknownHostException | MalformedURLException ex) {
+                } catch (Exception ex) {
+                    LOG.warn(ex.getMessage(), e);
                     ex.printStackTrace();
                 }
             }
@@ -352,9 +353,8 @@ public class FetcherChrome extends FetcherDefault {
             catch (Exception e){
                 try {
                     this.startDriver();
-                } catch (UnknownHostException ex) {
-                    ex.printStackTrace();
-                } catch (MalformedURLException ex) {
+                } catch (Exception ex) {
+                    LOG.warn(ex.getMessage(), ex);
                     ex.printStackTrace();
                 }
             }
