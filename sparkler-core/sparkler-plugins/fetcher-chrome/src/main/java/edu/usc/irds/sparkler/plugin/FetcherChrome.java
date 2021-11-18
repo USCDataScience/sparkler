@@ -135,18 +135,18 @@ public class FetcherChrome extends FetcherDefault {
         return agent;
     }
 
-    private String getProxyEndpoint() {
+    private String getProxyEndpoint(List<String> endpoints) {
 
-        String selectedProxyEndpoint = null;
-        int totalEndpoints = proxyEndpoints.size();
+        String selectedProxyEndpoint = "";
+        int totalEndpoints = endpoints.size();
 
         if(totalEndpoints > 0) {
 
             Random randomObj = new Random();
             int endpointNumber = randomObj.nextInt(totalEndpoints);
-            selectedProxyEndpoint = proxyEndpoints.get(endpointNumber);
+            selectedProxyEndpoint = endpoints.get(endpointNumber);
 
-            proxyEndpoints.remove(endpointNumber);
+            endpoints.remove(endpointNumber);
         }
 
         return selectedProxyEndpoint;
@@ -172,7 +172,7 @@ public class FetcherChrome extends FetcherDefault {
                 LOG.info("Configuring proxy");
                 proxyEndpoints = Arrays.asList(proxyaddress.split(","));
                 LOG.info("Proxies Available: " + proxyEndpoints.size());
-                String proxyEndpoint = getProxyEndpoint();
+                String proxyEndpoint = getProxyEndpoint(proxyEndpoints);
                 LOG.info("Selected Endpoint: " + proxyEndpoint);
                 ProxySelector proxySelector = new ProxySelector(proxyEndpoint);
                 Proxy p = proxySelector.getProxy();
