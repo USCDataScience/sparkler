@@ -270,7 +270,7 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
                 statusCode = 404;
             }
             LOG.warn("FETCH-ERROR {}", resource.getUrl());
-            LOG.debug(e.getMessage(), e);
+            LOG.warn(e.getMessage(), e);
             FetchedData fetchedData = new FetchedData(new byte[0], "", statusCode);
             resource.setStatus(ResourceStatus.ERROR.toString());
             fetchedData.setResource(resource);
