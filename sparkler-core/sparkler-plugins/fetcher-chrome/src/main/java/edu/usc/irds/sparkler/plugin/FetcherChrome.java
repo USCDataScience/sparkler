@@ -74,8 +74,6 @@ import java.util.concurrent.TimeUnit;
 @Extension
 public class FetcherChrome extends FetcherDefault {
     private List<String> proxyEndpoints;
-    private String loc;
-    private String proxyaddress;
 
     enum ScriptType {
         SELENIUM, MAGNESIUM
@@ -172,12 +170,13 @@ public class FetcherChrome extends FetcherDefault {
             final ChromeOptions chromeOptions = new ChromeOptions();
             if(!proxyaddress.equals("")){
                 LOG.info("Configuring proxy");
-                this.proxyEndpoints = Arrays.asList(proxyaddress.split(","));
+                proxyEndpoints = Arrays.asList(proxyaddress.split(","));
+                LOG.info("Proxies Available: " + proxyEndpoints.size());
                 String proxyEndpoint = getProxyEndpoint();
+                LOG.info("Selected Endpoint: " + proxyEndpoint);
                 ProxySelector proxySelector = new ProxySelector(proxyEndpoint);
                 Proxy p = proxySelector.getProxy();
                 chromeOptions.setCapability("proxy", p);
-                System.out.println("Setting up proxy: "+p.getHttpProxy());
                 LOG.info("Setting up proxy: "+p.getHttpProxy());
             }
 
