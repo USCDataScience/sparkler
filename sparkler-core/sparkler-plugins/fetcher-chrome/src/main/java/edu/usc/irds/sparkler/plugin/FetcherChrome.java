@@ -97,8 +97,6 @@ public class FetcherChrome extends FetcherDefault {
         SparklerConfiguration config = jobContext.getConfiguration();
         // TODO should change everywhere
         pluginConfig = config.getPluginConfiguration(pluginId);
-        this.loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
-        this.proxyaddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "");
     }
 
     /**
@@ -162,11 +160,14 @@ public class FetcherChrome extends FetcherDefault {
      * @throws MalformedURLException Occurs when the URI given is invalid
      */
     private void startDriver() throws UnknownHostException, MalformedURLException {
+        String loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
+        String proxyaddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "");
+
         if (loc.equals("")) {
             driver = new ChromeDriver();
         } else {
             final ChromeOptions chromeOptions = new ChromeOptions();
-            if(proxyaddress != ""){
+            if(!proxyaddress.equals("")){
                 this.proxyEndpoints = Arrays.asList(proxyaddress.split(","));
                 String proxyEndpoint = getProxyEndpoint();
                 ProxySelector proxySelector = new ProxySelector(proxyEndpoint);
@@ -245,7 +246,7 @@ public class FetcherChrome extends FetcherDefault {
      * @return FetchedData a stack of content succesfully fetched from the URI
      */
     @Override
-    public FetchedData fetch(Resource resource) throws Exception {
+    public FetchedData fetch(Resource resource) {
         long start = System.currentTimeMillis();
         if (!startDriver(10)) {
             throw new RuntimeException("Failed to start the web driver! FetcherChrome cannot continue!");
