@@ -149,8 +149,8 @@ public class FetcherChrome extends FetcherDefault {
             LOG.info("Random number is: " + endpointNumber);
             selectedProxyEndpoint = endpoints.get(endpointNumber);
             LOG.info("Selected endpoint: " + selectedProxyEndpoint);
-            endpoints.remove(endpointNumber);
-            LOG.info("Endpoint removed");
+            //endpoints.remove(endpointNumber);
+            //LOG.info("Endpoint removed");
         }
 
         return selectedProxyEndpoint;
