@@ -392,7 +392,7 @@ public class FetcherChrome extends FetcherDefault {
             versionToken = versionToken.toUpperCase();
 
             try {
-                type = ScriptType.valueOf(￿versionToken);
+                type = ScriptType.valueOf(versionToken);
             } catch (IllegalArgumentException e) {
                 LOG.error("Invalid version: `" + versionToken + "`!");
                 LOG.error("Exiting with null fetched results...");
