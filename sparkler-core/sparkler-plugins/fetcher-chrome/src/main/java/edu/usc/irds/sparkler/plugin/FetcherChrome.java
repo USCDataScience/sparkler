@@ -162,7 +162,7 @@ public class FetcherChrome extends FetcherDefault {
      * @throws UnknownHostException  Occurs when the host was not resolved
      * @throws MalformedURLException Occurs when the URI given is invalid
      */
-    private void startDriver() throws UnknownHostException, MalformedURLException {
+    private void startDriver() throws Exception {
         String loc = (String) pluginConfig.getOrDefault("chrome.dns", "");
         String proxyaddress = (String) pluginConfig.getOrDefault("chrome.proxy.address", "");
 
@@ -236,9 +236,9 @@ public class FetcherChrome extends FetcherDefault {
             try {
                 startDriver();
                 return driver.getCurrentUrl() != null;
-            } catch (UnknownHostException | MalformedURLException e) {
-                LOG.info("Intercepted the following error when attempting to start the web driver:", e.getCause());
-                e.printStackTrace();
+            } catch (Exception e) {
+                LOG.info("Intercepted the following error when attempting to start the web driver");
+                LOG.warn(e.getMessage(), e);
             }
         }
         return false;
