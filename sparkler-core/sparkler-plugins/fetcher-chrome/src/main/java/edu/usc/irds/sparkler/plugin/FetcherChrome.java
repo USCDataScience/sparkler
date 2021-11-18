@@ -360,6 +360,8 @@ public class FetcherChrome extends FetcherDefault {
             }
         }while(this.proxyEndpoints.size() > 0);
 
+        LOG.info("Driver started and ready on page: " + driver.getTitle(), "on url: " + driver.getCurrentUrl());
+
         String waitforready = pluginConfig.getOrDefault("chrome.selenium.javascriptready", "false").toString();
 
         if (waitforready.equals("true")) {
