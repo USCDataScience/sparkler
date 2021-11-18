@@ -138,15 +138,19 @@ public class FetcherChrome extends FetcherDefault {
     private String getProxyEndpoint(List<String> endpoints) {
 
         String selectedProxyEndpoint = "";
+        LOG.info("Looking up endpoint");
         int totalEndpoints = endpoints.size();
-
+        LOG.info("Endpoint quantity: " + endpoints.size());
         if(totalEndpoints > 0) {
 
             Random randomObj = new Random();
+            LOG.info("Looking up raandom number");
             int endpointNumber = randomObj.nextInt(totalEndpoints);
+            LOG.info("Random number is: " + endpointNumber);
             selectedProxyEndpoint = endpoints.get(endpointNumber);
-
+            LOG.info("Selected endpoint: " + selectedProxyEndpoint);
             endpoints.remove(endpointNumber);
+            LOG.info("Endpoint removed");
         }
 
         return selectedProxyEndpoint;
