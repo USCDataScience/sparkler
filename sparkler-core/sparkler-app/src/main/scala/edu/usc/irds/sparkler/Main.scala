@@ -18,6 +18,7 @@
 package edu.usc.irds.sparkler
 
 import edu.usc.irds.sparkler.base.Loggable
+import edu.usc.irds.sparkler.base.Loggable.selectedLogLevel
 import edu.usc.irds.sparkler.pipeline.Crawler
 import edu.usc.irds.sparkler.service.{Dumper, Injector}
 
