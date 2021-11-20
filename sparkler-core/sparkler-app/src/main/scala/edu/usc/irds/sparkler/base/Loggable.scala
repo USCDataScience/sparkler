@@ -18,16 +18,14 @@
 package edu.usc.irds.sparkler.base
 
 import ch.qos.logback.classic.{Level, LoggerContext}
+import edu.usc.irds.sparkler.base.Loggable.{selectedLogLevel, getLogger}
 
 /**
   * Created by thammegr on 6/7/16.
   */
 trait Loggable {
 
-  val LOGContent = new LoggerContext()
-  val LOG = LOGContent.getLogger(getClass)
-
-  var selectedLogLevel = "INFO"
+  val LOG = getLogger(getClass)
 
   def setLogLevel(): Unit = {
 
@@ -46,4 +44,8 @@ trait Loggable {
 
     LOG.setLevel(newLevel)
   }
+}
+
+object Loggable extends LoggerContext {
+  var selectedLogLevel = "INFO"
 }
