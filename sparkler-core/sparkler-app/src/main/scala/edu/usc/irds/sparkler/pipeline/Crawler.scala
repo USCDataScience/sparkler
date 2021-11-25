@@ -246,8 +246,16 @@ class Crawler extends CliTool {
       fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
         FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
       }).persist(StorageLevel.MEMORY_AND_DISK)
+
+      println("custom Breakpoint: 1")
+
       GenericFunction(job, GenericProcess.Event.ITERATION_COMPLETE,new SQLContext(sc).sparkSession, fetchedRdd)
+
+      println("Custom Breakpoint: 2")
+
       scoreAndStore(fetchedRdd, taskId, storageProxy)
+
+      println("Custom Breakpoint: 3")
     }
     storageProxy.close()
     //PluginService.shutdown(job)
