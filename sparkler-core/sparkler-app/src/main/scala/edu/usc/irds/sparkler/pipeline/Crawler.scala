@@ -246,16 +246,8 @@ class Crawler extends CliTool {
       fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
         FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
       }).persist(StorageLevel.MEMORY_AND_DISK)
-
-      println("custom Breakpoint: 1")
-
       GenericFunction(job, GenericProcess.Event.ITERATION_COMPLETE,new SQLContext(sc).sparkSession, fetchedRdd)
-
-      println("Custom Breakpoint: 2")
-
       scoreAndStore(fetchedRdd, taskId, storageProxy)
-
-      println("Custom Breakpoint: 3")
     }
     storageProxy.close()
     //PluginService.shutdown(job)
@@ -265,28 +257,61 @@ class Crawler extends CliTool {
   }
 
   def scoreAndStore(fetchedRdd: RDD[CrawlData], taskId: String, storageProxy: StorageProxy): Unit ={
+    println("Custom Breakpoint: 1")
+
     if (kafkaEnable) {
       storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
     }
+
+    println("Custom Breakpoint: 2")
+
     var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
     if(rep <= 0){
       rep = 1
     }
+
+    println("Custom Breakpoint: 3")
+
     //fetchedRdd.cache()
     fetchedRdd.checkpoint()
+
+    println("Custom Breakpoint: 4")
+
     val scoredRddPre = score(fetchedRdd)
+
+    println("Custom Breakpoint: 5")
+
     //scoredRddPre.cache()
     scoredRddPre.checkpoint()
+
+    println("Custom Breakpoint: 6")
+
     val scoredRdd = scoredRddPre.repartition(rep)
+
+    println("Custom Breakpoint: 7")
+
     //scoredRdd.cache()
     scoredRdd.checkpoint()
+
+    println("Custom Breakpoint: 8")
+
     //Step: Store these to nutch segments
     val outputPath = this.outputPath + "/" + taskId
 
+    println("Custom Breakpoint: 9")
+
     storeContent(outputPath, scoredRdd)
 
+    println("Custom Breakpoint: 10")
+
     LOG.info("Committing crawldb..")
+
+    println("Custom Breakpoint: 11")
+
     storageProxy.commitCrawlDb()
+
+    println("Custom Breakpoint: 12")
+
   }
 
   def deepCrawl(deepCrawlHosts: String, localFetchDelay: Long, storageProxy: StorageProxy): Unit ={
