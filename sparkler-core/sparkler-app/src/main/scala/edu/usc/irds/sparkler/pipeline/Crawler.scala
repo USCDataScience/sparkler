@@ -257,60 +257,60 @@ class Crawler extends CliTool {
   }
 
   def scoreAndStore(fetchedRdd: RDD[CrawlData], taskId: String, storageProxy: StorageProxy): Unit ={
-    println("Custom Breakpoint: 1")
+    println("Custom Breakpoint: 1.1")
 
     if (kafkaEnable) {
       storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
     }
 
-    println("Custom Breakpoint: 2")
+    println("Custom Breakpoint: 2.1")
 
     var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
     if(rep <= 0){
       rep = 1
     }
 
-    println("Custom Breakpoint: 3")
+    println("Custom Breakpoint: 3.1")
 
     //fetchedRdd.cache()
     fetchedRdd.checkpoint()
 
-    println("Custom Breakpoint: 4")
+    println("Custom Breakpoint: 4.1")
 
     val scoredRddPre = score(fetchedRdd)
 
-    println("Custom Breakpoint: 5")
+    println("Custom Breakpoint: 5.1")
 
     //scoredRddPre.cache()
     scoredRddPre.checkpoint()
 
-    println("Custom Breakpoint: 6")
+    println("Custom Breakpoint: 6.1")
 
     val scoredRdd = scoredRddPre.repartition(rep)
 
-    println("Custom Breakpoint: 7")
+    println("Custom Breakpoint: 7.1")
 
     //scoredRdd.cache()
     scoredRdd.checkpoint()
 
-    println("Custom Breakpoint: 8")
+    println("Custom Breakpoint: 8.1")
 
     //Step: Store these to nutch segments
     val outputPath = this.outputPath + "/" + taskId
 
-    println("Custom Breakpoint: 9")
+    println("Custom Breakpoint: 9.1")
 
     storeContent(outputPath, scoredRdd)
 
-    println("Custom Breakpoint: 10")
+    println("Custom Breakpoint: 10.1")
 
     LOG.info("Committing crawldb..")
 
-    println("Custom Breakpoint: 11")
+    println("Custom Breakpoint: 11.1")
 
     storageProxy.commitCrawlDb()
 
-    println("Custom Breakpoint: 12")
+    println("Custom Breakpoint: 12.1")
 
   }
 
