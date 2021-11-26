@@ -257,26 +257,15 @@ class Crawler extends CliTool {
   }
 
   def scoreAndStore(fetchedRdd: RDD[CrawlData], taskId: String, storageProxy: StorageProxy): Unit ={
-    println("Custom Breakpoint: 1.1")
-
     if (kafkaEnable) {
       storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
     }
-
-    println("Custom Breakpoint: 2.1")
-
     var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
     if(rep <= 0){
       rep = 1
     }
-
-    println("Custom Breakpoint: 3.1")
-
     //fetchedRdd.cache()
     fetchedRdd.checkpoint()
-
-    println("Custom Breakpoint: 4.1")
-
     val scoredRddPre = score(fetchedRdd)
 
     println("Custom Breakpoint: 5.1")
@@ -346,37 +335,52 @@ class Crawler extends CliTool {
   }
 
   def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
+    println("Debug Score 1")
     val job = this.job
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(job, d))
-
+    println("Debug Score 1")
     val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.map(d => ScoreUpdateSolrTransformer(d))
+    println("Debug Score 2")
     val scoreUpdateFunc = new SolrStatusUpdate(job)
+    println("Debug Score 3")
     //scoreUpdateRdd.cache()
     scoreUpdateRdd.checkpoint()
+    println("Debug Score 4")
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
+    println("Debug Score 5")
     //scoreUpdateRdd.cache()
     scoreUpdateRdd.checkpoint()
+    println("Debug Score 6")
     var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
+    println("Debug Score 7")
     if(rep <= 0){
       rep = 1
     }
+    println("Debug Score 8")
     //TODO (was OutlinkUpsert)
     val outlinksRddpre = scoredRdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
         parent.getFetchTimestamp, parent.getId, parent.getScoreAsMap) })
+    println("Debug Score 9")
 
     //outlinksRddpre.cache()
     outlinksRddpre.checkpoint()
+    println("Debug Score 10")
     val outlinksRdd = outlinksRddpre.repartition(rep)
+    println("Debug Score 11")
     val upsertFunc = new SolrUpsert(job)
+    println("Debug Score 12")
     //outlinksRdd.cache()
     outlinksRdd.checkpoint()
+    println("Debug Score 13")
     sc.runJob(outlinksRdd, upsertFunc)
+    println("Debug Score 14")
     //outlinksRdd.cache()
     outlinksRdd.checkpoint()
+    println("Debug Score 15")
 
     scoredRdd
   }
