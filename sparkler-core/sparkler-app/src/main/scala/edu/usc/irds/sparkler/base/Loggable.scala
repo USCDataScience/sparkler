@@ -25,6 +25,11 @@ import edu.usc.irds.sparkler.base.Loggable.{selectedLogLevel, getLogger}
   */
 trait Loggable {
 
+  val cl : String = getClass.getName
+  println("++++++++++++++++++++++++++++++++++")
+  println("Logable instance for: " + cl)
+  println("++++++++++++++++++++++++++++++++++")
+
   val LOG = getLogger(getClass)
 
   def setLogLevel(): Unit = {
