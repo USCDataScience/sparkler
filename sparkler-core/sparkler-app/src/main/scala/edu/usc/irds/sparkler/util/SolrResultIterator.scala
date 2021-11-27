@@ -94,6 +94,4 @@ class SolrResultIterator[T] extends Iterator[T] {
   }
 }
 
-object SolrResultIterator extends Loggable {
-  //val LOG = org.slf4j.LoggerFactory.getLogger(SolrResultIterator.getClass)
-}
+object SolrResultIterator extends Loggable
