@@ -18,10 +18,10 @@
 package edu.usc.irds.sparkler.storage.solr
 
 import edu.usc.irds.sparkler.Constants
+import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.spark.TaskContext
-import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
@@ -55,6 +55,4 @@ class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) =>
   }
 }
 
-object SolrUpsert {
-  val LOG = LoggerFactory.getLogger(SolrUpsert.getClass())
-}
+object SolrUpsert extends Loggable
