@@ -1,5 +1,7 @@
 package edu.usc.irds.sparkler.util;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import edu.usc.irds.sparkler.*;
 import edu.usc.irds.sparkler.model.FetchedData;
 import edu.usc.irds.sparkler.model.Resource;
@@ -25,8 +27,6 @@ import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  */
 public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, Function<Resource, FetchedData> {
     //TODO: move this to a plugin named fetcher-default
-    public static final Logger LOG = LoggerFactory.getLogger(FetcherDefault.class);
+    public static final Logger LOG = new LoggerContext().getLogger(FetcherDefault.class);
     public static final Integer CONNECT_TIMEOUT = 5000; // Milliseconds. FIXME: Get from Configuration
     public static final Integer READ_TIMEOUT = 10000; // Milliseconds. FIXME: Get from Configuration
     public static final Integer CONTENT_LIMIT = 100 * 1024 * 1024; // Bytes. FIXME: Get from Configuration

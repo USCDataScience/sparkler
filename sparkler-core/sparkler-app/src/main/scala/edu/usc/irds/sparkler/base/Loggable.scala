@@ -17,8 +17,8 @@
 
 package edu.usc.irds.sparkler.base
 
-import ch.qos.logback.classic.{Level, LoggerContext}
-import edu.usc.irds.sparkler.base.Loggable.{selectedLogLevel, getLogger}
+import ch.qos.logback.classic.{Level, Logger, LoggerContext}
+import edu.usc.irds.sparkler.base.Loggable.{getLogger, selectedLogLevel}
 
 /**
   * Created by thammegr on 6/7/16.
@@ -30,7 +30,7 @@ trait Loggable {
   println("Logable instance for: " + cl)
   println("++++++++++++++++++++++++++++++++++")
 
-  val LOG = getLogger(getClass)
+  val LOG: Logger = getLogger(getClass)
 
   def setLogLevel(): Unit = {
 

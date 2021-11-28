@@ -17,8 +17,8 @@
 
 package edu.usc.irds.sparkler.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.Logger;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -30,8 +30,7 @@ import java.util.HashMap;
  * @author Enis Soztutar &lt;enis.soz.nutch@gmail.com&gt;
  */
 public class DomainSuffixes {
-    private static final Logger LOG = LoggerFactory
-            .getLogger(DomainSuffixes.class);
+    private static final Logger LOG = new LoggerContext().getLogger(DomainSuffixes.class);
 
     private HashMap<String, DomainSuffix> domains = new HashMap<>();
 

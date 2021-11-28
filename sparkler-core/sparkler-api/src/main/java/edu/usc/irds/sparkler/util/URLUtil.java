@@ -17,9 +17,9 @@
 
 package edu.usc.irds.sparkler.util;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import org.apache.nutch.util.TableUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.IDN;
 import java.net.MalformedURLException;
@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 /** Utility class for URL analysis */
 public class URLUtil {
 
-    public static Logger LOG = LoggerFactory.getLogger(URLUtil.class);
+    public static Logger LOG = new LoggerContext().getLogger(URLUtil.class);
 
     /**
      * Resolve relative URL-s and fix a java.net.URL error in handling of URLs
