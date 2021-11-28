@@ -17,9 +17,9 @@
 
 package edu.usc.irds.sparkler.util;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import edu.usc.irds.sparkler.SparklerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -33,7 +33,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public class StringUtil {
 
-    public static Logger LOG = LoggerFactory.getLogger(StringUtil.class);
+    public static Logger LOG = new LoggerContext().getLogger(StringUtil.class);
 
     /**
      * Computes SHA-256 hash of a string

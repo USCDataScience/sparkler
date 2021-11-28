@@ -16,6 +16,8 @@
  */
 package edu.usc.irds.sparkler.plugin.regex;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.Logger;
 import edu.usc.irds.sparkler.AbstractExtensionPoint;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.SparklerConfiguration;
@@ -23,9 +25,6 @@ import edu.usc.irds.sparkler.SparklerException;
 import edu.usc.irds.sparkler.URLFilter;
 import edu.usc.irds.sparkler.util.URLUtil;
 import edu.usc.irds.sparkler.ConfigKey;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -63,7 +62,7 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
     public static final String URLFILTER_REGEX_ITEMS = "urlfilter.regex.items";
 
     /** My logger */
-    private final static Logger LOG = LoggerFactory.getLogger(RegexURLFilterBase.class);
+    private final static Logger LOG = new LoggerContext().getLogger(RegexURLFilterBase.class);
 
     /** An array of applicable rules */
     private List<RegexRule> rules;

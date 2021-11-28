@@ -17,9 +17,9 @@
 
 package edu.usc.irds.sparkler.storage.solr.schema;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import org.json.simple.parser.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
@@ -33,7 +33,7 @@ import java.util.Map;
  * Created by karanjeetsingh on 9/14/16.
  */
 public class FieldMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(FieldMapper.class);
+    private static final Logger LOG = new LoggerContext().getLogger(FieldMapper.class);
     public static final String SCHEMA_MAP_FILE = "solr-schema-map.yaml";
     public static final String KEY_OVERRIDES = "overrides";
     public static final String KEY_MULTI_VAL_SUFFIX = "multiValSuffix";

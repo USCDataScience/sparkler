@@ -17,11 +17,11 @@
 
 package edu.usc.irds.sparkler.util;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import edu.usc.irds.sparkler.util.DomainSuffix.Status;
 import edu.usc.irds.sparkler.util.TopLevelDomain.Type;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -42,7 +42,7 @@ import java.io.InputStream;
  */
 class DomainSuffixesReader {
 
-    private static final Logger LOG = LoggerFactory
+    private static final Logger LOG = new LoggerContext()
             .getLogger(DomainSuffixesReader.class);
 
     void read(DomainSuffixes tldEntries, InputStream input) throws IOException {

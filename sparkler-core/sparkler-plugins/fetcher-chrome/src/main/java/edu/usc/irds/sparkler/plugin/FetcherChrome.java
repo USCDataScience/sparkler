@@ -17,6 +17,8 @@
 
 package edu.usc.irds.sparkler.plugin;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -55,8 +57,6 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.pf4j.Extension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.NotImplementedException;
 
 import java.io.*;
@@ -79,7 +79,7 @@ public class FetcherChrome extends FetcherDefault {
         SELENIUM, MAGNESIUM
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(FetcherChrome.class);
+    private static final Logger LOG = new LoggerContext().getLogger(FetcherChrome.class);
     private Map<String, Object> pluginConfig;
     private WebDriver driver;
     private ScriptType type;

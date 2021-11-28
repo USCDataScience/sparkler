@@ -1,7 +1,7 @@
 package edu.usc.irds.sparkler.test;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public class TestSlaveServlet extends HttpServlet {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TestSlaveServlet.class);
+    private static final Logger LOG = new LoggerContext().getLogger(TestSlaveServlet.class);
 
     private static Map<String, Class<? extends TestAction>> actionsRegistry = new HashMap<>();
     static {

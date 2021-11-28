@@ -17,6 +17,8 @@
 
 package edu.usc.irds.sparkler.plugin;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
@@ -35,8 +37,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.pf4j.Extension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -57,7 +57,7 @@ public class HtmlUnitFetcher extends FetcherDefault implements AutoCloseable {
 
     private static final Integer DEFAULT_TIMEOUT = 2000;
     private static final Integer DEFAULT_JS_TIMEOUT = 2000;
-    private static final Logger LOG = LoggerFactory.getLogger(HtmlUnitFetcher.class);
+    private static final Logger LOG = new LoggerContext().getLogger(HtmlUnitFetcher.class);
     private WebClient driver;
 
     @Override

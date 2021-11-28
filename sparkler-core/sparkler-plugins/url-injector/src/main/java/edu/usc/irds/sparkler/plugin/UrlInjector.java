@@ -1,5 +1,7 @@
 package edu.usc.irds.sparkler.plugin;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import edu.usc.irds.sparkler.AbstractExtensionPoint;
 import edu.usc.irds.sparkler.Config;
 import edu.usc.irds.sparkler.SparklerConfiguration;
@@ -10,8 +12,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.pf4j.Extension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.Iterator;
 @Extension
 public class UrlInjector extends AbstractExtensionPoint implements Config {
 
-    private static final Logger LOG = LoggerFactory.getLogger(UrlInjector.class);
+    private static final Logger LOG = new LoggerContext().getLogger(UrlInjector.class);
     private Map<String, Object> pluginConfig;
 
     @Override

@@ -17,6 +17,8 @@
 
 package edu.usc.irds.sparkler.plugin;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.Logger;
 import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.machinepublishers.jbrowserdriver.Settings;
 import com.machinepublishers.jbrowserdriver.Timezone;
@@ -28,8 +30,6 @@ import edu.usc.irds.sparkler.model.Resource;
 import edu.usc.irds.sparkler.model.ResourceStatus;
 import edu.usc.irds.sparkler.util.FetcherDefault;
 import org.pf4j.Extension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.net.URLConnection;
@@ -39,7 +39,7 @@ import java.util.Map;
 public class FetcherJBrowser extends FetcherDefault {
 
     private static final Integer DEFAULT_TIMEOUT = 2000;
-    private static final Logger LOG = LoggerFactory.getLogger(FetcherJBrowser.class);
+    private static final Logger LOG = new LoggerContext().getLogger(FetcherJBrowser.class);
     private Map<String, Object> pluginConfig;
     private JBrowserDriver driver;
 
