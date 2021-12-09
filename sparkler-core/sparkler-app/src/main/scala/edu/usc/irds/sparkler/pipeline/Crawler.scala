@@ -41,7 +41,7 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 import scala.collection.mutable
 import scala.io.Source
-
+import scala.util.control.Breaks._
 /**
   *
   * @since 5/28/16
@@ -61,11 +61,11 @@ class Crawler extends CliTool {
     usage = "Crawl DB URI.")
   var sparkStorage: String = sparklerConf.getDatabaseURI()
 
-  @Option(name = "-id", aliases = Array("--id"), required = true,
+  @Option(name = "-id", aliases = Array("--id"), required = false,
     usage = "Job id. When not sure, get the job id from injector command")
   var jobId: String = ""
 
-  @Option(name = "-idf", aliases = Array("--job-id-file"), required = true,
+  @Option(name = "-idf", aliases = Array("--job-id-file"), required = false,
     usage = "Job id. When not sure, get the job id from injector command")
   var jobIdFile: String = ""
 
@@ -208,11 +208,13 @@ class Crawler extends CliTool {
     val localFetchDelay = fetchDelay
     val job = this.job // local variable to bypass serialization
     GenericFunction(job, GenericProcess.Event.STARTUP,new SQLContext(sc).sparkSession, null)
-
+    import scala.util.control._
+    val loop = new Breaks;
+    loop.breakable{
     for (_ <- 1 to iterations) {
-      var deepCrawlHosts = new mutable.HashSet[String]()
-      if(deepCrawlHostFile != null) {
-        if(deepCrawlHostFile.isFile) {
+      val deepCrawlHosts = new mutable.HashSet[String]()
+      if (deepCrawlHostFile != null) {
+        if (deepCrawlHostFile.isFile) {
           deepCrawlHosts ++= Source.fromFile(deepCrawlHostFile).getLines().toSet
         }
       }
@@ -228,30 +230,37 @@ class Crawler extends CliTool {
       LOG.info(s"Starting the job:$jobId, task:$taskId")
       val rc = new RunCrawl
 
-      val rdd = if(defaultquery != "" && defaultquery.nonEmpty){
-        new MemexCrawlDbRDD(sc, job, generateQry= defaultquery, maxGroups = topG, topN = topN)
-      } else{
+      val rdd = if (defaultquery != "" && defaultquery.nonEmpty) {
+        new MemexCrawlDbRDD(sc, job, generateQry = defaultquery, maxGroups = topG, topN = topN)
+      } else {
         new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
       }
 
-      //TODO RESTORE THIS HACK
-      val f = rc.map(rdd)
-      /*val f = rdd.map(r => (r.getDedupeId, r))
+      val rcount = rdd.count()
+      println(rcount)
+      if (rcount > 0) {
+        //TODO RESTORE THIS HACK
+        val f = rc.map(rdd)
+        /*val f = rdd.map(r => (r.getDedupeId, r))
         .groupByKey()*/
 
-      var fetchedRdd: RDD[CrawlData] = null
-      var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
-      if(rep <= 0){
-        rep = 1
+        var fetchedRdd: RDD[CrawlData] = null
+        var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
+        if (rep <= 0) {
+          rep = 1
+        }
+        println("Number of partitions configured: " + rep)
+        //f.cache()
+        f.checkpoint()
+        fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
+          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
+        }).persist(StorageLevel.MEMORY_AND_DISK)
+        GenericFunction(job, GenericProcess.Event.ITERATION_COMPLETE, new SQLContext(sc).sparkSession, fetchedRdd)
+        scoreAndStore(fetchedRdd, taskId, storageProxy)
+      } else{
+        loop.break
       }
-      println("Number of partitions configured: " + rep)
-      //f.cache()
-      f.checkpoint()
-      fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-        FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
-      }).persist(StorageLevel.MEMORY_AND_DISK)
-      GenericFunction(job, GenericProcess.Event.ITERATION_COMPLETE,new SQLContext(sc).sparkSession, fetchedRdd)
-      scoreAndStore(fetchedRdd, taskId, storageProxy)
+    }
     }
     storageProxy.close()
     //PluginService.shutdown(job)
