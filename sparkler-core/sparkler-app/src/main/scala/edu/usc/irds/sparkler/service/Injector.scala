@@ -58,9 +58,13 @@ class Injector extends CliTool {
     usage = "Id of an existing Job to which the urls are to be injected. No argument will create a new job")
   var jobId: String = ""
 
+  @Option(name = "-idf", aliases = Array("--job-id-file"),
+    usage = "A file containing the job id to be used in the crawl")
+  var jobIdFile: String = ""
+
   @Option(name = "-cdb", aliases = Array("--crawldb"),
     usage = "Crawdb URI.")
-  var sparkStorage: String = conf.getDatabaseURI()
+  var sparkStorage: String = conf.getDatabaseURI
 
   @Option(name = "-co", aliases = Array("--config-override"),
     handler = classOf[StringArrayOptionHandler],
@@ -98,8 +102,10 @@ class Injector extends CliTool {
       uri.put("crawldb.uri", sparkStorage)
     }
 
-    if (jobId.isEmpty) {
+    if (jobId.isEmpty && jobIdFile.isEmpty) {
       jobId = JobUtil.newJobId()
+    } else if(!jobIdFile.isEmpty){
+      jobId = Source.fromFile(jobIdFile).getLines.mkString
     }
     val job = new SparklerJob(jobId, conf)
 

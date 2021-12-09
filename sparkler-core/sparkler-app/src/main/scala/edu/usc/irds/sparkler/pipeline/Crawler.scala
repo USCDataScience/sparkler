@@ -65,6 +65,10 @@ class Crawler extends CliTool {
     usage = "Job id. When not sure, get the job id from injector command")
   var jobId: String = ""
 
+  @Option(name = "-idf", aliases = Array("--job-id-file"), required = true,
+    usage = "Job id. When not sure, get the job id from injector command")
+  var jobIdFile: String = ""
+
   @Option(name = "-o", aliases = Array("--out"),
     usage = "Output path, default is job id")
   var outputPath: String = "crawl-segments"
