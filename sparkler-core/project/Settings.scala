@@ -63,7 +63,8 @@ object Settings {
       "Gitlab Spicule 2" at "https://gitlab.com/api/v4/projects/26391218/packages/maven",
       "Gitlab Spicule" at "https://gitlab.com/api/v4/projects/23300400/packages/maven",
       "Private Github" at "https://gitlab.com/api/v4/projects/28025579/packages/maven",
-      "Ashot Gitlab" at "https://gitlab.com/api/v4/projects/28250236/packages/maven"
+      "Ashot Gitlab" at "https://gitlab.com/api/v4/projects/28250236/packages/maven",
+      "Restlet" at "https://maven.restlet.talend.com"
     )
 
 
