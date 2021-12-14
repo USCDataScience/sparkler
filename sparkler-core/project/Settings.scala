@@ -57,7 +57,7 @@ object Settings {
     resolvers ++= Seq(
       "Maven Releases" at "https://repo1.maven.org/maven2/",
       "Typesafe Releases" at "https://repo.typesafe.com/typesafe/ivy-releases/",
-      "Restlet Repository" at "https://maven.restlet.com/",
+      "Restlet Repository" at "https://repo.spring.io/ui/native/plugins-release/",
       "JBoss Repository" at "https://repository.jboss.org/nexus/content/repositories/",
       "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
       "Scala-Tools Snapshots" at "https://scala-tools.org/repo-snapshots/",
