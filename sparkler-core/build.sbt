@@ -63,7 +63,7 @@ lazy val root = (project in file("."))
     mainClass in Compile := Some("edu.usc.irds.sparkler.Main"),
 
   )
-  .aggregate(api, app, plugins, ui)
+  .aggregate(api, app, plugins)
 
 lazy val api = (project in file("sparkler-api"))
   .settings(
@@ -226,44 +226,5 @@ lazy val testsBase = (project in file("sparkler-tests-base"))
       Dependencies.Slf4j.api,
       Dependencies.Slf4j.log4j12,
     ),
-
-  )
-
-
-lazy val initGitSubmodule = taskKey[Int]("Initialize Git Submodule")
-
-lazy val ui = (project in file("sparkler-ui"))
-  .enablePlugins(JavaAppPackaging)
-  .settings(
-    Settings.common,
-    name := "sparkler-ui",
-    autoScalaLibrary := false,
-    packageDescription := "Banana Dashboard WAR",
-    topLevelDirectory := None,
-    initGitSubmodule := {
-      val log = streams.value.log
-      log.info("Initialize Banana Git Submodule")
-      ("git submodule init" #&& "git submodule update").!
-    },
-    mappings in Universal := {
-      val log = streams.value.log
-      val initSubmodule: Int = initGitSubmodule.value
-      if (initSubmodule != 0) {
-        log.error("Banana Git Submodule Initialization Failed")
-        System.exit(initSubmodule)
-      }
-      val bananaMappings: Seq[(File, String)] = Settings.mergeDirs(
-        baseDirectory.value / "src" / "banana" / "src",
-        baseDirectory.value / "src" / "main" / "java",
-        baseDirectory.value / "src" / "main" / "webapp"
-      )
-      bananaMappings
-    },
-    packageBin in Universal := {
-      val buildLocation: File = baseDirectory.value / "sparkler-dashboard" / s"${name.value}-${(version in ThisBuild).value}.war"
-      val packageFile: File = (packageBin in Universal).value
-      IO.move(packageFile, buildLocation)
-      buildLocation
-    },
 
   )
