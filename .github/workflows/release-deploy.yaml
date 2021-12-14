@@ -1,16 +1,17 @@
 name: dev-deploy
 
 on:
-  push:
-    branches: [ master ]
+  release:
+    types:
+      - created
 
 env:
   PKG_NAME: sparkler-app
   PKG_VERSION: N/A
   PKG_PATH: sparkler-core
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  DATABRICKS_HOST: https://dbc-abaef56e-ca8a.cloud.databricks.com
-  DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_DEV_TOKEN }}
+  DATABRICKS_HOST: https://dbc-6b70bbcd-c212.cloud.databricks.com
+  DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TEST_TOKEN }}
   DATABRICKS_RELEASE_PATH: dbfs:/FileStore/release
 
 jobs:
