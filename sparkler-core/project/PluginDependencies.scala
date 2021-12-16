@@ -47,3 +47,7 @@ object ScorerDdSvn {
 object Databricks {
   lazy val wrapper = "com.kytheralabs" % "webcrawlerwrapper_2.12" % "0.1-SNAPSHOT"
 }
+
+object UrlFilterSameHost {
+  lazy val guava =  "com.google.guava" % "guava" % "31.0.1-jre"
+}

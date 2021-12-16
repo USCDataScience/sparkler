@@ -180,6 +180,9 @@ lazy val urlFilterSameHost =
     .enablePlugins(JavaAppPackaging)
     .settings(
       Settings.plugin,
+      libraryDependencies ++= Seq(
+        UrlFilterSameHost.guava
+      ),
       name := "urlfilter-samehost",
       Settings.pluginManifest(
         id = "urlfilter-samehost",

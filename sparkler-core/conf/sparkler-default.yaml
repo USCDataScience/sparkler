@@ -118,6 +118,8 @@ plugins.active:
 plugins:
   # Regex URL Filter - Filters outlinks from a web page based on Regex
   # expressions.
+  urlfilter.samehost:
+    urlfilter.samehost.allowsubdomains: true
   urlfilter.regex:
     #
     # File with Regex Filter Rules
