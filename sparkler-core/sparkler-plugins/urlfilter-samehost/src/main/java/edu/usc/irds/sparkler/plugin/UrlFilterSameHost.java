@@ -30,7 +30,13 @@ public class UrlFilterSameHost extends AbstractExtensionPoint implements URLFilt
     @Override
     public boolean filter(String child, String parent) {
         try {
-            boolean subdomains = (boolean) pluginConfig.getOrDefault("urlfilter.samehost.allowsubdomains", true);
+            boolean subdomains = true;
+            try{
+                subdomains = (boolean) pluginConfig.getOrDefault("urlfilter.samehost.allowsubdomains", true);
+            } catch (Exception ignored){
+
+            }
+
             if(subdomains){
                 String domain = InternetDomainName.from(new URL(child).getHost()).topPrivateDomain().toString();
                 String pdomain = InternetDomainName.from(new URL(parent).getHost()).topPrivateDomain().toString();
