@@ -161,6 +161,11 @@ class Crawler extends CliTool {
     }
   }
   def init(): Unit = {
+    jobId = if(!jobIdFile.isEmpty){
+      Source.fromFile(jobIdFile).getLines.mkString
+    } else{
+      jobId
+    }
     setConfig()
     if (this.outputPath.isEmpty) {
       this.outputPath = jobId
