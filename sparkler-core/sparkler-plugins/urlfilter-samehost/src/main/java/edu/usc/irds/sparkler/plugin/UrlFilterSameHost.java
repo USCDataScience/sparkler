@@ -23,7 +23,12 @@ public class UrlFilterSameHost extends AbstractExtensionPoint implements URLFilt
 
         SparklerConfiguration config = jobContext.getConfiguration();
         // TODO should change everywhere
-        pluginConfig = config.getPluginConfiguration(pluginId);
+        try{
+            pluginConfig = config.getPluginConfiguration(pluginId);
+        } catch (Exception ignored){
+
+        }
+
     }
 
 
@@ -31,10 +36,12 @@ public class UrlFilterSameHost extends AbstractExtensionPoint implements URLFilt
     public boolean filter(String child, String parent) {
         try {
             boolean subdomains = true;
-            try{
-                subdomains = (boolean) pluginConfig.getOrDefault("urlfilter.samehost.allowsubdomains", true);
-            } catch (Exception ignored){
+            if (pluginConfig != null) {
+                try {
+                    subdomains = (boolean) pluginConfig.getOrDefault("urlfilter.samehost.allowsubdomains", true);
+                } catch (Exception ignored) {
 
+                }
             }
 
             if(subdomains){
