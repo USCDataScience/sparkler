@@ -41,7 +41,6 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 import scala.collection.mutable
 import scala.io.Source
-import scala.util.control.Breaks._
 /**
   *
   * @since 5/28/16

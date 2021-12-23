@@ -61,16 +61,20 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
     if(data.fetchedData.getContentType != null && data.fetchedData.getContentType != "") {
       ctype = allTypes.forName(data.fetchedData.getContentType)
     }
-    val ext = ctype.getExtension
-    if (ext == null || ext == "") {
-      var ext = FilenameUtils.getExtension(data.fetchedData.getResource.getUrl)
-      if (ext.contains("#") || ext.contains("?")) {
-        val splits = ext.split("[#?]")
-        ext = splits(0)
+    if(ctype != null) {
+      val ext = ctype.getExtension
+      if (ext == null || ext == "") {
+        var ext = FilenameUtils.getExtension(data.fetchedData.getResource.getUrl)
+        if (ext.contains("#") || ext.contains("?")) {
+          val splits = ext.split("[#?]")
+          ext = splits(0)
+        }
+        ext = "." + ext
       }
-      ext = "." + ext
+      ext
+    } else{
+      ""
     }
-    ext
   }
 
   def persistDocument(data: CrawlData, jobContext: SparklerConfiguration): Unit = {
@@ -80,8 +84,6 @@ class FairFetcher(val job: SparklerJob, val resources: Iterator[Resource], val d
 
         val uri = new URI(data.fetchedData.getResource.getUrl)
         val domain = uri.getHost
-        val outputDirectory = Paths.get(jobContext.get("fetcher.persist.content.location").toString,
-          data.fetchedData.getResource.getCrawlId, domain).toFile
         var outputFile: File = null
         if (jobContext.get("fetcher.persist.content.filename").toString == "hash") {
           val ext = discoverMime(data)

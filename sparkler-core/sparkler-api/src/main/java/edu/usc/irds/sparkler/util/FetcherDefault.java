@@ -225,7 +225,12 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
         }
 
         IOUtils.closeQuietly(bufferOutStream);
-        FetchedData fetchedData = new FetchedData(rawData, entity.getContentType().getValue(), responseCode);
+        String ctype = null;
+        if(entity.getContentType() != null){
+            ctype = entity.getContentType().getValue();
+        }
+
+        FetchedData fetchedData = new FetchedData(rawData, ctype, responseCode);
         resource.setStatus(ResourceStatus.FETCHED.toString());
         fetchedData.setResource(resource);
         Header[] headers = response2.getAllHeaders();

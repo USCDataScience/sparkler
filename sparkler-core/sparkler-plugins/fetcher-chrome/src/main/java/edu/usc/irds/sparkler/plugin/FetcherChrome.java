@@ -295,7 +295,9 @@ public class FetcherChrome extends FetcherDefault {
             LOG.error(e.getMessage());
             e.printStackTrace(pw);
             LOG.error(buffer.toString());
+            data = new FetchedData();
             resource.setStatus(ResourceStatus.ERROR.toString());
+            data.setResource(resource);
         }
         finally {
             driver.quit();
