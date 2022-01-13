@@ -151,6 +151,9 @@ public interface Constants {
         String JSON_MIMETYPE = "application/json";
         String PARENT = "parent";
         String RESPONSE_TIME = "response_time";
+        String HOSTNAME = "hostname";
     }
+
+    String defaultDateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
 }

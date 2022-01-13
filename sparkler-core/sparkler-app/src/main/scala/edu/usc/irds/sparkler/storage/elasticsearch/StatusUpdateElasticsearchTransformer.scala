@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.storage.solr
+package edu.usc.irds.sparkler.storage.elasticsearch
 
 import java.util.Date
 import java.text.SimpleDateFormat
+import java.util.AbstractMap.SimpleEntry
 
 import com.google.common.hash.{HashFunction, Hashing}
 import edu.usc.irds.sparkler.Constants
@@ -35,18 +36,18 @@ import scala.collection.JavaConverters._
   * Created by Thamme Gowda on 6/7/16.
   * Modified by karanjeets
   */
-object StatusUpdateSolrTransformer extends (CrawlData => Map[String, Object] ) with Serializable with Loggable with StatusUpdateTransformer {
-  LOG.debug("Update Solr Transformer Created")
+object StatusUpdateElasticsearchTransformer extends (CrawlData => Map[String, Object] ) with Serializable with Loggable with StatusUpdateTransformer {
+  LOG.debug("Update Elasticsearch Transformer Created")
   val fieldMapper: FieldMapper = FieldMapper.initialize()
 
   override def apply(data: CrawlData): Map[String, Object] = {
     val hashFunction: HashFunction = Hashing.sha256()
     var toUpdate : Map[String, Object] = Map(
       Constants.storage.ID -> data.fetchedData.getResource.getId,
-      Constants.storage.STATUS -> Map("set" -> data.fetchedData.getResource.getStatus).asJava,
-      Constants.storage.FETCH_TIMESTAMP -> Map("set" -> data.fetchedData.getFetchedAt).asJava,
-      Constants.storage.LAST_UPDATED_AT -> Map("set" -> new Date()).asJava,
-      Constants.storage.RETRIES_SINCE_FETCH -> Map("inc" -> 1).asJava,
+      Constants.storage.STATUS -> data.fetchedData.getResource.getStatus,
+      Constants.storage.FETCH_TIMESTAMP -> new SimpleDateFormat(Constants.defaultDateFormat).format(data.fetchedData.getFetchedAt),
+      Constants.storage.LAST_UPDATED_AT -> new SimpleDateFormat(Constants.defaultDateFormat).format(new Date()),
+      Constants.storage.RETRIES_SINCE_FETCH -> new SimpleEntry[String, Integer]("inc", 1),
       Constants.storage.EXTRACTED_TEXT -> data.parsedData.extractedText,
       Constants.storage.CONTENT_TYPE -> data.fetchedData.getContentType.split("; ")(0),
       Constants.storage.FETCH_STATUS_CODE -> data.fetchedData.getResponseCode.toString(),
@@ -64,7 +65,7 @@ object StatusUpdateSolrTransformer extends (CrawlData => Map[String, Object] ) w
     }
     toUpdate = toUpdate + (Constants.storage.RESPONSE_TIME -> data.fetchedData.getResponseTime)
     for ((scoreKey, score) <- data.fetchedData.getResource.getScore) {
-      toUpdate = toUpdate + (scoreKey -> Map("set" -> score).asJava)
+      toUpdate = toUpdate + (scoreKey -> score)
     }
 
     val md = data.parsedData.metadata

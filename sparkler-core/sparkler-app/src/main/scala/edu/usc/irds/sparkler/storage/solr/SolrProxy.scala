@@ -18,16 +18,17 @@
 package edu.usc.irds.sparkler.storage.solr
 
 import java.io.{Closeable, File}
+
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.storage.StorageProxy
 import edu.usc.irds.sparkler._
+import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
 
 import org.apache.solr.client.solrj.SolrClient
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer
 import org.apache.solr.client.solrj.impl.{CloudSolrClient}
 import org.apache.solr.core.CoreContainer
 import org.apache.solr.common.SolrInputDocument
-
 import org.apache.solr.client.solrj.impl.HttpSolrClient
 
 /**
@@ -35,6 +36,9 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient
   * @since 5/28/16
   */
 class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Closeable with Loggable {
+
+  // creates the solr client
+  private var crawlDb = newClient(config.getDatabaseURI())
 
   /**
     * Creates solr client based on the crawldburi
@@ -74,45 +78,58 @@ class SolrProxy(var config: SparklerConfiguration) extends StorageProxy with Clo
     }
   }
 
-  // creates the solr client
-  private var crawlDb = newClient(config.getDatabaseURI())
-
   def getClient(): SolrClient = {
-    return crawlDb
+    crawlDb
   }
 
-  def addResourceDocs(docs: java.util.Iterator[SolrInputDocument]): Unit = {
-    crawlDb.add(docs)
+  def addResourceDocs(docs: java.util.Iterator[Map[String, Object]]): Unit = {
+    try{
+      while (docs.hasNext()) {
+        addResource(docs.next())
+      }
+    } catch {
+      case e: ClassCastException => println("Must pass java.util.Iterator[Map[String, Object]] to SolrProxy.addResourceDocs")
+    }
   }
 
-  def addResources(beans: java.util.Iterator[_]): Unit = {
+  def addResources(resources: java.util.Iterator[Resource]): Unit = {
     try {
-      crawlDb.addBeans(beans)
+      crawlDb.addBeans(resources)  // SolrClient method addBeans()
     } catch {
       case e: Exception =>
         LOG.warn("Caught {} while adding beans, trying to add one by one", e.getMessage)
-        while (beans.hasNext) {
-          val bean = beans.next()
+        while (resources.hasNext()) {
+          val bean = resources.next()
           try { // to add one by one
             crawlDb.addBean(bean)
           } catch {
             case e2: Exception =>
-              LOG.warn("(SKIPPED) {} while adding {}", e2.getMessage, bean)
+              LOG.warn("(SKIPPED) {} while adding {}", e2.getMessage, bean.asInstanceOf[Any])
               LOG.debug(e2.getMessage, e2)
           }
         }
     }
   }
 
-  def addResource(doc: SolrInputDocument): Unit = {
-    crawlDb.add(doc)
+  def addResource(doc: Map[String, Object]): Unit = {
+    try{
+      val sUpdate = new SolrInputDocument()
+      for ((key, value) <- doc) {
+        sUpdate.setField(key, value)
+      }
+
+      crawlDb.add(sUpdate)  // SolrClient method add()
+    } catch {
+      case e: ClassCastException => println("Must pass Map[String, Object] to SolrProxy.addResource")
+    }
   }
 
   def commitCrawlDb(): Unit = {
-    crawlDb.commit()
+    crawlDb.commit()  // SolrClient method commit()
   }
 
-  override def close(): Unit = {
-    crawlDb.close()
+  def close(): Unit = {
+    crawlDb.close()  // SolrClient method close()
   }
+
 }

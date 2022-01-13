@@ -15,12 +15,16 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.storage.solr
+package edu.usc.irds.sparkler.storage.elasticsearch
 
 import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
-import org.apache.solr.client.solrj.{SolrClient, SolrQuery}
+import org.elasticsearch.client.{RequestOptions, RestClient, RestHighLevelClient}
+import org.elasticsearch.index.query.BoolQueryBuilder
+import org.elasticsearch.index.query.QueryBuilders
 import org.apache.spark.TaskContext
+import org.elasticsearch.action.search.{SearchRequest, SearchResponse}
+import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.slf4j.LoggerFactory
 import edu.usc.irds.sparkler.storage.Upserter
 
@@ -30,38 +34,41 @@ import scala.collection.JavaConversions._
 /**
  * Created by karanjeets on 6/11/16
  */
-class SolrUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) => Any) with Serializable with Upserter {
+class ElasticsearchUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Resource]) => Any) with Serializable with Upserter {
 
-  import edu.usc.irds.sparkler.storage.solr.SolrUpsert.LOG
+  import edu.usc.irds.sparkler.storage.elasticsearch.ElasticsearchUpsert.LOG
 
   override def apply(context: TaskContext, docs: Iterator[Resource]): Any = {
-    LOG.debug("SolrUpsert - Inserting new resources into CrawlDb")
+    LOG.debug("ElasticsearchUpsert - Inserting new resources into CrawlDb")
     val proxy = job.getStorageFactory().getProxy()
-    var client : SolrClient = null
+    var client : RestHighLevelClient = null
     try {
-      client = proxy.getClient().asInstanceOf[SolrClient]
+      client = proxy.getClient().asInstanceOf[RestHighLevelClient]
     } catch {
-      case e: ClassCastException => println("client is not SolrClient.")
+      case e: ClassCastException => println("client is not RestHighLevelClient.")
     }
-
-    //TODO: handle this in server side - tell solr to skip docs if they already exist
 
     //This filter function returns true if there is no other resource  with the same dedupe_id
     val newLinksFilter: (Resource => Boolean) = doc => {
-      val qry = new SolrQuery(s"${Constants.storage.DEDUPE_ID}:${doc.getDedupeId}")
-      qry.setRows(0) //we are interested in counts only and not the contents
-      client.query(qry).getResults.getNumFound == 0
+      var searchRequest : SearchRequest = new SearchRequest("crawldb")
+      var searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
+      var qry : BoolQueryBuilder = QueryBuilders.boolQuery()
+        .must(QueryBuilders.matchQuery(Constants.storage.DEDUPE_ID, doc.getDedupeId))
+      searchSourceBuilder.query(qry)
+      searchRequest.source(searchSourceBuilder)
+      var searchResponse : SearchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
+      searchResponse.getHits().getTotalHits().value.toInt == 0
       // if zero hits, then there are no duplicates
     }
     val newResources = docs.withFilter(newLinksFilter)
 
-    LOG.info("Inserting new resources to Solr ")
+    LOG.info("Inserting new resources to Elasticsearch ")
     proxy.addResources(newResources)
     LOG.debug("New resources inserted, Closing..")
     proxy.close()
   }
 }
 
-object SolrUpsert {
-  val LOG = LoggerFactory.getLogger(SolrUpsert.getClass())
+object ElasticsearchUpsert {
+  val LOG = LoggerFactory.getLogger(ElasticsearchUpsert.getClass())
 }

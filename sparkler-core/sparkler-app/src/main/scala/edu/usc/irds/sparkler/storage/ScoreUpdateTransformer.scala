@@ -15,14 +15,18 @@
  * limitations under the License.
  */
 
-package edu.usc.irds.sparkler.storage.solr
+package edu.usc.irds.sparkler.storage
 
-import org.apache.spark.Partition
+import edu.usc.irds.sparkler.base.Loggable
+import edu.usc.irds.sparkler.model.CrawlData
 
 /**
-  * Created by thammegr on 6/7/16.
+  *
+  * @since 4/18/2021
   */
-class SolrGroupPartition(val indx: Int, val group: String, val start: Int = 0,
-                         val end: Int = Int.MaxValue) extends Partition {
-  override def index: Int = indx
+trait ScoreUpdateTransformer extends (CrawlData => Map[String, Object]) with Serializable with Loggable {
+
+  def apply(data: CrawlData): Map[String, Object]
+
 }
+
