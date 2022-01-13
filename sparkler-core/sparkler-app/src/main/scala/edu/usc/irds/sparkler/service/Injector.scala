@@ -97,7 +97,7 @@ class Injector extends CliTool {
       val fileContents = Source.fromFile(configOverrideFile).getLines.mkString
       conf.overloadConfig(fileContents)
     }
-    if (!sparkStorage.isEmpty) {
+    if (sparkStorage != null && !sparkStorage.isEmpty) {
       val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
       uri.put("crawldb.uri", sparkStorage)
     }
