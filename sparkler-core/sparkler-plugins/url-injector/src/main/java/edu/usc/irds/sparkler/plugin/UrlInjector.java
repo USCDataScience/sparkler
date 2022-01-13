@@ -74,6 +74,7 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
             u = trimHTTPMethod(u);
             if (tokens.size() > 0) {
                 for (String temp : tokens) {
+                    root.put("TAG", temp);
                     String json = root.toString();
                     json = json.replace("${token}", temp);
                     UrlInjectorObj o = new UrlInjectorObj(u, json, method);
@@ -93,13 +94,15 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
     // each token to each url.
     private List<UrlInjectorObj> replaceURLToken(Collection<String> urls, List<String> tokens) {
         List<UrlInjectorObj> fixedUrls = new ArrayList<>();
+        JSONObject root = new JSONObject();
         for (Iterator<String> iterator = urls.iterator(); iterator.hasNext();) {
             String u = iterator.next();
             for (String temp : tokens) {
                 String rep = u.replace("${token}", temp);
                 String method = getHTTPMethod(rep);
                 rep = trimHTTPMethod(rep);
-                UrlInjectorObj o = new UrlInjectorObj(rep, null, method);
+                root.put("TAG", temp);
+                UrlInjectorObj o = new UrlInjectorObj(rep, root.toString(), method);
                 fixedUrls.add(o);
             }
         }
@@ -124,6 +127,7 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
                     try {
                         json = (JSONObject) parser.parse(parsedJsonStr);
                         root.put("JSON", json);
+                        root.put("TAG", temp);
                     } catch (ParseException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
@@ -154,12 +158,14 @@ public class UrlInjector extends AbstractExtensionPoint implements Config {
             u = trimHTTPMethod(u);
             if (tokens.size() > 0) {
                 for (String temp : tokens) {
+                    root.put("TAG", temp);
                     String json = root.toString();
                     json = json.replace("${token}", temp);
                     UrlInjectorObj o = new UrlInjectorObj(u, json, method);
                     fixedUrls.add(o);
                 }
             } else {
+                root.put("TAG", this.pluginConfig.getOrDefault("tag", "no tag defined"));
                 UrlInjectorObj o = new UrlInjectorObj(u, root.toString(), method);
                 fixedUrls.add(o);
             }

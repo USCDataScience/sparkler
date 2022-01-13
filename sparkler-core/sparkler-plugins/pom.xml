@@ -43,7 +43,21 @@
         <!-- Copy template plugin to create a new plugin-->
         <module>template-plugin</module>
     </modules>
-
+    <profiles>
+        <profile>
+            <id>include-chrome</id>
+            <modules>
+                <module>urlfilter-regex</module>
+                <module>scorer-dd-svn</module>
+                <module>fetcher-jbrowser</module>
+                <module>fetcher-htmlunit</module>
+                <module>fetcher-chrome</module>
+                <module>urlfilter-samehost</module>
+                <module>url-injector</module>
+                <module>template-plugin</module>
+            </modules>
+        </profile>
+    </profiles>
     <properties>
         <plugin.version>${project.version}</plugin.version>
         <plugin.provider>${project.groupId}</plugin.provider>
