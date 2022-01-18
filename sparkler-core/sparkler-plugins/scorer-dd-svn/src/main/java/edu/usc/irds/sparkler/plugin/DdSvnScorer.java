@@ -17,13 +17,13 @@
 
 package edu.usc.irds.sparkler.plugin;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.Logger;
 import edu.usc.irds.sparkler.*;
 import edu.usc.irds.sparkler.plugin.ddsvn.ApacheHttpRestClient;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.pf4j.Extension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +35,7 @@ import java.util.Map;
 @Extension
 public class DdSvnScorer extends AbstractExtensionPoint implements Scorer {
 
-    private final static Logger LOG = LoggerFactory.getLogger(DdSvnScorer.class);
+    private final static Logger LOG = new LoggerContext().getLogger(DdSvnScorer.class);
 
     //private Map<String, String> classes;
 

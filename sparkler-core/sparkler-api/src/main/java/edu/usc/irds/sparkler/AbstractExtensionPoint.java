@@ -17,8 +17,9 @@
 
 package edu.usc.irds.sparkler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +29,7 @@ import java.io.InputStream;
  */
 public abstract class AbstractExtensionPoint implements ExtensionPoint {
 
-    public static final Logger LOG = LoggerFactory.getLogger(AbstractExtensionPoint.class);
+    public static final Logger LOG = new LoggerContext().getLogger(AbstractExtensionPoint.class);
 
     protected JobContext jobContext;
     protected String pluginId;

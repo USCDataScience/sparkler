@@ -18,17 +18,12 @@
 package edu.usc.irds.sparkler.storage.elasticsearch
 
 import edu.usc.irds.sparkler.model.Resource
-
 import org.elasticsearch.client.RestHighLevelClient
-
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.action.search.SearchScrollRequest
-
-import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.client.RequestOptions
-
-import org.elasticsearch.search.SearchHits
+import org.elasticsearch.core.TimeValue
 import org.elasticsearch.search.SearchHit
 
 import scala.collection.JavaConversions._

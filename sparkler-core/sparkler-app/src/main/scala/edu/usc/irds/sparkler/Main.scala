@@ -18,9 +18,8 @@
 package edu.usc.irds.sparkler
 
 import edu.usc.irds.sparkler.base.Loggable
+import edu.usc.irds.sparkler.base.Loggable.selectedLogLevel
 import edu.usc.irds.sparkler.pipeline.Crawler
-import edu.usc.irds.sparkler.service.Injector
-import edu.usc.irds.sparkler.util.FileDumperTool
 import edu.usc.irds.sparkler.service.{Dumper, Injector}
 
 /**
@@ -45,9 +44,31 @@ object Main extends Loggable {
       System.exit(0)
     } else {
       args(0) = args(0).toLowerCase
+      var cliArgs: Array[String] = args.slice(1, args.length)
+
+      /**
+       * This code block is not using "du.usc.irds.sparkler.base.CliTools" to parse the command line arguments.
+       * Because it requires interface "Options" to be used and defined for all the possible arguments to be passed in
+       * and to be used by the classes down the line. Which does not make sense to have all the mess here.
+       * So, it is just taking the -ll (Log Level) argument from the command line arguments and deleting it from the list
+       * to avoid further errors
+       */
+      val llIndex : Integer = cliArgs.indexOf("-ll")
+      if(llIndex >= 0) {
+        val llValIndex = llIndex + 1
+        try {
+          selectedLogLevel = if (llIndex < 0) "INFO" else cliArgs(llValIndex)
+          cliArgs = cliArgs.patch(llIndex, Nil, 2)
+        }
+        catch {
+          case _: ArrayIndexOutOfBoundsException => selectedLogLevel = "INFO"
+        }
+      }
+      setLogLevel()
+
       if (subCommands.contains(args(0))){
         val method = subCommands(args(0))._1.getMethod("main", args.getClass)
-        method.invoke(null, args.slice(1, args.length))
+        method.invoke(null, cliArgs)
       } else {
         LOG.error(s"ERROR: Command ${args(0)} is unknown. Type '$HELP_CMD' for details")
         System.exit(1)

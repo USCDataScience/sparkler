@@ -32,7 +32,7 @@ class StatusUpdate(job: SparklerJob) extends ((TaskContext, Iterator[Map[String,
 
   override def apply(context: TaskContext, docs: Iterator[Map[String, Object]]): Any = {
     LOG.debug("Updating document status into CrawlDb")
-    val proxy = job.getStorageFactory().getProxy()
+    val proxy = job.getStorageFactory.getProxy
     proxy.addResourceDocs(docs)
     proxy.close()
   }

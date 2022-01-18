@@ -1,5 +1,3 @@
-
-
 # [Sparkler](http://irds.usc.edu/sparkler/)
 
 [![Slack](https://img.shields.io/badge/slack-@uscdatascience/sparkler-red.svg?logo=slack)](https://uscdatascience.slack.com/messages/sparkler/)

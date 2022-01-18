@@ -18,7 +18,6 @@
 package edu.usc.irds.sparkler.storage.solr
 
 import java.util.Date
-import java.text.SimpleDateFormat
 
 import com.google.common.hash.{HashFunction, Hashing}
 import edu.usc.irds.sparkler.Constants
@@ -53,7 +52,8 @@ object StatusUpdateSolrTransformer extends (CrawlData => Map[String, Object] ) w
       Constants.storage.SIGNATURE -> hashFunction.hashBytes(data.fetchedData.getContent).toString,
       Constants.storage.RELATIVE_PATH -> URLUtil.reverseUrl(data.fetchedData.getResource.getUrl),
       Constants.storage.OUTLINKS -> data.parsedData.outlinks.toArray,
-      Constants.storage.SEGMENT -> data.fetchedData.getSegment
+      Constants.storage.SEGMENT -> data.fetchedData.getSegment,
+      Constants.storage.CONTENTHASH -> ContentHash.fetchHash(data.fetchedData.getContent)
     )
 
     val splitMimeTypes = data.fetchedData.getContentType.toLowerCase().split(";")
@@ -72,13 +72,23 @@ object StatusUpdateSolrTransformer extends (CrawlData => Map[String, Object] ) w
 
     var mapped = fieldMapper.mapFields(mdFields, true)
     for (k <- mapped.keySet()) {
-      var key = if (Constants.storage.MD_SUFFIX == null || Constants.storage.MD_SUFFIX.isEmpty || k.endsWith(Constants.storage.MD_SUFFIX)) k else k + Constants.storage.MD_SUFFIX
+      val key = if (Constants.storage.MD_SUFFIX == null || Constants.storage.MD_SUFFIX.isEmpty || k.endsWith(Constants.storage.MD_SUFFIX)){
+        k
+      }
+      else {
+        k + Constants.storage.MD_SUFFIX
+      }
       toUpdate = toUpdate + (key -> mapped(k))
     }
 
     mapped = fieldMapper.mapFields(data.parsedData.headers, true)
     for (k <- mapped.keySet()) {
-      var key = if (Constants.storage.HDR_SUFFIX == null || Constants.storage.HDR_SUFFIX.isEmpty || k.endsWith(Constants.storage.HDR_SUFFIX)) k else k + Constants.storage.HDR_SUFFIX
+      val key = if (Constants.storage.HDR_SUFFIX == null || Constants.storage.HDR_SUFFIX.isEmpty || k.endsWith(Constants.storage.HDR_SUFFIX)){
+        k
+      }
+      else {
+        k + Constants.storage.HDR_SUFFIX
+      }
       toUpdate = toUpdate + (key -> mapped(k))
     }
 

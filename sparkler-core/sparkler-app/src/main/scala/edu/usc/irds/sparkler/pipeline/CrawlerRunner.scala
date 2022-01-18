@@ -1,20 +1,18 @@
 package edu.usc.irds.sparkler.pipeline
 
-import com.fasterxml.jackson.databind.cfg.ConfigOverride
+import edu.usc.irds.sparkler.model.ResourceStatus.UNFETCHED
+import edu.usc.irds.sparkler.model.{CrawlData, Resource, SparklerJob}
+import edu.usc.irds.sparkler.storage.StatusUpdate
+import edu.usc.irds.sparkler.util.JobUtil
 import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
 import org.apache.commons.validator.routines.UrlValidator
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
-import edu.usc.irds.sparkler.pipeline._
-import edu.usc.irds.sparkler.model.{Resource, SparklerJob}
-import edu.usc.irds.sparkler.model.ResourceStatus.UNFETCHED
-import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
-import edu.usc.irds.sparkler.storage.{StorageProxyFactory, StatusUpdate}
+
 import java.io.File
 import scala.collection.mutable
 import scala.io.Source
-import edu.usc.irds.sparkler.util.JobUtil
-import org.apache.spark.rdd.RDD
 
 
 class CrawlerRunner {
@@ -37,9 +35,9 @@ class CrawlerRunner {
     //STEP : Initialize environment
     this.outputPath = op
     val job = init(configOverride, jobId, sparkStorage, databricksEnable = false, sparklerConf, outputPath, sparkMaster, jarPath)
-    val storageFactory = job.getStorageFactory()
+    val storageFactory = job.getStorageFactory
 
-    val storageProxy = storageFactory.getProxy()
+    val storageProxy = storageFactory.getProxy
     LOG.info("Committing crawldb..")
     storageProxy.commitCrawlDb()
     val localFetchDelay = fetchDelay
@@ -62,7 +60,7 @@ class CrawlerRunner {
         val fetchedRdd = deepRdd.map(r => (r.getGroup, r))
           .groupByKey()
           .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-            FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer())
+            FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer)
           })
           .persist()
 
@@ -89,7 +87,7 @@ class CrawlerRunner {
       val fetchedRdd = rdd.map(r => (r.getGroup, r))
         .groupByKey()
         .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer()) })
+          FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer) })
         .persist()
 
       if (kafkaEnable) {
@@ -114,11 +112,11 @@ class CrawlerRunner {
 
   def score(fetchedRdd: RDD[CrawlData], job: SparklerJob): RDD[CrawlData] = {
     val joba = job.asInstanceOf[SparklerJob]
-    val storageFactory = joba.getStorageFactory()
+    val storageFactory = joba.getStorageFactory
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(joba, d))
 
-    val scoreUpdateRdd: RDD[Map[String, Object]] = scoredRdd.map(d => storageFactory.getScoreUpdateTransformer()(d))
+    val scoreUpdateRdd: RDD[Map[String, Object]] = scoredRdd.map(d => storageFactory.getScoreUpdateTransformer(d))
     val scoreUpdateFunc = new StatusUpdate(joba)
     this.sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
 

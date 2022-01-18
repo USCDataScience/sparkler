@@ -17,8 +17,8 @@
 
 package edu.usc.irds.sparkler.storage;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import java.util.LinkedHashMap;
  * Modified by karanjeetsingh
  */
 public class StringEvaluator {
-    private static final Logger LOG = LoggerFactory.getLogger(StringEvaluator.class);
+    private static final Logger LOG = new LoggerContext().getLogger(StringEvaluator.class);
 
     /**
      * Eval contract for evaluating string to {@code T} type object

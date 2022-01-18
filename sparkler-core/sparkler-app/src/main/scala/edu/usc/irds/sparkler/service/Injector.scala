@@ -16,27 +16,21 @@
  */
 
 package edu.usc.irds.sparkler.service
-import scala.collection.JavaConversions._
-import java.io.File
-import java.nio.file.NotDirectoryException
-import java.util
-
-import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.pipeline.UrlInjectorFunction
 import edu.usc.irds.sparkler.util.JobUtil
+import edu.usc.irds.sparkler.{Constants, SparklerConfiguration}
+import org.apache.commons.validator.routines.UrlValidator
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
 
-import scala.collection.JavaConversions._
-import scala.io.Source
+import java.io.File
 import java.nio.file.NotDirectoryException
-
-import org.apache.commons.validator.routines.UrlValidator
-
-import scala.collection.mutable.Stack
-import scala.collection.mutable.ArrayBuffer
+import java.util
+import scala.collection.JavaConversions._
+import scala.collection.mutable.{ArrayBuffer, Stack}
+import scala.io.Source
 
 /**
   *
@@ -64,29 +58,57 @@ class Injector extends CliTool {
     usage = "Id of an existing Job to which the urls are to be injected. No argument will create a new job")
   var jobId: String = ""
 
+  @Option(name = "-idf", aliases = Array("--job-id-file"),
+    usage = "A file containing the job id to be used in the crawl")
+  var jobIdFile: String = ""
+
   @Option(name = "-cdb", aliases = Array("--crawldb"),
     usage = "Crawdb URI.")
-  var sparkStorage: String = conf.getDatabaseURI()
+  var sparkStorage: String = conf.getDatabaseURI
 
   @Option(name = "-co", aliases = Array("--config-override"),
     handler = classOf[StringArrayOptionHandler],
     usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
   var configOverride: Array[Any] = Array()
 
+  @Option(name = "-co64", aliases = Array("--config-override-encoded"),
+    handler = classOf[StringArrayOptionHandler],
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var configOverrideEncoded: String = ""
+
+  @Option(name = "-cof", aliases = Array("--config-override-file"),
+    handler = classOf[StringArrayOptionHandler],
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var configOverrideFile: String = ""
+
+
   override def run(): Unit = {
     if (configOverride != ""){
       conf.overloadConfig(configOverride.mkString(" "));
     }
-    if (!sparkStorage.isEmpty) {
+    if(configOverrideEncoded != ""){
+      import java.nio.charset.StandardCharsets
+      import java.util.Base64
+      val decoded = Base64.getDecoder().decode(configOverrideEncoded)
+      val str = new String(decoded, StandardCharsets.UTF_8)
+      conf.overloadConfig(str)
+    }
+    if(configOverrideFile!= ""){
+      val fileContents = Source.fromFile(configOverrideFile).getLines.mkString
+      conf.overloadConfig(fileContents)
+    }
+    if (sparkStorage != null && !sparkStorage.isEmpty) {
       val uri = conf.asInstanceOf[java.util.HashMap[String, String]]
       uri.put("crawldb.uri", sparkStorage)
     }
 
-    if (jobId.isEmpty) {
+    if (jobId.isEmpty && jobIdFile.isEmpty) {
       jobId = JobUtil.newJobId()
+    } else if(!jobIdFile.isEmpty){
+      jobId = Source.fromFile(jobIdFile).getLines.mkString
     }
     val job = new SparklerJob(jobId, conf)
-    val storageFactory = job.getStorageFactory()
+    val storageFactory = job.getStorageFactory
 
     val urls: util.Collection[String] =
       if (seedFile != null) {
@@ -110,7 +132,7 @@ class Injector extends CliTool {
     })
     LOG.info("Injecting {} seeds", seeds.size())
 
-    val storageProxy = storageFactory.getProxy()
+    val storageProxy = storageFactory.getProxy
     storageProxy.addResources(seeds.iterator())
     storageProxy.commitCrawlDb()
     storageProxy.close()
@@ -161,6 +183,7 @@ object Injector extends Loggable {
 
   val SEED_SCORE = new java.util.HashMap[String,java.lang.Double](SMAP)
   def main(args: Array[String]): Unit = {
+    setLogLevel()
     val injector = new Injector()
     injector.run(args)
     println(s">>jobId = ${injector.jobId}")

@@ -17,6 +17,7 @@
 
 package edu.usc.irds.sparkler.storage.solr
 
+import edu.usc.irds.sparkler.base.Loggable
 import org.apache.solr.client.solrj.{SolrClient, SolrQuery}
 
 import scala.collection.JavaConversions._
@@ -93,6 +94,4 @@ class SolrResultIterator[T] extends Iterator[T] {
   }
 }
 
-object SolrResultIterator {
-  val LOG = org.slf4j.LoggerFactory.getLogger(SolrResultIterator.getClass)
-}
+object SolrResultIterator extends Loggable

@@ -27,4 +27,5 @@ class ParsedData extends Serializable {
   var outlinks: Set[String] = Set.empty[String]
   var metadata: Metadata = new Metadata()
   var headers: Map[String, AnyRef] = Map.empty
+  var contentHash: String = _
 }

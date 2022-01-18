@@ -27,7 +27,7 @@ crawldb.backend: elasticsearch  # "solr" is default until "elasticsearch" become
 # solr.uri: file://conf/solr/crawldb
 # For cloudmode with zookeepers; Format = collectionName::zkhost1:port1,zkhost2:port2,zkhost3:port3
 # solr.uri: crawldb::localhost:9983
-solr.uri: http://localhost:8983/solr/crawldb
+solr.uri: http://ec2-35-174-200-133.compute-1.amazonaws.com:8983/solr/crawldb
 
 # elasticsearch settings
 elasticsearch.uri: http://elasticsearch:9200
@@ -40,6 +40,7 @@ elasticsearch.uri: http://elasticsearch:9200
 spark.master: local[*]
 databricks.enable: false
 
+crawl.repartition: 1
 ##################### Apache Kafka Properties ###########################
 # Enable Kafka Dump
 # Type: Boolean. Default is "false"
@@ -85,6 +86,9 @@ fetcher.headers:
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
   Accept-Language: "en-US,en"
 
+fetcher.persist.content.location: /dbfs/FileStore/bcf/content/
+fetcher.persist.content.filename: hash
+fetcher.kill.failure.percent: 3.5
 # Rotating agents file.
 # File should contain a list of agents which will be used to override the default agent string
 # This is an unbounded list, it can take any number of agents you wish.
@@ -114,6 +118,8 @@ plugins.active:
 plugins:
   # Regex URL Filter - Filters outlinks from a web page based on Regex
   # expressions.
+  urlfilter.samehost:
+    urlfilter.samehost.allowsubdomains: true
   urlfilter.regex:
     #
     # File with Regex Filter Rules
@@ -129,20 +135,31 @@ plugins:
     #socket.timeout: 3000
     #connect.timeout: 3000
   fetcher.chrome:
-    #Set timeout to > -1 to enable the wait for element visibility for some ajax sites.
-    chrome.wait.timeout: -1
-    #Element name
-    chrome.wait.element: "some element"
-    #What type of element, class, name, id
-    chrome.wait.type: "class"
-    chrome.dns: "http://localhost:3000/webdriver"
-    #chrome.selenium.enabled: "true"
-    #chrome.selenium.script.click: "id:txtName"
-    #chrome.selenium.script.keys: "COR"
-    #chrome.selenium.script.click: "id:btnSearch" 
+    chrome.dns: "local"
+    chrome.selenium.outputdirectory: "/dbfs/FileStore/crawl/content/"
+    chrome.options:
+        - "--no-sandbox" 
+        - "--headless"
+        - "--disable-gpu" 
+        - "--disable-extensions" 
+        - "--ignore-certificate-errors" 
+        - "--incognito" 
+        - "--window-size=1920,1080"
+        - "--disable-background-networking"
+        - "--safebrowsing-disable-auto-update"
+        - "--disable-sync"
+        - "--metrics-recording-only"
+        - "--disable-default-apps"
+        - "--no-first-run"
+        - "--disable-setuid-sandbox"
+        - "--hide-scrollbars"
+        - "--no-zygote"
+        - "--disable-notifications"
+        - "--disable-logging"
+        - "--disable-permissions-api"
     #chrome.proxy.address: 127.0.0.1:9998
   url.injector:
-    mode: selenium # currently only compatible with the fetcher-chrome plugin
+    # mode: selenium # currently only compatible with the fetcher-chrome plugin
     #mode: replace
     #mode: json
     #mode: form
@@ -150,29 +167,56 @@ plugins:
     #  - "\"COR\""
     #  - "\"VEN\""
     #  - "\"SOM\""
-    values:
-      - Acitretin
-      - Adempas
-      - Actiq
-    selenium:
-      1:
-        operation: click
-        value: id:some-id
-      2:
-        operation: keys
-        value: "id:some-input-id:${token}"
-      3:
-        operation: click
-        value: "id:some-id" 
-    json: "{ \"name\":\"John\", \"age\":${token}, \"car\":null }"
-    form:
-      hdnField: "submit"
-      txtRequired: ""
-      radSearchBy: "drugname"
-      txtName: "${token}"
-      selTC: ""
-      selProgram: "MA"
-      txtDateOfService: "12/01/2020"
+#    values:
+#      - Acitretin
+#      - Adempas
+#      - Actiq
+#    selenium:
+#      1:
+#        operation: click
+#        value: id:some-id
+#      2:
+#        operation: keys
+#        value: "id:some-input-id:${token}"
+#      3:
+#        operation: click
+#        value: "id:some-id"
+#    json: "{ \"name\":\"John\", \"age\":${token}, \"car\":null }"
+#    form:
+#      hdnField: "submit"
+#      txtRequired: ""
+#      radSearchBy: "drugname"
+#      txtName: "${token}"
+#      selTC: ""
+#      selProgram: "MA"
+#      txtDateOfService: "12/01/2020"
+#  databricks.api:
+#     events:
+#      startup:
+#        updateeventlog:
+#          sql:
+#            - statement: "INSERT INTO warehouse.crawl_events VALUES('$crawlid', 'JOB ID', '$sparkvariable', current_timestamp())"
+#              sparkvariable: spark.databricks.clusterUsageTags.clusterName
+#            - statement: "INSERT INTO warehouse.crawl_events VALUES('$crawlid', 'LOG LOCATION', '$sparkvariable', current_timestamp())"
+#              sparkvariable: spark.databricks.clusterUsageTags.clusterLogDestination
+#          logger:
+#            event: Job
+#            message: Job id
+#            sparkvariable: spark.databricks.clusterUsageTags.clusterName
+#      iteration_complete:
+#         updateeventlog:
+#           sql: xxx
+#      shutdown:
+#        triggerjob:
+#          notebook: xxx
+#          sparkversion: xxx
+#          instancetype: xxx
+#          clustersize: xxx
+#          parameters:
+#            abc: xxx
+#            def: xxx
+
+
 ##################### Custom properties for MEMEX ###########################################
   memex.webpage.mimetype: "text/html"
 

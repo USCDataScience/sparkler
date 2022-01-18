@@ -39,6 +39,7 @@ public class Resource implements Serializable {
     @Field("dedupe_id") private String dedupeId;
     @Field("http_method") private String httpMethod;
     @Field("jobmeta") private String metadata;
+    @Field("contenthash")private String contenthash;
 
     private String version = "1.0";
     private Date modifiedTime = new Date();
@@ -47,7 +48,7 @@ public class Resource implements Serializable {
     private Double pageScore = 0.0;
     private Integer retriesSinceFetch = -1;
     private Integer fetchStatusCode = 0;
-    private Long responseTime = new Long(0);
+    private Long responseTime = 0L;
 
     public Resource() {
     }
@@ -311,6 +312,14 @@ public class Resource implements Serializable {
 
     public void setGenerateScore(Double generateScore) {
         this.generateScore = generateScore;
+    }
+
+    public void setContentHash(String md5hash) {
+        this.contenthash = md5hash;
+    }
+
+    public String getContentHash(){
+        return this.contenthash;
     }
 
     public Map<String, Double> getScoreAsMap(){

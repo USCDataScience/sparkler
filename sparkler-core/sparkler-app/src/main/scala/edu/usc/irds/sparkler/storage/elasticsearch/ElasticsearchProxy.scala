@@ -17,36 +17,20 @@
 
 package edu.usc.irds.sparkler.storage.elasticsearch
 
-import java.io.{Closeable, File}
-import scala.collection.mutable.ArrayBuffer
-import java.io.IOException
-
-import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.storage.StorageProxy
 import edu.usc.irds.sparkler._
+import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.Resource
-
+import edu.usc.irds.sparkler.storage.StorageProxy
 import org.apache.http.HttpHost
-import org.elasticsearch.action.get.GetRequest
-import org.elasticsearch.action.get.GetResponse
-import org.elasticsearch.action.index.IndexRequest
-import org.elasticsearch.action.index.IndexResponse
-import org.elasticsearch.action.search.SearchRequest
-import org.elasticsearch.action.search.SearchResponse
+import org.elasticsearch.action.index.{IndexRequest, IndexResponse}
 import org.elasticsearch.action.update.UpdateRequest
-import org.elasticsearch.client.RequestOptions
-import org.elasticsearch.client.RestClient
-import org.elasticsearch.client.RestHighLevelClient
-import org.elasticsearch.common.xcontent.XContentBuilder
-import org.elasticsearch.common.xcontent.XContentFactory
-import org.elasticsearch.index.query.QueryBuilder
-import org.elasticsearch.index.query.QueryBuilders
-import org.elasticsearch.search.builder.SearchSourceBuilder
+import org.elasticsearch.client.{RequestOptions, RestClient, RestHighLevelClient}
 import org.elasticsearch.script.Script
-import org.elasticsearch.script.ScriptType
+import org.elasticsearch.xcontent.{XContentBuilder, XContentFactory}
 
-import java.util.Collections.singletonMap
+import java.io.{Closeable, IOException}
 import java.util.AbstractMap.SimpleEntry
+import scala.collection.mutable.ArrayBuffer
 
 
 /**
@@ -56,13 +40,13 @@ import java.util.AbstractMap.SimpleEntry
 class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy with Closeable with Loggable {
 
   // creates the client
-  private var crawlDb = newClient(config.getDatabaseURI())
+  private var crawlDb = newClient(config.getDatabaseURI)
 
   private var indexRequests = ArrayBuffer[IndexRequest]()
 
   def newClient(crawlDbUri: String): RestHighLevelClient = {
     val scheme : String = crawlDbUri.substring(0, crawlDbUri.indexOf(':'))
-    val hostname : String = crawlDbUri.substring(crawlDbUri.indexOf(':')+3, crawlDbUri.lastIndexOf(':'))
+    val hostname : String = crawlDbUri.substring(crawlDbUri.indexOf(':') + 3, crawlDbUri.lastIndexOf(':'))
     val port : Int = Integer.valueOf(crawlDbUri.substring(crawlDbUri.lastIndexOf(':') + 1))
 
     if (scheme.equals("http") || scheme.equals("https")) {
@@ -70,7 +54,7 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
         RestClient.builder(
           new HttpHost(hostname, port, scheme)
         )
-      );
+      )
     } else if (crawlDbUri.startsWith("file://")) {
       ???  // TODO: embedded ES?
     } else if (crawlDbUri.contains("::")){
@@ -86,7 +70,7 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
 
   def addResourceDocs(docs: java.util.Iterator[Map[String, Object]]): Unit = {
     try{
-      while (docs.hasNext()) {
+      while (docs.hasNext) {
         addResource(docs.next())
       }
     } catch {
@@ -98,19 +82,19 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
     var resource : Resource = null
     var dataMap : java.util.Map[String, Object] = null
 
-    while (resources.hasNext()) {
+    while (resources.hasNext) {
       try {
         resource = resources.next()
-        dataMap = resource.getDataAsMap()
+        dataMap = resource.getDataAsMap
       }
       catch {
         case e: IOException =>
           e.printStackTrace()
       }
 
-      var indexRequest = new IndexRequest("crawldb")
+      val indexRequest = new IndexRequest("crawldb")
       indexRequest.source(dataMap)
-      indexRequest.id(resource.getId())
+      indexRequest.id(resource.getId)
 
       indexRequests.append(indexRequest)
     }
@@ -121,33 +105,34 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
       val updateData : XContentBuilder = XContentFactory.jsonBuilder()
         .startObject()
       for ((key, value) <- doc) {
-        if (value.isInstanceOf[SimpleEntry[String, Object]]) {
-          // handle various commands besides setting
-          // currently only increment ("inc") exists as of 4/25/2021
-          var pair : SimpleEntry[String, Object] = value.asInstanceOf[SimpleEntry[String, Object]]
-          if (pair.getKey().asInstanceOf[String] == "inc") {
-            // script to increment field
-            var updateRequestForScripts : UpdateRequest = new UpdateRequest("crawldb",
-              doc.get(Constants.storage.ID).get.asInstanceOf[String])
+        value match {
+          case value1: SimpleEntry[String, Object] =>
+            // handle various commands besides setting
+            // currently only increment ("inc") exists as of 4/25/2021
+            val pair: SimpleEntry[String, Object] = value1
+            if (pair.getKey == "inc") {
+              // script to increment field
+              val updateRequestForScripts: UpdateRequest = new UpdateRequest("crawldb",
+                doc(Constants.storage.ID).asInstanceOf[String])
 
-            var scriptCode : String = "ctx._source." + key + " += " + pair.getValue()
-            var newScript : Script = new Script(scriptCode)
-            updateRequestForScripts.script(newScript)
+              val scriptCode: String = "ctx._source." + key + " += " + pair.getValue
+              val newScript: Script = new Script(scriptCode)
+              updateRequestForScripts.script(newScript)
 
-            crawlDb.update(updateRequestForScripts, RequestOptions.DEFAULT)
-            updateRequestForScripts.retryOnConflict(3)
-          }
-          else {
-            println("ElasticsearchProxy: addResource() - unknown command in SimpleEntry[String, Object]")
-          }
+              crawlDb.update(updateRequestForScripts, RequestOptions.DEFAULT)
+              updateRequestForScripts.retryOnConflict(3)
+            }
+            else {
+              println("ElasticsearchProxy: addResource() - unknown command in SimpleEntry[String, Object]")
+            }
+          case _ => if (key != Constants.storage.ID) updateData.field(key, value)
         }
-        else if (key != Constants.storage.ID) updateData.field(key, value)
       }
       updateData.endObject()
 
-      var indexRequest : IndexRequest = new IndexRequest("crawldb", doc.get(Constants.storage.ID).get.asInstanceOf[String])
+      val indexRequest : IndexRequest = new IndexRequest("crawldb", doc(Constants.storage.ID).asInstanceOf[String])
         .source(updateData)
-      var updateRequest : UpdateRequest = new UpdateRequest("crawldb", doc.get(Constants.storage.ID).get.asInstanceOf[String])
+      val updateRequest : UpdateRequest = new UpdateRequest("crawldb", doc(Constants.storage.ID).asInstanceOf[String])
         .doc(updateData)
         .upsert(indexRequest) // upsert either updates or insert if not found
 

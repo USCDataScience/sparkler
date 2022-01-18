@@ -40,24 +40,24 @@ class ElasticsearchUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Reso
 
   override def apply(context: TaskContext, docs: Iterator[Resource]): Any = {
     LOG.debug("ElasticsearchUpsert - Inserting new resources into CrawlDb")
-    val proxy = job.getStorageFactory().getProxy()
+    val proxy = job.getStorageFactory.getProxy
     var client : RestHighLevelClient = null
     try {
       client = proxy.getClient().asInstanceOf[RestHighLevelClient]
     } catch {
-      case e: ClassCastException => println("client is not RestHighLevelClient.")
+      case _: ClassCastException => println("client is not RestHighLevelClient.")
     }
 
     //This filter function returns true if there is no other resource  with the same dedupe_id
     val newLinksFilter: (Resource => Boolean) = doc => {
-      var searchRequest : SearchRequest = new SearchRequest("crawldb")
-      var searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
-      var qry : BoolQueryBuilder = QueryBuilders.boolQuery()
+      val searchRequest : SearchRequest = new SearchRequest("crawldb")
+      val searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
+      val qry : BoolQueryBuilder = QueryBuilders.boolQuery()
         .must(QueryBuilders.matchQuery(Constants.storage.DEDUPE_ID, doc.getDedupeId))
       searchSourceBuilder.query(qry)
       searchRequest.source(searchSourceBuilder)
       var searchResponse : SearchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
-      searchResponse.getHits().getTotalHits().value.toInt == 0
+      searchResponse.getHits.getTotalHits.value.toInt == 0
       // if zero hits, then there are no duplicates
     }
     val newResources = docs.withFilter(newLinksFilter)
@@ -70,5 +70,5 @@ class ElasticsearchUpsert(job: SparklerJob) extends ((TaskContext, Iterator[Reso
 }
 
 object ElasticsearchUpsert {
-  val LOG = LoggerFactory.getLogger(ElasticsearchUpsert.getClass())
+  val LOG = LoggerFactory.getLogger(ElasticsearchUpsert.getClass)
 }

@@ -18,11 +18,11 @@
 package edu.usc.irds.sparkler.pipeline
 
 import java.io.File
-import java.util
 import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
+import edu.usc.irds.sparkler.storage.StorageProxy
 import edu.usc.irds.sparkler.storage.{StorageProxyFactory, StatusUpdate}
 import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
@@ -30,15 +30,15 @@ import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.SequenceFileOutputFormat
 import org.apache.nutch.protocol
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{SQLContext, SparkSession}
+import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.SparkSession
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
-
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 import scala.io.Source
-
 /**
   *
   * @since 5/28/16
@@ -58,9 +58,13 @@ class Crawler extends CliTool {
     usage = "Crawl DB URI.")
   var sparkStorage: String = sparklerConf.getDatabaseURI()
 
-  @Option(name = "-id", aliases = Array("--id"), required = true,
+  @Option(name = "-id", aliases = Array("--id"), required = false,
     usage = "Job id. When not sure, get the job id from injector command")
   var jobId: String = ""
+
+  @Option(name = "-idf", aliases = Array("--job-id-file"), required = false,
+    usage = "Job id. When not sure, get the job id from injector command")
+  var jobIdFile: String = ""
 
   @Option(name = "-o", aliases = Array("--out"),
     usage = "Output path, default is job id")
@@ -115,6 +119,21 @@ class Crawler extends CliTool {
     usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
   var configOverride: Array[Any] = Array()
 
+  @Option(name = "-co64", aliases = Array("--config-override-encoded"),
+    handler = classOf[StringArrayOptionHandler],
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var configOverrideEncoded: String = ""
+
+  @Option(name = "-cof", aliases = Array("--config-override-file"),
+    handler = classOf[StringArrayOptionHandler],
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var configOverrideFile: String = ""
+
+  @Option(name = "-dq", aliases = Array("--default-query"),
+    handler = classOf[StringArrayOptionHandler],
+    usage = "Configuration override. JSON Blob, key values in this take priority over config values in the config file.")
+  var defaultquery: String = ""
+
   /* Generator options, currently not exposed via the CLI
      and only accessible through the config yaml file
    */
@@ -124,20 +143,38 @@ class Crawler extends CliTool {
   var job: SparklerJob = _
   var sc: SparkContext = _
 
-  def init(): Unit = {
+  def setConfig(): Unit ={
     if (configOverride != ""){
       sparklerConf.overloadConfig(configOverride.mkString(" "));
     }
+    if(configOverrideEncoded != ""){
+      val decoded = Base64.getDecoder().decode(configOverrideEncoded)
+      val str = new String(decoded, StandardCharsets.UTF_8)
+      sparklerConf.overloadConfig(str)
+    }
+    if(configOverrideFile!= ""){
+      val fileContents = Source.fromFile(configOverrideFile).getLines.mkString
+      sparklerConf.overloadConfig(fileContents)
+    }
+  }
+  def init(): Unit = {
+    jobId = if(!jobIdFile.isEmpty){
+      Source.fromFile(jobIdFile).getLines.mkString
+    } else{
+      jobId
+    }
+    setConfig()
     if (this.outputPath.isEmpty) {
       this.outputPath = jobId
     }
     val conf = new SparkConf().setAppName(jobId)
-    if (!sparkMaster.isEmpty) {
+    if (sparkMaster != null && sparkMaster.nonEmpty) {
       conf.setMaster(sparkMaster)
     }
-    if (!sparkStorage.isEmpty){
+
+    if (sparkStorage.nonEmpty){
       val dbToUse: String = sparklerConf.get(Constants.key.CRAWLDB_BACKEND).asInstanceOf[String]
-      sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put(dbToUse+".uri", sparkStorage)
+      sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put(dbToUse + ".uri", sparkStorage)
     }
 
     if (databricksEnable) {
@@ -154,10 +191,12 @@ class Crawler extends CliTool {
     else if(!jarPath.isEmpty) {
       sc.getConf.setJars(jarPath)
     }
+    import java.nio.file.Files
+    val tempDir: File = Files.createTempDirectory("checkpoints").toFile
+    sc.setCheckpointDir(tempDir.getPath)
+
     LOG.info("Setting local job: " + sparklerConf.get("fetcher.headers"))
     job = new SparklerJob(jobId, sparklerConf, "")
-    //FetchFunction.init(job)
-
   }
   //TODO: URL normalizers
   //TODO: Robots.txt
@@ -168,120 +207,185 @@ class Crawler extends CliTool {
     init()
 
     val job = this.job // local variable to bypass serialization
-    val storageFactory = job.getStorageFactory()
-    val storageProxy = storageFactory.getProxy()
+    val storageFactory: StorageProxyFactory= job.getStorageFactory
+    val storageProxy : StorageProxy = storageFactory.getProxy
     LOG.info("Committing crawldb..")
     storageProxy.commitCrawlDb()
     val localFetchDelay = fetchDelay
 
+    GenericFunction(job, GenericProcess.Event.STARTUP,new SQLContext(sc).sparkSession, null)
+    import scala.util.control._
+    val loop = new Breaks;
+    loop.breakable{
     for (_ <- 1 to iterations) {
-      var deepCrawlHosts: mutable.Set[String] = new mutable.HashSet[String]()
-      if(deepCrawlHostFile != null) {
-        if(deepCrawlHostFile.isFile) {
+      val deepCrawlHosts = new mutable.HashSet[String]()
+      if (deepCrawlHostFile != null) {
+        if (deepCrawlHostFile.isFile) {
           deepCrawlHosts ++= Source.fromFile(deepCrawlHostFile).getLines().toSet
         }
       }
       else if (deepCrawlHostnames.length > 0) {
         deepCrawlHosts ++= deepCrawlHostnames.toSet
       }
-      if (deepCrawlHosts.size > 0) {
-        LOG.info(s"Deep crawling hosts ${deepCrawlHosts.toString}")
-        var taskId = JobUtil.newSegmentId(true)
-        job.currentTask = taskId
-        val deepRdd = storageFactory.getDeepRDD(sc, job, maxGroups = topG, topN = topN,
-          deepCrawlHosts = deepCrawlHostnames)
-        val fetchedRdd = deepRdd.map(r => (r.getGroup, r))
-          .groupByKey()
-          .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-            FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer())
-          })
-          .persist()
-
-
-        if (kafkaEnable) {
-          storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
-        }
-
-        val scoredRdd = score(fetchedRdd)
-        //Step: Store these to nutch segments
-        val outputPath = this.outputPath + "/" + taskId
-
-        storeContent(outputPath, scoredRdd)
-
-        LOG.info("Committing crawldb..")
-        storageProxy.commitCrawlDb()
+      if (deepCrawlHosts.nonEmpty) {
+        deepCrawl(deepCrawlHosts.toString(), localFetchDelay, storageFactory, storageProxy)
       }
 
-      var taskId = JobUtil.newSegmentId(true)
+      val taskId = JobUtil.newSegmentId(true)
       job.currentTask = taskId
       LOG.info(s"Starting the job:$jobId, task:$taskId")
+      val rc = new RunCrawl
 
       val rdd = storageFactory.getRDD(sc, job, maxGroups = topG, topN = topN)
-      val fetchedRdd = rdd.map(r => (r.getGroup, r))
-        .groupByKey()
-        .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer()) })
-        .persist()
+      val rcount = rdd.count()
+      println(rcount)
+      if (rcount > 0) {
+        //TODO RESTORE THIS HACK
+        val f = rc.map(rdd)
+        /*val f = rdd.map(r => (r.getDedupeId, r))
+        .groupByKey()*/
 
-      if (kafkaEnable) {
-        storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
+        var fetchedRdd: RDD[CrawlData] = null
+        var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
+        if (rep <= 0) {
+          rep = 1
+        }
+        println("Number of partitions configured: " + rep)
+        //f.cache()
+        f.checkpoint()
+        fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
+          FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer).toSeq
+        }).persist(StorageLevel.MEMORY_AND_DISK)
+        GenericFunction(job, GenericProcess.Event.ITERATION_COMPLETE, new SQLContext(sc).sparkSession, fetchedRdd)
+        scoreAndStore(fetchedRdd, taskId, storageProxy, storageFactory)
+      } else{
+        loop.break
       }
-      val scoredRdd = score(fetchedRdd)
-      //Step: Store these to nutch segments
-      val outputPath = this.outputPath + "/" + taskId
-
-      storeContent(outputPath, scoredRdd)
-
-      LOG.info("Committing crawldb..")
-      storageProxy.commitCrawlDb()
+    }
     }
     storageProxy.close()
     //PluginService.shutdown(job)
+    GenericFunction(job, GenericProcess.Event.SHUTDOWN,new SQLContext(sc).sparkSession, null)
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
   }
 
+  def scoreAndStore(fetchedRdd: RDD[CrawlData], taskId: String, storageProxy: StorageProxy, storageFactory: StorageProxyFactory): Unit ={
+    if (kafkaEnable) {
+      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
+    }
+    var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
+    if(rep <= 0){
+      rep = 1
+    }
+    //fetchedRdd.cache()
+    fetchedRdd.checkpoint()
+    val scoredRddPre = score(fetchedRdd, storageFactory)
+    //scoredRddPre.cache()
+    scoredRddPre.checkpoint()
+    val scoredRdd = scoredRddPre.repartition(rep)
+    //scoredRdd.cache()
+    scoredRdd.checkpoint()
+    //Step: Store these to nutch segments
+    val outputPath = this.outputPath + "/" + taskId
+    storeContent(outputPath, scoredRdd)
+    LOG.info("Committing crawldb..")
+    storageProxy.commitCrawlDb()
+  }
 
-  def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
-    val job = this.job.asInstanceOf[SparklerJob]
-    val storageFactory = job.getStorageFactory()
+  def deepCrawl(deepCrawlHosts: String, localFetchDelay: Long, storageFactory: StorageProxyFactory, storageProxy: StorageProxy): Unit ={
+    LOG.info(s"Deep crawling hosts ${deepCrawlHosts}")
+    var taskId = JobUtil.newSegmentId(true)
+    job.currentTask = taskId
+    /*val deepRdd = new MemexDeepCrawlDbRDD(sc, job, maxGroups = topG, topN = topN,
+      deepCrawlHosts = deepCrawlHostnames)*/
+    val deepRdd = storageFactory.getDeepRDD(sc, job, maxGroups = topG, topN = topN,
+      deepCrawlHosts = deepCrawlHostnames)
+    val fetchedRdd = deepRdd.map(r => (r.getGroup, r))
+      .groupByKey()
+      .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
+        FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer)
+      })
+      .persist(StorageLevel.MEMORY_AND_DISK)
+
+
+    if (kafkaEnable) {
+      storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
+    }
+    //fetchedRdd.cache()
+    fetchedRdd.checkpoint()
+    val scoredRdd = score(fetchedRdd, storageFactory)
+    //Step: Store these to nutch segments
+    val outputPath = this.outputPath + "/" + taskId
+    //scoredRdd.cache()
+    scoredRdd.checkpoint()
+
+    storeContent(outputPath, scoredRdd)
+
+    LOG.info("Committing crawldb..")
+    storageProxy.commitCrawlDb()
+  }
+
+  def score(fetchedRdd: RDD[CrawlData], storageFactory: StorageProxyFactory): RDD[CrawlData] = {
+    val job = this.job
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(job, d))
-
-    val scoreUpdateRdd: RDD[Map[String, Object]] = scoredRdd.map(d => storageFactory.getScoreUpdateTransformer()(d))
+    val scoreUpdateRdd: RDD[Map[String, Object]] = scoredRdd.map(d => storageFactory.getScoreUpdateTransformer(d))
     val scoreUpdateFunc = new StatusUpdate(job)
+    //scoreUpdateRdd.cache()
+    scoreUpdateRdd.checkpoint()
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
-
+    //scoreUpdateRdd.cache()
+    scoreUpdateRdd.checkpoint()
+    var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
+    if(rep <= 0){
+      rep = 1
+    }
     //TODO (was OutlinkUpsert)
-    val outlinksRdd = scoredRdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
+    val outlinksRddpre = scoredRdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
         parent.getFetchTimestamp, parent.getId, parent.getScoreAsMap) })
+
+    //outlinksRddpre.cache()
+    outlinksRddpre.checkpoint()
+    val outlinksRdd = outlinksRddpre.repartition(rep)
     val upsertFunc = storageFactory.getUpserter(job)
+    //outlinksRdd.cache()
+    outlinksRdd.checkpoint()
     sc.runJob(outlinksRdd, upsertFunc)
+    //outlinksRdd.cache()
+    outlinksRdd.checkpoint()
 
     scoredRdd
   }
 
 
-  def processFetched(rdd: RDD[CrawlData]): RDD[CrawlData] = {
+  def processFetched(rdd: RDD[CrawlData], storageFactory: StorageProxyFactory): RDD[CrawlData] = {
     if (kafkaEnable) {
       storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), rdd)
     }
 
     val job = this.job
-    val storageFactory = job.getStorageFactory()
+    val storageFactory = job.getStorageFactory
     //Step: Index all new URLS
+    //rdd.cache()
+    rdd.checkpoint()
     sc.runJob(OutLinkUpsert(job, rdd), storageFactory.getUpserter(job))
+    //rdd.cache()
+    rdd.checkpoint()
 
     //Step: Update status+score of fetched resources
-    val statusUpdateRdd: RDD[Map[String, Object]] = rdd.map(d => storageFactory.getStatusUpdateTransformer()(d))
+    val statusUpdateRdd: RDD[Map[String, Object]] = rdd.map(d => storageFactory.getStatusUpdateTransformer(d))
     sc.runJob(statusUpdateRdd, new StatusUpdate(job))
+    //statusUpdateRdd.cache()
+    statusUpdateRdd.checkpoint()
 
     //Step: Store these to nutch segments
     val outputPath = this.outputPath + "/" + job.currentTask
     //Step : write to FS
+
     storeContent(outputPath, rdd)
 
     rdd
@@ -297,7 +401,7 @@ object OutLinkUpsert extends ((SparklerJob, RDD[CrawlData]) => RDD[Resource]) wi
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
-      parent.getFetchTimestamp, parent.getId, parent.getScore) }) //create a new resource
+        parent.getFetchTimestamp, parent.getId, parent.getScore) }) //create a new resource
   }
 }
 
@@ -307,24 +411,28 @@ object Crawler extends Loggable with Serializable{
     LOG.info(s"Storing output at $outputPath")
 
     object ConfigHolder extends Serializable {
-      var config:Configuration = new Configuration()
+      val config:Configuration = new Configuration()
     }
 
-    rdd.filter(r => r.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
+    //rdd.cache()
+    rdd.checkpoint()
+   val r = rdd.filter(r => r.fetchedData.getResource.getStatus.equals(ResourceStatus.FETCHED.toString))
       .map(d => (new Text(d.fetchedData.getResource.getUrl),
         NutchBridge.toNutchContent(d.fetchedData, ConfigHolder.config)))
-      .saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
+    //rdd.cache()
+    rdd.checkpoint()
+   r.saveAsHadoopFile[SequenceFileOutputFormat[Text, protocol.Content]](outputPath)
   }
 
   /**
-   * Used to send crawl dumps to the Kafka Messaging System.
-   * There is a sparklerProducer instantiated per partition and
-   * used to send all crawl data in a partition to Kafka.
-   *
-   * @param listeners list of listeners example : host1:9092,host2:9093,host3:9094
-   * @param topic the kafka topic to use
-   * @param rdd the input RDD consisting of the CrawlData
-   */
+    * Used to send crawl dumps to the Kafka Messaging System.
+    * There is a sparklerProducer instantiated per partition and
+    * used to send all crawl data in a partition to Kafka.
+    *
+    * @param listeners list of listeners example : host1:9092,host2:9093,host3:9094
+    * @param topic the kafka topic to use
+    * @param rdd the input RDD consisting of the CrawlData
+    */
   def storeContentKafka(listeners: String, topic: String, rdd:RDD[CrawlData]): Unit = {
     rdd.foreachPartition(crawlData_iter => {
       val sparklerProducer = new SparklerProducer(listeners, topic)
@@ -335,6 +443,7 @@ object Crawler extends Loggable with Serializable{
   }
 
   def main(args: Array[String]): Unit = {
+    setLogLevel()
     new Crawler().run(args)
   }
 }

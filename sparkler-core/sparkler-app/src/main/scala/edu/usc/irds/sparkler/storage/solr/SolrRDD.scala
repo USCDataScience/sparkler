@@ -26,7 +26,7 @@ class SolrRDD(sc: SparkContext,
   assert(topN > 0)
   assert(maxGroups > 0)
 
-  val storageFactory = job.getStorageFactory()
+  val storageFactory = job.getStorageFactory
 
   override def compute(split: Partition, context: TaskContext): Iterator[Resource] = {
     val partition: SparklerGroupPartition = split.asInstanceOf[SparklerGroupPartition]
@@ -37,7 +37,7 @@ class SolrRDD(sc: SparkContext,
     query.set("sort", sortBy)
     query.setRows(batchSize)
 
-    val proxy = storageFactory.getProxy()
+    val proxy = storageFactory.getProxy
     var client : SolrClient = null
     try {
       client = proxy.getClient().asInstanceOf[SolrClient]
@@ -58,7 +58,7 @@ class SolrRDD(sc: SparkContext,
     qry.set("group.field", Constants.storage.PARENT)
     qry.set("group.limit", 0)
     qry.setRows(maxGroups)
-    val proxy = storageFactory.getProxy()
+    val proxy = storageFactory.getProxy
 
     var client : SolrClient = null
     try {

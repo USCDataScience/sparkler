@@ -20,6 +20,7 @@ package edu.usc.irds.sparkler.model
 /**
   *
   * @since 5/29/16
+  *
   */
 class CrawlData() extends Serializable {
   var fetchedData: FetchedData = _

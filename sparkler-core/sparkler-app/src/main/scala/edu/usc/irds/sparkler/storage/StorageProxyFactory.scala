@@ -35,7 +35,7 @@ class StorageProxyFactory(var config: SparklerConfiguration) extends java.io.Ser
 
   val dbToUse: String = config.get(Constants.key.CRAWLDB_BACKEND).asInstanceOf[String]
 
-  def getProxy(): StorageProxy = {
+  def getProxy: StorageProxy = {
       dbToUse match {
         case "elasticsearch" => new ElasticsearchProxy(config)
         case "solr" => new SolrProxy(config)
@@ -70,7 +70,7 @@ class StorageProxyFactory(var config: SparklerConfiguration) extends java.io.Ser
     }
   }
 
-  def getRDDDefaults(): StorageRDD = {
+  def getRDDDefaults: StorageRDD = {
     dbToUse match {
       case "elasticsearch" => ElasticsearchRDD
       case "solr" => SolrRDD
@@ -78,7 +78,7 @@ class StorageProxyFactory(var config: SparklerConfiguration) extends java.io.Ser
     }
   }
 
-  def getDeepRDDDefaults(): StorageRDD = {
+  def getDeepRDDDefaults: StorageRDD = {
     dbToUse match {
       case "elasticsearch" => ElasticsearchDeepRDD
       case "solr" => SolrDeepRDD
@@ -94,7 +94,7 @@ class StorageProxyFactory(var config: SparklerConfiguration) extends java.io.Ser
     }
   }
 
-  def getStatusUpdateTransformer() : StatusUpdateTransformer = {
+  def getStatusUpdateTransformer: StatusUpdateTransformer = {
     dbToUse match {
       case "elasticsearch" => StatusUpdateElasticsearchTransformer
       case "solr" => StatusUpdateSolrTransformer
@@ -102,7 +102,7 @@ class StorageProxyFactory(var config: SparklerConfiguration) extends java.io.Ser
     }
   }
 
-  def getScoreUpdateTransformer() : ScoreUpdateTransformer = {
+  def getScoreUpdateTransformer: ScoreUpdateTransformer = {
     dbToUse match {
       case "elasticsearch" => ScoreUpdateElasticsearchTransformer
       case "solr" => ScoreUpdateSolrTransformer

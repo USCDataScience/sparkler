@@ -143,6 +143,7 @@ public interface Constants {
         String OUTLINKS = "outlinks";
         String RELATIVE_PATH = "relative_path";
         String DEDUPE_ID = "dedupe_id";
+        String CONTENTHASH = "contenthash";
         String MD_SUFFIX = "_md";
         String HDR_SUFFIX = "_hd";
         String SEGMENT = "segment";

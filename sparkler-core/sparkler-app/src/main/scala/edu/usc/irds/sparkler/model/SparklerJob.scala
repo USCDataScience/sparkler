@@ -17,15 +17,12 @@
 
 package edu.usc.irds.sparkler.model
 
-import java.io.File
-import edu.usc.irds.sparkler.storage.StorageProxyFactory
-import edu.usc.irds.sparkler.base.Loggable
+import edu.usc.irds.sparkler._
+
+import edu.usc.irds.sparkler.storage.{StorageProxy, StorageProxyFactory}
 import edu.usc.irds.sparkler.service.RejectingURLFilterChain
 import edu.usc.irds.sparkler.util.JobUtil
-import edu.usc.irds.sparkler._
-import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
-
+import edu.usc.irds.sparkler.base.Loggable
 import scala.collection.mutable
 
 /**
@@ -52,7 +49,15 @@ class SparklerJob(val id: String,
     this(id, conf, JobUtil.newSegmentId())
   }
 
-  def getStorageFactory(): StorageProxyFactory = {
+  def newStorageProxy():StorageProxy = {
+
+    println("===================================")
+    println("Storage Proxy trigger Point: " + config.toJSONString)
+    println("===================================")
+
+    new StorageProxyFactory(config).getProxy
+  }
+  def getStorageFactory: StorageProxyFactory = {
     storageProxyFactory
   }
 

@@ -1,11 +1,10 @@
 package edu.usc.irds.sparkler.storage.elasticsearch
 
 import edu.usc.irds.sparkler.Constants
-import edu.usc.irds.sparkler.storage.{StorageRDD, SparklerGroupPartition}
+import edu.usc.irds.sparkler.storage.{SparklerGroupPartition, StorageProxyFactory, StorageRDD}
 import edu.usc.irds.sparkler.model.{Resource, ResourceStatus, SparklerJob}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}
-
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.search.builder.SearchSourceBuilder
@@ -19,7 +18,6 @@ import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilde
 import org.elasticsearch.search.aggregations.Aggregations
 import org.elasticsearch.search.aggregations.Aggregation
 import org.apache.lucene.queryparser.classic.QueryParserBase
-
 import org.elasticsearch.search.SearchHits
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.common.document.DocumentField
@@ -42,16 +40,16 @@ class ElasticsearchRDD(sc: SparkContext,
   assert(topN > 0)
   assert(maxGroups > 0)
 
-  val storageFactory = job.getStorageFactory()
+  val storageFactory: StorageProxyFactory = job.getStorageFactory
 
   override def compute(split: Partition, context: TaskContext): Iterator[Resource] = {
     val partition: SparklerGroupPartition = split.asInstanceOf[SparklerGroupPartition]
     val batchSize = 100
 
-    var searchRequest : SearchRequest = new SearchRequest("crawldb")
-    var searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
+    val searchRequest : SearchRequest = new SearchRequest("crawldb")
+    val searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
 
-    var q : BoolQueryBuilder = QueryBuilders.boolQuery()
+    val q : BoolQueryBuilder = QueryBuilders.boolQuery()
       .must(QueryBuilders.matchQuery(Constants.storage.PARENT, QueryParserBase.escape(partition.group)))
       .must(QueryBuilders.matchQuery(Constants.storage.CRAWL_ID, job.id))
 
@@ -61,7 +59,7 @@ class ElasticsearchRDD(sc: SparkContext,
         val Array(field, value) = query.split(":").take(2)
         q.must(QueryBuilders.matchQuery(field, value))
       } catch {
-        case e: Exception => println("Exception parsing generateQry: " + generateQry)
+        case _: Exception => println("Exception parsing generateQry: " + generateQry)
       }
     }
 
@@ -79,7 +77,7 @@ class ElasticsearchRDD(sc: SparkContext,
           println("Invalid sort order for: " + field)
         }
       } catch {
-        case e: Exception => println("Exception parsing sortBy: " + sortBy)
+        case _: Exception => println("Exception parsing sortBy: " + sortBy)
       }
     }
 
@@ -88,12 +86,12 @@ class ElasticsearchRDD(sc: SparkContext,
     searchSourceBuilder.query(q)
     searchRequest.source(searchSourceBuilder)
 
-    val proxy = storageFactory.getProxy()
+    val proxy = storageFactory.getProxy
     var client : RestHighLevelClient = null
     try {
       client = proxy.getClient().asInstanceOf[RestHighLevelClient]
     } catch {
-      case e: ClassCastException => println("client is not RestHighLevelClient.")
+      case _: ClassCastException => println("client is not RestHighLevelClient.")
     }
 
     new ElasticsearchResultIterator[Resource](client, searchRequest,
@@ -101,11 +99,11 @@ class ElasticsearchRDD(sc: SparkContext,
   }
 
   override protected def getPartitions: Array[Partition] = {
-    var searchRequest : SearchRequest = new SearchRequest("crawldb")
-    var searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
+    val searchRequest : SearchRequest = new SearchRequest("crawldb")
+    val searchSourceBuilder : SearchSourceBuilder = new SearchSourceBuilder()
 
     // querying
-    var q : BoolQueryBuilder = QueryBuilders.boolQuery()
+    val q : BoolQueryBuilder = QueryBuilders.boolQuery()
       .must(QueryBuilders.matchQuery(Constants.storage.CRAWL_ID, job.id))
 
     for (query <- generateQry.split(",")) {
@@ -113,7 +111,7 @@ class ElasticsearchRDD(sc: SparkContext,
         val Array(field, value) = query.split(":").take(2)
         q.must(QueryBuilders.matchQuery(field, value))
       } catch {
-        case e: Exception => println("Exception parsing generateQry: " + generateQry)
+        case _: Exception => println("Exception parsing generateQry: " + generateQry)
       }
     }
 
@@ -133,7 +131,7 @@ class ElasticsearchRDD(sc: SparkContext,
           println("Invalid sort order for: " + field)
         }
       } catch {
-        case e: Exception => println("Exception parsing sortBy: " + sortBy)
+        case _: Exception => println("Exception parsing sortBy: " + sortBy)
       }
     }
 
@@ -146,20 +144,20 @@ class ElasticsearchRDD(sc: SparkContext,
 
     searchRequest.source(searchSourceBuilder)
 
-    val proxy = storageFactory.getProxy()
+    val proxy = storageFactory.getProxy
     var client : RestHighLevelClient = null
     try {
       client = proxy.getClient().asInstanceOf[RestHighLevelClient]
     } catch {
-      case e: ClassCastException => println("client is not RestHighLevelClient.")
+      case _: ClassCastException => println("client is not RestHighLevelClient.")
     }
 
-    var searchResponse : SearchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
-    var shs : SearchHits = searchResponse.getHits()
-    val res = new Array[Partition](shs.getTotalHits().value.toInt)
-    for (i <- 0 until shs.getTotalHits().value.toInt) {
+    val searchResponse : SearchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
+    val shs : SearchHits = searchResponse.getHits
+    val res = new Array[Partition](shs.getTotalHits.value.toInt)
+    for (i <- 0 until shs.getTotalHits.value.toInt) {
       //TODO: improve partitioning : (1) club smaller domains, (2) support for multiple partitions for larger domains
-      res(i) = new SparklerGroupPartition(i, shs.getHits()(i).getSourceAsMap().get(Constants.storage.PARENT).asInstanceOf[String])
+      res(i) = new SparklerGroupPartition(i, shs.getHits()(i).getSourceAsMap.get(Constants.storage.PARENT).asInstanceOf[String])
     }
 
     proxy.close()
@@ -169,8 +167,8 @@ class ElasticsearchRDD(sc: SparkContext,
 
 object ElasticsearchRDD extends StorageRDD {
 
-  override val DEFAULT_ORDER = Constants.storage.DISCOVER_DEPTH + " asc," + Constants.storage.SCORE + " desc"
-  override val DEFAULT_FILTER_QRY = Constants.storage.STATUS + ":" + ResourceStatus.UNFETCHED
+  override val DEFAULT_ORDER: String = Constants.storage.DISCOVER_DEPTH + " asc," + Constants.storage.SCORE + " desc"
+  override val DEFAULT_FILTER_QRY: String = Constants.storage.STATUS + ":" + ResourceStatus.UNFETCHED
   override val DEFAULT_GROUPS = 1000
   override val DEFAULT_TOPN = 1000
 }
