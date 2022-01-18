@@ -73,13 +73,13 @@ object StatusUpdateElasticsearchTransformer extends (CrawlData => Map[String, Ob
 
     var mapped = fieldMapper.mapFields(mdFields, true)
     for (k <- mapped.keySet()) {
-      var key = if (Constants.storage.MD_SUFFIX == null || Constants.storage.MD_SUFFIX.isEmpty || k.endsWith(Constants.storage.MD_SUFFIX)) k else k + Constants.storage.MD_SUFFIX
+      val key = if (Constants.storage.MD_SUFFIX == null || Constants.storage.MD_SUFFIX.isEmpty || k.endsWith(Constants.storage.MD_SUFFIX)) k else k + Constants.storage.MD_SUFFIX
       toUpdate = toUpdate + (key -> mapped(k))
     }
 
     mapped = fieldMapper.mapFields(data.parsedData.headers, true)
     for (k <- mapped.keySet()) {
-      var key = if (Constants.storage.HDR_SUFFIX == null || Constants.storage.HDR_SUFFIX.isEmpty || k.endsWith(Constants.storage.HDR_SUFFIX)) k else k + Constants.storage.HDR_SUFFIX
+      val key = if (Constants.storage.HDR_SUFFIX == null || Constants.storage.HDR_SUFFIX.isEmpty || k.endsWith(Constants.storage.HDR_SUFFIX)) k else k + Constants.storage.HDR_SUFFIX
       toUpdate = toUpdate + (key -> mapped(k))
     }
 

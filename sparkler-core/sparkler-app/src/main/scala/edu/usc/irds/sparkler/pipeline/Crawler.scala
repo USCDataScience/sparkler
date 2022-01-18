@@ -23,7 +23,6 @@ import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.storage.StorageProxy
-import edu.usc.irds.sparkler.storage.solr.{ScoreUpdateSolrTransformer, SolrUpsert, StatusUpdateSolrTransformer}
 import edu.usc.irds.sparkler.storage.{StorageProxyFactory, StatusUpdate}
 import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
@@ -258,7 +257,7 @@ class Crawler extends CliTool {
           FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer).toSeq
         }).persist(StorageLevel.MEMORY_AND_DISK)
         GenericFunction(job, GenericProcess.Event.ITERATION_COMPLETE, new SQLContext(sc).sparkSession, fetchedRdd)
-        scoreAndStore(fetchedRdd, taskId, storageProxy)
+        scoreAndStore(fetchedRdd, taskId, storageProxy, storageFactory)
       } else{
         loop.break
       }
@@ -271,7 +270,7 @@ class Crawler extends CliTool {
     sc.stop()
   }
 
-  def scoreAndStore(fetchedRdd: RDD[CrawlData], taskId: String, storageProxy: StorageProxy): Unit ={
+  def scoreAndStore(fetchedRdd: RDD[CrawlData], taskId: String, storageProxy: StorageProxy, storageFactory: StorageProxyFactory): Unit ={
     if (kafkaEnable) {
       storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), fetchedRdd)
     }
@@ -281,7 +280,7 @@ class Crawler extends CliTool {
     }
     //fetchedRdd.cache()
     fetchedRdd.checkpoint()
-    val scoredRddPre = score(fetchedRdd)
+    val scoredRddPre = score(fetchedRdd, storageFactory)
     //scoredRddPre.cache()
     scoredRddPre.checkpoint()
     val scoredRdd = scoredRddPre.repartition(rep)
@@ -315,7 +314,7 @@ class Crawler extends CliTool {
     }
     //fetchedRdd.cache()
     fetchedRdd.checkpoint()
-    val scoredRdd = score(fetchedRdd)
+    val scoredRdd = score(fetchedRdd, storageFactory)
     //Step: Store these to nutch segments
     val outputPath = this.outputPath + "/" + taskId
     //scoredRdd.cache()
@@ -327,11 +326,11 @@ class Crawler extends CliTool {
     storageProxy.commitCrawlDb()
   }
 
-  def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
+  def score(fetchedRdd: RDD[CrawlData], storageFactory: StorageProxyFactory): RDD[CrawlData] = {
     val job = this.job
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(job, d))
-    val scoreUpdateRdd: RDD[Map[String, Object]] = scoredRdd.map(d => ScoreUpdateSolrTransformer(d))
+    val scoreUpdateRdd: RDD[Map[String, Object]] = scoredRdd.map(d => storageFactory.getScoreUpdateTransformer(d))
     val scoreUpdateFunc = new StatusUpdate(job)
     //scoreUpdateRdd.cache()
     scoreUpdateRdd.checkpoint()
@@ -352,7 +351,7 @@ class Crawler extends CliTool {
     //outlinksRddpre.cache()
     outlinksRddpre.checkpoint()
     val outlinksRdd = outlinksRddpre.repartition(rep)
-    val upsertFunc = new SolrUpsert(job)
+    val upsertFunc = storageFactory.getUpserter(job)
     //outlinksRdd.cache()
     outlinksRdd.checkpoint()
     sc.runJob(outlinksRdd, upsertFunc)
@@ -363,7 +362,7 @@ class Crawler extends CliTool {
   }
 
 
-  def processFetched(rdd: RDD[CrawlData]): RDD[CrawlData] = {
+  def processFetched(rdd: RDD[CrawlData], storageFactory: StorageProxyFactory): RDD[CrawlData] = {
     if (kafkaEnable) {
       storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), rdd)
     }
@@ -373,7 +372,7 @@ class Crawler extends CliTool {
     //Step: Index all new URLS
     //rdd.cache()
     rdd.checkpoint()
-    sc.runJob(OutLinkUpsert(job, rdd), new SolrUpsert(job))
+    sc.runJob(OutLinkUpsert(job, rdd), storageFactory.getUpserter(job))
     //rdd.cache()
     rdd.checkpoint()
 
