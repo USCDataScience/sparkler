@@ -17,26 +17,25 @@
 
 package edu.usc.irds.sparkler.pipeline
 
+import java.io.File
 import edu.usc.irds.sparkler._
 import edu.usc.irds.sparkler.base.{CliTool, Loggable}
 import edu.usc.irds.sparkler.model.ResourceStatus._
 import edu.usc.irds.sparkler.model.{CrawlData, Resource, ResourceStatus, SparklerJob}
 import edu.usc.irds.sparkler.storage.StorageProxy
-import edu.usc.irds.sparkler.storage.solr.{ScoreUpdateSolrTransformer, SolrStatusUpdate, SolrUpsert, StatusUpdateSolrTransformer}
+import edu.usc.irds.sparkler.storage.solr.{ScoreUpdateSolrTransformer, SolrUpsert, StatusUpdateSolrTransformer}
+import edu.usc.irds.sparkler.storage.{StorageProxyFactory, StatusUpdate}
 import edu.usc.irds.sparkler.util.{JobUtil, NutchBridge}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.SequenceFileOutputFormat
 import org.apache.nutch.protocol
-import org.apache.solr.common.SolrInputDocument
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{SparkConf, SparkContext}
 import org.kohsuke.args4j.Option
 import org.kohsuke.args4j.spi.StringArrayOptionHandler
-
-import java.io.File
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 import scala.collection.mutable
@@ -173,8 +172,10 @@ class Crawler extends CliTool {
     if (sparkMaster != null && sparkMaster.nonEmpty) {
       conf.setMaster(sparkMaster)
     }
+
     if (sparkStorage.nonEmpty){
-      sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put("crawldb.uri", sparkStorage)
+      val dbToUse: String = sparklerConf.get(Constants.key.CRAWLDB_BACKEND).asInstanceOf[String]
+      sparklerConf.asInstanceOf[java.util.HashMap[String,String]].put(dbToUse + ".uri", sparkStorage)
     }
 
     if (databricksEnable) {
@@ -206,11 +207,13 @@ class Crawler extends CliTool {
     //STEP : Initialize environment
     init()
 
-    val storageProxy = this.job.newStorageProxy()
+    val job = this.job // local variable to bypass serialization
+    val storageFactory: StorageProxyFactory= job.getStorageFactory
+    val storageProxy : StorageProxy = storageFactory.getProxy
     LOG.info("Committing crawldb..")
     storageProxy.commitCrawlDb()
     val localFetchDelay = fetchDelay
-    val job = this.job // local variable to bypass serialization
+
     GenericFunction(job, GenericProcess.Event.STARTUP,new SQLContext(sc).sparkSession, null)
     import scala.util.control._
     val loop = new Breaks;
@@ -226,7 +229,7 @@ class Crawler extends CliTool {
         deepCrawlHosts ++= deepCrawlHostnames.toSet
       }
       if (deepCrawlHosts.nonEmpty) {
-        deepCrawl(deepCrawlHosts.toString(), localFetchDelay, storageProxy)
+        deepCrawl(deepCrawlHosts.toString(), localFetchDelay, storageFactory, storageProxy)
       }
 
       val taskId = JobUtil.newSegmentId(true)
@@ -234,12 +237,7 @@ class Crawler extends CliTool {
       LOG.info(s"Starting the job:$jobId, task:$taskId")
       val rc = new RunCrawl
 
-      val rdd = if (defaultquery != "" && defaultquery.nonEmpty) {
-        new MemexCrawlDbRDD(sc, job, generateQry = defaultquery, maxGroups = topG, topN = topN)
-      } else {
-        new MemexCrawlDbRDD(sc, job, maxGroups = topG, topN = topN)
-      }
-
+      val rdd = storageFactory.getRDD(sc, job, maxGroups = topG, topN = topN)
       val rcount = rdd.count()
       println(rcount)
       if (rcount > 0) {
@@ -257,7 +255,7 @@ class Crawler extends CliTool {
         //f.cache()
         f.checkpoint()
         fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-          FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer).toSeq
+          FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer).toSeq
         }).persist(StorageLevel.MEMORY_AND_DISK)
         GenericFunction(job, GenericProcess.Event.ITERATION_COMPLETE, new SQLContext(sc).sparkSession, fetchedRdd)
         scoreAndStore(fetchedRdd, taskId, storageProxy)
@@ -284,52 +282,30 @@ class Crawler extends CliTool {
     //fetchedRdd.cache()
     fetchedRdd.checkpoint()
     val scoredRddPre = score(fetchedRdd)
-
-    println("Custom Breakpoint: 5.1")
-
     //scoredRddPre.cache()
     scoredRddPre.checkpoint()
-
-    println("Custom Breakpoint: 6.1")
-
     val scoredRdd = scoredRddPre.repartition(rep)
-
-    println("Custom Breakpoint: 7.1")
-
     //scoredRdd.cache()
     scoredRdd.checkpoint()
-
-    println("Custom Breakpoint: 8.1")
-
     //Step: Store these to nutch segments
     val outputPath = this.outputPath + "/" + taskId
-
-    println("Custom Breakpoint: 9.1")
-
     storeContent(outputPath, scoredRdd)
-
-    println("Custom Breakpoint: 10.1")
-
     LOG.info("Committing crawldb..")
-
-    println("Custom Breakpoint: 11.1")
-
     storageProxy.commitCrawlDb()
-
-    println("Custom Breakpoint: 12.1")
-
   }
 
-  def deepCrawl(deepCrawlHosts: String, localFetchDelay: Long, storageProxy: StorageProxy): Unit ={
+  def deepCrawl(deepCrawlHosts: String, localFetchDelay: Long, storageFactory: StorageProxyFactory, storageProxy: StorageProxy): Unit ={
     LOG.info(s"Deep crawling hosts ${deepCrawlHosts}")
     var taskId = JobUtil.newSegmentId(true)
     job.currentTask = taskId
-    val deepRdd = new MemexDeepCrawlDbRDD(sc, job, maxGroups = topG, topN = topN,
+    /*val deepRdd = new MemexDeepCrawlDbRDD(sc, job, maxGroups = topG, topN = topN,
+      deepCrawlHosts = deepCrawlHostnames)*/
+    val deepRdd = storageFactory.getDeepRDD(sc, job, maxGroups = topG, topN = topN,
       deepCrawlHosts = deepCrawlHostnames)
     val fetchedRdd = deepRdd.map(r => (r.getGroup, r))
       .groupByKey()
       .flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,
-        FetchFunction, ParseFunction, OutLinkFilterFunction, StatusUpdateSolrTransformer)
+        FetchFunction, ParseFunction, OutLinkFilterFunction, storageFactory.getStatusUpdateTransformer)
       })
       .persist(StorageLevel.MEMORY_AND_DISK)
 
@@ -352,52 +328,36 @@ class Crawler extends CliTool {
   }
 
   def score(fetchedRdd: RDD[CrawlData]): RDD[CrawlData] = {
-    println("Debug Score 1")
     val job = this.job
 
     val scoredRdd = fetchedRdd.map(d => ScoreFunction(job, d))
-    println("Debug Score 1")
-    val scoreUpdateRdd: RDD[SolrInputDocument] = scoredRdd.map(d => ScoreUpdateSolrTransformer(d))
-    println("Debug Score 2")
-    val scoreUpdateFunc = new SolrStatusUpdate(job)
-    println("Debug Score 3")
+    val scoreUpdateRdd: RDD[Map[String, Object]] = scoredRdd.map(d => ScoreUpdateSolrTransformer(d))
+    val scoreUpdateFunc = new StatusUpdate(job)
     //scoreUpdateRdd.cache()
     scoreUpdateRdd.checkpoint()
-    println("Debug Score 4")
     sc.runJob(scoreUpdateRdd, scoreUpdateFunc)
-    println("Debug Score 5")
     //scoreUpdateRdd.cache()
     scoreUpdateRdd.checkpoint()
-    println("Debug Score 6")
     var rep: Int = sparklerConf.get("crawl.repartition").asInstanceOf[Number].intValue()
-    println("Debug Score 7")
     if(rep <= 0){
       rep = 1
     }
-    println("Debug Score 8")
     //TODO (was OutlinkUpsert)
     val outlinksRddpre = scoredRdd.flatMap({ data => for (u <- data.parsedData.outlinks) yield (u, data.fetchedData.getResource) }) //expand the set
       .reduceByKey({ case (r1, r2) => if (r1.getDiscoverDepth <= r2.getDiscoverDepth) r1 else r2 }) // pick a parent
       //TODO: url normalize
       .map({ case (link, parent) => new Resource(link, parent.getDiscoverDepth + 1, job, UNFETCHED,
         parent.getFetchTimestamp, parent.getId, parent.getScoreAsMap) })
-    println("Debug Score 9")
 
     //outlinksRddpre.cache()
     outlinksRddpre.checkpoint()
-    println("Debug Score 10")
     val outlinksRdd = outlinksRddpre.repartition(rep)
-    println("Debug Score 11")
     val upsertFunc = new SolrUpsert(job)
-    println("Debug Score 12")
     //outlinksRdd.cache()
     outlinksRdd.checkpoint()
-    println("Debug Score 13")
     sc.runJob(outlinksRdd, upsertFunc)
-    println("Debug Score 14")
     //outlinksRdd.cache()
     outlinksRdd.checkpoint()
-    println("Debug Score 15")
 
     scoredRdd
   }
@@ -409,6 +369,7 @@ class Crawler extends CliTool {
     }
 
     val job = this.job
+    val storageFactory = job.getStorageFactory
     //Step: Index all new URLS
     //rdd.cache()
     rdd.checkpoint()
@@ -417,8 +378,8 @@ class Crawler extends CliTool {
     rdd.checkpoint()
 
     //Step: Update status+score of fetched resources
-    val statusUpdateRdd: RDD[SolrInputDocument] = rdd.map(d => StatusUpdateSolrTransformer(d))
-    sc.runJob(statusUpdateRdd, new SolrStatusUpdate(job))
+    val statusUpdateRdd: RDD[Map[String, Object]] = rdd.map(d => storageFactory.getStatusUpdateTransformer(d))
+    sc.runJob(statusUpdateRdd, new StatusUpdate(job))
     //statusUpdateRdd.cache()
     statusUpdateRdd.checkpoint()
 

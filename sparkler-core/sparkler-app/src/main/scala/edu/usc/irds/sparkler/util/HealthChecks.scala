@@ -7,7 +7,8 @@ object HealthChecks {
   def checkFailureRate(job: SparklerJob): Boolean ={
     if(job.getConfiguration.containsKey("fetcher.kill.failure.percent")) {
       import org.apache.solr.common.params.MapSolrParams
-      val solrClient = job.newStorageProxy()
+      val solrClient = job.getStorageFactory.getProxy
+
 
       val q = "crawl_id:" + job.getId
       val queryParamMap : Map[String,String] = Map("q" -> q,
@@ -15,7 +16,7 @@ object HealthChecks {
 
       val queryParams = new MapSolrParams(queryParamMap.asJava)
 
-      val response = solrClient.getClient().query(queryParams)
+      /*val response = solrClient.getClient().query(queryParams)
       val documents = response.getFacetField("status")
 
       val values = documents.getValues.asScala
@@ -33,7 +34,8 @@ object HealthChecks {
         true
       } else{
         false
-      }
+      }*/
+      false
     } else{
       false
     }

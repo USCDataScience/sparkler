@@ -19,7 +19,7 @@
 
 # uri - Crawl Database URL. Stores crawl metadata and status updates.
 
-crawldb.backend: solr  # "solr" is default until "elasticsearch" becomes usable.
+crawldb.backend: elasticsearch  # "solr" is default until "elasticsearch" becomes usable.
 
 # Type: String. Default: http://localhost:8983/solr/crawldb
 # for standalone server
@@ -30,8 +30,7 @@ crawldb.backend: solr  # "solr" is default until "elasticsearch" becomes usable.
 solr.uri: http://localhost:8983/solr/crawldb
 
 # elasticsearch settings
-elasticsearch.uri: http://localhost:9200
-
+elasticsearch.uri: http://elasticsearch:9200
 
 ##################### Apache Spark Properties ###########################
 

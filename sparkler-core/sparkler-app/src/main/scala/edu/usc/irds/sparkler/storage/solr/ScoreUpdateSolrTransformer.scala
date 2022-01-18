@@ -17,15 +17,10 @@
 
 package edu.usc.irds.sparkler.storage.solr
 
-import java.util
-import java.util.Iterator
-
-import com.google.common.hash.{HashFunction, Hashing}
 import edu.usc.irds.sparkler.Constants
 import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.CrawlData
-import edu.usc.irds.sparkler.storage.solr.schema.FieldMapper
-import org.apache.solr.common.SolrInputDocument
+import edu.usc.irds.sparkler.storage.ScoreUpdateTransformer
 
 import scala.collection.JavaConverters._
 
@@ -33,18 +28,15 @@ import scala.collection.JavaConverters._
   * Created by thammegr on 6/7/16.
   * Modified by karanjeets
   */
-object ScoreUpdateSolrTransformer extends (CrawlData => SolrInputDocument ) with Serializable with Loggable {
+object ScoreUpdateSolrTransformer extends (CrawlData => Map[String, Object]) with Serializable with Loggable with ScoreUpdateTransformer {
 
-  val fieldMapper: FieldMapper = FieldMapper.initialize()
+  override def apply(data: CrawlData): Map[String, Object] = {
 
-  override def apply(data: CrawlData): SolrInputDocument = {
-    val hashFunction: HashFunction = Hashing.sha256()
-    val sUpdate = new SolrInputDocument()
-    //FIXME: handle failure case
-    sUpdate.setField(Constants.storage.ID, data.fetchedData.getResource.getId)
+    val toUpdate : Map[String, Object] = Map(
+      Constants.storage.ID -> data.fetchedData.getResource.getId,
+      Constants.storage.GENERATE_SCORE -> Map("set" -> data.fetchedData.getResource.getGenerateScore()).asJava
+    )
 
-    sUpdate.setField(Constants.storage.GENERATE_SCORE, Map("set" -> data.fetchedData.getResource.getGenerateScore()).asJava)
-
-    sUpdate
+    toUpdate
   }
 }

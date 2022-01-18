@@ -73,4 +73,6 @@ object Dependencies {
     lazy val sql = group %% "spark-sql" % version % "provided"
   }
   lazy val tikaParsers = "org.apache.tika" % "tika-parsers" % "1.24"
+  lazy val elasticsearch = "org.elasticsearch.client" % "elasticsearch-rest-high-level-client" % "7.16.2"
+
 }

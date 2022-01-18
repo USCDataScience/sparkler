@@ -108,6 +108,7 @@ class Injector extends CliTool {
       jobId = Source.fromFile(jobIdFile).getLines.mkString
     }
     val job = new SparklerJob(jobId, conf)
+    val storageFactory = job.getStorageFactory
 
     val urls: util.Collection[String] =
       if (seedFile != null) {
@@ -131,7 +132,7 @@ class Injector extends CliTool {
     })
     LOG.info("Injecting {} seeds", seeds.size())
 
-    val storageProxy = job.newStorageProxy()
+    val storageProxy = storageFactory.getProxy
     storageProxy.addResources(seeds.iterator())
     storageProxy.commitCrawlDb()
     storageProxy.close()

@@ -18,11 +18,11 @@
 package edu.usc.irds.sparkler.model
 
 import edu.usc.irds.sparkler._
-import edu.usc.irds.sparkler.base.Loggable
-import edu.usc.irds.sparkler.service.RejectingURLFilterChain
-import edu.usc.irds.sparkler.storage.StorageProxyFactory
-import edu.usc.irds.sparkler.util.JobUtil
 
+import edu.usc.irds.sparkler.storage.{StorageProxy, StorageProxyFactory}
+import edu.usc.irds.sparkler.service.RejectingURLFilterChain
+import edu.usc.irds.sparkler.util.JobUtil
+import edu.usc.irds.sparkler.base.Loggable
 import scala.collection.mutable
 
 /**
@@ -33,6 +33,8 @@ class SparklerJob(val id: String,
                   var config: SparklerConfiguration,
                   var currentTask: String)
   extends Serializable with JobContext with Loggable {
+
+  var storageProxyFactory : StorageProxyFactory = new StorageProxyFactory(config)
 
   /*
    * mappings from extension point to extension chain
@@ -47,13 +49,16 @@ class SparklerJob(val id: String,
     this(id, conf, JobUtil.newSegmentId())
   }
 
-  def newStorageProxy() = {
+  def newStorageProxy():StorageProxy = {
 
     println("===================================")
     println("Storage Proxy trigger Point: " + config.toJSONString)
     println("===================================")
 
-    new StorageProxyFactory(config).getProxy()
+    new StorageProxyFactory(config).getProxy
+  }
+  def getStorageFactory: StorageProxyFactory = {
+    storageProxyFactory
   }
 
   override def getConfiguration: SparklerConfiguration ={

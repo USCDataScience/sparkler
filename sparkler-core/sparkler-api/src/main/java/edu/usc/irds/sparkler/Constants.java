@@ -143,15 +143,18 @@ public interface Constants {
         String OUTLINKS = "outlinks";
         String RELATIVE_PATH = "relative_path";
         String DEDUPE_ID = "dedupe_id";
+        String CONTENTHASH = "contenthash";
         String MD_SUFFIX = "_md";
         String HDR_SUFFIX = "_hd";
         String SEGMENT = "segment";
-        String CONTENTHASH = "contenthash";
         String RAW_CONTENT = "raw_content";
         String WEBPAGE_MIMETYPE = "text/html";
         String JSON_MIMETYPE = "application/json";
         String PARENT = "parent";
         String RESPONSE_TIME = "response_time";
+        String HOSTNAME = "hostname";
     }
+
+    String defaultDateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
 }

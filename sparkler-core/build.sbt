@@ -156,7 +156,8 @@ lazy val app = (project in file("sparkler-app"))
       Dependencies.Solr.core,
       Dependencies.tikaParsers,
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.5.0",
-      Dependencies.lz4
+      Dependencies.lz4,
+      Dependencies.elasticsearch
     ),
     assemblyMergeStrategy in assembly := {
       case x if x.contains("io.netty.versions.properties") => MergeStrategy.first
