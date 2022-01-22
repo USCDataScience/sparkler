@@ -154,7 +154,9 @@ lazy val app = (project in file("sparkler-app"))
       Dependencies.kafkaClients exclude("org.slf4j", "slf4j-api"),
       Dependencies.pf4j,
       Dependencies.Solr.core,
+      Dependencies.tikaCore,
       Dependencies.tikaParsers,
+      Dependencies.tikaParsersStandard,
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.5.0",
       Dependencies.lz4,
       Dependencies.elasticsearch
