@@ -14,13 +14,14 @@ import org.elasticsearch.index.query.BoolQueryBuilder
 import org.elasticsearch.client.RestHighLevelClient
 import org.elasticsearch.search.sort.SortOrder
 import org.elasticsearch.search.aggregations.AggregationBuilders
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder
+import org.elasticsearch.search.aggregations.bucket.terms.{ParsedTerms, TermsAggregationBuilder}
 import org.elasticsearch.search.aggregations.Aggregations
 import org.elasticsearch.search.aggregations.Aggregation
 import org.apache.lucene.queryparser.classic.QueryParserBase
 import org.elasticsearch.search.SearchHits
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.common.document.DocumentField
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram
 
 import scala.collection.JavaConversions._
 
@@ -153,12 +154,24 @@ class ElasticsearchRDD(sc: SparkContext,
     }
 
     val searchResponse : SearchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
-    val shs : SearchHits = searchResponse.getHits
-    val res = new Array[Partition](shs.getTotalHits.value.toInt)
-    for (i <- 0 until shs.getTotalHits.value.toInt) {
+    //val shs : SearchHits = searchResponse.getHits
+    val aggmap = searchResponse.getAggregations.getAsMap
+    val agg2 = aggmap.head._2.asInstanceOf[ParsedTerms]
+    //val agg2n = aggmap.head._1
+    //val agg : Histogram = searchResponse.getAggregations.get(agg2.getName)
+    //val bucket = agg2.getBuckets
+    val res = new Array[Partition](agg2.getBuckets.size())
+
+    var i = 0
+    agg2.getBuckets.foreach(b => {
+      res(i) = new SparklerGroupPartition(i, b.getKeyAsString)
+      i = i + 1
+    })
+
+    /*for (i <- 0 until shs.getTotalHits.value.toInt) {
       //TODO: improve partitioning : (1) club smaller domains, (2) support for multiple partitions for larger domains
       res(i) = new SparklerGroupPartition(i, shs.getHits()(i).getSourceAsMap.get(Constants.storage.PARENT).asInstanceOf[String])
-    }
+    }*/
 
     proxy.close()
     res

@@ -362,7 +362,7 @@ class Crawler extends CliTool {
   }
 
 
-  def processFetched(rdd: RDD[CrawlData], storageFactory: StorageProxyFactory): RDD[CrawlData] = {
+  def processFetched(rdd: RDD[CrawlData]): RDD[CrawlData] = {
     if (kafkaEnable) {
       storeContentKafka(kafkaListeners, kafkaTopic.format(jobId), rdd)
     }
