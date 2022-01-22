@@ -247,6 +247,8 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
         if (truncated) {
             fetchedData.getHeaders().put(TRUNCATED, Collections.singletonList(Boolean.TRUE.toString()));
         }
+
+        response2.close();
         return fetchedData;
 
     }

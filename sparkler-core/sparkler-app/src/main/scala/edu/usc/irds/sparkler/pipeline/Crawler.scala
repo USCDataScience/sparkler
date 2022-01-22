@@ -268,6 +268,7 @@ class Crawler extends CliTool {
     GenericFunction(job, GenericProcess.Event.SHUTDOWN,new SQLContext(sc).sparkSession, null)
     LOG.info("Shutting down Spark CTX..")
     sc.stop()
+    System.exit(0)
   }
 
   def scoreAndStore(fetchedRdd: RDD[CrawlData], taskId: String, storageProxy: StorageProxy, storageFactory: StorageProxyFactory): Unit ={

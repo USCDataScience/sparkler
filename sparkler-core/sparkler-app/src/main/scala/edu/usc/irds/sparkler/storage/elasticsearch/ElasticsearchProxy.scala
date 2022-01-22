@@ -22,9 +22,12 @@ import edu.usc.irds.sparkler.base.Loggable
 import edu.usc.irds.sparkler.model.Resource
 import edu.usc.irds.sparkler.storage.StorageProxy
 import org.apache.http.HttpHost
+import org.apache.http.auth.{AuthScope, UsernamePasswordCredentials}
+import org.apache.http.impl.client.BasicCredentialsProvider
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder
 import org.elasticsearch.action.index.{IndexRequest, IndexResponse}
 import org.elasticsearch.action.update.UpdateRequest
-import org.elasticsearch.client.{RequestOptions, RestClient, RestHighLevelClient}
+import org.elasticsearch.client.{RequestOptions, RestClient, RestClientBuilder, RestHighLevelClient}
 import org.elasticsearch.script.Script
 import org.elasticsearch.xcontent.{XContentBuilder, XContentFactory}
 
@@ -32,40 +35,60 @@ import java.io.{Closeable, IOException}
 import java.util.AbstractMap.SimpleEntry
 import scala.collection.mutable.ArrayBuffer
 
-
 /**
   *
   * @since 3/6/21
   */
 class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy with Closeable with Loggable {
 
-  // creates the client
-  private var crawlDb = newClient(config.getDatabaseURI)
+  var conn : Option[RestHighLevelClient] = None
 
   private var indexRequests = ArrayBuffer[IndexRequest]()
 
   def newClient(crawlDbUri: String): RestHighLevelClient = {
-    val scheme : String = crawlDbUri.substring(0, crawlDbUri.indexOf(':'))
-    val hostname : String = crawlDbUri.substring(crawlDbUri.indexOf(':') + 3, crawlDbUri.lastIndexOf(':'))
-    val port : Int = Integer.valueOf(crawlDbUri.substring(crawlDbUri.lastIndexOf(':') + 1))
+    if(conn.isEmpty) {
 
-    if (scheme.equals("http") || scheme.equals("https")) {
-      new RestHighLevelClient(
-        RestClient.builder(
-          new HttpHost(hostname, port, scheme)
-        )
-      )
-    } else if (crawlDbUri.startsWith("file://")) {
-      ???  // TODO: embedded ES?
-    } else if (crawlDbUri.contains("::")){
-      ???  // TODO: cloudmode with zookeepers ES?
-    } else {
-      throw new RuntimeException(s"$crawlDbUri not supported")
+
+      val scheme = crawlDbUri.substring(0, crawlDbUri.indexOf(':'))
+      val hostname: String = crawlDbUri.substring(crawlDbUri.indexOf(':') + 3, crawlDbUri.lastIndexOf(':'))
+      val port: Int = Integer.valueOf(crawlDbUri.substring(crawlDbUri.lastIndexOf(':') + 1))
+
+      if (scheme.equals("http") || scheme.equals("https")) {
+        if(config.getDatabaseUsername.nonEmpty) {
+          val credentialsProvider = new BasicCredentialsProvider
+          credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(config.getDatabaseUsername, config.getDatabasePassword))
+          conn = Some(new RestHighLevelClient(
+            RestClient.builder(
+              new HttpHost(hostname, port, scheme)
+            ).setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+              override def customizeHttpClient(httpClientBuilder: HttpAsyncClientBuilder): HttpAsyncClientBuilder =
+                httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)
+            })
+          ))
+        } else{
+          conn = Some(new RestHighLevelClient(
+            RestClient.builder(
+              new HttpHost(hostname, port, scheme)
+            )))
+        }
+      } else if (crawlDbUri.startsWith("file://")) {
+        ??? // TODO: embedded ES?
+      } else if (crawlDbUri.contains("::")) {
+        ??? // TODO: cloudmode with zookeepers ES?
+      } else {
+        throw new RuntimeException(s"$crawlDbUri not supported")
+      }
+      conn.get
+    } else{
+      conn.get
     }
   }
 
   def getClient(): RestHighLevelClient = {
-    crawlDb
+    if(conn.isEmpty){
+      conn = Some(newClient(config.getDatabaseURI))
+    }
+    conn.get
   }
 
   def addResourceDocs(docs: java.util.Iterator[Map[String, Object]]): Unit = {
@@ -119,7 +142,7 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
               val newScript: Script = new Script(scriptCode)
               updateRequestForScripts.script(newScript)
 
-              crawlDb.update(updateRequestForScripts, RequestOptions.DEFAULT)
+              getClient().update(updateRequestForScripts, RequestOptions.DEFAULT)
               updateRequestForScripts.retryOnConflict(3)
             }
             else {
@@ -137,7 +160,7 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
         .upsert(indexRequest) // upsert either updates or insert if not found
 
       updateRequest.retryOnConflict(3)
-      crawlDb.update(updateRequest, RequestOptions.DEFAULT)
+      getClient().update(updateRequest, RequestOptions.DEFAULT)
     }
     catch {
       case e: IOException =>
@@ -149,7 +172,7 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
     for (indexRequest <- indexRequests) {
       var response : IndexResponse = null
       try {
-        response = crawlDb.index(indexRequest, RequestOptions.DEFAULT)
+        response = getClient().index(indexRequest, RequestOptions.DEFAULT)
       }
       catch {
         case e: IOException =>
@@ -161,7 +184,7 @@ class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy
 
   def close(): Unit = {
     commitCrawlDb() // make sure buffer is flushed
-    crawlDb.close()
+    getClient().close()
   }
 
 }
