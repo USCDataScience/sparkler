@@ -137,7 +137,7 @@ class ElasticsearchRDD(sc: SparkContext,
     }
 
     // grouping
-    var groupBy : TermsAggregationBuilder = AggregationBuilders.terms("by" + Constants.storage.PARENT)
+    val groupBy : TermsAggregationBuilder = AggregationBuilders.terms("by" + Constants.storage.PARENT)
                                                           .field(Constants.storage.PARENT + ".keyword")
     groupBy.size(1)
     searchSourceBuilder.aggregation(groupBy)
@@ -154,12 +154,8 @@ class ElasticsearchRDD(sc: SparkContext,
     }
 
     val searchResponse : SearchResponse = client.search(searchRequest, RequestOptions.DEFAULT)
-    //val shs : SearchHits = searchResponse.getHits
     val aggmap = searchResponse.getAggregations.getAsMap
     val agg2 = aggmap.head._2.asInstanceOf[ParsedTerms]
-    //val agg2n = aggmap.head._1
-    //val agg : Histogram = searchResponse.getAggregations.get(agg2.getName)
-    //val bucket = agg2.getBuckets
     val res = new Array[Partition](agg2.getBuckets.size())
 
     var i = 0
@@ -167,11 +163,6 @@ class ElasticsearchRDD(sc: SparkContext,
       res(i) = new SparklerGroupPartition(i, b.getKeyAsString)
       i = i + 1
     })
-
-    /*for (i <- 0 until shs.getTotalHits.value.toInt) {
-      //TODO: improve partitioning : (1) club smaller domains, (2) support for multiple partitions for larger domains
-      res(i) = new SparklerGroupPartition(i, shs.getHits()(i).getSourceAsMap.get(Constants.storage.PARENT).asInstanceOf[String])
-    }*/
 
     proxy.close()
     res

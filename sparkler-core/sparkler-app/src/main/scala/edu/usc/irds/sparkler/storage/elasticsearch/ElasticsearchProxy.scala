@@ -42,13 +42,10 @@ import scala.collection.mutable.ArrayBuffer
 class ElasticsearchProxy(var config: SparklerConfiguration) extends StorageProxy with Closeable with Loggable {
 
   var conn : Option[RestHighLevelClient] = None
-  // creates the client
-  //private var crawlDb = newClient(config.getDatabaseURI)
 
   private var indexRequests = ArrayBuffer[IndexRequest]()
 
   def newClient(crawlDbUri: String): RestHighLevelClient = {
-
     if(conn.isEmpty) {
 
 
