@@ -1,6 +1,3 @@
-#image:
-#  file: .gitpod.Dockerfile
-
 tasks:
   - init: |
       sbt setup
