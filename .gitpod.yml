@@ -1,4 +1,6 @@
-image: registry.gitlab.com/spiculedata/custom-gitpod-full:latest
+image: 
+  file: .gitpod.Dockerfile
+
 tasks:
   - init: |
       whoami
