@@ -30,7 +30,7 @@ crawldb.backend: elasticsearch  # "solr" is default until "elasticsearch" become
 solr.uri: http://ec2-35-174-200-133.compute-1.amazonaws.com:8983/solr/crawldb
 
 # elasticsearch settings
-elasticsearch.uri: http://elasticsearch:9200
+elasticsearch.uri: http://localhost:9200
 
 
 ##################### Apache Spark Properties ###########################
