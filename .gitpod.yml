@@ -7,7 +7,6 @@ tasks:
       cd sparkler-core && sbt assembly package
   - command: |
       cd /home/gitpod/elasticsearch-7.17.0/ && ./bin/elasticsearch -d -p pid
-      cd sparkler-core && sbt assembly package
 ports:
   - port: 8080
     visibility: public
