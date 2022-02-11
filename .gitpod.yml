@@ -2,11 +2,8 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - init: |
-      whoami
-      cd sparkler-core && sbt assembly package
-  - command: |
-      cd /home/gitpod/elasticsearch-7.17.0/ && ./bin/elasticsearch -d -p pid
+  - init: cd sparkler-core && sbt assembly package
+    command: cd /home/gitpod/elasticsearch-7.17.0/ && ./bin/elasticsearch -d -p pid
 ports:
   - port: 8080
     visibility: public
