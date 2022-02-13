@@ -21,41 +21,14 @@
 # Build command:
 #    docker build -t sparkler-local -f sparkler-deployment/docker/Dockerfile .
 
-FROM openjdk:13
 
-RUN groupadd --gid 1000 sparkler && \
-   useradd -M --uid 1000 --gid 1000 --home /home/sparkler sparkler
+FROM hseeberger/scala-sbt:11.0.13_1.6.1_2.12.15
 
+COPY . /sparkler-core
+RUN cd /sparkler-core && sbt package assembly
 
-RUN yum -y update && yum -y install wget procps lsof
+FROM openjdk:11
 
+COPY --from=0 /sparkler-core/build ./sparkler-app
 
-# Define working directory.
-WORKDIR /data
-
-## Setup Solr
-RUN wget http://archive.apache.org/dist/lucene/solr/8.5.0/solr-8.5.0.tgz -O /data/solr.tgz && \
-    cd /data/ && tar xzf /data/solr.tgz && \
-    mv /data/solr-* /data/solr && rm /data/solr.tgz
-
-# add sparkler contents
-ADD ./build /data/sparkler
-
-# create solr core
-RUN /data/solr/bin/solr start -force && \
-    /data/solr/bin/solr create_core -force -c crawldb -d /data/sparkler/conf/solr/crawldb/ && \
-    /data/solr/bin/solr stop -force
-
-# sparkler  ui with banana dashboard
-COPY ./sparkler-ui/sparkler-dashboard/sparkler-ui-*.war /data/solr/server/solr-webapp/sparkler
-RUN cp /data/sparkler/conf/solr/sparkler-jetty-context.xml /data/solr/server/contexts/
-
-## Patch Solr's Jetty for Banana with the CSP directive header
-COPY ./sparkler-deployment/docker/jetty-csp-patch/jetty.xml /data/solr/server/etc/jetty.xml
-
-# Fix permissions
-RUN chown -R sparkler:sparkler /data/ && mkdir -p /home/sparkler/.pdfbox.cache && chown -R sparkler:sparkler /home/sparkler
-
-USER sparkler
-# Define default command.
-CMD ["bash"]
+CMD ["/sparkler-app/bin/sparkler.sh"]
