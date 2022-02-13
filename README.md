@@ -22,14 +22,12 @@ A web crawler is a bot program that fetches resources from the web for the sake 
 To use sparkler, install [docker](https://www.docker.com/community-edition#/download) and run the below commands:
 
 ```bash
-# Step 0. Get this script
-wget https://raw.githubusercontent.com/USCDataScience/sparkler/master/sparkler-core/bin/dockler.sh
-# Step 1. Run the script - it starts docker container and forwards ports to host
-bash dockler.sh 
-# Step 2. Inject seed urls
-/data/sparkler/bin/sparkler.sh inject -id 1 -su 'http://www.bbc.com/news'
+# Step 0. Get the image
+docker pull ghcr.io/uscdatascience/sparkler/sparkler:main
+# Step 1. Inject seed urls
+docker run uscdatascience/sparkler/sparkler:main inject -id 1 -su 'http://www.bbc.com/news'
 # Step 3. Start the crawl job
-/data/sparkler/bin/sparkler.sh crawl -id 1 -tn 100 -i 2     # id=1, top 100 URLs, do -i=2 iterations
+docker run uscdatascience/sparkler/sparkler:main crawl -id 1 -tn 100 -i 2     # id=1, top 100 URLs, do -i=2 iterations
 ```
 ### Running Sparkler with seed urls file: 
 ```bash
@@ -48,11 +46,6 @@ $bash sparkler.sh inject -id 1 -sf seed-urls.txt
 ```
 To crawl until the end of all new URLS, use `-i -1`, Example: `/data/sparkler/bin/sparkler.sh crawl -id 1 -i -1`
 
-Access the dashboard http://localhost:8983/banana/  (forwarded from docker image). 
-The dashboard should look like the one in the below:
-
-### Dashboard
-![](docs/Sparkler-Dashboard.png)
 
 ### Making Contributions:
  - [To the source code](http://irds.usc.edu/sparkler/dev/development-environment-setup.html#contributing-source)
