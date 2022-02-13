@@ -23,11 +23,15 @@
 
 
 FROM hseeberger/scala-sbt:11.0.13_1.6.1_2.12.15
-
 COPY . /sparkler-core
 RUN cd /sparkler-core && sbt package assembly
 
 FROM openjdk:11
+
+RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.17.0-linux-x86_64.tar.gz && \
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.17.0-linux-x86_64.tar.gz.sha512 && \
+shasum -a 512 -c elasticsearch-7.17.0-linux-x86_64.tar.gz.sha512 && \
+tar -xzf elasticsearch-7.17.0-linux-x86_64.tar.gz \
 
 COPY --from=0 /sparkler-core/build ./sparkler-app
 
