@@ -2,9 +2,7 @@ name: Docker Image CI
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/hysds-core
-  MOZART_NAME: ${{ github.repository }}/hysds-mozart
-  CELERY_NAME: ${{ github.repository }}/celery-tasks
+  IMAGE_NAME: ${{ github.repository }}/sparkler
 
 on:
   push:
@@ -34,40 +32,8 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
       with:
-        context: hysds
-        push: false
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        target: test
-    - name: Build and push Docker image
-      uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-      with:
-        context: hysds
+        context: sparkler-core
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         target: package
-    - name: Extract metadata (tags, labels) for Docker Mozart
-      id: metamozart
-      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.MOZART_NAME }}
-    - name: Build and push Docker Mozart
-      uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-      with:
-        context: hysds/mozart/mozart_rest_api/
-        push: true
-        tags: ${{ steps.metamozart.outputs.tags }}
-        labels: ${{ steps.metamozart.outputs.labels }}
-    - name: Extract metadata (tags, labels) for Docker Celery
-      id: metacelery
-      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.CELERY_NAME }}
-    - name: Build and push Docker Celery
-      uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-      with:
-        context: hysds/mozart/celery/
-        push: true
-        tags: ${{ steps.metacelery.outputs.tags }}
-        labels: ${{ steps.metacelery.outputs.labels }}
