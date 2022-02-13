@@ -31,4 +31,4 @@ FROM openjdk:11
 
 COPY --from=0 /sparkler-core/build ./sparkler-app
 
-CMD ["/sparkler-app/bin/sparkler.sh"]
+ENTRYPOINT ["/sparkler-app/bin/sparkler.sh"]
