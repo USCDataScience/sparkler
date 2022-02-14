@@ -24,10 +24,12 @@ To use sparkler, install [docker](https://www.docker.com/community-edition#/down
 ```bash
 # Step 0. Get the image
 docker pull ghcr.io/uscdatascience/sparkler/sparkler:main
+# Step 1. Create a volume for elastic
+docker volume create elastic
 # Step 1. Inject seed urls
-docker run uscdatascience/sparkler/sparkler:main inject -id 1 -su 'http://www.bbc.com/news'
+docker run -v elastic:/elastic-7.17.0/data uscdatascience/sparkler/sparkler:main inject -id 1 -su 'http://www.bbc.com/news'
 # Step 3. Start the crawl job
-docker run uscdatascience/sparkler/sparkler:main crawl -id 1 -tn 100 -i 2     # id=1, top 100 URLs, do -i=2 iterations
+docker run -v elastic:/elastic-7.17.0/data uscdatascience/sparkler/sparkler:main crawl -id 1 -tn 100 -i 2     # id=1, top 100 URLs, do -i=2 iterations
 ```
 ### Running Sparkler with seed urls file: 
 ```bash
