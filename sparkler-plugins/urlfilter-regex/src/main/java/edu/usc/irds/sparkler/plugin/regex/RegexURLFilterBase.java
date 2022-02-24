@@ -247,16 +247,18 @@ public abstract class RegexURLFilterBase extends AbstractExtensionPoint implemen
             }
         }
 
-        BufferedReader in = new BufferedReader(reader);
+        if(reader != null) {
+            BufferedReader in = new BufferedReader(reader);
 
-        String line;
-        while ((line = in.readLine()) != null) {
-            if (line.length() == 0) {
-                continue;
-            }
-            RegexRule rule = readRule(line);
-            if(rule != null) {
-                rules.add(rule);
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.length() == 0) {
+                    continue;
+                }
+                RegexRule rule = readRule(line);
+                if (rule != null) {
+                    rules.add(rule);
+                }
             }
         }
 

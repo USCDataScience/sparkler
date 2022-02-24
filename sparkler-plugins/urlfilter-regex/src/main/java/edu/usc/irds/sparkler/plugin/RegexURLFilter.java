@@ -44,8 +44,13 @@ public class RegexURLFilter extends RegexURLFilterBase {
      * config file.
      */
     protected Reader getRulesReader(Map pluginConfig) throws IOException {
-        String regexFile = pluginConfig.get(URLFILTER_REGEX_FILE).toString();
-        return new InputStreamReader(jobContext.getClass().getClassLoader().getResource(regexFile).openStream());
+        String regexFile = pluginConfig.getOrDefault(URLFILTER_REGEX_FILE, "").toString();
+        if(regexFile != ""){
+            return new InputStreamReader(jobContext.getClass().getClassLoader().getResource(regexFile).openStream());
+        } else{
+            return null;
+        }
+
     }
 
     // Inherited Javadoc
