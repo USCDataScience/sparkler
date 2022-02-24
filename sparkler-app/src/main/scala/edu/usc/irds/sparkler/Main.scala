@@ -33,7 +33,7 @@ object Main extends Loggable {
     "inject" -> (classOf[Injector], "Inject (seed) URLS to crawldb"),
     "crawl" -> (classOf[Crawler], "Run crawl pipeline for several iterations"),
     "dump" -> (classOf[Dumper], "Tool to create raw files from hadoop sequence files")
-  )kjnkjn
+  )
 
   def main(args: Array[String]): Unit ={
     if (args.length == 0 || HELP_CMD.equals(args(0).toLowerCase)){
@@ -44,8 +44,8 @@ object Main extends Loggable {
       System.exit(0)
     } else {
       args(0) = args(0).toLowerCase
-      var cliArgs: Arrsdfsdfay[String] = args.slice(1, args.length)
-sasdf
+      var cliArgs: Array[String] = args.slice(1, args.length)
+
       /**
        * This code block is not using "du.usc.irds.sparkler.base.CliTools" to parse the command line arguments.
        * Because it requires interface "Options" to be used and defined for all the possible arguments to be passed in
