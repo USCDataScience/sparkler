@@ -71,11 +71,19 @@ public class SparklerConfiguration extends JSONObject {
             }
 
             HashMap<String, Object> yourHashMap = new Gson().fromJson(json.toString(), HashMap.class);
-            Map o = deepMerge(this, yourHashMap);
+            Map o = overwriteMap(this, yourHashMap);
             JSONObject j = new JSONObject(this);
             String str = j.toJSONString();
             System.out.println(str);
         }
+    }
+
+    private static Map overwriteMap(Map original, Map newMap){
+        deepMerge(original, newMap);
+        if(newMap.containsKey("plugins.active")){
+            original.replace("plugins.active", newMap.get("plugins.active"));
+        }
+        return original;
     }
 
     private static Map deepMerge(Map original, Map newMap) {
