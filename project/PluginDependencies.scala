@@ -29,7 +29,7 @@ object FetcherChrome {
   }
   lazy val browserup = "com.browserup" % "browserup-proxy-core" % "3.0.0-SNAPSHOT"
   lazy val seleniumscripter = "uk.co.spicule" % "seleniumscripter" % "1.7.9"
-  lazy val magnesium_script = "uk.co.spicule" % "magnesium-script" % "0.2.0"
+  lazy val magnesium_script = "uk.co.spicule" % "magnesium-script" % "0.4.0"
 }
 
 object FetcherHtmlUnit {

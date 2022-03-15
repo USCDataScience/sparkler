@@ -26,6 +26,7 @@
 *.jar
 *.war
 core/build/**
+build/**
 
 # sbt specific
 .cache
