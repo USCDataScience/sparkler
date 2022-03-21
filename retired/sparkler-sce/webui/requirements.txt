@@ -35,7 +35,7 @@ sklearn==0.0
 soupsieve==2.0
 typed-ast==1.4.1
 urllib3==1.26.5
-waitress==1.4.3
+waitress==2.1.1
 Werkzeug==0.16.1
 wrapt==1.11.2
 zipp==3.1.0
