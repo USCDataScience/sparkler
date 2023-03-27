@@ -16,20 +16,36 @@
 # specific language governing permissions and limitations
 # under the License.
 
+
 import argparse
 import os
 import subprocess
 import sys
 from typing import Any
+from pathlib import Path
+import logging as log
 
 
-SCRIPT_DIR: str = os.path.dirname(os.path.realpath(__file__))
-REPO_ROOT: str = os.path.realpath(os.path.join(__file__, '..', '..', '..', '..', '..'))
+log.basicConfig(level=log.INFO)
+SCRIPT_DIR: Path = Path(__file__).parent
+#REPO_ROOT: Path = SCRIPT_DIR.parent.parent.parent
+COMPOSE_FILE: Path = (SCRIPT_DIR / "docker-compose.yml").resolve()
 
 
+EPILOG = """
+For docs, visit 
+"""
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="CLI to manage docker containers",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        epilog=EPILOG
+    )
+
+    parser.add_argument(
+        "--compose", type=Path,
+        help="docker-compose.yml file to use",
+        default=str(COMPOSE_FILE),
     )
 
     parser.add_argument(
@@ -73,36 +89,27 @@ def login() -> None:
     print(msg)
 
 
-def up() -> None:
-    cmd = " ".join([
-        f"docker-compose --file sparkler-core/sparkler-deployment/docker/elasticsearch/docker-compose.yml up --detach"
-    ])
-
+def up(compose_file=COMPOSE_FILE) -> None:
+    cmd = f"docker compose --file {compose_file} up --detach"
     try:
-        _shell_exec_check_output(cmd, cwd = REPO_ROOT)
+        _shell_exec_check_output(cmd)
     except Exception:
-        _eprint(f"Exec failed. If docker-compose is missing, follow the instructions here to install: https://github.com/USCDataScience/sparkler/wiki/docker-compose")
+        log.error(f"Exec failed. If docker-compose is missing, follow the instructions here to install: https://github.com/USCDataScience/sparkler/wiki/docker-compose")
         sys.exit(1)
 
 
-def down() -> None:
-    cmd = " ".join([
-        f"docker-compose --file sparkler-core/sparkler-deployment/docker/elasticsearch/docker-compose.yml down"
-    ])
+def down(compose_file=COMPOSE_FILE) -> None:
+    cmd = f"docker compose --file {compose_file} down"
 
     try:
-        _shell_exec_check_output(cmd, cwd = REPO_ROOT)
+        _shell_exec_check_output(cmd)
     except Exception:
-        _eprint(f"Exec failed. If docker-compose is missing, follow the instructions here to install: https://github.com/USCDataScience/sparkler/wiki/docker-compose")
+        log.error(f"Exec failed. If docker-compose is missing, follow the instructions here to install: https://github.com/USCDataScience/sparkler/wiki/docker-compose")
         sys.exit(1)
-
-
-def _eprint(msg: str) -> None:
-    sys.stderr.write("%s\n" % msg)
 
 
 def _shell_exec_check_output(cmd: str, **kwargs: Any) -> None:
-    _eprint(f"Exec: {cmd}")
+    log.info(f"Exec: {cmd}")
     subprocess.run(cmd, check=True, shell=True, **kwargs)
 
 
