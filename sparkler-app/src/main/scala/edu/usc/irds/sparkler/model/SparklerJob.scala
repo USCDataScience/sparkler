@@ -51,9 +51,9 @@ class SparklerJob(val id: String,
 
   def newStorageProxy():StorageProxy = {
 
-    println("===================================")
-    println("Storage Proxy trigger Point: " + config.toJSONString)
-    println("===================================")
+    LOG.debug("===================================")
+    LOG.debug("Storage Proxy trigger Point: " + config.toJSONString)
+    LOG.debug("===================================")
 
     new StorageProxyFactory(config).getProxy
   }

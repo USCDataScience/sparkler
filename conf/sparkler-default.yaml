@@ -86,7 +86,7 @@ fetcher.headers:
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
   Accept-Language: "en-US,en"
 
-fetcher.persist.content.location: /dbfs/FileStore/bcf/content/
+fetcher.persist.content.location: crawl-data/
 fetcher.persist.content.filename: hash
 fetcher.kill.failure.percent: 3.5
 # Rotating agents file.
@@ -136,7 +136,7 @@ plugins:
     #connect.timeout: 3000
   fetcher.chrome:
     chrome.dns: "local"
-    chrome.selenium.outputdirectory: "/dbfs/FileStore/crawl/content/"
+    chrome.selenium.outputdirectory: crawl-data/
     chrome.options:
         - "--no-sandbox" 
         - "--headless"

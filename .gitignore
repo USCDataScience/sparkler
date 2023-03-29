@@ -17,6 +17,7 @@
 build
 elasticsearch-*
 crawl-segments
+crawl-data/*
 
 
 .bloop

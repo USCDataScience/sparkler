@@ -238,7 +238,6 @@ class Crawler extends CliTool {
 
       val rdd = storageFactory.getRDD(sc, job, maxGroups = topG, topN = topN)
       val rcount = rdd.count()
-      println(rcount)
       if (rcount > 0) {
         //TODO RESTORE THIS HACK
         val f = rc.map(rdd)
@@ -250,7 +249,7 @@ class Crawler extends CliTool {
         if (rep <= 0) {
           rep = 1
         }
-        println("Number of partitions configured: " + rep)
+        LOG.debug("Number of partitions configured: " + rep)
         //f.cache()
         f.checkpoint()
         fetchedRdd = f.repartition(rep).flatMap({ case (grp, rs) => new FairFetcher(job, rs.iterator, localFetchDelay,

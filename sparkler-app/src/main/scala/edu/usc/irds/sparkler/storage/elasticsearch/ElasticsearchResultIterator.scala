@@ -25,6 +25,8 @@ import org.elasticsearch.action.search.SearchScrollRequest
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.core.TimeValue
 import org.elasticsearch.search.SearchHit
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 
 import scala.collection.JavaConversions._
 
@@ -66,21 +68,21 @@ class ElasticsearchResultIterator[T] extends Iterator[T] {
     request.scroll(TimeValue.timeValueMinutes(1L))
     var searchResponse : SearchResponse = client.search(request, RequestOptions.DEFAULT)
     scrollId = searchResponse.getScrollId()
-    println("ElasticsearchResultIterator: initializeScrollContext() - scrollId: " + scrollId)
+    LOG.debug("ElasticsearchResultIterator: initializeScrollContext() - scrollId: " + scrollId)
     currentPage = searchResponse.getHits().iterator()
-    println("ElasticsearchResultIterator: initializeScrollContext() - first batch size: " + searchResponse.getHits().getTotalHits().value.toInt)
+    LOG.debug("ElasticsearchResultIterator: initializeScrollContext() - first batch size: " + searchResponse.getHits().getTotalHits().value.toInt)
   }
 
   private def getNextBean(dontFetch: Boolean = false): Option[SearchHit] = {
     if (!dontFetch && !currentPage.hasNext) {
       // fetch from elasticsearch using scroll api
       try {
-        ElasticsearchResultIterator.LOG.debug("getNextBean(), scrollId = {}", scrollId)
+        LOG.debug("getNextBean(), scrollId = {}", scrollId)
         scrollRequest = new SearchScrollRequest(scrollId)
         scrollRequest.scroll(TimeValue.timeValueSeconds(30))
         var searchScrollResponse : SearchResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT)
         scrollId = searchScrollResponse.getScrollId()
-        println("ElasticsearchResultIterator: getNextBean() - scrollId: " + scrollId)
+        LOG.debug("ElasticsearchResultIterator: getNextBean() - scrollId: " + scrollId)
         currentPage = searchScrollResponse.getHits().iterator()
       } catch {
         case e: Exception =>
@@ -90,13 +92,13 @@ class ElasticsearchResultIterator[T] extends Iterator[T] {
 
     if (count < limit && currentPage.hasNext) {
       var sh : SearchHit = currentPage.next()
-      println("ElasticsearchResultIterator: getNextBean() - found something")
-      println(sh.toString())
+      LOG.debug("ElasticsearchResultIterator: getNextBean() - found something")
+      LOG.debug(sh.toString())
       Some(sh)
     } else {
-      ElasticsearchResultIterator.LOG.debug("Reached the end of result set")
+      LOG.debug("Reached the end of result set")
       if (closeClient) {
-        ElasticsearchResultIterator.LOG.debug("closing elasticsearch client.")
+        LOG.debug("closing elasticsearch client.")
         client.close()
       }
       None
@@ -110,7 +112,7 @@ class ElasticsearchResultIterator[T] extends Iterator[T] {
       new Resource(searchHit.getSourceAsMap()).asInstanceOf[T]
     } catch {
       case e: Exception => {
-        println("ElasticsearchResultIterator: could not create new instance of Resource and cast to T")
+        LOG.debug("ElasticsearchResultIterator: could not create new instance of Resource and cast to T")
         throw new RuntimeException(e)
       }
     }
