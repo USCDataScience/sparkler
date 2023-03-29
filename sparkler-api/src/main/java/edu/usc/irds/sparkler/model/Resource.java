@@ -114,10 +114,6 @@ public class Resource implements Serializable {
     }
 
     public Resource(Map<String, Object> dataMap) {
-        System.out.println("Resource constructor ---------------");
-        for (String key : dataMap.keySet()) {
-            System.out.println(key + " => " + dataMap.get(key));
-        }
 
         if (dataMap.containsKey("id")) id = (String)dataMap.get("id");
         if (dataMap.containsKey("url")) url = (String)dataMap.get("url");
@@ -182,6 +178,7 @@ public class Resource implements Serializable {
             try {
                 modifiedTime = new SimpleDateFormat(Constants.defaultDateFormat).parse((String)dataMap.get("modified_time"));
             } catch (Exception e) {
+                
                 System.err.println("Could not retrieve and parse to Date: modified_time");
                 System.err.println(e.toString());
             }

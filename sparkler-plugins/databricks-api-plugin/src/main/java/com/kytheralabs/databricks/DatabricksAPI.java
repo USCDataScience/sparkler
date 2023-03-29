@@ -102,7 +102,6 @@ public class DatabricksAPI extends AbstractExtensionPoint implements GenericProc
                         sql = sql.replace("$sparkvariable", "Variable not found");
                     }
                 }
-                System.out.println("SQL STATEMENT: "+sql);
                 spark.sql(sql);
             }
         }

@@ -44,7 +44,6 @@ public class CustomHttpRequestExecutor extends HttpRequestExecutor {
             System.err.println("Proxy IP not found!");
         } else if(proxyIpHeader != null) {
             String proxyIp = proxyIpHeader.getValue();
-            System.out.printf("Proxy IP received: [%s]", proxyIp);
             clientContext.setAttribute(proxyIpAttributeId, proxyIp);
         }
         return response;

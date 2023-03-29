@@ -104,16 +104,8 @@ public class ApacheHttpRestClient {
     public String httpGetRequest(URI uri) throws IOException {
         HttpGet httpGet = new HttpGet(uri);
 
-        //TODO logging
-//        System.out.println("Executing request " + httpGet);
-
         String responseBody = httpClient.execute(httpGet, this.responseHandler);
         HttpEntity entity = httpClient.execute(httpGet).getEntity();
-
-        //TODO logging
-//        System.out.println("----------------------------------------");
-//        System.out.println(responseBody);
-
         return responseBody;
     }
 

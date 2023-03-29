@@ -20,12 +20,17 @@ package edu.usc.irds.sparkler;
 import com.google.gson.Gson;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class SparklerConfiguration extends JSONObject {
+
+    private static final Logger LOG = new LoggerContext().getLogger(SparklerConfiguration.class);
+
 
     public SparklerConfiguration() {
         super();
@@ -59,22 +64,21 @@ public class SparklerConfiguration extends JSONObject {
         }
     }
 
-    public void overloadConfig(String object) {
+    public void overloadConfig(String object) throws Exception {
       if(object != null && !object.equals("") && !object.equals(" ")){
         JSONParser parser = new JSONParser();
         JSONObject json = null;
             try{
                 json = (JSONObject) parser.parse(object);
             } catch (Exception exception){
-                System.out.println("Error parsing overload json: " + exception+ " for json: "+object);
-                System.exit(0); // ???
+                LOG.warn("Error parsing overload json: " + exception+ " for json: " + object);
+                throw exception;
             }
 
             HashMap<String, Object> yourHashMap = new Gson().fromJson(json.toString(), HashMap.class);
             Map o = overwriteMap(this, yourHashMap);
             JSONObject j = new JSONObject(this);
             String str = j.toJSONString();
-            System.out.println(str);
         }
     }
 

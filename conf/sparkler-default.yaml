@@ -27,7 +27,7 @@ crawldb.backend: elasticsearch  # "solr" is default until "elasticsearch" become
 # solr.uri: file://conf/solr/crawldb
 # For cloudmode with zookeepers; Format = collectionName::zkhost1:port1,zkhost2:port2,zkhost3:port3
 # solr.uri: crawldb::localhost:9983
-solr.uri: http://ec2-35-174-200-133.compute-1.amazonaws.com:8983/solr/crawldb
+solr.uri: http://localhost:8983/solr/crawldb
 
 # elasticsearch settings
 elasticsearch.uri: http://localhost:9200

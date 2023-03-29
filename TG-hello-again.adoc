@@ -1,0 +1,73 @@
+== Hello Again, Sparkler
+: Thamme Gowda, 2023-03-28
+:source-highlighter: rouge
+:icons: font
+
+
+I went on to puruse PhD in 2017 and by 2018 I was deep into python and deeplearning world. I gave up on Java eco system and this project. Now, in 2023, (Dr. TG :-D ) is refreshing his knowledge of Java eco system and rebooting sparkler.
+
+
+== Setup 
+
+Install SDKMAN
+
+[source,bash]
+----
+curl -s "https://get.sdkman.io" | bash
+# open new shell session
+  
+sdk install java 11.0.18-ms   # We need this version
+sdk install scala 2.12.15
+sdk install sbt 1.6.1
+
+
+# making sure these versions are active in enviroment
+sdk use java 11.0.18-ms
+sdk use scala 2.12.15
+sdk use sbt 1.6.1
+----
+
+== Build Sparkler
+
+
+[source,bash]
+----
+git clone git@github.com:USCDataScience/sparkler.git
+cd sparkler 
+
+sbt clean compile package assembly
+build/bin/sparkler.sh  # this should print "inject" "crawl" "dump" help message
+----
+
+
+=== Running First Crawl
+ 
+_First crawl, after a long time_
+
+.Setup Elasticsearch (ES)
+----
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.17.0-linux-x86_64.tar.gz
+tar xvf elasticsearch-7.17.0-*.tar.gz
+
+# start ES as daemon
+elasticsearch-7.17.0/bin/elasticsearch -d -p pid
+----
+
+Check if http://localhost:9200/ is up (If you see a JSON doc, it means ES is working)
+
+
+.Run Crawl
+----
+build/bin/sparkler.sh inject -id myid -su 'http://www.bbc.com/news'
+build/bin/sparkler.sh crawl -id myid -tn 100 -i 2
+
+
+----
+
+ http://localhost:9200/crawldb/_search?pretty=true&q=*:* 
+
+
+
+
+
+

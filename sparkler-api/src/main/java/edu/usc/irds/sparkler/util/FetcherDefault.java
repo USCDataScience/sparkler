@@ -287,7 +287,6 @@ public class FetcherDefault extends AbstractExtensionPoint implements Fetcher, F
 
     private String processJson(JSONObject object) {
         String s = object.toJSONString();
-        System.out.println("PROCESSED JSON: "+ s);
         return object.toJSONString();
     }
 

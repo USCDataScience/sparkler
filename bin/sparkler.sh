@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 
 # Attempt to resolve the sparkler jar using relative paths
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-DIR="$DIR/.."
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
-JAR=`echo $DIR/sparkler-app-*-SNAPSHOT.jar`
-if [ -f "$JAR" ]
- then
+JAR=$(echo $DIR/sparkler-app-*-SNAPSHOT.jar)
+if [[ -f "$JAR" ]] ; then
     # run
     # -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005
     java -Xms1g -cp $DIR/conf:$JAR -Dpf4j.pluginsDir=$DIR/plugins edu.usc.irds.sparkler.Main $@
