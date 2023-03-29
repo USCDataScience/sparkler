@@ -1,5 +1,7 @@
 package edu.usc.irds.sparkler.model;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import edu.usc.irds.sparkler.Constants;
 import edu.usc.irds.sparkler.JobContext;
 import edu.usc.irds.sparkler.util.StringUtil;
@@ -18,6 +20,9 @@ import java.util.Random;
  * Created by karanjeetsingh on 10/22/16.
  */
 public class Resource implements Serializable {
+
+
+    private static final Logger LOG = new LoggerContext().getLogger(Resource.class);
 
     //NOTE: Keep the variable names in sync with solr schema
     @Field private String id;
@@ -122,8 +127,8 @@ public class Resource implements Serializable {
             try {
                 discoverDepth = (Integer)dataMap.get("discover_depth");
             } catch (Exception e) {
-                System.err.println("Could not retrieve and parse to Integer: discover_depth");
-                System.err.println(e.toString());
+                LOG.debug("Could not retrieve and parse to Integer: discover_depth");
+                LOG.debug(e.toString());
             }
         }
         if (dataMap.containsKey("status")) status = (String)dataMap.get("status");
@@ -131,8 +136,8 @@ public class Resource implements Serializable {
             try {
                 fetchTimestamp = new SimpleDateFormat(Constants.defaultDateFormat).parse((String)dataMap.get("fetch_timestamp"));
             } catch (Exception e) {
-                System.err.println("Could not retrieve and parse to Date: fetch_timestamp");
-                System.err.println(e.toString());
+                LOG.debug("Could not retrieve and parse to Date: fetch_timestamp");
+                LOG.debug(e.toString());
             }
         }
         if (dataMap.containsKey("crawl_id")) crawlId = (String)dataMap.get("crawl_id");
@@ -141,16 +146,16 @@ public class Resource implements Serializable {
             try {
                 score = (HashMap<String, Double>)dataMap.get("*_score");
             } catch (Exception e) {
-                System.err.println("Could not retrieve and parse to HashMap<String, Double>: *_score");
-                System.err.println(e.toString());
+                LOG.debug("Could not retrieve and parse to HashMap<String, Double>: *_score");
+                LOG.debug(e.toString());
             }
         }
         if (dataMap.containsKey("generate_score")) {
             try {
                 generateScore = (Double)dataMap.get("generate_score");
             } catch (Exception e) {
-                System.err.println("Could not retrieve and parse to Double: generate_score");
-                System.err.println(e.toString());
+                LOG.debug("Could not retrieve and parse to Double: generate_score");
+                LOG.debug(e.toString());
             }
         }
         if (dataMap.containsKey("http_method")) httpMethod = (String)dataMap.get("http_method");
@@ -159,16 +164,16 @@ public class Resource implements Serializable {
             try {
                 lastUpdatedAt = new SimpleDateFormat(Constants.defaultDateFormat).parse((String)dataMap.get("last_updated_at"));
             } catch (Exception e) {
-                System.err.println("Could not retrieve and parse to Date: last_updated_at");
-                System.err.println(e.toString());
+                LOG.debug("Could not retrieve and parse to Date: last_updated_at");
+                LOG.debug(e.toString());
             }
         }
         if (dataMap.containsKey("indexed_at")) {
             try {
                 indexedAt = new SimpleDateFormat(Constants.defaultDateFormat).parse((String)dataMap.get("indexed_at"));
             } catch (Exception e) {
-                System.err.println("Could not retrieve and parse to Date: indexed_at");
-                System.err.println(e.toString());
+                LOG.debug("Could not retrieve and parse to Date: indexed_at");
+                LOG.debug(e.toString());
             }
         }
         if (dataMap.containsKey("hostname")) hostname = (String)dataMap.get("hostname");
@@ -179,8 +184,8 @@ public class Resource implements Serializable {
                 modifiedTime = new SimpleDateFormat(Constants.defaultDateFormat).parse((String)dataMap.get("modified_time"));
             } catch (Exception e) {
                 
-                System.err.println("Could not retrieve and parse to Date: modified_time");
-                System.err.println(e.toString());
+                LOG.debug("Could not retrieve and parse to Date: modified_time");
+                LOG.debug(e.toString());
             }
         }
         if (dataMap.containsKey("crawler")) crawler = (String)dataMap.get("crawler");
@@ -188,40 +193,40 @@ public class Resource implements Serializable {
             try {
                 fetchDepth = (Integer)dataMap.get("fetch_depth");
             } catch (Exception e) {
-                System.err.println("Could not retrieve and parse to Integer: fetch_depth");
-                System.err.println(e.toString());
+                LOG.debug("Could not retrieve and parse to Integer: fetch_depth");
+                LOG.debug(e.toString());
             }
         }
         if (dataMap.containsKey("page_score")) {
             try {
                 pageScore = (Double)dataMap.get("page_score");
             } catch (Exception e) {
-                System.err.println("Could not retrieve and parse to Double: page_score");
-                System.err.println(e.toString());
+                LOG.debug("Could not retrieve and parse to Double: page_score");
+                LOG.debug(e.toString());
             }
         }
         if (dataMap.containsKey("retries_since_fetch")) {
             try {
                 retriesSinceFetch = (Integer)dataMap.get("retries_since_fetch");
             } catch (Exception e) {
-                System.err.println("Could not retrieve and parse to Integer: retries_since_fetch");
-                System.err.println(e.toString());
+                LOG.debug("Could not retrieve and parse to Integer: retries_since_fetch");
+                LOG.debug(e.toString());
             }
         }
         if (dataMap.containsKey("fetch_status_code")) {
             try {
                 fetchStatusCode = (Integer)dataMap.get("fetch_status_code");
             } catch (Exception e) {
-                System.err.println("Could not retrieve and parse to Integer: fetch_status_code");
-                System.err.println(e.toString());
+                LOG.debug("Could not retrieve and parse to Integer: fetch_status_code");
+                LOG.debug(e.toString());
             }
         }
         if (dataMap.containsKey("response_time")) {
             try {
                 responseTime = new Long((String)dataMap.get("response_time"));
             } catch (Exception e) {
-                System.err.println("Could not retrieve and parse to Long: response_time");
-                System.err.println(e.toString());
+                LOG.debug("Could not retrieve and parse to Long: response_time");
+                LOG.debug(e.toString());
             }
         }
     }

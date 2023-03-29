@@ -1,10 +1,8 @@
-== Hello Again, Sparkler
+== Sparkler Build From Source
 : Thamme Gowda, 2023-03-28
 :source-highlighter: rouge
 :icons: font
 
-
-I went on to puruse PhD in 2017 and by 2018 I was deep into python and deeplearning world. I gave up on Java eco system and this project. Now, in 2023, (Dr. TG :-D ) is refreshing his knowledge of Java eco system and rebooting sparkler.
 
 
 == Setup 
@@ -34,6 +32,7 @@ sdk use sbt 1.6.1
 ----
 git clone git@github.com:USCDataScience/sparkler.git
 cd sparkler 
+git checkout tg/refresh   # use this branch
 
 sbt clean compile package assembly
 build/bin/sparkler.sh  # this should print "inject" "crawl" "dump" help message
@@ -64,10 +63,5 @@ build/bin/sparkler.sh crawl -id myid -tn 100 -i 2
 
 ----
 
- http://localhost:9200/crawldb/_search?pretty=true&q=*:* 
-
-
-
-
-
+You should see docs updated in ES index at  http://localhost:9200/crawldb/_search?pretty=true&q=*:*
 
