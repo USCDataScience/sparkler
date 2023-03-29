@@ -1,8 +1,7 @@
-== Sparkler Build From Source
-: Thamme Gowda, 2023-03-28
+= Sparkler Build From Source
+Thamme Gowda, 2023-03-28
 :source-highlighter: rouge
 :icons: font
-
 
 
 == Setup 
@@ -28,11 +27,12 @@ sdk use sbt 1.6.1
 == Build Sparkler
 
 
+
 [source,bash]
 ----
 git clone git@github.com:USCDataScience/sparkler.git
 cd sparkler 
-git checkout tg/refresh   # use this branch
+git checkout tg/refresh    # use this branch
 
 sbt clean compile package assembly
 build/bin/sparkler.sh  # this should print "inject" "crawl" "dump" help message
@@ -40,8 +40,7 @@ build/bin/sparkler.sh  # this should print "inject" "crawl" "dump" help message
 
 
 === Running First Crawl
- 
-_First crawl, after a long time_
+
 
 .Setup Elasticsearch (ES)
 ----
@@ -64,4 +63,8 @@ build/bin/sparkler.sh crawl -id myid -tn 100 -i 2
 ----
 
 You should see docs updated in ES index at  http://localhost:9200/crawldb/_search?pretty=true&q=*:*
+
+To change any settings, edit `buidld/conf/sparkler-default.yaml` file. 
+The instructions in this page is tested with https://github.com/USCDataScience/sparkler/blob/59dc833c49ea0efd5f199b558b92275af535b13f/conf/sparkler-default.yaml[this version of config]
+
 
