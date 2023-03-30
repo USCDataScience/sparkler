@@ -64,5 +64,5 @@ build/bin/sparkler.sh crawl -id myid -tn 100 -i 2
 
 You should see docs updated in ES index at  `http://localhost:9200/crawldb/_search?pretty=true&q=*:*`
 In addition to ES index, crawl data is also stored under `crawl-data/` directory, since `fetcher.persist.content.location` setting is configured to have that path.
-To change any settings, edit `buidld/conf/sparkler-default.yaml` file.  The instructions in this page is tested with https://github.com/USCDataScience/sparkler/blob/59dc833c49ea0efd5f199b558b92275af535b13f/conf/sparkler-default.yaml[this version of config]
+To change any settings, edit `build/conf/sparkler-default.yaml` file.  The instructions in this page is tested with https://github.com/USCDataScience/sparkler/blob/59dc833c49ea0efd5f199b558b92275af535b13f/conf/sparkler-default.yaml[this version of config]
 
