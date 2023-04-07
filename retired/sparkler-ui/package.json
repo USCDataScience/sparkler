@@ -17,7 +17,7 @@
     "react-iframe": "^1.7.11",
     "react-redux": "^7.0.1",
     "react-router-dom": "^5.0.0",
-    "react-scripts": "2.1.8",
+    "react-scripts": "5.0.1",
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0"
   },
