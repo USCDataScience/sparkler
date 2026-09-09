@@ -3,9 +3,10 @@ from __future__ import annotations
 
 import hashlib
 import re
-from urllib.parse import urldefrag, urljoin, urlparse, urlunparse
+from urllib.parse import parse_qsl, urldefrag, urlencode, urljoin, urlparse, urlunparse
 
 _SCHEME = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.-]*://")
+_PAGE_Q = re.compile(r"^(page|p|paged|pg|offset|start|pagina|pagenum)$|^e-page-", re.I)
 
 
 def _parse(url: str):
@@ -34,11 +35,15 @@ def normalize(url: str, base: str | None = None) -> str | None:
         return None
     if not host:
         return None
+    if host.startswith("www."):
+        host = host[4:]
     netloc = host
     if port and port not in (80, 443):
         netloc = f"{host}:{port}"
     path = p.path or "/"
-    return urlunparse((p.scheme.lower(), netloc, path, "", p.query, ""))
+    if path != "/" and path.endswith("/"):
+        path = path.rstrip("/")
+    return urlunparse(("https", netloc, path, "", p.query, ""))
 
 
 def hostname(url: str) -> str:
@@ -72,8 +77,26 @@ def group_of(url: str) -> str:
     return host_key(url) or hostname(url)
 
 
+def page_family(url: str) -> str:
+    """Path + non-pagination query. /blog and /blog?e-page=2 are the same family."""
+    p = _parse(url) or urlparse("")
+    pairs = [(k, v) for k, v in parse_qsl(p.query, keep_blank_values=True) if not _PAGE_Q.match(k)]
+    path = p.path or "/"
+    if path != "/" and path.endswith("/"):
+        path = path.rstrip("/")
+    host = host_key(url)
+    return urlunparse(("https", host, path, "", urlencode(pairs), ""))
+
+
+def same_page_family(url: str, parent: str | None) -> bool:
+    if not parent:
+        return False
+    return page_family(url) == page_family(parent)
+
+
 def doc_id(crawl_id: str, url: str) -> str:
-    return hashlib.sha1(f"{crawl_id}\n{url}".encode("utf-8")).hexdigest()
+    canon = normalize(url) or url
+    return hashlib.sha1(f"{crawl_id}\n{canon}".encode("utf-8")).hexdigest()
 
 
 def contenthash(body: bytes) -> str:

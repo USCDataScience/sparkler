@@ -56,29 +56,47 @@ def html_links(html: str, base: str) -> tuple[str, list[str], str]:
     return title, links, text
 
 
+def _merge_links(*lists):
+    seen = set()
+    out = []
+    for lst in lists:
+        for u in lst or []:
+            if u and u not in seen:
+                seen.add(u)
+                out.append(u)
+    return out
+
+
 def parse(url: str, content: bytes, content_type: str = "") -> dict:
     html = ""
     try:
         html = content.decode("utf-8", errors="replace")
     except Exception:
         html = ""
-    title, links, fallback_text = html_links(html, url) if html else ("", [], "")
+    mime_hint = (content_type or "").lower()
+    looks_html = "html" in mime_hint or html.lstrip()[:32].lower().startswith(("<!", "<html", "<head"))
+    title, html_hrefs, fallback_text = html_links(html, url) if looks_html and html else ("", [], "")
     text = fallback_text
     meta_title = title
     mime = content_type or "application/octet-stream"
     metadata = {}
+    tika_hrefs = []
     try:
         from tika import parser as tika_parser
-        parsed = tika_parser.from_buffer(content, xmlContent=False)
+        parsed = tika_parser.from_buffer(content, xmlContent=True)
         if parsed:
-            tika_text = (parsed.get("content") or "").strip()
-            if tika_text:
-                text = tika_text
+            xhtml = (parsed.get("content") or "").strip()
+            if xhtml:
+                tika_title, tika_hrefs, tika_text = html_links(xhtml, url)
+                if tika_text:
+                    text = tika_text
+                if tika_title:
+                    meta_title = tika_title
             md = parsed.get("metadata") or {}
             if isinstance(md, dict):
                 metadata = clean_metadata(md)
                 mime = _first(metadata.get("Content-Type")) or mime
-                meta_title = _first(metadata.get("title") or metadata.get("dc:title")) or title
+                meta_title = _first(metadata.get("title") or metadata.get("dc:title")) or meta_title
     except Exception:
         pass
     text = " ".join(text.split())[:_TEXT_CAP]
@@ -87,7 +105,7 @@ def parse(url: str, content: bytes, content_type: str = "") -> dict:
     return {
         "title": meta_title[:300],
         "text": text,
-        "outlinks": links,
+        "outlinks": _merge_links(html_hrefs, tika_hrefs),
         "content_type": (mime or "")[:120],
         "metadata": metadata,
         "tika_metadata": json.dumps(metadata, ensure_ascii=False),

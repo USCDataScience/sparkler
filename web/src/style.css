@@ -41,6 +41,11 @@ button.ghost.danger:hover:not(:disabled) {
   background: #b91c1c;
   color: #fff8f3;
 }
+button.danger-fill {
+  background: #b91c1c;
+  color: #fff8f3;
+}
+button.danger-fill:hover:not(:disabled) { background: #991b1b; }
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 button.on { background: var(--coal); color: #fff8f3; }
 
@@ -85,6 +90,22 @@ nav button.active {
   background: var(--card);
 }
 .bar input[type="text"], .bar input:not([type]) { min-width: 14rem; }
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.45rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+.chip {
+  background: #ffedd5;
+  color: var(--spark-dark);
+  border: 1px solid #fdba74;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
 .stats {
   display: flex;
   gap: 1.25rem;

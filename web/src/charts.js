@@ -53,11 +53,19 @@ function bindTip(sel, htmlFn) {
     .on('pointerleave', hideTip)
 }
 
+function bindClick(sel, fn) {
+  if (!fn) return
+  sel.style('cursor', 'pointer').on('click', (ev, d) => {
+    hideTip()
+    fn(d)
+  })
+}
+
 function rowsOf(items) {
   return (items || []).filter(d => d && d.count > 0)
 }
 
-export function donut(el, items, { title = '' } = {}) {
+export function donut(el, items, { title = '', onClick } = {}) {
   if (!el) return
   clear(el)
   const data = rowsOf(items)
@@ -79,8 +87,9 @@ export function donut(el, items, { title = '' } = {}) {
   bindTip(slices, d => {
     const row = d.data
     const pct = ((100 * row.count) / total).toFixed(1)
-    return `<strong>${row.value}</strong><br>${row.count} · ${pct}% of ${total}`
+    return `<strong>${row.value}</strong><br>${row.count} · ${pct}% of ${total}<br><em>click to filter</em>`
   })
+  bindClick(slices, d => onClick && onClick(d.data))
   g.append('text').attr('text-anchor', 'middle').attr('dy', '0.35em')
     .style('font-size', '0.85rem').style('fill', '#78716c').text(title || `${total}`)
 }
@@ -111,7 +120,7 @@ export function areaChart(el, series) {
   bindTip(dots, d => `<strong>${d.t}</strong><br>${d.n} pages fetched`)
 }
 
-export function heatMap(el, spec) {
+export function heatMap(el, spec, { onClick } = {}) {
   if (!el) return
   clear(el)
   const xs = spec.x || []
@@ -139,7 +148,8 @@ export function heatMap(el, spec) {
     .attr('width', Math.max(1, x.bandwidth())).attr('height', Math.max(1, y.bandwidth()))
     .attr('rx', 2)
     .attr('fill', d => d.n ? color(d.n) : '#f5f2ec')
-  bindTip(sel, d => `<strong>${d.x}</strong><br>depth ${d.y}<br><em>${d.n} pages</em>`)
+  bindTip(sel, d => `<strong>${d.x}</strong><br>depth ${d.y}<br><em>${d.n} pages</em>${d.n ? '<br>click to filter' : ''}`)
+  bindClick(sel, d => d.n && onClick && onClick(d))
   const tickEvery = Math.max(1, Math.ceil(xs.length / 8))
   svg.append('g').attr('transform', `translate(0,${h - m.b})`)
     .call(d3.axisBottom(x).tickValues(xs.filter((_, i) => i % tickEvery === 0)))
@@ -149,7 +159,7 @@ export function heatMap(el, spec) {
     .selectAll('text').style('font-size', '10px')
 }
 
-export function bubblePack(el, items) {
+export function bubblePack(el, items, { onClick } = {}) {
   if (!el) return
   clear(el)
   const data = rowsOf(items).slice(0, 24)
@@ -164,7 +174,8 @@ export function bubblePack(el, items) {
   const node = g.selectAll('g').data(root.leaves()).enter().append('g')
     .attr('transform', d => `translate(${d.x},${d.y})`)
   const circles = node.append('circle').attr('r', d => d.r).attr('fill', d => color(d.data.value)).attr('opacity', 0.92)
-  bindTip(circles, d => `<strong>${d.data.value}</strong><br>${d.data.count} pages`)
+  bindTip(circles, d => `<strong>${d.data.value}</strong><br>${d.data.count} pages<br><em>click to filter</em>`)
+  bindClick(circles, d => onClick && onClick(d.data))
   node.append('text')
     .attr('text-anchor', 'middle').attr('dy', '0.35em')
     .style('font-size', d => `${Math.max(8, Math.min(13, d.r / 3))}px`)
@@ -173,7 +184,7 @@ export function bubblePack(el, items) {
     .text(d => d.r > 16 ? String(d.data.value).slice(0, 14) : '')
 }
 
-export function treeMap(el, items) {
+export function treeMap(el, items, { onClick } = {}) {
   if (!el) return
   clear(el)
   const data = rowsOf(items).slice(0, 24)
@@ -191,7 +202,8 @@ export function treeMap(el, items) {
     .attr('height', d => Math.max(0, d.y1 - d.y0))
     .attr('fill', d => color(d.data.value))
     .attr('rx', 3)
-  bindTip(rects, d => `<strong>${d.data.value}</strong><br>on ${d.data.count} pages`)
+  bindTip(rects, d => `<strong>${d.data.value}</strong><br>on ${d.data.count} pages<br><em>click to filter</em>`)
+  bindClick(rects, d => onClick && onClick(d.data))
   node.append('text')
     .attr('x', 6).attr('y', 16)
     .style('font-size', '11px').style('fill', '#fff8f3').style('pointer-events', 'none')
