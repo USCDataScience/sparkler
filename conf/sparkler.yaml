@@ -1,0 +1,20 @@
+# Sparkler workstation config. Ports avoid DRAT (9000), ImageCat live (9100),
+# BigTranslate (9200 / Solr 8985), and Meridian (8090).
+
+solr:
+  host: 127.0.0.1
+  port: 8983
+  core: crawldb
+
+serve:
+  host: 127.0.0.1
+  port: 8180
+
+crawl:
+  delay_ms: 1000
+  timeout_s: 20
+  topn: 100
+  max_bytes: 8000000
+  user_agent: "Sparkler/1.0 (+https://github.com/USCDataScience/sparkler)"
+  respect_robots: true
+  same_host: false

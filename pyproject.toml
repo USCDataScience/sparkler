@@ -1,0 +1,25 @@
+[project]
+name = "sparkler"
+version = "1.0.0"
+description = "A crawl workstation: View, Control, and Crawl."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Chris Mattmann" }]
+dependencies = [
+  "httpx>=0.27.0",
+  "tika>=2.6.0",
+  "fastapi>=0.115.0",
+  "uvicorn>=0.30.0",
+  "pyyaml>=6.0",
+]
+
+[project.scripts]
+sparkler = "sparkler.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["sparkler*"]

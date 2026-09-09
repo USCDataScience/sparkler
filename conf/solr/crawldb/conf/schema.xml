@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  Sparkler CrawlDB. Solr 10 classic schema. Unique key is id = sha1(crawl_id + url).
+-->
+<schema name="sparkler-crawldb" version="1.6">
+
+  <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true"/>
+  <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true"/>
+  <fieldType name="pint" class="solr.IntPointField" docValues="true"/>
+  <fieldType name="plong" class="solr.LongPointField" docValues="true"/>
+  <fieldType name="pdouble" class="solr.DoublePointField" docValues="true"/>
+  <fieldType name="pdate" class="solr.DatePointField" docValues="true"/>
+
+  <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+    <analyzer type="index">
+      <tokenizer name="standard"/>
+      <filter name="stop" ignoreCase="true" words="stopwords.txt"/>
+      <filter name="lowercase"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer name="standard"/>
+      <filter name="stop" ignoreCase="true" words="stopwords.txt"/>
+      <filter name="lowercase"/>
+    </analyzer>
+  </fieldType>
+
+  <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false"/>
+  <field name="url" type="string" indexed="true" stored="true" required="true" multiValued="false"/>
+  <field name="crawl_id" type="string" indexed="true" stored="true" required="true" multiValued="false"/>
+  <field name="group" type="string" indexed="true" stored="true" required="true" multiValued="false"/>
+  <field name="hostname" type="string" indexed="true" stored="true" required="true" multiValued="false"/>
+  <field name="status" type="string" indexed="true" stored="true" required="true" default="UNFETCHED" multiValued="false"/>
+  <field name="title" type="text_general" indexed="true" stored="true" multiValued="false"/>
+  <field name="extracted_text" type="text_general" indexed="true" stored="true" multiValued="false"/>
+  <field name="content_type" type="string" indexed="true" stored="true" multiValued="false"/>
+  <field name="outlinks" type="string" indexed="true" stored="true" multiValued="true"/>
+  <field name="parent" type="string" indexed="true" stored="true" multiValued="false"/>
+  <field name="seed" type="boolean" indexed="true" stored="true" default="false" multiValued="false"/>
+  <field name="label" type="string" indexed="true" stored="true" multiValued="false"/>
+  <field name="page_score" type="pdouble" indexed="true" stored="true" default="0" multiValued="false"/>
+  <field name="discover_depth" type="pint" indexed="true" stored="true" default="0" multiValued="false"/>
+  <field name="fetch_status_code" type="pint" indexed="true" stored="true" default="0" multiValued="false"/>
+  <field name="response_time" type="plong" indexed="true" stored="true" default="0" multiValued="false"/>
+  <field name="contenthash" type="string" indexed="true" stored="true" multiValued="false"/>
+  <field name="crawler" type="string" indexed="true" stored="true" default="sparkler" multiValued="false"/>
+  <field name="indexed_at" type="pdate" indexed="true" stored="true" multiValued="false"/>
+  <field name="fetch_timestamp" type="pdate" indexed="true" stored="true" multiValued="false"/>
+  <field name="tika_metadata" type="text_general" indexed="false" stored="true" multiValued="false"/>
+  <field name="text" type="text_general" indexed="true" stored="false" multiValued="true"/>
+  <field name="_version_" type="plong" indexed="false" stored="false" docValues="true"/>
+
+  <!-- Tika keys flattened, same convention as classic Sparkler (*_s_md). -->
+  <dynamicField name="*_s_md" type="string" indexed="true" stored="true" multiValued="true"/>
+
+  <copyField source="title" dest="text"/>
+  <copyField source="extracted_text" dest="text"/>
+  <copyField source="url" dest="text"/>
+  <copyField source="*_s_md" dest="text"/>
+
+  <uniqueKey>id</uniqueKey>
+</schema>

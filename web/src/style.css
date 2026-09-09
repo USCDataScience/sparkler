@@ -1,0 +1,149 @@
+:root {
+  --ink: #1c1917;
+  --muted: #78716c;
+  --line: #e7e5e4;
+  --paper: #faf7f2;
+  --card: #fffdf9;
+  --spark: #e85d04;
+  --spark-dark: #c2410c;
+  --coal: #292524;
+}
+* { box-sizing: border-box; }
+html, body, #app { margin: 0; min-height: 100%; }
+body {
+  font-family: "Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+}
+button, input, select, textarea { font: inherit; }
+a { color: var(--spark); }
+button {
+  cursor: pointer;
+  border: 0;
+  border-radius: 4px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  background: var(--spark);
+  color: #fff8f3;
+}
+button:hover:not(:disabled) { background: var(--spark-dark); }
+button.ghost {
+  background: transparent;
+  color: var(--spark);
+  border: 1px solid var(--spark);
+}
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.on { background: var(--coal); color: #fff8f3; }
+
+.shell { min-height: 100vh; display: flex; flex-direction: column; }
+.mast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 0.7rem; }
+.brand h1 { margin: 0; font-size: 1.25rem; letter-spacing: 0.02em; }
+.brand p { margin: 0; color: var(--muted); font-size: 0.82rem; }
+.mark { width: 1.6rem; height: 1.6rem; color: var(--spark); }
+nav { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+nav button {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid transparent;
+}
+nav button.active {
+  background: var(--spark);
+  color: #fff8f3;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.7rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+.bar input, .bar select, .bar textarea {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.35rem 0.55rem;
+  background: var(--card);
+}
+.bar input[type="text"], .bar input:not([type]) { min-width: 14rem; }
+.stats {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  padding: 0.7rem 1.25rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+.stats strong { color: var(--ink); }
+main { padding: 1rem 1.25rem 2rem; flex: 1; }
+.err { color: #b91c1c; margin-bottom: 0.8rem; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  margin: 0 0 0.7rem;
+}
+.card h3 { margin: 0 0 0.25rem; font-size: 1rem; }
+.card .meta { color: var(--muted); font-size: 0.82rem; word-break: break-all; }
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+.labels { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+.labels button { font-size: 0.75rem; padding: 0.2rem 0.5rem; background: #e7e5e4; color: var(--ink); }
+.labels button.on { background: var(--spark); color: #fff; }
+.snippet { margin: 0.4rem 0 0; font-size: 0.88rem; color: #44403c; max-width: 70rem; }
+.empty { color: var(--muted); padding: 2rem 0; }
+.chart { width: 100%; max-width: 52rem; height: 16rem; }
+.hint { color: var(--muted); font-size: 0.8rem; }
+.tip { position: relative; }
+.tip[data-tip]:hover::after,
+.tip[data-tip]:focus-within::after {
+  content: attr(data-tip);
+  position: absolute;
+  z-index: 40;
+  left: 0;
+  top: calc(100% + 6px);
+  width: max(16rem, 100%);
+  max-width: 22rem;
+  background: #1c1917;
+  color: #fff8f3;
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.35;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  pointer-events: none;
+}
+.click { cursor: pointer; flex: 1; min-width: 0; }
+.card.open { border-color: var(--spark); }
+.detail { margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--line); }
+.detail h4 { margin: 0 0 0.4rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.kv { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.kv th { text-align: left; vertical-align: top; padding: 0.2rem 0.8rem 0.2rem 0; color: var(--muted); font-weight: 600; white-space: nowrap; width: 14rem; }
+.kv td { padding: 0.2rem 0; word-break: break-word; }
+.detail .text {
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  max-height: 24rem;
+  overflow: auto;
+  background: #f5f2ec;
+  padding: 0.7rem 0.8rem;
+  border-radius: 6px;
+}
