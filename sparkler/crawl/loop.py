@@ -152,7 +152,7 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
                     continue
                 parsed = parse_mod.parse(url, result["content"], result["content_type"])
                 page_score = scorer.score_text(model, parsed["text"])
-                updates.append(stamp({
+                doc = stamp({
                     "id": rec["id"],
                     "url": url,
                     "crawl_id": crawl_id,
@@ -162,6 +162,7 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
                     "title": parsed["title"],
                     "extracted_text": parsed["text"],
                     "content_type": parsed["content_type"] or result["content_type"],
+                    "tika_metadata": parsed.get("tika_metadata") or "{}",
                     "outlinks": parsed["outlinks"][:500],
                     "discover_depth": rec.get("discover_depth") or 0,
                     "page_score": page_score,
@@ -171,7 +172,9 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
                     "seed": rec.get("seed") is True or rec.get("seed") == True,
                     "parent": rec.get("parent") or "",
                     "fetch_timestamp": stamp({})["indexed_at"],
-                }))
+                })
+                doc.update(parsed.get("solr_md") or {})
+                updates.append(doc)
                 stats["fetched"] += 1
                 depth = int(rec.get("discover_depth") or 0) + 1
                 for link in parsed["outlinks"]:

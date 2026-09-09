@@ -44,7 +44,7 @@
       <JobsView v-if="view === 'jobs'" :jobs="jobs" @open="openJob"/>
       <SeedsView v-else-if="view === 'seeds'" :seeds="(stats && stats.seeds) || []"/>
       <DocumentsView v-else-if="view === 'docs'" :documents="documents" :num="numFound"
-                     :q="q" @search="onSearch" @label="onLabel" @more="moreDocs"/>
+                     :job="job" :q="q" @search="onSearch" @label="onLabel" @more="moreDocs"/>
       <FrontierView v-else-if="view === 'frontier'" :documents="frontier" :num="frontierN"/>
       <StatsView v-else-if="view === 'stats'" :facets="facets"/>
     </main>

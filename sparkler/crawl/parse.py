@@ -1,10 +1,13 @@
 """Tika extract + HTML outlink harvest."""
 from __future__ import annotations
 
+import json
+import re
 from html.parser import HTMLParser
-from urllib.parse import urljoin
 
 from .urls import normalize
+
+_MD_KEY = re.compile(r"[^A-Za-z0-9]+")
 
 _TEXT_CAP = 400_000
 
@@ -63,6 +66,7 @@ def parse(url: str, content: bytes, content_type: str = "") -> dict:
     text = fallback_text
     meta_title = title
     mime = content_type or "application/octet-stream"
+    metadata = {}
     try:
         from tika import parser as tika_parser
         parsed = tika_parser.from_buffer(content, xmlContent=False)
@@ -72,9 +76,9 @@ def parse(url: str, content: bytes, content_type: str = "") -> dict:
                 text = tika_text
             md = parsed.get("metadata") or {}
             if isinstance(md, dict):
-                mime = _first(md.get("Content-Type") or md.get("Content-Type")) or mime
-                meta_title = _first(md.get("title") or md.get("dc:title")) or title
-                # Tika sometimes lists links
+                metadata = clean_metadata(md)
+                mime = _first(metadata.get("Content-Type")) or mime
+                meta_title = _first(metadata.get("title") or metadata.get("dc:title")) or title
     except Exception:
         pass
     text = " ".join(text.split())[:_TEXT_CAP]
@@ -85,7 +89,48 @@ def parse(url: str, content: bytes, content_type: str = "") -> dict:
         "text": text,
         "outlinks": links,
         "content_type": (mime or "")[:120],
+        "metadata": metadata,
+        "tika_metadata": json.dumps(metadata, ensure_ascii=False),
+        "solr_md": solr_md_fields(metadata),
     }
+
+
+def clean_metadata(md: dict) -> dict:
+    out = {}
+    for k, v in (md or {}).items():
+        if v is None:
+            continue
+        key = str(k)
+        if isinstance(v, list):
+            vals = [str(x) for x in v if x is not None and str(x).strip()]
+            if not vals:
+                continue
+            out[key] = vals if len(vals) > 1 else vals[0]
+        else:
+            s = str(v)
+            if s.strip():
+                out[key] = s
+    return out
+
+
+def solr_md_fields(meta: dict) -> dict:
+    fields = {}
+    for k, v in (meta or {}).items():
+        name = md_field(k)
+        if isinstance(v, list):
+            fields[name] = [str(x)[:800] for x in v[:30]]
+        else:
+            fields[name] = [str(v)[:800]]
+    return fields
+
+
+def md_field(key: str) -> str:
+    s = _MD_KEY.sub("_", key).strip("_")
+    if not s:
+        s = "tika"
+    if s[0].isdigit():
+        s = "tika_" + s
+    return s[:80] + "_s_md"
 
 
 def _first(val):

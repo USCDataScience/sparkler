@@ -110,3 +110,20 @@ main { padding: 1rem 1.25rem 2rem; flex: 1; }
 .empty { color: var(--muted); padding: 2rem 0; }
 .chart { width: 100%; max-width: 52rem; height: 16rem; }
 .hint { color: var(--muted); font-size: 0.8rem; }
+.click { cursor: pointer; flex: 1; min-width: 0; }
+.card.open { border-color: var(--spark); }
+.detail { margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--line); }
+.detail h4 { margin: 0 0 0.4rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.kv { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.kv th { text-align: left; vertical-align: top; padding: 0.2rem 0.8rem 0.2rem 0; color: var(--muted); font-weight: 600; white-space: nowrap; width: 14rem; }
+.kv td { padding: 0.2rem 0; word-break: break-word; }
+.detail .text {
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  max-height: 24rem;
+  overflow: auto;
+  background: #f5f2ec;
+  padding: 0.7rem 0.8rem;
+  border-radius: 6px;
+}

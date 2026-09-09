@@ -135,10 +135,27 @@ def is_up() -> bool:
     return CrawlDB().ping()
 
 
+def reload_core():
+    """Pick up schema.xml copied into the Solr home."""
+    import httpx
+    port = config.solr_port()
+    host = config.solr_host()
+    r = httpx.get(
+        f"http://{host}:{port}/solr/admin/cores",
+        params={"action": "RELOAD", "core": "crawldb"},
+        timeout=30.0,
+    )
+    r.raise_for_status()
+
+
 def start(wait=True):
     download()
     _install_core()
     if is_up():
+        try:
+            reload_core()
+        except Exception:
+            pass
         return True
     port = config.solr_port()
     host = config.solr_host()

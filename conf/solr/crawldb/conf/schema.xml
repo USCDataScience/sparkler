@@ -45,12 +45,17 @@
   <field name="crawler" type="string" indexed="true" stored="true" default="sparkler" multiValued="false"/>
   <field name="indexed_at" type="pdate" indexed="true" stored="true" multiValued="false"/>
   <field name="fetch_timestamp" type="pdate" indexed="true" stored="true" multiValued="false"/>
+  <field name="tika_metadata" type="text_general" indexed="false" stored="true" multiValued="false"/>
   <field name="text" type="text_general" indexed="true" stored="false" multiValued="true"/>
   <field name="_version_" type="plong" indexed="false" stored="false" docValues="true"/>
+
+  <!-- Tika keys flattened, same convention as classic Sparkler (*_s_md). -->
+  <dynamicField name="*_s_md" type="string" indexed="true" stored="true" multiValued="true"/>
 
   <copyField source="title" dest="text"/>
   <copyField source="extracted_text" dest="text"/>
   <copyField source="url" dest="text"/>
+  <copyField source="*_s_md" dest="text"/>
 
   <uniqueKey>id</uniqueKey>
 </schema>

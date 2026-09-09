@@ -166,7 +166,7 @@ def documents(
         start=start,
         rows=rows,
         sort="discover_depth asc,page_score desc",
-        fl="id,url,title,status,hostname,discover_depth,page_score,label,content_type,fetch_status_code,seed,parent,extracted_text",
+        fl="id,url,title,status,hostname,discover_depth,page_score,label,content_type,fetch_status_code,seed,parent,extracted_text,tika_metadata",
     )
     db.close()
     docs = data.get("response", {}).get("docs", [])
@@ -175,6 +175,8 @@ def documents(
         text = d.pop("extracted_text", "") or ""
         d["snippet"] = text[:400]
         d["label"] = labs.get(d.get("url"), d.get("label") or "")
+        d["metadata"] = _meta(d.pop("tika_metadata", None))
+        d["metadata_n"] = len(d["metadata"])
     return {
         "documents": docs,
         "numFound": data.get("response", {}).get("numFound", 0),
@@ -208,7 +210,20 @@ def page(job_id: str, url: str = Query(...)):
     if not rec:
         raise HTTPException(404, "not found")
     rec["label"] = store.labels(job_id).get(url, rec.get("label") or "")
+    rec["metadata"] = _meta(rec.get("tika_metadata"))
     return rec
+
+
+def _meta(raw):
+    if not raw:
+        return {}
+    if isinstance(raw, dict):
+        return raw
+    try:
+        data = json.loads(raw)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
 
 
 @app.post("/api/jobs/{job_id}/label")
