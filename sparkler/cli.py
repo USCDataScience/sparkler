@@ -28,6 +28,8 @@ def main(argv=None):
                     help="Max link hops from a seed. -1 = unlimited")
     cr.add_argument("--same-host", action="store_true",
                     help="Stay on seed hosts (www and apex count as one site)")
+    cr.add_argument("--no-expand", action="store_true",
+                    help="Fetch the current frontier only; do not queue new outlinks")
     cr.add_argument("--no-robots", action="store_true")
     cr.add_argument("--delay-ms", type=int, default=None)
 
@@ -93,6 +95,7 @@ def _crawl(args):
         respect_robots=not args.no_robots,
         delay_ms=args.delay_ms,
         max_depth=args.max_depth,
+        expand=not args.no_expand,
         on_progress=lambda p: print(f"  {p.get('url','')}", flush=True),
     )
     print(

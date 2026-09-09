@@ -54,6 +54,7 @@ class CrawlIn(BaseModel):
     iterations: int = -1
     same_host: bool = True
     max_depth: int = -1
+    expand: bool = True
     no_robots: bool = False
 
 
@@ -140,6 +141,11 @@ def job_stats(job_id: str):
         q=q,
         fields=("status", "hostname", "label", "discover_depth", "content_type"),
     )
+    labs = store.labels(job_id)
+    trained = scorer.train(
+        job_id,
+        lambda u: (db.get(doc_id(job_id, u)) or {}).get("extracted_text") or "",
+    )
     db.close()
     run = _runs.get(job_id) or {}
     seeds = store.seeds(job_id)
@@ -147,7 +153,12 @@ def job_stats(job_id: str):
     return {
         "id": job_id,
         "seeds": seeds,
-        "labels": store.labels(job_id),
+        "labels": labs,
+        "model": {
+            "ok": trained["ok"],
+            "relevant": trained["relevant"],
+            "not": trained["not"],
+        },
         "facets": fac,
         "total": fac.get("numFound", 0),
         "fetched": counts.get("FETCHED", 0),
@@ -167,7 +178,7 @@ def job_charts(job_id: str):
     data = db.select(
         q=q,
         rows=5000,
-        fl="fetch_timestamp,discover_depth,content_type,response_time,tika_metadata,hostname",
+        fl="fetch_timestamp,discover_depth,content_type,response_time,tika_metadata,hostname,page_score",
     )
     db.close()
     docs = data.get("response", {}).get("docs", [])
@@ -223,7 +234,7 @@ def documents(
         fq=" AND ".join(extra) if extra else None,
         start=start,
         rows=rows,
-        sort="discover_depth asc,page_score desc",
+        sort="page_score desc,discover_depth asc",
         fl="id,url,title,status,hostname,discover_depth,page_score,label,content_type,fetch_status_code,seed,parent,extracted_text,tika_metadata",
     )
     db.close()
@@ -305,18 +316,25 @@ def post_label(job_id: str, body: LabelIn):
     db = _db()
     rec = db.get(doc_id(job_id, url))
     if rec:
-        rec["label"] = body.label
-        db.add(rec, commit=True)
+        db.set_fields([{"id": rec["id"], "label": body.label or ""}], commit=True)
     db.close()
     return {"ok": True, "url": url, "label": body.label}
 
 
 @app.post("/api/jobs/{job_id}/train")
-def train(job_id: str):
+def train(job_id: str, apply: bool = False):
     db = _db()
     result = scorer.train(job_id, lambda u: (db.get(doc_id(job_id, u)) or {}).get("extracted_text") or "")
+    scored = 0
+    if apply:
+        scored = scorer.apply_scores(db, job_id, result.get("scorer"))
     db.close()
-    return {"ok": result["ok"], "relevant": result["relevant"], "not": result["not"]}
+    return {
+        "ok": result["ok"],
+        "relevant": result["relevant"],
+        "not": result["not"],
+        "scored": scored,
+    }
 
 
 @app.post("/api/jobs/{job_id}/crawl")
@@ -346,6 +364,7 @@ def start_crawl(job_id: str, body: CrawlIn):
                 iterations=body.iterations,
                 same_host=body.same_host,
                 max_depth=body.max_depth,
+                expand=body.expand,
                 respect_robots=not body.no_robots,
                 on_progress=prog,
                 stop_event=stop,
@@ -354,8 +373,11 @@ def start_crawl(job_id: str, body: CrawlIn):
                 state = "stopped" if stats.get("stopped") else "done"
                 _runs[job_id] = {"state": state, **stats, "error": None}
         except Exception as e:
+            msg = str(e)
+            if len(msg) > 400:
+                msg = msg[:400] + "…"
             with _lock:
-                _runs[job_id] = {"state": "error", "error": str(e)}
+                _runs[job_id] = {"state": "error", "error": msg}
 
     t = threading.Thread(target=work, daemon=True)
     t.start()

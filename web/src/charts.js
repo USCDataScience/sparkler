@@ -98,26 +98,80 @@ export function areaChart(el, series) {
   if (!el) return
   clear(el)
   const data = (series || []).map((d, i) => ({ ...d, i }))
-  if (data.length < 2) return
+  if (!data.length) return
   const w = width(el, 720)
   const h = 180
   const m = { t: 12, r: 16, b: 36, l: 36 }
   const svg = d3.select(el).append('svg').attr('width', w).attr('height', h)
   const x = d3.scalePoint().domain(data.map(d => d.t)).range([m.l, w - m.r])
   const y = d3.scaleLinear().domain([0, d3.max(data, d => d.n) || 1]).nice().range([h - m.b, m.t])
-  const line = d3.line().x(d => x(d.t)).y(d => y(d.n)).curve(d3.curveMonotoneX)
-  const area = d3.area().x(d => x(d.t)).y0(h - m.b).y1(d => y(d.n)).curve(d3.curveMonotoneX)
-  svg.append('path').datum(data).attr('d', area).attr('fill', '#fed7aa').attr('opacity', 0.9)
-  svg.append('path').datum(data).attr('d', line).attr('fill', 'none').attr('stroke', '#e85d04').attr('stroke-width', 2)
+  const line = d3.line().defined(d => x(d.t) != null).x(d => x(d.t)).y(d => y(d.n)).curve(d3.curveMonotoneX)
+  const area = d3.area().defined(d => x(d.t) != null).x(d => x(d.t)).y0(h - m.b).y1(d => y(d.n)).curve(d3.curveMonotoneX)
+  if (data.length > 1) {
+    svg.append('path').datum(data).attr('d', area).attr('fill', '#fed7aa').attr('opacity', 0.9)
+    svg.append('path').datum(data).attr('d', line).attr('fill', 'none').attr('stroke', '#e85d04').attr('stroke-width', 2)
+  }
   const ticks = data.filter((_, i) => i % Math.ceil(data.length / 7) === 0)
   svg.append('g').attr('transform', `translate(0,${h - m.b})`)
     .call(d3.axisBottom(x).tickValues(ticks.map(d => d.t)))
     .selectAll('text').style('font-size', '10px').attr('transform', 'rotate(-30)').style('text-anchor', 'end')
   svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4))
     .selectAll('text').style('font-size', '10px')
-  const dots = svg.selectAll('circle').data(data).enter().append('circle')
+  const dots = svg.selectAll('circle.pt').data(data).enter().append('circle')
+    .attr('class', 'pt')
     .attr('cx', d => x(d.t)).attr('cy', d => y(d.n)).attr('r', 3.5).attr('fill', '#c2410c')
-  bindTip(dots, d => `<strong>${d.t}</strong><br>${d.n} pages fetched`)
+    .style('pointer-events', 'none')
+  const focus = svg.append('g').style('display', 'none').style('pointer-events', 'none')
+  focus.append('line')
+    .attr('class', 'rule')
+    .attr('y1', m.t).attr('y2', h - m.b)
+    .attr('stroke', '#9a3412').attr('stroke-dasharray', '3,2').attr('opacity', 0.7)
+  const focusDot = focus.append('circle').attr('r', 6).attr('fill', '#9a3412').attr('stroke', '#fffdf9').attr('stroke-width', 1.5)
+
+  function htmlFor(d) {
+    const n = d.n || 0
+    return `<strong>${d.t}</strong><br>${n} page${n === 1 ? '' : 's'} fetched`
+  }
+  function nearest(ev) {
+    const [mx] = d3.pointer(ev, svg.node())
+    let best = data[0]
+    let bestD = Infinity
+    for (const d of data) {
+      const px = x(d.t)
+      if (px == null) continue
+      const dx = Math.abs(px - mx)
+      if (dx < bestD) {
+        bestD = dx
+        best = d
+      }
+    }
+    return best
+  }
+  function showAt(ev) {
+    const d = nearest(ev)
+    const cx = x(d.t)
+    const cy = y(d.n)
+    focus.style('display', null)
+    focus.select('line').attr('x1', cx).attr('x2', cx)
+    focusDot.attr('cx', cx).attr('cy', cy)
+    dots.attr('opacity', p => p === d ? 1 : 0.35)
+    showTip(htmlFor(d), ev)
+  }
+  svg.append('rect')
+    .attr('class', 'hit')
+    .attr('x', m.l)
+    .attr('y', m.t)
+    .attr('width', Math.max(1, w - m.l - m.r))
+    .attr('height', Math.max(1, h - m.t - m.b))
+    .attr('fill', 'transparent')
+    .style('cursor', 'crosshair')
+    .on('pointerenter', showAt)
+    .on('pointermove', showAt)
+    .on('pointerleave', () => {
+      focus.style('display', 'none')
+      dots.attr('opacity', 1)
+      hideTip()
+    })
 }
 
 export function heatMap(el, spec, { onClick } = {}) {

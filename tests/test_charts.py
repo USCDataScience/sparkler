@@ -43,6 +43,17 @@ class ChartTests(unittest.TestCase):
         self.assertEqual(t["language"][0]["value"], "en")
         self.assertTrue(any(x["value"] == "Content-Type" for x in t["tika_keys"]))
         self.assertEqual(t["response_ms"]["n"], 2)
+        self.assertEqual(t["score_hist"], [])
+
+    def test_score_hist(self):
+        docs = [
+            {"page_score": 2.0, "tika_metadata": "{}"},
+            {"page_score": -1.0, "tika_metadata": "{}"},
+            {"page_score": 2.0, "tika_metadata": "{}"},
+        ]
+        t = tika_rollups(docs)
+        self.assertTrue(t["score_hist"])
+        self.assertEqual(sum(x["count"] for x in t["score_hist"]), 3)
 
 
 if __name__ == "__main__":

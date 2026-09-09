@@ -132,6 +132,9 @@ main { padding: 1rem 1.25rem 2rem; flex: 1; }
   gap: 0.8rem;
   align-items: flex-start;
 }
+.score { font-variant-numeric: tabular-nums; font-weight: 650; color: var(--ink); }
+.score.hi { color: #0f766e; }
+.score.lo { color: #b45309; }
 .labels { display: flex; gap: 0.3rem; flex-wrap: wrap; }
 .labels button { font-size: 0.75rem; padding: 0.2rem 0.5rem; background: #e7e5e4; color: var(--ink); }
 .labels button.on { background: var(--spark); color: #fff; }

@@ -107,10 +107,10 @@ def labels(job_id: str) -> dict[str, str]:
 
 
 def labeled_texts(job_id: str, get_text) -> list[tuple[str, str]]:
-    """Return (label, text) using get_text(url)."""
+    """Return (label, text) using get_text(url). URL is the bag if the page has no body."""
     out = []
     for url, lab in labels(job_id).items():
-        text = get_text(url) or ""
+        text = (get_text(url) or "").strip() or url
         if text:
             out.append((lab, text))
     return out
