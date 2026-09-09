@@ -9,11 +9,12 @@
             <span v-if="j.running"> · running</span>
           </p>
         </div>
+        <button class="ghost danger" :disabled="j.running" @click.stop="$emit('clear', j.id)">Clear</button>
       </div>
     </div>
   </div>
 </template>
 <script setup>
 defineProps({ jobs: { type: Array, default: () => [] } })
-defineEmits(['open'])
+defineEmits(['open', 'clear'])
 </script>

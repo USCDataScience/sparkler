@@ -30,6 +30,10 @@ class UrlTests(unittest.TestCase):
     def test_contenthash(self):
         self.assertEqual(len(contenthash(b"hello")), 40)
 
+    def test_skips_phone_as_port(self):
+        self.assertIsNone(normalize("http://adminvc.ucla.edu:+1-310-825-4321"))
+        self.assertIsNone(normalize("tel:+1-310-825-4321"))
+
 
 if __name__ == "__main__":
     unittest.main()

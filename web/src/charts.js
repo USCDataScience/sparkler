@@ -1,52 +1,222 @@
 import * as d3 from 'd3'
 
-export function statusBars(el, items) {
-  const root = d3.select(el)
-  root.selectAll('*').remove()
-  const data = (items || []).filter(d => d.count)
-  if (!data.length) return
-  const w = el.clientWidth || 640
-  const h = 220
-  const m = { t: 8, r: 12, b: 28, l: 36 }
-  const svg = root.append('svg').attr('width', w).attr('height', h)
-  const x = d3.scaleBand().domain(data.map(d => d.value)).range([m.l, w - m.r]).padding(0.2)
-  const y = d3.scaleLinear().domain([0, d3.max(data, d => d.count) || 1]).nice().range([h - m.b, m.t])
-  const color = {
-    FETCHED: '#e85d04', UNFETCHED: '#a8a29e', ERROR: '#b91c1c', FILTERED: '#78716c'
-  }
-  svg.append('g').attr('transform', `translate(0,${h - m.b})`).call(d3.axisBottom(x)).selectAll('text')
-    .style('font-size', '11px')
-  svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4)).selectAll('text')
-    .style('font-size', '11px')
-  svg.selectAll('rect').data(data).enter().append('rect')
-    .attr('x', d => x(d.value)).attr('y', d => y(d.count))
-    .attr('width', x.bandwidth()).attr('height', d => y(0) - y(d.count))
-    .attr('fill', d => color[d.value] || '#e85d04')
+const SPARK = ['#e85d04', '#f48c06', '#dc2f02', '#9a3412', '#fb923c', '#7c2d12', '#fdba74', '#c2410c']
+
+export function paint(fn) {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    try { fn() } catch (err) { console.error('chart', err) }
+  }))
 }
 
-export function hostBars(el, items) {
-  const root = d3.select(el)
-  root.selectAll('*').remove()
-  const data = [...(items || [])].sort((a, b) => b.count - a.count).slice(0, 12)
+function clear(el) {
+  d3.select(el).selectAll('*').remove()
+}
+
+function width(el, fallback = 640) {
+  return Math.max(220, (el && el.clientWidth) || fallback)
+}
+
+let tip
+function ensureTip() {
+  if (!tip) {
+    tip = d3.select('body').append('div').attr('class', 'spark-tip')
+  }
+  return tip
+}
+
+export function showTip(html, ev) {
+  const node = ensureTip()
+  node.html(html).style('display', 'block')
+  moveTip(ev)
+}
+
+export function moveTip(ev) {
+  if (!tip) return
+  const pad = 14
+  const tw = tip.node().offsetWidth || 160
+  const th = tip.node().offsetHeight || 40
+  let x = ev.clientX + pad
+  let y = ev.clientY + pad
+  if (x + tw > window.innerWidth - 8) x = ev.clientX - tw - 8
+  if (y + th > window.innerHeight - 8) y = ev.clientY - th - 8
+  tip.style('left', x + 'px').style('top', y + 'px')
+}
+
+export function hideTip() {
+  if (tip) tip.style('display', 'none')
+}
+
+function bindTip(sel, htmlFn) {
+  sel
+    .on('pointerenter', (ev, d) => showTip(htmlFn(d), ev))
+    .on('pointermove', ev => moveTip(ev))
+    .on('pointerleave', hideTip)
+}
+
+function rowsOf(items) {
+  return (items || []).filter(d => d && d.count > 0)
+}
+
+export function donut(el, items, { title = '' } = {}) {
+  if (!el) return
+  clear(el)
+  const data = rowsOf(items)
   if (!data.length) return
-  const w = el.clientWidth || 640
-  const h = Math.max(160, data.length * 22 + 20)
-  const m = { t: 8, r: 16, b: 8, l: 140 }
-  const svg = root.append('svg').attr('width', w).attr('height', h)
-  const y = d3.scaleBand().domain(data.map(d => d.value)).range([m.t, h - m.b]).padding(0.15)
-  const x = d3.scaleLinear().domain([0, d3.max(data, d => d.count) || 1]).range([m.l, w - m.r])
-  svg.selectAll('rect').data(data).enter().append('rect')
-    .attr('x', m.l).attr('y', d => y(d.value))
-    .attr('width', d => x(d.count) - m.l).attr('height', y.bandwidth())
+  const total = d3.sum(data, d => d.count) || 1
+  const w = width(el)
+  const h = Math.min(280, Math.max(200, w * 0.55))
+  const r = Math.min(w, h) / 2 - 10
+  const svg = d3.select(el).append('svg').attr('width', w).attr('height', h)
+  const g = svg.append('g').attr('transform', `translate(${w / 2},${h / 2})`)
+  const pie = d3.pie().value(d => d.count).sort(null)
+  const arc = d3.arc().innerRadius(r * 0.52).outerRadius(r)
+  const color = d3.scaleOrdinal(SPARK)
+  const slices = g.selectAll('path').data(pie(data)).enter().append('path')
+    .attr('d', arc)
+    .attr('fill', d => color(d.data.value))
+    .attr('stroke', '#fffdf9')
+    .attr('stroke-width', 1.5)
+  bindTip(slices, d => {
+    const row = d.data
+    const pct = ((100 * row.count) / total).toFixed(1)
+    return `<strong>${row.value}</strong><br>${row.count} · ${pct}% of ${total}`
+  })
+  g.append('text').attr('text-anchor', 'middle').attr('dy', '0.35em')
+    .style('font-size', '0.85rem').style('fill', '#78716c').text(title || `${total}`)
+}
+
+export function areaChart(el, series) {
+  if (!el) return
+  clear(el)
+  const data = (series || []).map((d, i) => ({ ...d, i }))
+  if (data.length < 2) return
+  const w = width(el, 720)
+  const h = 180
+  const m = { t: 12, r: 16, b: 36, l: 36 }
+  const svg = d3.select(el).append('svg').attr('width', w).attr('height', h)
+  const x = d3.scalePoint().domain(data.map(d => d.t)).range([m.l, w - m.r])
+  const y = d3.scaleLinear().domain([0, d3.max(data, d => d.n) || 1]).nice().range([h - m.b, m.t])
+  const line = d3.line().x(d => x(d.t)).y(d => y(d.n)).curve(d3.curveMonotoneX)
+  const area = d3.area().x(d => x(d.t)).y0(h - m.b).y1(d => y(d.n)).curve(d3.curveMonotoneX)
+  svg.append('path').datum(data).attr('d', area).attr('fill', '#fed7aa').attr('opacity', 0.9)
+  svg.append('path').datum(data).attr('d', line).attr('fill', 'none').attr('stroke', '#e85d04').attr('stroke-width', 2)
+  const ticks = data.filter((_, i) => i % Math.ceil(data.length / 7) === 0)
+  svg.append('g').attr('transform', `translate(0,${h - m.b})`)
+    .call(d3.axisBottom(x).tickValues(ticks.map(d => d.t)))
+    .selectAll('text').style('font-size', '10px').attr('transform', 'rotate(-30)').style('text-anchor', 'end')
+  svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4))
+    .selectAll('text').style('font-size', '10px')
+  const dots = svg.selectAll('circle').data(data).enter().append('circle')
+    .attr('cx', d => x(d.t)).attr('cy', d => y(d.n)).attr('r', 3.5).attr('fill', '#c2410c')
+  bindTip(dots, d => `<strong>${d.t}</strong><br>${d.n} pages fetched`)
+}
+
+export function heatMap(el, spec) {
+  if (!el) return
+  clear(el)
+  const xs = spec.x || []
+  const ys = spec.y || []
+  const cells = spec.cells || []
+  if (!xs.length || !ys.length || !cells.length) return
+  const w = width(el, 720)
+  const m = { t: 10, r: 12, b: 52, l: 44 }
+  const h = m.t + m.b + Math.max(28, 26 * ys.length)
+  const svg = d3.select(el).append('svg').attr('width', w).attr('height', h)
+  const x = d3.scaleBand().domain(xs).range([m.l, w - m.r]).padding(0.06)
+  const y = d3.scaleBand().domain(ys).range([m.t, h - m.b]).padding(0.1)
+  const maxN = d3.max(cells, d => d.n) || 1
+  const color = d3.scaleSequential(d3.interpolateYlOrRd).domain([0, maxN])
+  const by = new Map(cells.map(d => [`${d.x}\t${d.y}`, d.n]))
+  const rects = []
+  ys.forEach(yi => {
+    xs.forEach(xi => {
+      rects.push({ x: xi, y: yi, n: by.get(`${xi}\t${yi}`) || 0 })
+    })
+  })
+  const sel = svg.selectAll('rect.cell').data(rects).enter().append('rect')
+    .attr('class', 'cell')
+    .attr('x', d => x(d.x)).attr('y', d => y(d.y))
+    .attr('width', Math.max(1, x.bandwidth())).attr('height', Math.max(1, y.bandwidth()))
+    .attr('rx', 2)
+    .attr('fill', d => d.n ? color(d.n) : '#f5f2ec')
+  bindTip(sel, d => `<strong>${d.x}</strong><br>depth ${d.y}<br><em>${d.n} pages</em>`)
+  const tickEvery = Math.max(1, Math.ceil(xs.length / 8))
+  svg.append('g').attr('transform', `translate(0,${h - m.b})`)
+    .call(d3.axisBottom(x).tickValues(xs.filter((_, i) => i % tickEvery === 0)))
+    .selectAll('text').style('font-size', '10px').attr('transform', 'rotate(-35)').style('text-anchor', 'end')
+  svg.append('g').attr('transform', `translate(${m.l},0)`)
+    .call(d3.axisLeft(y).tickSize(0))
+    .selectAll('text').style('font-size', '10px')
+}
+
+export function bubblePack(el, items) {
+  if (!el) return
+  clear(el)
+  const data = rowsOf(items).slice(0, 24)
+  if (!data.length) return
+  const w = width(el)
+  const h = Math.max(220, Math.min(360, 80 + data.length * 14))
+  const root = d3.hierarchy({ children: data }).sum(d => d.count).sort((a, b) => b.value - a.value)
+  d3.pack().size([w - 8, h - 8]).padding(3)(root)
+  const color = d3.scaleOrdinal(SPARK)
+  const svg = d3.select(el).append('svg').attr('width', w).attr('height', h)
+  const g = svg.append('g').attr('transform', 'translate(4,4)')
+  const node = g.selectAll('g').data(root.leaves()).enter().append('g')
+    .attr('transform', d => `translate(${d.x},${d.y})`)
+  const circles = node.append('circle').attr('r', d => d.r).attr('fill', d => color(d.data.value)).attr('opacity', 0.92)
+  bindTip(circles, d => `<strong>${d.data.value}</strong><br>${d.data.count} pages`)
+  node.append('text')
+    .attr('text-anchor', 'middle').attr('dy', '0.35em')
+    .style('font-size', d => `${Math.max(8, Math.min(13, d.r / 3))}px`)
+    .style('fill', '#fff8f3')
+    .style('pointer-events', 'none')
+    .text(d => d.r > 16 ? String(d.data.value).slice(0, 14) : '')
+}
+
+export function treeMap(el, items) {
+  if (!el) return
+  clear(el)
+  const data = rowsOf(items).slice(0, 24)
+  if (!data.length) return
+  const w = width(el, 720)
+  const h = 260
+  const root = d3.hierarchy({ children: data }).sum(d => d.count).sort((a, b) => b.value - a.value)
+  d3.treemap().size([w, h]).paddingInner(3).round(true)(root)
+  const color = d3.scaleOrdinal(SPARK)
+  const svg = d3.select(el).append('svg').attr('width', w).attr('height', h)
+  const node = svg.selectAll('g').data(root.leaves()).enter().append('g')
+    .attr('transform', d => `translate(${d.x0},${d.y0})`)
+  const rects = node.append('rect')
+    .attr('width', d => Math.max(0, d.x1 - d.x0))
+    .attr('height', d => Math.max(0, d.y1 - d.y0))
+    .attr('fill', d => color(d.data.value))
+    .attr('rx', 3)
+  bindTip(rects, d => `<strong>${d.data.value}</strong><br>on ${d.data.count} pages`)
+  node.append('text')
+    .attr('x', 6).attr('y', 16)
+    .style('font-size', '11px').style('fill', '#fff8f3').style('pointer-events', 'none')
+    .text(d => (d.x1 - d.x0) > 48 && (d.y1 - d.y0) > 18 ? String(d.data.value) : '')
+}
+
+export function histogram(el, items) {
+  if (!el) return
+  clear(el)
+  const data = rowsOf(items)
+  if (!data.length) return
+  const w = width(el)
+  const h = 200
+  const m = { t: 10, r: 12, b: 40, l: 36 }
+  const svg = d3.select(el).append('svg').attr('width', w).attr('height', h)
+  const x = d3.scaleBand().domain(data.map(d => d.value)).range([m.l, w - m.r]).padding(0.18)
+  const y = d3.scaleLinear().domain([0, d3.max(data, d => d.count) || 1]).nice().range([h - m.b, m.t])
+  svg.append('g').attr('transform', `translate(0,${h - m.b})`)
+    .call(d3.axisBottom(x)).selectAll('text').style('font-size', '10px')
+    .attr('transform', 'rotate(-25)').style('text-anchor', 'end')
+  svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4))
+    .selectAll('text').style('font-size', '10px')
+  const bars = svg.selectAll('rect').data(data).enter().append('rect')
+    .attr('x', d => x(d.value)).attr('y', d => y(d.count))
+    .attr('width', x.bandwidth()).attr('height', d => y(0) - y(d.count))
     .attr('fill', '#e85d04')
-  svg.selectAll('text.host').data(data).enter().append('text')
-    .attr('class', 'host')
-    .attr('x', m.l - 8).attr('y', d => y(d.value) + y.bandwidth() / 2)
-    .attr('text-anchor', 'end').attr('dominant-baseline', 'middle')
-    .style('font-size', '11px').text(d => d.value)
-  svg.selectAll('text.n').data(data).enter().append('text')
-    .attr('class', 'n')
-    .attr('x', d => x(d.count) + 4).attr('y', d => y(d.value) + y.bandwidth() / 2)
-    .attr('dominant-baseline', 'middle').style('font-size', '11px')
-    .text(d => d.count)
+  bindTip(bars, d => `<strong>${d.value}</strong><br>${d.count} pages`)
 }
