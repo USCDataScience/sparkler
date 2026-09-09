@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Sparkler">
+  <!-- Ember in a crawl orbit: the spark is the fetch, the nodes are the frontier. -->
+  <rect width="32" height="32" rx="7.2" fill="#1c1917"/>
+  <circle cx="16" cy="16" r="10.4" fill="none" stroke="#9a3412" stroke-width="1.2"/>
+  <circle cx="5.6" cy="16" r="1.45" fill="#c2410c"/>
+  <circle cx="8.7" cy="23.5" r="1.45" fill="#c2410c"/>
+  <circle cx="26.4" cy="16" r="1.45" fill="#c2410c"/>
+  <circle cx="23.3" cy="8.5" r="1.55" fill="#e85d04"/>
+  <path fill="#e85d04" d="M16.00,6.80 L17.28,12.91 L22.51,9.49 L19.09,14.72 L25.20,16.00 L19.09,17.28 L22.51,22.51 L17.28,19.09 L16.00,25.20 L14.72,19.09 L9.49,22.51 L12.91,17.28 L6.80,16.00 L12.91,14.72 L9.49,9.49 L14.72,12.91 Z"/>
+  <circle cx="16" cy="16" r="1.15" fill="#fff7ed"/>
+</svg>

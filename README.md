@@ -1,12 +1,21 @@
 Sparkler
 ========
 
+<p align="center">
+  <img src="web/public/sparkler-mark.png" width="128" height="128" alt="Sparkler mark: an ember spark inside a crawl orbit."/>
+</p>
+
 A crawl workstation: **View**, **Control**, and **Crawl**.
 
 Inject seeds. Fetch politely. Parse with Tika. Store the frontier and pages
 in a Solr CrawlDB. Label pages relevant / not / highly so the next generate
 pass prefers the right hosts. A Vue 3 UI is the View; FastAPI is Control;
 the Python fetch loop is Crawl.
+
+The mark is an ember in a crawl orbit — the spark is the page being fetched,
+the nodes on the ring are the frontier. Compass-rose geometry for navigating
+the web (search, Tika, Solr), not a campus seal. Named as Spark-Crawler;
+this tree still crawls, it just does it as a single workstation.
 
 No Docker. No Spark. No Elasticsearch. No ArangoDB.
 
