@@ -8,31 +8,47 @@ from urllib.parse import urldefrag, urljoin, urlparse, urlunparse
 _SCHEME = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.-]*://")
 
 
+def _parse(url: str):
+    try:
+        return urlparse(url)
+    except ValueError:
+        return None
+
+
 def normalize(url: str, base: str | None = None) -> str | None:
     raw = (url or "").strip()
-    if not raw or raw.startswith(("#", "javascript:", "mailto:", "data:")):
+    if not raw or raw.startswith(("#", "javascript:", "mailto:", "data:", "tel:", "sms:")):
         return None
     if base:
         raw = urljoin(base, raw)
     if not _SCHEME.match(raw):
         raw = "https://" + raw
     raw, _frag = urldefrag(raw)
-    p = urlparse(raw)
-    if p.scheme not in ("http", "https") or not p.netloc:
+    p = _parse(raw)
+    if p is None or p.scheme not in ("http", "https") or not p.netloc:
         return None
-    host = p.hostname.lower() if p.hostname else ""
+    try:
+        host = p.hostname.lower() if p.hostname else ""
+        port = p.port
+    except ValueError:
+        return None
     if not host:
         return None
     netloc = host
-    if p.port and p.port not in (80, 443):
-        netloc = f"{host}:{p.port}"
+    if port and port not in (80, 443):
+        netloc = f"{host}:{port}"
     path = p.path or "/"
     return urlunparse((p.scheme.lower(), netloc, path, "", p.query, ""))
 
 
 def hostname(url: str) -> str:
-    p = urlparse(url)
-    return (p.hostname or "").lower()
+    p = _parse(url)
+    if p is None:
+        return ""
+    try:
+        return (p.hostname or "").lower()
+    except ValueError:
+        return ""
 
 
 def host_key(url: str) -> str:

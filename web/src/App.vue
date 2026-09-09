@@ -39,6 +39,10 @@
              class="tip" data-tip="How many fetch batches to run. Each batch is up to 50 URLs."/>
       <button :disabled="!job || running" @click="startCrawl">{{ running ? 'Crawling…' : 'Crawl' }}</button>
       <button class="ghost" :disabled="!job" @click="download">Export</button>
+      <button class="ghost danger tip" :disabled="!job || running" data-tip="Delete this job’s seeds, labels, and Solr pages. Other jobs stay."
+              @click="clearJob()">Clear job</button>
+      <button class="ghost danger tip" :disabled="running" data-tip="Empty the whole CrawlDB and every job."
+              @click="clearAll">Clear all</button>
       <span v-if="run.url" class="hint">{{ run.url }}</span>
     </section>
 
@@ -46,18 +50,21 @@
       <div><strong>{{ stats.total || 0 }}</strong> urls</div>
       <div><strong>{{ fetched }}</strong> fetched</div>
       <div><strong>{{ unfetched }}</strong> frontier</div>
+      <div><strong>{{ filtered }}</strong> filtered</div>
       <div><strong>{{ errors }}</strong> errors</div>
       <div><strong>{{ (stats.seeds || []).length }}</strong> seeds</div>
+      <div><strong>{{ (facets.hostname || []).length }}</strong> hosts</div>
+      <div v-if="topMime"><strong>{{ topMime }}</strong> top MIME</div>
     </section>
 
     <main>
       <div v-if="error" class="err">{{ error }}</div>
-      <JobsView v-if="view === 'jobs'" :jobs="jobs" @open="openJob"/>
-      <SeedsView v-else-if="view === 'seeds'" :seeds="(stats && stats.seeds) || []"/>
+      <JobsView v-if="view === 'jobs'" :jobs="jobs" @open="openJob" @clear="id => clearJob(id)"/>
+      <SeedsView v-else-if="view === 'seeds'" :seeds="(stats && stats.seeds) || []" @open="openSeed"/>
       <DocumentsView v-else-if="view === 'docs'" :documents="documents" :num="numFound"
                      :job="job" :q="q" @search="onSearch" @label="onLabel" @more="moreDocs"/>
       <FrontierView v-else-if="view === 'frontier'" :documents="frontier" :num="frontierN"/>
-      <StatsView v-else-if="view === 'stats'" :facets="facets"/>
+      <StatsView v-else-if="view === 'stats'" :job="job" :facets="facets"/>
     </main>
   </div>
 </template>
@@ -102,7 +109,14 @@ const facets = computed(() => (stats.value && stats.value.facets) || {})
 const fetched = computed(() => countOf('FETCHED'))
 const unfetched = computed(() => countOf('UNFETCHED'))
 const errors = computed(() => countOf('ERROR'))
+const filtered = computed(() => countOf('FILTERED'))
 const running = computed(() => run.value.state === 'running')
+const topMime = computed(() => {
+  const list = [...(facets.value.content_type || [])].sort((a, b) => b.count - a.count)
+  if (!list.length) return ''
+  const v = list[0].value || ''
+  return v.split(';')[0]
+})
 
 function countOf(status) {
   const list = (facets.value.status || [])
@@ -116,18 +130,25 @@ async function loadJobs() {
   if (!job.value && jobs.value.length) job.value = jobs.value[0].id
 }
 
+async function refreshCounts() {
+  await loadJobs()
+  if (!job.value) {
+    stats.value = null
+    return
+  }
+  stats.value = await get(`/api/jobs/${encodeURIComponent(job.value)}/stats`)
+  run.value = stats.value.run || {}
+}
+
 async function reload() {
   error.value = ''
   try {
-    await loadJobs()
+    await refreshCounts()
     if (!job.value) {
-      stats.value = null
       documents.value = []
       frontier.value = []
       return
     }
-    stats.value = await get(`/api/jobs/${encodeURIComponent(job.value)}/stats`)
-    run.value = stats.value.run || {}
     start.value = 0
     await loadDocs()
     const fr = await get(`/api/jobs/${encodeURIComponent(job.value)}/frontier?rows=50`)
@@ -155,6 +176,13 @@ function moreDocs() {
 
 function onSearch(text) {
   q.value = text
+  start.value = 0
+  loadDocs()
+}
+
+function openSeed(url) {
+  q.value = url
+  view.value = 'docs'
   start.value = 0
   loadDocs()
 }
@@ -212,12 +240,33 @@ function download() {
   window.location = exportUrl(job.value)
 }
 
+async function clearJob(id) {
+  const target = typeof id === 'string' && id ? id : job.value
+  if (!target || running.value) return
+  if (!confirm(`Delete job “${target}” and its catalog pages?`)) return
+  try {
+    await send(`/api/jobs/${encodeURIComponent(target)}`, 'DELETE')
+    if (job.value === target) job.value = ''
+    await reload()
+  } catch (e) { error.value = e.message }
+}
+
+async function clearAll() {
+  if (running.value) return
+  if (!confirm('Delete every job and empty the Solr catalog?')) return
+  try {
+    await send('/api/catalog', 'DELETE')
+    job.value = ''
+    await reload()
+  } catch (e) { error.value = e.message }
+}
+
 function poll() {
   if (timer) clearInterval(timer)
   timer = setInterval(async () => {
     if (!job.value) return
     try {
-      run.value = await get(`/api/jobs/${encodeURIComponent(job.value)}/run`)
+      await refreshCounts()
       if (run.value.state !== 'running') {
         clearInterval(timer)
         timer = null
@@ -229,10 +278,11 @@ function poll() {
 
 watch(view, () => { if (job.value) reload() })
 
-onMounted(() => {
+onMounted(async () => {
   const u = new URL(location.href)
   if (u.searchParams.get('job')) job.value = u.searchParams.get('job')
-  reload()
+  await reload()
+  if (running.value) poll()
 })
 onUnmounted(() => { if (timer) clearInterval(timer) })
 </script>

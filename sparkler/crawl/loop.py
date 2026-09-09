@@ -223,6 +223,27 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
             if to_add:
                 db.add(to_add, commit=True)
                 stats["injected"] += len(to_add)
+        if same_host and seed_hosts:
+            leftovers = db.docs(
+                q=job_query(crawl_id, "status:UNFETCHED"),
+                rows=20000,
+                fl="id,url,hostname,parent,seed,group",
+            )
+            drop = []
+            for rec in leftovers:
+                if ufilter.allow(rec["url"], parent=rec.get("parent")):
+                    continue
+                drop.append(stamp({
+                    "id": rec["id"],
+                    "url": rec["url"],
+                    "crawl_id": crawl_id,
+                    "group": rec.get("group") or group_of(rec["url"]),
+                    "hostname": hostname(rec["url"]),
+                    "status": "FILTERED",
+                }))
+            if drop:
+                db.add(drop, commit=True)
+                stats["filtered"] += len(drop)
     finally:
         fetcher.close()
         db.close()

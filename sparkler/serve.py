@@ -15,6 +15,7 @@ from . import config
 from . import solr_server
 from .control import store
 from .control import score as scorer
+from .control import charts as chartlib
 from .crawl.loop import crawl as run_crawl
 from .crawl.loop import inject
 from .crawl.urls import doc_id, normalize
@@ -106,10 +107,25 @@ def create_job(body: JobIn):
 
 @app.delete("/api/jobs/{job_id}")
 def drop_job(job_id: str):
+    if (_runs.get(job_id) or {}).get("state") == "running":
+        raise HTTPException(409, "crawl running")
     db = _db()
     db.delete_job(job_id)
     db.close()
     store.delete_job(job_id)
+    _runs.pop(job_id, None)
+    return {"ok": True}
+
+
+@app.delete("/api/catalog")
+def drop_catalog():
+    if any((r or {}).get("state") == "running" for r in _runs.values()):
+        raise HTTPException(409, "crawl running")
+    db = _db()
+    db.delete_all()
+    db.close()
+    store.reset_all()
+    _runs.clear()
     return {"ok": True}
 
 
@@ -117,22 +133,53 @@ def drop_job(job_id: str):
 def job_stats(job_id: str):
     db = _db()
     q = job_query(job_id)
-    fac = db.facets(q=q, fields=("status", "hostname", "label", "discover_depth"))
+    fac = db.facets(
+        q=q,
+        fields=("status", "hostname", "label", "discover_depth", "content_type"),
+    )
     db.close()
     run = _runs.get(job_id) or {}
+    seeds = store.seeds(job_id)
+    counts = {x["value"]: x["count"] for x in fac.get("status", [])}
     return {
         "id": job_id,
-        "seeds": store.seeds(job_id),
+        "seeds": seeds,
         "labels": store.labels(job_id),
         "facets": fac,
         "total": fac.get("numFound", 0),
+        "fetched": counts.get("FETCHED", 0),
+        "unfetched": counts.get("UNFETCHED", 0),
+        "errors": counts.get("ERROR", 0),
+        "filtered": counts.get("FILTERED", 0),
+        "seed_n": len(seeds),
+        "hosts": len(fac.get("hostname") or []),
         "run": {k: v for k, v in run.items() if k != "thread"},
     }
 
 
+@app.get("/api/jobs/{job_id}/charts")
+def job_charts(job_id: str):
+    db = _db()
+    q = job_query(job_id, "status:FETCHED")
+    data = db.select(
+        q=q,
+        rows=5000,
+        fl="fetch_timestamp,discover_depth,content_type,response_time,tika_metadata,hostname",
+    )
+    db.close()
+    docs = data.get("response", {}).get("docs", [])
+    payload = chartlib.from_solr_docs(docs)
+    payload["numFound"] = data.get("response", {}).get("numFound", 0)
+    return payload
+
+
 @app.get("/api/jobs/{job_id}/seeds")
-def get_seeds(job_id: str):
-    return {"seeds": store.seeds(job_id)}
+def get_seeds(job_id: str, q: Optional[str] = None):
+    seeds = store.seeds(job_id)
+    if q:
+        needle = q.lower()
+        seeds = [s for s in seeds if needle in s.lower()]
+    return {"seeds": seeds, "total": len(store.seeds(job_id))}
 
 
 @app.post("/api/jobs/{job_id}/seeds")
