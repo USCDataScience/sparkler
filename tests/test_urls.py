@@ -1,10 +1,26 @@
 import unittest
-from sparkler.crawl.urls import contenthash, doc_id, group_of, host_key, hostname, normalize
+from sparkler.crawl.urls import (
+    contenthash, doc_id, group_of, host_key, hostname, normalize, page_family, same_page_family,
+)
 
 
 class UrlTests(unittest.TestCase):
     def test_normalize_strips_fragment(self):
         self.assertEqual(normalize("https://Example.com/a#x"), "https://example.com/a")
+
+    def test_canonical_www_https(self):
+        self.assertEqual(normalize("http://www.mattmann.ai/about/"), "https://mattmann.ai/about")
+        self.assertEqual(
+            doc_id("mai", "http://www.mattmann.ai/about"),
+            doc_id("mai", "https://mattmann.ai/about/"),
+        )
+
+    def test_pagination_same_family(self):
+        a = "https://mattmann.ai/blog"
+        b = "https://www.mattmann.ai/blog?e-page-48118d4=2"
+        self.assertEqual(page_family(a), page_family(b))
+        self.assertTrue(same_page_family(normalize(b), normalize(a)))
+        self.assertFalse(same_page_family("https://mattmann.ai/about", a))
 
     def test_normalize_rejects_mailto(self):
         self.assertIsNone(normalize("mailto:a@b.com"))

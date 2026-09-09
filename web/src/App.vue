@@ -37,13 +37,20 @@
       </label>
       <input v-if="!untilDone" v-model.number="iterations" type="number" min="1" max="500" style="width:4.5rem"
              class="tip" data-tip="How many fetch batches to run. Each batch is up to 50 URLs."/>
-      <button :disabled="!job || running" @click="startCrawl">{{ running ? 'Crawling…' : 'Crawl' }}</button>
+      <button v-if="!running" :disabled="!job" @click="startCrawl">Crawl</button>
+      <button v-else class="danger-fill" @click="stopCrawl">{{ run.state === 'stopping' ? 'Stopping…' : 'Stop' }}</button>
       <button class="ghost" :disabled="!job" @click="download">Export</button>
       <button class="ghost danger tip" :disabled="!job || running" data-tip="Delete this job’s seeds, labels, and Solr pages. Other jobs stay."
               @click="clearJob()">Clear job</button>
       <button class="ghost danger tip" :disabled="running" data-tip="Empty the whole CrawlDB and every job."
               @click="clearAll">Clear all</button>
       <span v-if="run.url" class="hint">{{ run.url }}</span>
+    </section>
+
+    <section class="chips" v-if="filterChips.length">
+      <span class="hint">Documents filter</span>
+      <button v-for="c in filterChips" :key="c.key" class="chip" @click="clearOneFilter(c.key)">{{ c.label }} ×</button>
+      <button class="ghost" @click="clearDocFilter">Clear filters</button>
     </section>
 
     <section class="stats" v-if="stats">
@@ -64,7 +71,7 @@
       <DocumentsView v-else-if="view === 'docs'" :documents="documents" :num="numFound"
                      :job="job" :q="q" @search="onSearch" @label="onLabel" @more="moreDocs"/>
       <FrontierView v-else-if="view === 'frontier'" :documents="frontier" :num="frontierN"/>
-      <StatsView v-else-if="view === 'stats'" :job="job" :facets="facets"/>
+      <StatsView v-else-if="view === 'stats'" :job="job" :facets="facets" :on-filter="onStatFilter"/>
     </main>
   </div>
 </template>
@@ -110,7 +117,18 @@ const fetched = computed(() => countOf('FETCHED'))
 const unfetched = computed(() => countOf('UNFETCHED'))
 const errors = computed(() => countOf('ERROR'))
 const filtered = computed(() => countOf('FILTERED'))
-const running = computed(() => run.value.state === 'running')
+const running = computed(() => run.value.state === 'running' || run.value.state === 'stopping')
+const docFilter = ref({})
+const filterChips = computed(() => {
+  const f = docFilter.value || {}
+  const out = []
+  if (q.value) out.push({ key: 'q', label: `q:${q.value}` })
+  if (f.status) out.push({ key: 'status', label: f.status })
+  if (f.hostname) out.push({ key: 'hostname', label: f.hostname })
+  if (f.content_type) out.push({ key: 'content_type', label: f.content_type })
+  if (f.depth) out.push({ key: 'depth', label: `depth ${f.depth}` })
+  return out
+})
 const topMime = computed(() => {
   const list = [...(facets.value.content_type || [])].sort((a, b) => b.count - a.count)
   if (!list.length) return ''
@@ -163,6 +181,11 @@ async function loadDocs() {
   if (!job.value) return
   const params = new URLSearchParams({ start: String(start.value), rows: '25' })
   if (q.value) params.set('q', q.value)
+  const f = docFilter.value || {}
+  if (f.status) params.set('status', f.status)
+  if (f.hostname) params.set('hostname', f.hostname)
+  if (f.content_type) params.set('content_type', f.content_type)
+  if (f.depth) params.set('depth', f.depth)
   const data = await get(`/api/jobs/${encodeURIComponent(job.value)}/documents?${params}`)
   if (start.value === 0) documents.value = data.documents || []
   else documents.value = documents.value.concat(data.documents || [])
@@ -182,7 +205,40 @@ function onSearch(text) {
 
 function openSeed(url) {
   q.value = url
+  docFilter.value = {}
   view.value = 'docs'
+  start.value = 0
+  loadDocs()
+}
+
+function onStatFilter(f) {
+  hideTipSafe()
+  q.value = f.q || ''
+  docFilter.value = {
+    status: f.status || '',
+    hostname: f.hostname || '',
+    content_type: f.content_type || '',
+    depth: f.depth || ''
+  }
+  view.value = 'docs'
+  start.value = 0
+  loadDocs()
+}
+
+function hideTipSafe() {
+  document.querySelectorAll('.spark-tip').forEach(n => { n.style.display = 'none' })
+}
+
+function clearDocFilter() {
+  q.value = ''
+  docFilter.value = {}
+  start.value = 0
+  loadDocs()
+}
+
+function clearOneFilter(key) {
+  if (key === 'q') q.value = ''
+  else docFilter.value = { ...docFilter.value, [key]: '' }
   start.value = 0
   loadDocs()
 }
@@ -219,6 +275,14 @@ async function startCrawl() {
       same_host: sameHost.value,
       max_depth: depth === '' || depth == null ? -1 : Number(depth)
     })
+    poll()
+  } catch (e) { error.value = e.message }
+}
+
+async function stopCrawl() {
+  if (!job.value) return
+  try {
+    await send(`/api/jobs/${encodeURIComponent(job.value)}/stop`, 'POST')
     poll()
   } catch (e) { error.value = e.message }
 }
@@ -267,7 +331,7 @@ function poll() {
     if (!job.value) return
     try {
       await refreshCounts()
-      if (run.value.state !== 'running') {
+      if (run.value.state !== 'running' && run.value.state !== 'stopping') {
         clearInterval(timer)
         timer = null
         await reload()

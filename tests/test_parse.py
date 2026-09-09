@@ -1,5 +1,5 @@
 import unittest
-from sparkler.crawl.parse import clean_metadata, html_links, md_field, solr_md_fields
+from sparkler.crawl.parse import _merge_links, clean_metadata, html_links, md_field, solr_md_fields
 
 
 class ParseTests(unittest.TestCase):
@@ -13,6 +13,13 @@ class ParseTests(unittest.TestCase):
         self.assertIn("https://example.com/a", links)
         self.assertTrue(all(not u.startswith("mailto:") for u in links))
         self.assertIn("n", text)
+
+    def test_merge_tika_and_html_links(self):
+        a = _merge_links(
+            ["https://example.com/a"],
+            ["https://example.com/a", "https://example.com/from-pdf"],
+        )
+        self.assertEqual(a, ["https://example.com/a", "https://example.com/from-pdf"])
 
     def test_tika_keys_flatten(self):
         md = clean_metadata({

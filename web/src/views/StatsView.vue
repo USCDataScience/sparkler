@@ -71,7 +71,8 @@ import { areaChart, bubblePack, donut, heatMap, histogram, paint, treeMap } from
 
 const props = defineProps({
   job: { type: String, default: '' },
-  facets: { type: Object, default: () => ({}) }
+  facets: { type: Object, default: () => ({}) },
+  onFilter: { type: Function, default: null }
 })
 const charts = ref(null)
 const err = ref('')
@@ -122,13 +123,16 @@ async function load() {
 
 function draw() {
   paint(() => {
-    if (heatEl.value && charts.value?.heatmap) heatMap(heatEl.value, charts.value.heatmap)
+    const emit = (f) => props.onFilter && props.onFilter(f)
+    if (heatEl.value && charts.value?.heatmap) {
+      heatMap(heatEl.value, charts.value.heatmap, { onClick: d => emit({ depth: d.y }) })
+    }
     if (areaEl.value) areaChart(areaEl.value, charts.value?.heatmap?.series || [])
-    if (statusEl.value) donut(statusEl.value, props.facets.status || [], { title: 'status' })
-    if (mimeEl.value) donut(mimeEl.value, tika.value.tika_type || tika.value.mime || [], { title: 'MIME' })
-    if (hostEl.value) bubblePack(hostEl.value, props.facets.hostname || [])
-    if (keysEl.value) treeMap(keysEl.value, tika.value.tika_keys || [])
-    if (langEl.value) donut(langEl.value, tika.value.language || [], { title: 'lang' })
+    if (statusEl.value) donut(statusEl.value, props.facets.status || [], { title: 'status', onClick: d => emit({ status: d.value }) })
+    if (mimeEl.value) donut(mimeEl.value, tika.value.tika_type || tika.value.mime || [], { title: 'MIME', onClick: d => emit({ content_type: d.value }) })
+    if (hostEl.value) bubblePack(hostEl.value, props.facets.hostname || [], { onClick: d => emit({ hostname: d.value }) })
+    if (keysEl.value) treeMap(keysEl.value, tika.value.tika_keys || [], { onClick: d => emit({ q: d.value }) })
+    if (langEl.value) donut(langEl.value, tika.value.language || [], { title: 'lang', onClick: d => emit({ q: d.value }) })
     if (encEl.value) donut(encEl.value, tika.value.encoding || [], { title: 'enc' })
     if (parserEl.value) bubblePack(parserEl.value, tika.value.parsers || [])
     if (rtEl.value) histogram(rtEl.value, tika.value.response_hist || [])

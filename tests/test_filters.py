@@ -15,6 +15,11 @@ class FilterTests(unittest.TestCase):
         self.assertFalse(f.allow("https://example.com/a.png"))
         self.assertFalse(f.allow("https://example.com/a.CSS"))
 
+    def test_allows_pdf_and_office(self):
+        f = URLFilter()
+        self.assertTrue(f.allow("https://example.com/paper.pdf"))
+        self.assertTrue(f.allow("https://example.com/talk.pptx"))
+
     def test_same_host(self):
         f = URLFilter(same_host=True, seed_hosts=["example.com"])
         self.assertTrue(f.allow("https://example.com/b"))

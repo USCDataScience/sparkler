@@ -10,7 +10,10 @@ from ..solr import CrawlDB, job_query, stamp
 from . import parse as parse_mod
 from .fetch import Fetcher
 from .filters import URLFilter
-from .urls import contenthash, doc_id, group_of, host_key, host_variants, hostname, normalize
+from .urls import (
+    contenthash, doc_id, group_of, host_key, host_variants, hostname,
+    normalize, same_page_family,
+)
 
 _UNTIL_EMPTY_CAP = 500
 
@@ -98,7 +101,8 @@ def _get_text(db: CrawlDB, crawl_id: str):
 
 
 def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
-          respect_robots=True, delay_ms=None, max_depth=-1, on_progress=None) -> dict:
+          respect_robots=True, delay_ms=None, max_depth=-1, on_progress=None,
+          stop_event=None) -> dict:
     _ensure()
     store.create_job(crawl_id)
     db = CrawlDB()
@@ -123,9 +127,17 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
         "filtered": 0,
         "injected": 0,
         "iterations": 0,
+        "stopped": False,
     }
+
+    def stopped():
+        return stop_event is not None and stop_event.is_set()
+
     try:
         for it in range(limit):
+            if stopped():
+                stats["stopped"] = True
+                break
             batch = _fair_generate(db, crawl_id, topn, host_fq=host_fq, max_depth=max_depth)
             if not batch:
                 break
@@ -133,6 +145,9 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
             new_links = []
             updates = []
             for rec in batch:
+                if stopped():
+                    stats["stopped"] = True
+                    break
                 url = rec["url"]
                 if on_progress:
                     on_progress({"url": url, "iteration": it + 1, **stats})
@@ -190,12 +205,21 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
                 doc.update(parsed.get("solr_md") or {})
                 updates.append(doc)
                 stats["fetched"] += 1
-                depth = int(rec.get("discover_depth") or 0) + 1
-                if max_depth < 0 or depth <= max_depth:
-                    for link in parsed["outlinks"]:
-                        if not ufilter.allow(link, parent=url):
-                            continue
-                        new_links.append((link, url, depth))
+                parent_depth = int(rec.get("discover_depth") or 0)
+                for link in parsed["outlinks"]:
+                    if not ufilter.allow(link, parent=url):
+                        continue
+                    if same_page_family(link, url):
+                        depth = parent_depth
+                    else:
+                        depth = parent_depth + 1
+                    if max_depth >= 0 and depth > max_depth:
+                        continue
+                    new_links.append((link, url, depth))
+            if stopped():
+                if updates:
+                    db.add(updates, commit=True)
+                break
             if updates:
                 db.add(updates, commit=True)
             # inject outlinks that are new
@@ -223,7 +247,7 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
             if to_add:
                 db.add(to_add, commit=True)
                 stats["injected"] += len(to_add)
-        if same_host and seed_hosts:
+        if same_host and seed_hosts and not stats.get("stopped"):
             leftovers = db.docs(
                 q=job_query(crawl_id, "status:UNFETCHED"),
                 rows=20000,

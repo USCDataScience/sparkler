@@ -7,5 +7,5 @@
 -^javascript:
 -^data:
 -.*([?&])(sessionid|jsessionid|phpsessid)=
--.*\.(css|js|json|xml|rss|atom|ico|woff|woff2|ttf|eot|svg|png|jpe?g|gif|webp|mp[34]|wav|zip|gz|tgz|pdf)(\?.*)?$
+-.*\.(css|js|json|xml|rss|atom|ico|woff|woff2|ttf|eot|svg|png|jpe?g|gif|webp|mp[34]|wav|zip|gz|tgz)(\?.*)?$
 +.

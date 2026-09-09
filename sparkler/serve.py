@@ -31,6 +31,7 @@ app.add_middleware(
 )
 
 _runs: dict[str, dict] = {}
+_stops: dict[str, threading.Event] = {}
 _lock = threading.Lock()
 
 
@@ -87,7 +88,7 @@ def jobs():
             "errors": counts.get("ERROR", 0),
             "filtered": counts.get("FILTERED", 0),
             "seeds": len(store.seeds(j["id"])),
-            "running": _runs.get(j["id"], {}).get("state") == "running",
+            "running": _runs.get(j["id"], {}).get("state") in ("running", "stopping"),
         })
     db.close()
     return {"jobs": out}
@@ -114,6 +115,7 @@ def drop_job(job_id: str):
     db.close()
     store.delete_job(job_id)
     _runs.pop(job_id, None)
+    _stops.pop(job_id, None)
     return {"ok": True}
 
 
@@ -126,6 +128,7 @@ def drop_catalog():
     db.close()
     store.reset_all()
     _runs.clear()
+    _stops.clear()
     return {"ok": True}
 
 
@@ -195,6 +198,8 @@ def documents(
     status: Optional[str] = None,
     hostname: Optional[str] = None,
     label: Optional[str] = None,
+    content_type: Optional[str] = None,
+    depth: Optional[str] = None,
     start: int = 0,
     rows: int = 25,
 ):
@@ -203,9 +208,14 @@ def documents(
     if status:
         extra.append(f'status:"{status}"')
     if hostname:
-        extra.append(f'hostname:"{hostname}"')
+        key = hostname[4:] if hostname.startswith("www.") else hostname
+        extra.append(f'(hostname:"{key}" OR hostname:"www.{key}")')
     if label:
         extra.append(f'label:"{label}"')
+    if content_type:
+        extra.append(f'(content_type:"{content_type}" OR content_type:{content_type}*)')
+    if depth:
+        extra.append(_depth_fq(depth))
     text_q = (q or "").strip()
     inner = f"({text_q})" if text_q else ""
     data = db.select(
@@ -262,6 +272,20 @@ def page(job_id: str, url: str = Query(...)):
     return rec
 
 
+def _depth_fq(depth: str) -> str:
+    d = (depth or "").strip()
+    ranges = {
+        "4-7": "[4 TO 7]",
+        "4–7": "[4 TO 7]",
+        "8-15": "[8 TO 15]",
+        "8–15": "[8 TO 15]",
+        "16+": "[16 TO *]",
+    }
+    if d in ranges:
+        return f"discover_depth:{ranges[d]}"
+    return f'discover_depth:"{d}"'
+
+
 def _meta(raw):
     if not raw:
         return {}
@@ -299,16 +323,19 @@ def train(job_id: str):
 def start_crawl(job_id: str, body: CrawlIn):
     with _lock:
         cur = _runs.get(job_id) or {}
-        if cur.get("state") == "running":
+        if cur.get("state") in ("running", "stopping"):
             raise HTTPException(409, "crawl already running")
+        stop = threading.Event()
+        _stops[job_id] = stop
         _runs[job_id] = {"state": "running", "fetched": 0, "url": "", "error": None}
 
     def work():
         try:
             def prog(p):
                 with _lock:
+                    st = "stopping" if stop.is_set() else "running"
                     _runs[job_id].update({
-                        "state": "running",
+                        "state": st,
                         "url": p.get("url"),
                         "fetched": p.get("fetched"),
                         "iteration": p.get("iteration"),
@@ -321,9 +348,11 @@ def start_crawl(job_id: str, body: CrawlIn):
                 max_depth=body.max_depth,
                 respect_robots=not body.no_robots,
                 on_progress=prog,
+                stop_event=stop,
             )
             with _lock:
-                _runs[job_id] = {"state": "done", **stats, "error": None}
+                state = "stopped" if stats.get("stopped") else "done"
+                _runs[job_id] = {"state": state, **stats, "error": None}
         except Exception as e:
             with _lock:
                 _runs[job_id] = {"state": "error", "error": str(e)}
@@ -332,6 +361,20 @@ def start_crawl(job_id: str, body: CrawlIn):
     t.start()
     _runs[job_id]["thread"] = True
     return {"ok": True, "state": "running"}
+
+
+@app.post("/api/jobs/{job_id}/stop")
+def stop_crawl(job_id: str):
+    ev = _stops.get(job_id)
+    if not ev:
+        raise HTTPException(404, "no crawl")
+    ev.set()
+    with _lock:
+        cur = _runs.get(job_id) or {}
+        if cur.get("state") == "running":
+            cur["state"] = "stopping"
+            _runs[job_id] = cur
+    return {"ok": True, "state": "stopping"}
 
 
 @app.get("/api/jobs/{job_id}/run")
