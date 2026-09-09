@@ -1,5 +1,5 @@
 import unittest
-from sparkler.crawl.urls import contenthash, doc_id, group_of, hostname, normalize
+from sparkler.crawl.urls import contenthash, doc_id, group_of, host_key, hostname, normalize
 
 
 class UrlTests(unittest.TestCase):
@@ -22,8 +22,10 @@ class UrlTests(unittest.TestCase):
         self.assertNotEqual(a, doc_id("other", "https://example.com/"))
 
     def test_group_is_host(self):
-        self.assertEqual(group_of("https://www.bbc.com/news"), "www.bbc.com")
+        self.assertEqual(group_of("https://www.bbc.com/news"), "bbc.com")
         self.assertEqual(hostname("https://WWW.BBC.com/news"), "www.bbc.com")
+        self.assertEqual(host_key("https://www.mattmann.ai/about"), "mattmann.ai")
+        self.assertEqual(host_key("http://mattmann.ai/"), "mattmann.ai")
 
     def test_contenthash(self):
         self.assertEqual(len(contenthash(b"hello")), 40)

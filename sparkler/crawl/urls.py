@@ -35,8 +35,25 @@ def hostname(url: str) -> str:
     return (p.hostname or "").lower()
 
 
+def host_key(url: str) -> str:
+    """Apex host: www.mattmann.ai and mattmann.ai are the same site."""
+    h = hostname(url)
+    if h.startswith("www."):
+        return h[4:]
+    return h
+
+
+def host_variants(key: str) -> list[str]:
+    key = (key or "").lower()
+    if key.startswith("www."):
+        key = key[4:]
+    if not key:
+        return []
+    return [key, "www." + key]
+
+
 def group_of(url: str) -> str:
-    return hostname(url)
+    return host_key(url) or hostname(url)
 
 
 def doc_id(crawl_id: str, url: str) -> str:

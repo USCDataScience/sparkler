@@ -49,8 +49,9 @@ class LabelIn(BaseModel):
 
 class CrawlIn(BaseModel):
     topn: int = 50
-    iterations: int = 1
-    same_host: bool = False
+    iterations: int = -1
+    same_host: bool = True
+    max_depth: int = -1
     no_robots: bool = False
 
 
@@ -270,6 +271,7 @@ def start_crawl(job_id: str, body: CrawlIn):
                 topn=body.topn,
                 iterations=body.iterations,
                 same_host=body.same_host,
+                max_depth=body.max_depth,
                 respect_robots=not body.no_robots,
                 on_progress=prog,
             )

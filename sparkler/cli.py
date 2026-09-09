@@ -22,8 +22,12 @@ def main(argv=None):
     cr = sub.add_parser("crawl", help="Fetch, parse, and expand a job")
     cr.add_argument("-id", "--id", required=True)
     cr.add_argument("-tn", "--topn", type=int, default=None)
-    cr.add_argument("-i", "--iterations", type=int, default=1)
-    cr.add_argument("--same-host", action="store_true")
+    cr.add_argument("-i", "--iterations", type=int, default=1,
+                    help="Fetch batches. -1 = until the frontier is empty")
+    cr.add_argument("-d", "--max-depth", type=int, default=-1,
+                    help="Max link hops from a seed. -1 = unlimited")
+    cr.add_argument("--same-host", action="store_true",
+                    help="Stay on seed hosts (www and apex count as one site)")
     cr.add_argument("--no-robots", action="store_true")
     cr.add_argument("--delay-ms", type=int, default=None)
 
@@ -88,6 +92,7 @@ def _crawl(args):
         same_host=args.same_host or cfg["same_host"],
         respect_robots=not args.no_robots,
         delay_ms=args.delay_ms,
+        max_depth=args.max_depth,
         on_progress=lambda p: print(f"  {p.get('url','')}", flush=True),
     )
     print(

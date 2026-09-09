@@ -10,7 +10,9 @@ from ..solr import CrawlDB, job_query, stamp
 from . import parse as parse_mod
 from .fetch import Fetcher
 from .filters import URLFilter
-from .urls import contenthash, doc_id, group_of, hostname, normalize
+from .urls import contenthash, doc_id, group_of, host_key, host_variants, hostname, normalize
+
+_UNTIL_EMPTY_CAP = 500
 
 
 def _ensure():
@@ -58,10 +60,14 @@ def inject(crawl_id: str, urls: list[str], parent=None, depth=0, seed=False) -> 
     return n
 
 
-def _fair_generate(db: CrawlDB, crawl_id: str, topn: int) -> list[dict]:
+def _fair_generate(db: CrawlDB, crawl_id: str, topn: int, host_fq=None, max_depth=None) -> list[dict]:
     q = job_query(crawl_id, "status:UNFETCHED")
+    fqs = [x for x in (host_fq,) if x]
+    if max_depth is not None and max_depth >= 0:
+        fqs.append(f"discover_depth:[* TO {int(max_depth)}]")
     rows = db.docs(
         q=q,
+        fq=" AND ".join(fqs) if fqs else None,
         rows=max(topn * 4, topn),
         sort="page_score desc,discover_depth asc",
         fl="id,url,hostname,discover_depth,page_score,parent,seed",
@@ -92,16 +98,24 @@ def _get_text(db: CrawlDB, crawl_id: str):
 
 
 def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
-          respect_robots=True, delay_ms=None, on_progress=None) -> dict:
+          respect_robots=True, delay_ms=None, max_depth=-1, on_progress=None) -> dict:
     _ensure()
     store.create_job(crawl_id)
     db = CrawlDB()
     seed_urls = store.seeds(crawl_id)
-    seed_hosts = {hostname(u) for u in seed_urls}
+    seed_hosts = {host_key(u) for u in seed_urls if host_key(u)}
     ufilter = URLFilter(same_host=same_host, seed_hosts=seed_hosts)
     trained = scorer.train(crawl_id, _get_text(db, crawl_id))
     model = trained.get("scorer")
     fetcher = Fetcher(delay_ms=delay_ms, respect_robots=respect_robots)
+    host_fq = None
+    if same_host and seed_hosts:
+        variants = []
+        for k in seed_hosts:
+            variants.extend(host_variants(k))
+        host_fq = "(" + " OR ".join(f'hostname:"{h}"' for h in variants) + ")"
+    until_empty = iterations < 1
+    limit = _UNTIL_EMPTY_CAP if until_empty else max(1, iterations)
     stats = {
         "job": crawl_id,
         "fetched": 0,
@@ -111,8 +125,8 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
         "iterations": 0,
     }
     try:
-        for it in range(max(1, iterations)):
-            batch = _fair_generate(db, crawl_id, topn)
+        for it in range(limit):
+            batch = _fair_generate(db, crawl_id, topn, host_fq=host_fq, max_depth=max_depth)
             if not batch:
                 break
             stats["iterations"] = it + 1
@@ -177,10 +191,11 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
                 updates.append(doc)
                 stats["fetched"] += 1
                 depth = int(rec.get("discover_depth") or 0) + 1
-                for link in parsed["outlinks"]:
-                    if not ufilter.allow(link, parent=url):
-                        continue
-                    new_links.append((link, url, depth))
+                if max_depth < 0 or depth <= max_depth:
+                    for link in parsed["outlinks"]:
+                        if not ufilter.allow(link, parent=url):
+                            continue
+                        new_links.append((link, url, depth))
             if updates:
                 db.add(updates, commit=True)
             # inject outlinks that are new

@@ -22,10 +22,21 @@
       </select>
       <input v-model="newJob" placeholder="new job id" @keyup.enter="createJob"/>
       <button @click="createJob">Create</button>
-      <input v-model="seedBox" placeholder="https://example.com/  (add seed)"/>
-      <button :disabled="!job" @click="addSeed">Add seed</button>
-      <input v-model.number="iterations" type="number" min="1" max="20" style="width:4.5rem" title="iterations"/>
-      <label class="hint"><input type="checkbox" v-model="sameHost"/> same host</label>
+      <input v-model="seedBox" placeholder="https://example.com/  (add seed)"
+             title="Each seed’s host is allowed when same host is on. Add ucla.edu pages here to crawl those sites too."/>
+      <button :disabled="!job" class="tip" data-tip="Add another start URL. With same host on, that URL’s site is included (e.g. paste a cio.ucla.edu link to crawl UCLA too)." @click="addSeed">Add seed</button>
+      <label class="hint tip" data-tip="Stay on the seed site. www.mattmann.ai and mattmann.ai count as one. This is how you crawl a whole site. Uncheck to follow off-site links (Wired, UCLA, GitHub), limited by depth.">
+        <input type="checkbox" v-model="sameHost"/> same host
+      </label>
+      <label class="hint tip" data-tip="Link hops from a seed. 0 = homepage only. 1 = homepage plus its links. 3 = two more hops, enough to walk into ucla.edu and similar sites. Blank or −1 = no cap.">
+        depth
+        <input v-model.number="maxDepth" type="number" min="-1" max="20" placeholder="∞" style="width:3.6rem"/>
+      </label>
+      <label class="hint tip" data-tip="One iteration fetches one batch (50 URLs) then stops — that’s why you saw 1 fetched and 30 waiting. Check this to keep going until the frontier is empty.">
+        <input type="checkbox" v-model="untilDone"/> until done
+      </label>
+      <input v-if="!untilDone" v-model.number="iterations" type="number" min="1" max="500" style="width:4.5rem"
+             class="tip" data-tip="How many fetch batches to run. Each batch is up to 50 URLs."/>
       <button :disabled="!job || running" @click="startCrawl">{{ running ? 'Crawling…' : 'Crawl' }}</button>
       <button class="ghost" :disabled="!job" @click="download">Export</button>
       <span v-if="run.url" class="hint">{{ run.url }}</span>
@@ -73,7 +84,9 @@ const job = ref('')
 const newJob = ref('')
 const seedBox = ref('')
 const iterations = ref(1)
-const sameHost = ref(false)
+const untilDone = ref(true)
+const sameHost = ref(true)
+const maxDepth = ref(-1)
 const stats = ref(null)
 const documents = ref([])
 const numFound = ref(0)
@@ -171,10 +184,12 @@ async function addSeed() {
 async function startCrawl() {
   if (!job.value) return
   try {
+    const depth = maxDepth.value
     await send(`/api/jobs/${encodeURIComponent(job.value)}/crawl`, 'POST', {
       topn: 50,
-      iterations: Number(iterations.value) || 1,
-      same_host: sameHost.value
+      iterations: untilDone.value ? -1 : (Number(iterations.value) || 1),
+      same_host: sameHost.value,
+      max_depth: depth === '' || depth == null ? -1 : Number(depth)
     })
     poll()
   } catch (e) { error.value = e.message }

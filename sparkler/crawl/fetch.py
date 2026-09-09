@@ -8,6 +8,7 @@ from urllib.robotparser import RobotFileParser
 import httpx
 
 from ..config import crawl_cfg
+from .urls import host_key
 
 
 class Fetcher:
@@ -61,7 +62,7 @@ class Fetcher:
             return True
 
     def fetch(self, url: str) -> dict:
-        host = (urlparse(url).hostname or "").lower()
+        host = host_key(url) or (urlparse(url).hostname or "").lower()
         self._wait(host)
         if not self._can_fetch(url):
             self._last[host] = time.time()

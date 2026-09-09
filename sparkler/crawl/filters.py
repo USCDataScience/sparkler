@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import re
-from urllib.parse import urlparse
 
 from ..paths import FILTER_PATH
-from .urls import hostname
+from .urls import host_key
 
 
 def load_rules(path=None):
@@ -28,7 +27,8 @@ class URLFilter:
     def __init__(self, path=None, same_host=False, seed_hosts=None):
         self.rules = load_rules(path)
         self.same_host = same_host
-        self.seed_hosts = {h.lower() for h in (seed_hosts or []) if h}
+        self.seed_hosts = {host_key(h) if "://" in h else h.lower().removeprefix("www.")
+                           for h in (seed_hosts or []) if h}
 
     def allow(self, url: str, parent: str | None = None) -> bool:
         if not url:
@@ -41,16 +41,15 @@ class URLFilter:
         else:
             return False
         if self.same_host:
-            host = hostname(url)
+            key = host_key(url)
             if self.seed_hosts:
-                if host not in self.seed_hosts:
+                if key not in self.seed_hosts:
                     return False
             elif parent:
-                if host != hostname(parent):
+                if key != host_key(parent):
                     return False
         return True
 
 
 def same_host(url: str, other: str) -> bool:
-    a, b = urlparse(url), urlparse(other)
-    return (a.hostname or "").lower() == (b.hostname or "").lower()
+    return host_key(url) == host_key(other) and bool(host_key(url))
