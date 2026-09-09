@@ -17,7 +17,7 @@
       </div>
       <div class="card">
         <h3>Fetch rate</h3>
-        <p class="hint">Pages fetched per time bucket. Area + line.</p>
+        <p class="hint">Pages fetched per time bucket. Hover anywhere on the chart for the count.</p>
         <div ref="areaEl" class="chart area"></div>
       </div>
       <div class="grid2">
@@ -61,6 +61,11 @@
           <div ref="rtEl" class="chart"></div>
         </div>
       </div>
+      <div class="card">
+        <h3>Relevance score</h3>
+        <p class="hint">page_score on fetched pages after you label relevant/highly and not, then crawl or train. Positive = like the relevant examples.</p>
+        <div ref="scoreEl" class="chart"></div>
+      </div>
     </template>
   </div>
 </template>
@@ -86,6 +91,7 @@ const langEl = ref(null)
 const encEl = ref(null)
 const parserEl = ref(null)
 const rtEl = ref(null)
+const scoreEl = ref(null)
 
 const tika = computed(() => (charts.value && charts.value.tika) || {})
 const span = computed(() => {
@@ -136,6 +142,7 @@ function draw() {
     if (encEl.value) donut(encEl.value, tika.value.encoding || [], { title: 'enc' })
     if (parserEl.value) bubblePack(parserEl.value, tika.value.parsers || [])
     if (rtEl.value) histogram(rtEl.value, tika.value.response_hist || [])
+    if (scoreEl.value) histogram(scoreEl.value, tika.value.score_hist || [])
   })
 }
 

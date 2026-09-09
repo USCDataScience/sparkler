@@ -100,9 +100,41 @@ def _get_text(db: CrawlDB, crawl_id: str):
     return inner
 
 
+def reopen_allowed(db: CrawlDB, crawl_id: str, ufilter, max_depth=-1, batch=200) -> int:
+    """FILTERED → UNFETCHED when the current filter would allow the URL (same-host off, etc.)."""
+    to_open = []
+    start = 0
+    while True:
+        rows = db.docs(
+            q=job_query(crawl_id, "status:FILTERED"),
+            start=start,
+            rows=batch,
+            sort="id asc",
+            fl="id,url,parent,discover_depth",
+        )
+        if not rows:
+            break
+        for rec in rows:
+            url = rec.get("url") or ""
+            if not ufilter.allow(url, parent=rec.get("parent")):
+                continue
+            depth = int(rec.get("discover_depth") or 0)
+            if max_depth >= 0 and depth > max_depth:
+                continue
+            to_open.append(rec["id"])
+        start += len(rows)
+        if len(rows) < batch:
+            break
+    for i in range(0, len(to_open), batch):
+        chunk = [{"id": did, "status": "UNFETCHED"} for did in to_open[i:i + batch]]
+        last = i + batch >= len(to_open)
+        db.set_fields(chunk, commit=last)
+    return len(to_open)
+
+
 def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
-          respect_robots=True, delay_ms=None, max_depth=-1, on_progress=None,
-          stop_event=None) -> dict:
+          respect_robots=True, delay_ms=None, max_depth=-1, expand=True,
+          on_progress=None, stop_event=None) -> dict:
     _ensure()
     store.create_job(crawl_id)
     db = CrawlDB()
@@ -126,6 +158,8 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
         "errors": 0,
         "filtered": 0,
         "injected": 0,
+        "reopened": 0,
+        "expand": bool(expand),
         "iterations": 0,
         "stopped": False,
     }
@@ -134,6 +168,10 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
         return stop_event is not None and stop_event.is_set()
 
     try:
+        if expand:
+            stats["reopened"] = reopen_allowed(db, crawl_id, ufilter, max_depth=max_depth)
+        if on_progress:
+            on_progress({"url": "", "iteration": 0, **stats})
         for it in range(limit):
             if stopped():
                 stats["stopped"] = True
@@ -205,17 +243,18 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
                 doc.update(parsed.get("solr_md") or {})
                 updates.append(doc)
                 stats["fetched"] += 1
-                parent_depth = int(rec.get("discover_depth") or 0)
-                for link in parsed["outlinks"]:
-                    if not ufilter.allow(link, parent=url):
-                        continue
-                    if same_page_family(link, url):
-                        depth = parent_depth
-                    else:
-                        depth = parent_depth + 1
-                    if max_depth >= 0 and depth > max_depth:
-                        continue
-                    new_links.append((link, url, depth))
+                if expand:
+                    parent_depth = int(rec.get("discover_depth") or 0)
+                    for link in parsed["outlinks"]:
+                        if not ufilter.allow(link, parent=url):
+                            continue
+                        if same_page_family(link, url):
+                            depth = parent_depth
+                        else:
+                            depth = parent_depth + 1
+                        if max_depth >= 0 and depth > max_depth:
+                            continue
+                        new_links.append((link, url, depth))
             if stopped():
                 if updates:
                     db.add(updates, commit=True)
@@ -224,13 +263,16 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
                 db.add(updates, commit=True)
             # inject outlinks that are new
             seen = set()
-            to_add = []
+            candidates = []
             for link, parent, depth in new_links:
                 if link in seen:
                     continue
                 seen.add(link)
-                did = doc_id(crawl_id, link)
-                if db.get(did):
+                candidates.append((link, parent, depth, doc_id(crawl_id, link)))
+            have = db.existing_ids([did for *_, did in candidates]) if candidates else set()
+            to_add = []
+            for link, parent, depth, did in candidates:
+                if did in have:
                     continue
                 to_add.append(stamp({
                     "id": did,
@@ -266,7 +308,10 @@ def crawl(crawl_id: str, topn=100, iterations=1, same_host=False,
                     "status": "FILTERED",
                 }))
             if drop:
-                db.add(drop, commit=True)
+                db.set_fields(
+                    [{"id": d["id"], "status": "FILTERED"} for d in drop],
+                    commit=True,
+                )
                 stats["filtered"] += len(drop)
     finally:
         fetcher.close()

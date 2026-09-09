@@ -4,13 +4,15 @@
       <input v-model="text" placeholder="Search text" @keyup.enter="$emit('search', text)"/>
       <button class="ghost" @click="$emit('search', text)">Search</button>
     </section>
+    <p class="hint">Highest relevance score first. Labeling stays on this card; scores update on the next crawl.</p>
     <p v-if="!documents.length" class="empty">No documents. Inject seeds and crawl.</p>
     <div v-for="d in documents" :key="d.id" class="card" :class="{ open: openUrl === d.url }">
       <div class="row">
         <div class="click" @click="toggle(d)">
           <h3>{{ d.title || d.url }}</h3>
           <p class="meta">{{ d.status }} · d{{ d.discover_depth }} · {{ d.hostname }} · {{ d.content_type || '—' }}
-            · {{ d.metadata_n || 0 }} Tika fields · score {{ Number(d.page_score || 0).toFixed(2) }}</p>
+            · {{ d.metadata_n || 0 }} Tika fields
+            · <span class="score" :class="{ hi: Number(d.page_score) > 0, lo: Number(d.page_score) < 0 }">score {{ Number(d.page_score || 0).toFixed(2) }}</span></p>
           <p class="meta"><a :href="d.url" target="_blank" rel="noreferrer" @click.stop>{{ d.url }}</a></p>
           <p v-if="d.snippet" class="snippet">{{ d.snippet }}</p>
         </div>

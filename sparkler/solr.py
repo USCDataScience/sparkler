@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from urllib.parse import urlencode
 
 import httpx
 
@@ -35,6 +36,23 @@ class CrawlDB:
         r.raise_for_status()
         return r.json() if r.content else {}
 
+    def set_fields(self, updates, commit=True):
+        """Partial update: only the given fields, Solr atomic set. Does not clobber the rest."""
+        if not updates:
+            return {}
+        payload = []
+        for u in updates:
+            doc = {"id": u["id"]}
+            for k, v in u.items():
+                if k == "id":
+                    continue
+                doc[k] = {"set": v}
+            payload.append(doc)
+        params = {"commit": "true"} if commit else {"softCommit": "true"}
+        r = self._c.post(f"{self.base}/update", params=params, json=payload)
+        r.raise_for_status()
+        return r.json() if r.content else {}
+
     def delete_job(self, crawl_id: str):
         q = f'crawl_id:"{_esc(crawl_id)}"'
         r = self._c.post(
@@ -53,24 +71,30 @@ class CrawlDB:
         r.raise_for_status()
 
     def select(self, q="*:*", rows=10, start=0, sort=None, fl=None, fq=None, facet_fields=None):
-        params = {
-            "q": q,
-            "rows": rows,
-            "start": start,
-            "wt": "json",
-        }
+        # POST so a fat id list cannot 414 the Jetty GET buffer.
+        pairs = [
+            ("q", q),
+            ("rows", str(rows)),
+            ("start", str(start)),
+            ("wt", "json"),
+        ]
         if sort:
-            params["sort"] = sort
+            pairs.append(("sort", sort))
         if fl:
-            params["fl"] = fl
+            pairs.append(("fl", fl))
         if fq:
-            params["fq"] = fq
+            pairs.append(("fq", fq))
         if facet_fields:
-            params["facet"] = "true"
-            params["facet.field"] = facet_fields
-            params["facet.mincount"] = 1
-            params["facet.limit"] = 200
-        r = self._c.get(f"{self.base}/select", params=params)
+            pairs.append(("facet", "true"))
+            pairs.append(("facet.mincount", "1"))
+            pairs.append(("facet.limit", "200"))
+            for f in facet_fields:
+                pairs.append(("facet.field", f))
+        r = self._c.post(
+            f"{self.base}/select",
+            content=urlencode(pairs).encode(),
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
         r.raise_for_status()
         return r.json()
 
@@ -99,6 +123,17 @@ class CrawlDB:
     def get(self, doc_id: str):
         found = self.docs(q=f'id:"{_esc(doc_id)}"', rows=1)
         return found[0] if found else None
+
+    def existing_ids(self, ids: list[str]) -> set[str]:
+        """Which of these Solr ids already exist. POST + terms fq, not a GET OR-chain."""
+        have = set()
+        ids = [i for i in ids if i]
+        for i in range(0, len(ids), 200):
+            chunk = ids[i:i + 200]
+            fq = "{!terms f=id}" + ",".join(chunk)
+            for doc in self.docs(q="*:*", fq=fq, rows=len(chunk), fl="id"):
+                have.add(doc["id"])
+        return have
 
 
 def _esc(s: str) -> str:

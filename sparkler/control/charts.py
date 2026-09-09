@@ -218,9 +218,38 @@ def tika_rollups(docs: list[dict]) -> dict:
         "parse_ms": nums(parse_ms),
         "response_ms": nums(responses),
         "response_hist": hist(responses),
+        "score_hist": _score_hist(docs),
         "docs": len(docs),
         "docs_with_tika": sum(1 for d in docs if meta_obj(d.get("tika_metadata"))),
     }
+
+
+def _score_hist(docs: list[dict], bins=10) -> list[dict]:
+    vals = []
+    for d in docs:
+        raw = d.get("page_score")
+        if raw in (None, ""):
+            continue
+        try:
+            vals.append(float(raw))
+        except (TypeError, ValueError):
+            continue
+    if not vals:
+        return []
+    lo, hi = min(vals), max(vals)
+    if lo == hi:
+        return [{"value": f"{lo:.1f}", "count": len(vals)}]
+    width = (hi - lo) / bins
+    buckets = [0] * bins
+    for v in vals:
+        i = min(bins - 1, int((v - lo) / width))
+        buckets[i] += 1
+    out = []
+    for i, n in enumerate(buckets):
+        a = lo + i * width
+        b = lo + (i + 1) * width
+        out.append({"value": f"{a:.1f}–{b:.1f}", "count": n})
+    return out
 
 
 def from_solr_docs(docs: list[dict]) -> dict:

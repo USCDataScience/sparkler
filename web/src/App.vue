@@ -3,7 +3,12 @@
     <header class="mast">
       <div class="brand">
         <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
-          <path fill="currentColor" d="M16 2l3 10 10 3-10 3-3 10-3-10-10-3 10-3z"/>
+          <circle cx="16" cy="16" r="10.4" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.55"/>
+          <circle cx="5.6" cy="16" r="1.5" fill="currentColor"/>
+          <circle cx="8.7" cy="23.5" r="1.5" fill="currentColor"/>
+          <circle cx="26.4" cy="16" r="1.5" fill="currentColor"/>
+          <circle cx="23.3" cy="8.5" r="1.6" fill="currentColor"/>
+          <path fill="currentColor" d="M16.00,6.80 L17.28,12.91 L22.51,9.49 L19.09,14.72 L25.20,16.00 L19.09,17.28 L22.51,22.51 L17.28,19.09 L16.00,25.20 L14.72,19.09 L9.49,22.51 L12.91,17.28 L6.80,16.00 L12.91,14.72 L9.49,9.49 L14.72,12.91 Z"/>
         </svg>
         <div>
           <h1>Sparkler</h1>
@@ -35,6 +40,9 @@
       <label class="hint tip" data-tip="One iteration fetches one batch (50 URLs) then stops — that’s why you saw 1 fetched and 30 waiting. Check this to keep going until the frontier is empty.">
         <input type="checkbox" v-model="untilDone"/> until done
       </label>
+      <label class="hint tip" data-tip="Fetch what is already queued. Do not add new outlinks, so the frontier only shrinks. Same-host off + until-done + don't expand drains NASA/Viterbi/etc. without following their links.">
+        <input type="checkbox" v-model="noExpand"/> don't expand
+      </label>
       <input v-if="!untilDone" v-model.number="iterations" type="number" min="1" max="500" style="width:4.5rem"
              class="tip" data-tip="How many fetch batches to run. Each batch is up to 50 URLs."/>
       <button v-if="!running" :disabled="!job" @click="startCrawl">Crawl</button>
@@ -45,6 +53,7 @@
       <button class="ghost danger tip" :disabled="running" data-tip="Empty the whole CrawlDB and every job."
               @click="clearAll">Clear all</button>
       <span v-if="run.url" class="hint">{{ run.url }}</span>
+      <span v-if="run.state === 'error' && run.error" class="err">{{ shortErr }}</span>
     </section>
 
     <section class="chips" v-if="filterChips.length">
@@ -62,6 +71,8 @@
       <div><strong>{{ (stats.seeds || []).length }}</strong> seeds</div>
       <div><strong>{{ (facets.hostname || []).length }}</strong> hosts</div>
       <div v-if="topMime"><strong>{{ topMime }}</strong> top MIME</div>
+      <div v-if="labelN"><strong>{{ labelN }}</strong> labels</div>
+      <div v-if="stats && stats.model"><strong>{{ modelHint }}</strong> scorer</div>
     </section>
 
     <main>
@@ -100,6 +111,7 @@ const seedBox = ref('')
 const iterations = ref(1)
 const untilDone = ref(true)
 const sameHost = ref(true)
+const noExpand = ref(false)
 const maxDepth = ref(-1)
 const stats = ref(null)
 const documents = ref([])
@@ -118,7 +130,7 @@ const unfetched = computed(() => countOf('UNFETCHED'))
 const errors = computed(() => countOf('ERROR'))
 const filtered = computed(() => countOf('FILTERED'))
 const running = computed(() => run.value.state === 'running' || run.value.state === 'stopping')
-const docFilter = ref({})
+const docFilter = ref({ status: 'FETCHED' })
 const filterChips = computed(() => {
   const f = docFilter.value || {}
   const out = []
@@ -134,6 +146,16 @@ const topMime = computed(() => {
   if (!list.length) return ''
   const v = list[0].value || ''
   return v.split(';')[0]
+})
+const labelN = computed(() => Object.keys((stats.value && stats.value.labels) || {}).length)
+const modelHint = computed(() => {
+  const m = (stats.value && stats.value.model) || {}
+  if (m.ok) return `${m.relevant} relevant / ${m.not} not`
+  return 'needs relevant + not'
+})
+const shortErr = computed(() => {
+  const e = (run.value && run.value.error) || ''
+  return e.length > 180 ? `${e.slice(0, 180)}…` : e
 })
 
 function countOf(status) {
@@ -273,6 +295,7 @@ async function startCrawl() {
       topn: 50,
       iterations: untilDone.value ? -1 : (Number(iterations.value) || 1),
       same_host: sameHost.value,
+      expand: !noExpand.value,
       max_depth: depth === '' || depth == null ? -1 : Number(depth)
     })
     poll()
@@ -288,9 +311,11 @@ async function stopCrawl() {
 }
 
 async function onLabel({ url, label }) {
-  await send(`/api/jobs/${encodeURIComponent(job.value)}/label`, 'POST', { url, label })
-  await send(`/api/jobs/${encodeURIComponent(job.value)}/train`, 'POST')
-  await reload()
+  try {
+    await send(`/api/jobs/${encodeURIComponent(job.value)}/label`, 'POST', { url, label })
+    documents.value = documents.value.map(d => d.url === url ? { ...d, label } : d)
+    await refreshCounts()
+  } catch (e) { error.value = e.message }
 }
 
 function openJob(id) {
